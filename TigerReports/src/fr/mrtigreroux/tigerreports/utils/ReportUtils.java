@@ -176,6 +176,7 @@ public class ReportUtils {
 			if(!exist(reportsNumber+1)) break;
 			FilesManager.getReports.set(path, "moved");
 		}
+		if(FilesManager.getReports.getString(getConfigPath(reportNumber)).equals("archived")) FilesManager.getReports.set(getConfigPath(reportNumber), null);
 		FilesManager.saveReports();
 	}
 	
