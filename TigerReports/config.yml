@@ -1,0 +1,19 @@
+TigerReports:
+  Version: 1.8 & 1.9 spigot
+  Creator: MrTigreroux
+  Description: Plugin de gestion de signalements.
+  Finished on: 30/06/2016
+Config:
+  ColorCharacter: '&'
+  LineBreakSymbol: "//"
+  PermissionRequired: no
+  ReportOnline: no
+  MaxReports: 100
+  MinCharacters: 4
+  ReportCooldown: 300
+  PunishSeconds: 3600
+  MenuSound: ENTITY_ITEM_PICKUP
+  ErrorSound: ENTITY_ITEM_BREAK
+  ReportSound: ENTITY_BAT_DEATH
+  TeleportSound: ENTITY_ENDERMEN_TELEPORT
+  StaffSound: ENTITY_ITEM_PICKUP
