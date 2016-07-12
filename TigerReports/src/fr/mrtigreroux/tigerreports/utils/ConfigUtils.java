@@ -59,17 +59,5 @@ public class ConfigUtils {
 	public static Sound getStaffSound() {
 		return getSound("StaffSound", "ITEM_PICKUP", "ENTITY_ITEM_PICKUP");
 	}
-
-	/**
-	 * @deprecated
-	 */
-	public static short getDamage(ConfigurationSection config, String path) {
-		try {
-			String icon = config.getString(path);
-			return icon != null && icon.startsWith("Material-") && icon.contains(":") ? Short.parseShort(icon.split(":")[1]) : 0;
-		} catch(Exception NoDamage) {
-			return 0;
-		}
-	}
 	
 }

@@ -1,5 +1,5 @@
 name: TigerReports
-version: 1.0
+version: 1.1
 description: Plugin de gestion de signalements.
 author: MrTigreroux
 main: fr.mrtigreroux.tigerreports.TigerReports
@@ -20,6 +20,8 @@ permissions:
     description: Permet de gérer le plugin.
     children:
        tigersounds.advanced: true
+       tigersounds.remove: true
+       tigersounds.archive: true
   tigerreports.advanced:
     description: Permet de gérer les signalements importants et traités ainsi que les données d'un joueur.
     children:

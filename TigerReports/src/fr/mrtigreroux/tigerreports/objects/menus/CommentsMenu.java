@@ -43,8 +43,9 @@ public class CommentsMenu extends Menu {
 			String path = ReportUtils.getConfigPath(reportNumber)+".Comments.Comment"+commentNumber;
 			if(commentNumber > totalComments || FilesManager.getReports.get(path) == null) break;
 			inv.setItem(commentNumber-firstComment+18, new CustomItem().type(Material.PAPER).name(Message.COMMENT.get().replaceAll("_Number_", ""+commentNumber))
-					.lore(Message.COMMENT_DETAILS.get().replaceAll("_Author_", FilesManager.getReports.getString(path+".Author")).replaceAll("_Date_", FilesManager.getReports.getString(path+".Date"))
-							.replaceAll("_Message_", MessageUtils.getMenuSentence(FilesManager.getReports.getString(path+".Message"), Message.COMMENT_DETAILS, "_Message_", true)).split(ConfigUtils.getLineBreakSymbol())).create());
+					.lore(Message.COMMENT_DETAILS.get().replaceAll("_Author_", FilesManager.getReports.getString(path+".Author")).replaceAll("_Date_", FilesManager.getReports.getString(path+".Date").replaceAll("-", ":"))
+							.replaceAll("_Message_", MessageUtils.getMenuSentence(FilesManager.getReports.getString(path+".Message"), Message.COMMENT_DETAILS, "_Message_", true))
+									.replaceAll("_Action_", u.hasPermission(Permission.REMOVE) ? Message.COMMENT_REMOVE_ACTION.get() : "").split(ConfigUtils.getLineBreakSymbol())).create());
 		}
 		
 		if(firstComment+26 < totalComments) inv.setItem(size-3, MenuItem.PAGE_SWITCH_NEXT.get());
@@ -62,6 +63,7 @@ public class CommentsMenu extends Menu {
 				int commentNumber = slot-18+((page-1)*27)+1;
 				FilesManager.getReports.set(ReportUtils.getConfigPath(reportNumber)+".Comments.Comment"+commentNumber, null);
 				FilesManager.saveReports();
+				open(true);
 			}
 		}
 	}
