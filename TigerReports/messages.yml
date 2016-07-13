@@ -19,6 +19,8 @@ Messages:
 ErrorMessages:
   Invalid-syntax: "&7[&6Reports&7] &eVeuillez d\xe9tailler votre commande tel que &b_Command_&e."
   Permission-command: "&7[&6Reports&7] &cVous n'avez pas acc\u00E8s \u00E0 cette commande."
+  Permission-report: "&7[&6Reports&7] &cVous ne pouvez pas signaler le joueur &e_Player_&c."
+  Permission-access-details: "&7[&6Reports&7] &cVous ne pouvez pas acc\xe9der aux d\xe9tails du _Report_&c."
   Player-only: "TigerReports > Cette commande est reservee aux joueurs."
   Cooldown: "&7[&6Reports&7] &cVeuillez patienter encore &e_Time_ &cavant de signaler un joueur."
   Report-oneself: "&7[&6Reports&7] &cVous ne pouvez pas vous signaler vous-même."

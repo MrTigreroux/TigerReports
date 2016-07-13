@@ -63,6 +63,11 @@ public class ReportCommand implements CommandExecutor {
 			return true;
 		}
 		
+		if(r.hasPermission(Permission.EXEMPT.get())) {
+			MessageUtils.sendErrorMessage(p, Message.PERMISSION_REPORT.get().replaceAll("_Player_", reported));
+			return true;
+		}
+		
 		StringBuilder sb = new StringBuilder();
 		for(int argNumber = 1; argNumber < args.length ; argNumber++) sb.append(args[argNumber]+" ");
 		String reason = sb.toString().trim();

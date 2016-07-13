@@ -30,6 +30,7 @@ public enum Message {
 	
 	INVALID_SYNTAX("ErrorMessages.Invalid-syntax", "§7[§6Reports§7] §eVeuillez détailler votre commande tel que §b_Command_§e."),
 	PERMISSION_COMMAND("ErrorMessages.Permission-command", "§7[§6Reports§7] §cVous n'avez pas accès à cette commande."),
+	PERMISSION_REPORT("ErrorMessages.Permission-report", "§7[§6Reports§7] §cVous ne pouvez pas signaler le joueur §e_Player_§c."),
 	PERMISSION_ACCESS_DETAILS("ErrorMessages.Permission-access-details", "§7[§6Reports§7] §cVous ne pouvez pas accéder aux détails du _Report_§c."),
 	PLAYER_ONLY("ErrorMessages.Player-only", "TigerReports > Cette commande est reservee aux joueurs."),
 	COOLDOWN("ErrorMessages.Cooldown", "§7[§6Reports§7] §cVeuillez patienter encore §e_Time_ §cavant de signaler un joueur."),
