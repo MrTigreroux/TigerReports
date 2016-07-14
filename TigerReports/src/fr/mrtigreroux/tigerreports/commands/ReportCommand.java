@@ -27,6 +27,10 @@ import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 import fr.mrtigreroux.tigerreports.utils.ReportUtils;
 import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
+/**
+ * @author MrTigreroux
+ */
+
 public class ReportCommand implements CommandExecutor {
 
 	@Override

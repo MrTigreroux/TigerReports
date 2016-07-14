@@ -31,13 +31,16 @@ public class SignListener implements Listener {
 		Player p = e.getPlayer();
 		User u = new User(p);
 		if(!message.equals("")) {
-			String path = ReportUtils.getConfigPath(reportNumber)+".Comments.Comment"+ReportUtils.getNewCommentNumber(reportNumber);
+			boolean commentModified = UserData.CommentModified.containsKey(uuid);
+			String path = ReportUtils.getConfigPath(reportNumber)+".Comments.Comment"+(commentModified ? UserData.CommentModified.get(uuid) : ReportUtils.getNewCommentNumber(reportNumber));
+			FilesManager.getReports.set(path+".Status", FilesManager.getReports.getString(path+".Status") != null ? FilesManager.getReports.getString(path+".Status") : "Private");
 			FilesManager.getReports.set(path+".Author", p.getDisplayName());
 			FilesManager.getReports.set(path+".Date", MessageUtils.getNowDate());
-			FilesManager.getReports.set(path+".Message", message);
+			FilesManager.getReports.set(path+".Message", commentModified ? FilesManager.getReports.getString(path+".Message")+" "+message : message);
 			FilesManager.saveReports();
 		}
 		UserData.ReportCommenting.remove(uuid);
+		UserData.CommentModified.remove(uuid);
 		u.updateSignBlock(e.getBlock());
 		u.openCommentsMenu(1, reportNumber);
 		e.setCancelled(true);

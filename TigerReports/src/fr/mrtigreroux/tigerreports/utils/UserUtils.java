@@ -1,6 +1,8 @@
 package fr.mrtigreroux.tigerreports.utils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 
@@ -88,6 +90,15 @@ public class UserUtils {
 	public static void addAppreciation(String uuid, String appreciation, int value) {
 		int score = getAppreciation(uuid, appreciation)+value;
 		FilesManager.getData.set("Data."+uuid+".Appreciations."+appreciation, score > 0 ? score : 0);
+		FilesManager.saveData();
+	}
+	
+	public static List<String> getNotifications(String uuid) {
+		return FilesManager.getData.get("Data."+uuid+".Notifications") != null ? FilesManager.getData.getStringList("Data."+uuid+".Notifications") : new ArrayList<String>();
+	}
+	
+	public static void setNotifications(String uuid, List<String> notifications) {
+		FilesManager.getData.set("Data."+uuid+".Notifications", notifications);
 		FilesManager.saveData();
 	}
 	

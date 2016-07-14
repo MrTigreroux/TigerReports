@@ -1,5 +1,6 @@
 package fr.mrtigreroux.tigerreports.objects;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Location;
@@ -24,6 +25,8 @@ import fr.mrtigreroux.tigerreports.objects.menus.UserMenu;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 import fr.mrtigreroux.tigerreports.utils.ReflectionUtils;
+import fr.mrtigreroux.tigerreports.utils.ReportUtils;
+import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 /**
  * @author MrTigreroux
@@ -123,7 +126,7 @@ public class User {
 			ReflectionUtils.setDeclaredField(tileEntity, "isEditable", true);
 			ReflectionUtils.setDeclaredField(tileEntity, "h", ReflectionUtils.getHandle(p));
 			ReflectionUtils.sendPacket(p,  ReflectionUtils.getPacket("PacketPlayOutOpenSignEditor", ReflectionUtils.callDeclaredConstructor(ReflectionUtils.getNMSClass("BlockPosition"), s.getX(), s.getY(), s.getZ())));
-		} catch (Exception Error) {}
+		} catch(Exception Error) {}
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -134,6 +137,24 @@ public class User {
 		if(UserData.SignData.containsKey(uuid)) b.setData(UserData.SignData.get(uuid));
 		UserData.SignMaterial.remove(uuid);
 		UserData.SignData.remove(uuid);
+	}
+	
+	public void sendNotification(String comment) {
+		try {
+			int reportNumber = Integer.parseInt(comment.split(":")[0].replaceFirst("Report#", ""));
+			String commentPath = ReportUtils.getConfigPath(reportNumber)+".Comments.Comment"+comment.split(":")[1].replaceFirst("Comment#", "");
+			if(!FilesManager.getReports.getString(commentPath+".Status").equals("Sent")) return;
+			p.sendMessage(Message.COMMENT_NOTIFICATION.get().replaceAll("_Player_", FilesManager.getReports.getString(commentPath+".Author"))
+					.replaceAll("_Reported_", ReportUtils.getPlayerName("Reported", reportNumber, false)).replaceAll("_Time_", MessageUtils.convertToSentence(MessageUtils.getSeconds(MessageUtils.getNowDate())-MessageUtils.getSeconds(ReportUtils.getDate(reportNumber))))
+					.replaceAll("_Message_", FilesManager.getReports.getString(commentPath+".Message")));
+			List<String> notifications = UserUtils.getNotifications(uuid.toString());
+			notifications.remove(comment);
+			UserUtils.setNotifications(uuid.toString(), notifications);
+			FilesManager.getReports.set(commentPath+".Status", "Read");
+			FilesManager.saveReports();
+		} catch(Exception invalidNotification) {
+			;
+		}
 	}
 	
 }

@@ -14,12 +14,10 @@ import fr.mrtigreroux.tigerreports.objects.menus.Menu;
 
 public class UserData {
 
-	public static HashMap<UUID, Menu>    MenuOpened = new HashMap<UUID, Menu>();
-	public static HashMap<UUID, Integer> MenuReport = new HashMap<UUID, Integer>();
-	public static HashMap<UUID, Integer> MenuPage = new HashMap<UUID, Integer>();
-	public static HashMap<UUID, String>  MenuAction = new HashMap<UUID, String>();
+	public static HashMap<UUID, Menu> MenuOpened = new HashMap<UUID, Menu>();
 
-	public static HashMap<UUID, Integer>   ReportCommenting = new HashMap<UUID, Integer>();
+	public static HashMap<UUID, Integer>  ReportCommenting = new HashMap<UUID, Integer>();
+	public static HashMap<UUID, Integer>  CommentModified = new HashMap<UUID, Integer>();
 	public static HashMap<UUID, Material> SignMaterial = new HashMap<UUID, Material>();
 	public static HashMap<UUID, Byte>     SignData = new HashMap<UUID, Byte>();
 

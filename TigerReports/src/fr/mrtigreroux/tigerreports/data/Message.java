@@ -27,6 +27,7 @@ public enum Message {
 	STAFF_MAX_REPORTS_REACHED("Messages.Staff-max-reports-reached", "§7[§6Reports§7] §c§lLe maximum de signalements configuré §7§l(§e§l_Number_§7§l) §c§la été atteint. Les nouveaux signalements ne sont plus sauvegardés."),
 	COOLDOWN_STOPPED("Messages.Cooldown-stopped", "§7[§6Reports§7] §eLe temps d'attente avant votre prochain signalement vient d'être retiré, vous pouvez maintenant utiliser la commande §b/report§e."),
 	NOTIFICATIONS("Messages.Notifications", "§7[§6Reports§7] §eLes notifications de signalements ont été _State_§e."),
+	COMMENT_NOTIFICATION("Messages.Comment-notification", "§7[§6Reports§7] _Player_ §ea répondu à votre signalement de §c_Reported_ §ed'il y a _Time_: §6_Message_§e."),
 	
 	INVALID_SYNTAX("ErrorMessages.Invalid-syntax", "§7[§6Reports§7] §eVeuillez détailler votre commande tel que §b_Command_§e."),
 	PERMISSION_COMMAND("ErrorMessages.Permission-command", "§7[§6Reports§7] §cVous n'avez pas accès à cette commande."),
@@ -91,8 +92,11 @@ public enum Message {
 	CANCEL_PROCESS_DETAILS("Menus.Cancel-process-details", "//§6Clic §7pour annuler le traitement."),
 	COMMENTS_TITLE("Menus.Comments-title", "§6Messages §7> _Report_"),
 	COMMENT("Menus.Comment", "§eCommentaire §7#_Number_"),
-	COMMENT_DETAILS("Menus.Comment-details", "//§7Auteur: _Author_//§7Date: §e_Date_//§7Message: §f_Message_ _Action_"),
-	COMMENT_REMOVE_ACTION("Menus.Comment-remove-action", "// //§6Touche de jet §7pour supprimer."),
+	COMMENT_DETAILS("Menus.Comment-details", "//§7Statut: _Status_//§7Auteur: _Author_//§7Date: §e_Date_//§7Message: §f_Message_//_Actions_"),
+	COMMENT_ADD_MESSAGE_ACTION("Menus.Comment-add-message-action", "//§6Clic gauche §7pour ajouter un message."),
+	COMMENT_SEND_ACTION("Menus.Comment-send-action", "//§6Clic droit §7pour envoyer au signaleur."),
+	COMMENT_CANCEL_SEND_ACTION("Menus.Comment-cancel-send-action", "//§6Clic droit §7pour annuler l'envoi au signaleur."),
+	COMMENT_REMOVE_ACTION("Menus.Comment-remove-action", "//§6Touche de jet §7pour supprimer."),
 	WRITE_COMMENT("Menus.Write-comment", "§eRédiger un commentaire"),
 	WRITE_COMMENT_DETAILS("Menus.Write-comment-details", "//§6Clic §7pour rédiger un nouveau//§7commentaire sur ce signalement."),
 	USER_TITLE("Menus.User-title", "§6Joueur §7> §e_Target_"),
@@ -143,7 +147,10 @@ public enum Message {
 	SURVIVAL("Words.Survival", "§6survie"),
 	CREATIVE("Words.Creative", "§bcréatif"),
 	ADVENTURE("Words.Adventure", "§5aventure"),
-	SPECTATOR("Words.Spectator", "§7spectateur");
+	SPECTATOR("Words.Spectator", "§7spectateur"),
+	PRIVATE("Words.Private", "§cPrivé"),
+	SENT("Words.Sent", "§6Envoyé"),
+	READ("Words.Read", "§aLu");
 	
 	private final String path;
 	private final String defaultMessage;
