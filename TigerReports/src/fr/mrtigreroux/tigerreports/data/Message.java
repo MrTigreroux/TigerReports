@@ -142,8 +142,8 @@ public enum Message {
 	TRUE("Words.True-appreciation", "§aVrai"),
 	UNCERTAIN("Words.Uncertain-appreciation", "§6Incertain"),
 	FALSE("Words.False-appreciation", "§cFaux"),
-	YES("Words.Yes", "§aoui"),
-	NO("Words.No", "§cnon"),
+	YES("Words.Yes-state", "§aoui"),
+	NO("Words.No-state", "§cnon"),
 	SURVIVAL("Words.Survival", "§6survie"),
 	CREATIVE("Words.Creative", "§bcréatif"),
 	ADVENTURE("Words.Adventure", "§5aventure"),
@@ -161,7 +161,7 @@ public enum Message {
 	}
 	
 	public String get() {
-		if(FilesManager.getMessages.contains(path) && FilesManager.getMessages.get(path) != null) return ChatColor.translateAlternateColorCodes(ConfigUtils.getColorCharacter(), FilesManager.getMessages.getString(path));
+		if(FilesManager.getMessages.get(path) != null) return ChatColor.translateAlternateColorCodes(ConfigUtils.getColorCharacter(), FilesManager.getMessages.getString(path));
 		else return defaultMessage;
 	}
 	
