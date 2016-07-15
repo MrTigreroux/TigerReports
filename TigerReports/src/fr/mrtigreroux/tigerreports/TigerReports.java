@@ -24,6 +24,8 @@ public class TigerReports extends JavaPlugin {
 		FilesManager.checkFiles();
 		CommandsManager.registerCommands();
 		ListenersManager.registerListeners();
+		for(Player p : Bukkit.getOnlinePlayers()) FilesManager.getData.set("Data."+p.getUniqueId()+".Name", p.getName());
+		FilesManager.saveData();
 	}
 	
 	@Override

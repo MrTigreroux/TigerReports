@@ -27,11 +27,11 @@ ErrorMessages:
   Report-oneself: "&7[&6Reports&7] &cVous ne pouvez pas vous signaler vous-même."
   Reported-offline: "&7[&6Reports&7] &cVous ne pouvez pas signaler un joueur d\xe9connect\xe9 &7(&e_Player_&7)&c."
   Too-short-reason: "&7[&6Reports&7] &cVous avez indiqu\xe9 une raison trop courte &7(&e_Reason_&7)&c."
-  Player-offline: "&7[&6Reports&7] &cLe joueur &e_Player_ &cn'est plus connect\xe9."
+  Player-offline: "&7[&6Reports&7] &cLe joueur &e_Player_ &cn'est pas connect\xe9."
   Location-unknown: "&7[&6Reports&7] &cLa position du joueur &e_Player_ &clors du signalement est inconnue."
   Invalid-report-number: "&7[&6Reports&7] &cVous avez indiqu\xe9 un num\xe9ro de signalement invalide &7(&e_Number_&7)&c."
   Invalid-report: "&7[&6Reports&7] &cLe signalement _Report_ &cest invalide."
-  Invalid-player: "&7[&6Reports&7] &cVous avez indiqu\xe9 un joueur invalide &7(&e_Player_&7)&c."
+  Invalid-player: "&7[&6Reports&7] &cLe joueur &e_Player_ &cne s'est jamais connecté sur le serveur."
 Menus:
   Signalman: "&7Signaleur: &a_Player_"
   Reported: "&7Signal\xe9: &c_Player_"

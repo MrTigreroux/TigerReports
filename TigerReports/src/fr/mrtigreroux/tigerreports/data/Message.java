@@ -38,11 +38,11 @@ public enum Message {
 	REPORT_ONESELF("ErrorMessages.Report-oneself", "§7[§6Reports§7] §cVous ne pouvez pas vous signaler vous-même."),
 	REPORTED_OFFLINE("ErrorMessages.Reported-offline", "§7[§6Reports§7] §cVous ne pouvez pas signaler un joueur déconnecté §7(§e_Player_§7)§c."),
 	TOO_SHORT_REASON("ErrorMessages.Too-short-reason", "§7[§6Reports§7] §cVous avez indiqué une raison trop courte §7(§e_Reason_§7)§c."),
-	PLAYER_OFFLINE("ErrorMessages.Player-offline", "§7[§6Reports§7] §cLe joueur §e_Player_ §cn'est plus connecté."),
+	PLAYER_OFFLINE("ErrorMessages.Player-offline", "§7[§6Reports§7] §cLe joueur §e_Player_ §cn'est pas connecté."),
 	LOCATION_UNKNOWN("ErrorMessages.Location-unknown", "§7[§6Reports§7] §cLa position du joueur §e_Player_ §clors du signalement est inconnue."),
 	INVALID_REPORTNUMBER("ErrorMessages.Invalid-report-number", "§7[§6Reports§7] §cVous avez indiqué un numéro de signalement invalide §7(§e_Number_§7)§c."),
 	INVALID_REPORT("ErrorMessages.Invalid-report", "§7[§6Reports§7] §cLe signalement _Report_ §cest invalide."),
-	INVALID_PLAYER("ErrorMessages.Invalid-player", "§7[§6Reports§7] §cVous avez indiqué un joueur invalide §7(§e_Player_§7)§c."),
+	INVALID_PLAYER("ErrorMessages.Invalid-player", "§7[§6Reports§7] §cLe joueur §e_Player_ §cne s'est jamais connecté sur le serveur."),
 	
 	SIGNALMAN("Menus.Signalman", "§7Signaleur: §a_Player_"),
 	REPORTED("Menus.Reported", "§7Signalé: §c_Player_"),

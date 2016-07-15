@@ -62,12 +62,16 @@ public class ReportCommand implements CommandExecutor {
 		}
 		
 		Player r = UserUtils.getPlayer(reported);
-		if(ReportUtils.onlinePlayerRequired() && r == null) {
-			MessageUtils.sendErrorMessage(p, Message.REPORTED_OFFLINE.get().replaceAll("_Player_", reported));
-			return true;
-		}
-		
-		if(r.hasPermission(Permission.EXEMPT.get())) {
+		String ruuid = UserUtils.getUniqueId(reported);
+		if(r == null) {
+			if(!UserUtils.isValid(ruuid)) {
+				MessageUtils.sendErrorMessage(p, Message.INVALID_PLAYER.get().replaceAll("_Player_", reported));
+				return true;
+			} else if(ReportUtils.onlinePlayerRequired()) {
+				MessageUtils.sendErrorMessage(p, Message.REPORTED_OFFLINE.get().replaceAll("_Player_", reported));
+				return true;
+			}
+		} else if(r.hasPermission(Permission.EXEMPT.get())) {
 			MessageUtils.sendErrorMessage(p, Message.PERMISSION_REPORT.get().replaceAll("_Player_", reported));
 			return true;
 		}
@@ -82,13 +86,14 @@ public class ReportCommand implements CommandExecutor {
 		if(ConfigUtils.getLineBreakSymbol().length() >= 1) reason = reason.replaceAll(ConfigUtils.getLineBreakSymbol(), ConfigUtils.getLineBreakSymbol().substring(0, 1));
 		
 		int reportNumber = ReportUtils.getNewReportNumber();
-		if(reportNumber != -1) {
+		if(reportNumber == -1) MessageUtils.sendStaffMessage(Message.STAFF_MAX_REPORTS_REACHED.get().replaceAll("_Number_", ""+ReportUtils.getMaxReports()), ConfigUtils.getStaffSound());
+		else {
 			String reportPath = ReportUtils.getConfigPath(reportNumber);
 			ReportUtils.setStatus(reportNumber, Status.WAITING);
 			FilesManager.getReports.set(reportPath+".Appreciation", "None");
 			FilesManager.getReports.set(reportPath+".Date", MessageUtils.getNowDate());
 			FilesManager.getReports.set(reportPath+".Reason", reason);
-			FilesManager.getReports.set(reportPath+".Reported.UUID", UserUtils.getUniqueId(reported));
+			FilesManager.getReports.set(reportPath+".Reported.UUID", ruuid);
 			if(r != null) {
 				FilesManager.getReports.set(reportPath+".Reported.IP", r.getAddress().toString());
 				FilesManager.getReports.set(reportPath+".Reported.Gamemode", r.getGameMode().toString().toLowerCase());
@@ -111,7 +116,7 @@ public class ReportCommand implements CommandExecutor {
 			Location loc = p.getLocation();
 			FilesManager.getReports.set(reportPath+".Signalman.Location", loc.getWorld().getName()+":"+loc.getX()+"/"+loc.getY()+"/"+loc.getZ()+"/"+loc.getYaw()+"/"+loc.getPitch());
 			FilesManager.saveReports();
-		} else MessageUtils.sendStaffMessage(Message.STAFF_MAX_REPORTS_REACHED.get().replaceAll("_Number_", ""+ReportUtils.getMaxReports()), ConfigUtils.getStaffSound());
+		}
 		
 		TextComponent alert = new TextComponent(Message.ALERT.get().replaceAll("_Signalman_", ReportUtils.getPlayerName("Signalman", reportNumber, false)).replaceAll("_Reported_", ReportUtils.getPlayerName("Reported", reportNumber, !ReportUtils.onlinePlayerRequired())).replaceAll("_Reason_", reason));
 		alert.setColor(ChatColor.valueOf(MessageUtils.getLastColor(Message.ALERT.get(), "_Reason_").name()));

@@ -21,23 +21,16 @@ public class UserUtils {
 
 	@SuppressWarnings("deprecation")
 	public static String getUniqueId(String name) {
-		UUID uuid = null;
-		String uuidString = null;
 		try {
-			uuid = Bukkit.getPlayerExact(name).getUniqueId();
-			uuidString = uuid.toString();
+			return Bukkit.getPlayerExact(name).getUniqueId().toString();
 		} catch(Exception offlinePlayer) {
 			try {
-				uuid = Bukkit.getOfflinePlayer(name).getUniqueId();
-				uuidString = uuid.toString();
+				return Bukkit.getOfflinePlayer(name).getUniqueId().toString();
 			} catch(Exception invalidPlayer) {
 				Bukkit.getLogger().log(Level.WARNING, "TigerReports > L'UUID du pseudo <"+name+"> est introuvable.");
 				return null;
 			}
 		}
-		FilesManager.getData.set("Data."+uuid+".Name", name);
-		FilesManager.saveData();
-		return uuidString;
 	}
 	
 	public static String getName(String uuid) {
@@ -77,6 +70,11 @@ public class UserUtils {
 		} catch (Exception offlinePlayer) {
 			return null;
 		}
+	}
+	
+	public static boolean isValid(String uuid) {
+		System.out.println(uuid+", "+FilesManager.getData.get("Data."+uuid+".Name"));
+		return FilesManager.getData.get("Data."+uuid+".Name") != null;
 	}
 	
 	public static boolean isOnline(String name) {

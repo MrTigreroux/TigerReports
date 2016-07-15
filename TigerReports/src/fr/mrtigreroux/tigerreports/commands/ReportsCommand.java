@@ -77,7 +77,7 @@ public class ReportsCommand implements CommandExecutor {
 		} else if(args.length == 2) {
 			Player t = UserUtils.getPlayer(args[1]);
 			if(t == null) {
-				MessageUtils.sendErrorMessage(s, Message.INVALID_PLAYER.get().replaceAll("_Player_", args[1]));
+				MessageUtils.sendErrorMessage(s, Message.PLAYER_OFFLINE.get().replaceAll("_Player_", args[1]));
 				return true;
 			}
 			
