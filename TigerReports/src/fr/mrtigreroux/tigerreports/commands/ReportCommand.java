@@ -56,7 +56,7 @@ public class ReportCommand implements CommandExecutor {
 		}
 		
 		String reported = args[0];
-		if(!reported.equalsIgnoreCase(p.getName())) {
+		if(reported.equalsIgnoreCase(p.getName())) {
 			MessageUtils.sendErrorMessage(p, Message.REPORT_ONESELF.get());
 			return true;
 		}
