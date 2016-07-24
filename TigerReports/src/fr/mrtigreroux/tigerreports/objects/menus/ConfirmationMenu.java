@@ -22,7 +22,7 @@ import fr.mrtigreroux.tigerreports.utils.ReportUtils;
 public class ConfirmationMenu extends Menu {
 	
 	public ConfirmationMenu(User u, int reportNumber, String action) {
-		super(u, 27, 0, reportNumber, action);
+		super(u, 27, 0, reportNumber, action, null);
 	}
 	
 	@Override

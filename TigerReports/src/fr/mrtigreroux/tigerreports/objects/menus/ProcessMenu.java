@@ -24,7 +24,7 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
 public class ProcessMenu extends Menu {
 	
 	public ProcessMenu(User u, int reportNumber) {
-		super(u, 27, 0, reportNumber);
+		super(u, 27, 0, reportNumber, null, null);
 	}
 	
 	@Override

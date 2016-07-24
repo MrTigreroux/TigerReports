@@ -22,7 +22,7 @@ public class InventoryListener implements Listener {
 
 	private boolean isReportMenu(Inventory inv) {
 		String title = inv.getTitle();
-		for(Message message : Arrays.asList(Message.REPORTS_TITLE, Message.REPORT_TITLE, Message.COMMENTS_TITLE, Message.CONFIRM_ARCHIVE_TITLE, Message.CONFIRM_REMOVE_TITLE, Message.PROCESS_TITLE, Message.USER_TITLE))
+		for(Message message : Arrays.asList(Message.REASON_TITLE, Message.REPORTS_TITLE, Message.REPORT_TITLE, Message.COMMENTS_TITLE, Message.CONFIRM_ARCHIVE_TITLE, Message.CONFIRM_REMOVE_TITLE, Message.PROCESS_TITLE, Message.USER_TITLE))
 			if(title.startsWith(message.get().replaceAll("_Page_", "").replaceAll("_Report_", "").replaceAll("_Target_", ""))) return true;
 		return false;
 	}

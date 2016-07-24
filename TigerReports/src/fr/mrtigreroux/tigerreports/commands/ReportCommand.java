@@ -50,13 +50,13 @@ public class ReportCommand implements CommandExecutor {
 			return true;
 		}
 		
-		if(args.length <= 1) {
-			s.sendMessage(Message.INVALID_SYNTAX.get().replaceAll("_Command_", "/"+label+" <joueur> <raison>"));
+		if(args.length == 0 || (args.length == 1 && !ConfigUtils.exist(FilesManager.getConfig, "Config.DefaultReasons.Reason1"))) {
+			s.sendMessage(Message.INVALID_SYNTAX.get().replaceAll("_Command_", "/"+label+" "+Message.REPORT_SYNTAX.get()));
 			return true;
 		}
 		
 		String reported = args[0];
-		if(reported.equalsIgnoreCase(p.getName())) {
+		if(!reported.equalsIgnoreCase(p.getName())) {
 			MessageUtils.sendErrorMessage(p, Message.REPORT_ONESELF.get());
 			return true;
 		}
@@ -73,6 +73,11 @@ public class ReportCommand implements CommandExecutor {
 			}
 		} else if(r.hasPermission(Permission.EXEMPT.get())) {
 			MessageUtils.sendErrorMessage(p, Message.PERMISSION_REPORT.get().replaceAll("_Player_", reported));
+			return true;
+		}
+		
+		if(args.length == 1) {
+			u.openReasonMenu(1, reported);
 			return true;
 		}
 		

@@ -16,6 +16,7 @@ public enum MenuItem {
 	PAGE_SWITCH_PREVIOUS(0, Material.FEATHER, Message.PAGE_SWITCH_PREVIOUS.get()),
 	PAGE_SWITCH_NEXT(0, Material.FEATHER, Message.PAGE_SWITCH_NEXT.get()),
 
+	REASONS_ICON(0, Material.BOOK, Message.REASONS.get()),
 	REPORTS_ICON(0, Material.BOOKSHELF, Message.REPORTS.get()),
 	PUNISH_ABUSE(22, Material.GOLD_AXE, Message.PUNISH_ABUSE.get(), true),
 	DATA(26, Material.ENCHANTED_BOOK, Message.DATA.get()),

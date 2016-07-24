@@ -27,7 +27,7 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
 public class CommentsMenu extends Menu {
 	
 	public CommentsMenu(User u, int page, int reportNumber) {
-		super(u, 54, page, reportNumber);
+		super(u, 54, page, reportNumber, null, null);
 	}
 	
 	@Override

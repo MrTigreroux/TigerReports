@@ -24,7 +24,7 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
 public class UserMenu extends Menu {
 	
 	public UserMenu(User u, String target) {
-		super(u, 54, target);
+		super(u, 54, 0, 0, null, target);
 	}
 	
 	@Override

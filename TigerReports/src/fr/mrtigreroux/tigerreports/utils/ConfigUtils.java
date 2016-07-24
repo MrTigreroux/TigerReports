@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 
@@ -27,6 +28,10 @@ public class ConfigUtils {
 	
 	public static String getLineBreakSymbol() {
 		return FilesManager.getConfig.get("Config.LineBreakSymbol") != null ? FilesManager.getConfig.getString("Config.LineBreakSymbol") : "//";
+	}
+	
+	public static boolean exist(ConfigurationSection config, String path) {
+		return config.get(path) != null;
 	}
 
 	public static Sound getSound(String type, String default1, String default2) {
@@ -58,6 +63,25 @@ public class ConfigUtils {
 
 	public static Sound getStaffSound() {
 		return getSound("StaffSound", "ITEM_PICKUP", "ENTITY_ITEM_PICKUP");
+	}
+
+	public static Material getMaterial(ConfigurationSection config, String path) {
+		String icon = config.getString(path);
+		return icon != null && icon.startsWith("Material-") ? Material.matchMaterial(icon.split("-")[1].toUpperCase().replaceAll(":"+getDamage(config, path), "")) : null;
+	}
+
+	public static short getDamage(ConfigurationSection config, String path) {
+		try {
+			String icon = config.getString(path);
+			return icon != null && icon.startsWith("Material-") && icon.contains(":") ? Short.parseShort(icon.split(":")[1]) : 0;
+		} catch(Exception NoDamage) {
+			return 0;
+		}
+	}
+	
+	public static String getSkull(ConfigurationSection config, String path) {
+		String icon = config.getString(path);
+		return icon != null && icon.startsWith("Skull-") ? icon.split("-")[1] : null;
 	}
 	
 }

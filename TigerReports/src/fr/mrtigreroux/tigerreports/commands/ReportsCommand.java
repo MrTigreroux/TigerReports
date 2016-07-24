@@ -74,7 +74,7 @@ public class ReportsCommand implements CommandExecutor {
 					MessageUtils.sendErrorMessage(s, Message.INVALID_REPORTNUMBER.get().replaceAll("_Number_", args[0]));
 				}
 			}
-		} else if(args.length == 2) {
+		} else if(args.length == 2 && args[0].equalsIgnoreCase("stopcooldown") || args[0].equalsIgnoreCase("user")) {
 			Player t = UserUtils.getPlayer(args[1]);
 			if(t == null) {
 				MessageUtils.sendErrorMessage(s, Message.PLAYER_OFFLINE.get().replaceAll("_Player_", args[1]));
@@ -83,7 +83,7 @@ public class ReportsCommand implements CommandExecutor {
 			
 			if(args[0].equalsIgnoreCase("stopcooldown")) new User(t).stopCooldown(p.getName());
 			else if(args[0].equalsIgnoreCase("user")) u.openUserMenu(t.getUniqueId().toString());
-		} else s.sendMessage(Message.INVALID_SYNTAX.get().replaceAll("_Command_", "/"+label+" (reload / notify / archiveall / #<numéro du signalement> / stopcooldown) (joueur)"));
+		} else s.sendMessage(Message.INVALID_SYNTAX.get().replaceAll("_Command_", "/"+label+" "+Message.REPORTS_SYNTAX.get()));
 		return true;
 	}
 

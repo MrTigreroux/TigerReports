@@ -21,33 +21,19 @@ public abstract class Menu {
 	protected User u;
 	protected Player p;
 	protected int size;
-	protected int page = 0;
-	protected int reportNumber = 0;
+	protected int page;
+	protected int reportNumber;
 	protected String action;
-	protected String target = null;
-
-	public Menu(User u, int size, String target) {
-		this.u = u;
-		this.p = u.getPlayer();
-		this.size = size;
-		this.target = target;
-	}
+	protected String target;
 	
-	public Menu(User u, int size, int page) {
-		this(u, size, page, 0);
-	}
-	
-	public Menu(User u, int size, int page, int reportNumber) {
-		this(u, size, page, reportNumber, null);
-	}
-	
-	public Menu(User u, int size, int page, int reportNumber, String action) {
+	public Menu(User u, int size, int page, int reportNumber, String action, String target) {
 		this.u = u;
 		this.p = u.getPlayer();
 		this.size = size;
 		this.page = page;
 		this.reportNumber = reportNumber;
 		this.action = action;
+		this.target = target;
 	}
 	
 	public Inventory getInventory(String title, boolean borders) {

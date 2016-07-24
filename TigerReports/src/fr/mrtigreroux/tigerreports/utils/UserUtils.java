@@ -73,7 +73,6 @@ public class UserUtils {
 	}
 	
 	public static boolean isValid(String uuid) {
-		System.out.println(uuid+", "+FilesManager.getData.get("Data."+uuid+".Name"));
 		return FilesManager.getData.get("Data."+uuid+".Name") != null;
 	}
 	

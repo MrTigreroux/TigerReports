@@ -19,6 +19,7 @@ import fr.mrtigreroux.tigerreports.objects.menus.ProcessMenu;
 import fr.mrtigreroux.tigerreports.objects.menus.CommentsMenu;
 import fr.mrtigreroux.tigerreports.objects.menus.ConfirmationMenu;
 import fr.mrtigreroux.tigerreports.objects.menus.Menu;
+import fr.mrtigreroux.tigerreports.objects.menus.ReasonMenu;
 import fr.mrtigreroux.tigerreports.objects.menus.ReportMenu;
 import fr.mrtigreroux.tigerreports.objects.menus.ReportsMenu;
 import fr.mrtigreroux.tigerreports.objects.menus.UserMenu;
@@ -63,6 +64,10 @@ public class User {
 		p.sendMessage(Message.COOLDOWN_STOPPED.get());
 		FilesManager.getData.set("Data."+uuid+".Cooldown", null);
 		FilesManager.saveData();
+	}
+
+	public void openReasonMenu(int page, String target) {
+		new ReasonMenu(this, page, target).open(true);
 	}
 
 	public void openReportsMenu(int page, boolean sound) {

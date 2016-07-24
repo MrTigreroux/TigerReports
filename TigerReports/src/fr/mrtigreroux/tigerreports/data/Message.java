@@ -44,6 +44,10 @@ public enum Message {
 	INVALID_REPORT("ErrorMessages.Invalid-report", "§7[§6Reports§7] §cLe signalement _Report_ §cest invalide."),
 	INVALID_PLAYER("ErrorMessages.Invalid-player", "§7[§6Reports§7] §cLe joueur §e_Player_ §cne s'est jamais connecté sur le serveur."),
 	
+	REASON_TITLE("Menus.Reason-title", "§6Signaler §7> §e_Target_"),
+	REASONS("Menus.Reasons", "§eMotifs de signalement"),
+	REASON("Menus.Reason", "§7Signaler pour: §e_Reason_"),
+	REASON_DETAILS("Menus.Reason-details", "//§6Clic §7pour signaler le joueur §c_Player_//§7avec le motif: §e_Reason_§7."),
 	SIGNALMAN("Menus.Signalman", "§7Signaleur: §a_Player_"),
 	REPORTED("Menus.Reported", "§7Signalé: §c_Player_"),
 	REPORT("Menus.Report", "_Report_"),
@@ -150,7 +154,9 @@ public enum Message {
 	SPECTATOR("Words.Spectator", "§7spectateur"),
 	PRIVATE("Words.Private", "§cPrivé"),
 	SENT("Words.Sent", "§6Envoyé"),
-	READ("Words.Read", "§aLu");
+	READ("Words.Read", "§aLu"),
+	REPORT_SYNTAX("Words.Report-syntax", "<joueur> (raison)"),
+	REPORTS_SYNTAX("Words.Reports-syntax", "(reload / notify / archiveall / #<numéro du signalement> / stopcooldown) (joueur)");
 	
 	private final String path;
 	private final String defaultMessage;

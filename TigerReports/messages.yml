@@ -33,6 +33,10 @@ ErrorMessages:
   Invalid-report: "&7[&6Reports&7] &cLe signalement _Report_ &cest invalide."
   Invalid-player: "&7[&6Reports&7] &cLe joueur &e_Player_ &cne s'est jamais connecté sur le serveur."
 Menus:
+  Reason-title: "&6Signaler &7> &e_Target_"
+  Reasons: "&eMotifs de signalement"
+  Reason: "&7Signaler pour: &e_Reason_"
+  Reason-details: "//&6Clic &7pour signaler le joueur &c_Player_//&7avec le motif: &e_Reason_&7."
   Signalman: "&7Signaleur: &a_Player_"
   Reported: "&7Signal\xe9: &c_Player_"
   Report: "_Report_"
@@ -140,3 +144,5 @@ Words:
   Private: "&cPrivé"
   Sent: "&6Envoyé"
   Read: "&aLu"
+  Report-syntax: "<joueur> (raison)"
+  Reports-syntax: "(reload / notify / archiveall / #<numéro du signalement> / stopcooldown) (joueur)"
