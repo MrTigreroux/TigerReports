@@ -41,15 +41,14 @@ public class ReportMenu extends Menu {
 		}
 		Inventory inv = getInventory(Message.REPORT_TITLE.get().replaceAll("_Report_", ReportUtils.getName(reportNumber)), true);
 		inv.setItem(0, MenuItem.REPORTS_ICON.getWithDetails(Message.REPORTS_DETAILS.get()));
-		ItemStack report = ReportUtils.getItem(reportNumber, null);
-		inv.setItem(4, report);
-		inv.setItem(18, report);
+		inv.setItem(4, ReportUtils.getItem(reportNumber, null));
+		inv.setItem(18, ReportUtils.getItem(reportNumber, Message.REPORT_CHAT_ACTION.get()));
 		
 		inv.setItem(MenuItem.PUNISH_ABUSE.getPosition(), MenuItem.PUNISH_ABUSE.getWithDetails(Message.PUNISH_ABUSE_DETAILS.get().replaceAll("_Player_", ReportUtils.getPlayerName("Signalman", reportNumber, false).replaceAll("_Time_", MessageUtils.convertToSentence(ReportUtils.getPunishSeconds())))));
 		for(String type : new String[]{"Signalman", "Reported"}) {
 			String name = ReportUtils.getPlayerName(type, reportNumber, false);
 			inv.setItem(type.equals("Signalman") ? 21 : 23, new CustomItem().skullOwner(name).name(Message.valueOf(type.toUpperCase()).get().replaceAll("_Player_", ReportUtils.getPlayerName(type, reportNumber, true)))
-					.lore(((UserUtils.isOnline(name) ? Message.TELEPORT_TO_CURRENT_POSITION.get() : Message.CAN_NOT_TELEPORT_TO_CURRENT_POSITION.get()).replaceAll("_Player_", name)+(ReportUtils.getOldLocation(type, reportNumber) != null ? Message.TELEPORT_TO_OLD_POSITION.get() : Message.CAN_NOT_TELEPORT_TO_OLD_POSITION.get()).replaceAll("_Player_", name)).split(ConfigUtils.getLineBreakSymbol())).create());
+					.lore(u.hasPermission(Permission.TELEPORT) ? ((UserUtils.isOnline(name) ? Message.TELEPORT_TO_CURRENT_POSITION.get() : Message.CAN_NOT_TELEPORT_TO_CURRENT_POSITION.get()).replaceAll("_Player_", name)+(ReportUtils.getOldLocation(type, reportNumber) != null ? Message.TELEPORT_TO_OLD_POSITION.get() : Message.CAN_NOT_TELEPORT_TO_OLD_POSITION.get()).replaceAll("_Player_", name)).split(ConfigUtils.getLineBreakSymbol()) : null).create());
 		}
 		
 		inv.setItem(MenuItem.DATA.getPosition(), MenuItem.DATA.getWithDetails(ReportUtils.getData(reportNumber, u.hasPermission(Permission.ADVANCED))));
@@ -82,64 +81,67 @@ public class ReportMenu extends Menu {
 			if(reportNumber >= totalSounds) reportNumber = 1;
 			if(reportNumber < 1) reportNumber = totalSounds-1;
 			u.openReportMenu(reportNumber);
-		} else if(slot >= 18 && slot <= size-9) {
-			if(slot == MenuItem.PUNISH_ABUSE.getPosition()) {
-				long seconds = ReportUtils.getPunishSeconds();
-				String signalman = ReportUtils.getPlayerName("Signalman", reportNumber, false);
-				if(!UserUtils.isOnline(signalman)) {
-					MessageUtils.sendErrorMessage(p, Message.PLAYER_OFFLINE.get().replaceAll("_Player_", signalman));
+		} else if(slot == 18) {
+			for(String line : ReportUtils.implementDetails(reportNumber, Message.REPORT_CHAT_DETAILS.get()).replaceAll("_Report_", ReportUtils.getName(reportNumber)).split(ConfigUtils.getLineBreakSymbol()))
+				p.sendMessage(line);
+			p.playSound(p.getLocation(), ConfigUtils.getMenuSound(), 1, 1);
+			p.closeInventory();
+			return;
+		} else if(slot == MenuItem.PUNISH_ABUSE.getPosition()) {
+			long seconds = ReportUtils.getPunishSeconds();
+			String signalman = ReportUtils.getPlayerName("Signalman", reportNumber, false);
+			if(!UserUtils.isOnline(signalman)) {
+				MessageUtils.sendErrorMessage(p, Message.PLAYER_OFFLINE.get().replaceAll("_Player_", signalman));
+				return;
+			}
+			Player s = UserUtils.getPlayer(signalman);
+			new User(s).startCooldown(seconds);
+			String time = MessageUtils.convertToSentence(seconds);
+			s.sendMessage(Message.PUNISHED.get().replaceAll("_Time_", time));
+			MessageUtils.sendStaffMessage(Message.STAFF_PUNISH.get().replaceAll("_Player_", p.getName()).replaceAll("_Signalman_", s.getName()).replaceAll("_Time_", time), ConfigUtils.getStaffSound());
+			ReportUtils.setAppreciation(reportNumber, "False");
+			ReportUtils.setStatus(reportNumber, Status.DONE);
+			u.openReportsMenu(1, false);
+		} else if(slot == MenuItem.REMOVE.getPosition()) u.openConfirmationMenu(reportNumber, "REMOVE");
+		else if(slot == MenuItem.COMMENTS.getPosition()) u.openCommentsMenu(1, reportNumber);
+		else if(slot == 21 || slot == 23) {
+			if(!u.hasPermission(Permission.TELEPORT)) return;
+			String type = slot == 21 ? "Signalman" : "Reported";
+			String name = ReportUtils.getPlayerName(type, reportNumber, false);
+			Player t = UserUtils.getPlayer(name);
+			String locType;
+			Location loc;
+			if(click.toString().contains("LEFT")) {
+				if(t == null) {
+					MessageUtils.sendErrorMessage(p, Message.PLAYER_OFFLINE.get().replaceAll("_Player_", name));
 					return;
 				}
-				Player s = UserUtils.getPlayer(signalman);
-				new User(s).startCooldown(seconds);
-				String time = MessageUtils.convertToSentence(seconds);
-				s.sendMessage(Message.PUNISHED.get().replaceAll("_Time_", time));
-				MessageUtils.sendStaffMessage(Message.STAFF_PUNISH.get().replaceAll("_Player_", p.getName()).replaceAll("_Signalman_", s.getName()).replaceAll("_Time_", time), ConfigUtils.getStaffSound());
-				ReportUtils.setAppreciation(reportNumber, "False");
-				ReportUtils.setStatus(reportNumber, Status.DONE);
-				u.openReportsMenu(1, false);
-			} else if(slot == MenuItem.REMOVE.getPosition()) u.openConfirmationMenu(reportNumber, "REMOVE");
-			else if(slot == MenuItem.COMMENTS.getPosition()) u.openCommentsMenu(1, reportNumber);
-			else if(slot == 21 || slot == 23) {
-				String type = slot == 21 ? "Signalman" : "Reported";
-				String name = ReportUtils.getPlayerName(type, reportNumber, false);
-				Player t = UserUtils.getPlayer(name);
-				String locType;
-				Location loc;
-				if(click.toString().contains("LEFT")) {
-					if(t == null) {
-						MessageUtils.sendErrorMessage(p, Message.PLAYER_OFFLINE.get().replaceAll("_Player_", name));
-						return;
-					}
-					loc = t.getLocation();
-					locType = "CURRENT";
-				} else if(click.toString().contains("RIGHT")){
-					loc = ReportUtils.getOldLocation(type, reportNumber);
-					if(loc == null) {
-						MessageUtils.sendErrorMessage(p, Message.LOCATION_UNKNOWN.get().replaceAll("_Player_", name));
-						return;
-					}
-					locType = "OLD";
-				} else return;
-				p.teleport(loc);
-				p.playSound(p.getLocation(), ConfigUtils.getTeleportSound(), 1, 1);
-				p.sendMessage(Message.valueOf("TELEPORT_"+locType+"_LOCATION").get().replaceAll("_Player_", Message.valueOf(type.toUpperCase()+"_NAME").get().replaceAll("_Player_", name)));
-			} else if(u.hasPermission(Permission.ARCHIVE)) {
-				if(slot >= 29 && slot <= 31) {
-					ReportUtils.setStatus(reportNumber, Arrays.asList(Status.values()).get(slot-29));
-					if(!u.hasPermission(Permission.ADVANCED) && slot == 31) u.openReportsMenu(1, true);
-					else open(true);
-				} else if(slot == 32) u.openAppreciationMenu(reportNumber);
-				else if(slot == 33) u.openConfirmationMenu(reportNumber, "ARCHIVE");
-			} else {
-				if(slot == 29 || slot == 30 || slot == 32) {
-					if(slot == 32) slot = 31;
-					ReportUtils.setStatus(reportNumber, Arrays.asList(Status.values()).get(slot-29));
-					if(!u.hasPermission(Permission.ADVANCED) && slot == 31) u.openReportsMenu(1, true);
-					else open(true);
-				} else if(slot == 33) u.openAppreciationMenu(reportNumber);
-			}
-		}
+				loc = t.getLocation();
+				locType = "CURRENT";
+			} else if(click.toString().contains("RIGHT")){
+				loc = ReportUtils.getOldLocation(type, reportNumber);
+				if(loc == null) {
+					MessageUtils.sendErrorMessage(p, Message.LOCATION_UNKNOWN.get().replaceAll("_Player_", name));
+					return;
+				}
+				locType = "OLD";
+			} else return;
+			p.teleport(loc);
+			p.playSound(p.getLocation(), ConfigUtils.getTeleportSound(), 1, 1);
+			p.sendMessage(Message.valueOf("TELEPORT_"+locType+"_LOCATION").get().replaceAll("_Player_", Message.valueOf(type.toUpperCase()+"_NAME").get().replaceAll("_Player_", name)));
+		} else if(u.hasPermission(Permission.ARCHIVE)) {
+			if(slot >= 29 && slot <= 31) {
+				ReportUtils.setStatus(reportNumber, Arrays.asList(Status.values()).get(slot-29));
+				if(!u.hasPermission(Permission.ADVANCED) && slot == 31) u.openReportsMenu(1, true);
+				else open(true);
+			} else if(slot == 32) u.openAppreciationMenu(reportNumber);
+			else if(slot == 33) u.openConfirmationMenu(reportNumber, "ARCHIVE");
+		} else if(slot == 29 || slot == 30 || slot == 32) {
+			if(slot == 32) slot = 31;
+			ReportUtils.setStatus(reportNumber, Arrays.asList(Status.values()).get(slot-29));
+			if(!u.hasPermission(Permission.ADVANCED) && slot == 31) u.openReportsMenu(1, true);
+			else open(true);
+		} else if(slot == 33) u.openAppreciationMenu(reportNumber);
 	}
 	
 }

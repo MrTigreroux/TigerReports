@@ -6,7 +6,7 @@ package fr.mrtigreroux.tigerreports.data;
 
 public enum Permission {
 
-	REPORT, STAFF, EXEMPT, ARCHIVE, REMOVE, ADVANCED, MANAGE;
+	REPORT, STAFF, TELEPORT, EXEMPT, ARCHIVE, REMOVE, ADVANCED, MANAGE;
 	
 	public String get() {
 		return "tigerreports."+toString().toLowerCase();

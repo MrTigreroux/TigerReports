@@ -159,10 +159,14 @@ public class ReportUtils {
 	public static ItemStack getItem(int reportNumber, String actions) {
 		Status status = getStatus(reportNumber);
 		return new CustomItem().type(status.getMaterial()).hideFlags(true).glow(status.equals(Status.WAITING)).name(Message.REPORT.get().replaceAll("_Report_", getName(reportNumber)))
-				.lore(Message.REPORT_DETAILS.get().replaceAll("_Status_", status.getWord()+(status.equals(Status.DONE) ? Message.APPRECIATION_SUFFIX.get().replaceAll("_Appreciation_", getAppreciation(reportNumber)) : ""))
-						.replaceAll("_Date_", getDate(reportNumber)).replaceAll("_Signalman_", getPlayerName("Signalman", reportNumber, true)).replaceAll("_Reported_", getPlayerName("Reported", reportNumber, true))
-						.replaceAll("_Reason_", MessageUtils.getMenuSentence(FilesManager.getReports.getString(getConfigPath(reportNumber)+".Reason"), Message.REPORT_DETAILS, "_Reason_", true))
-						.replaceAll("_Actions_", actions != null ? actions : "").split(ConfigUtils.getLineBreakSymbol())).create();
+				.lore(implementDetails(reportNumber, Message.REPORT_DETAILS.get()).replaceAll("_Actions_", actions != null ? actions : "").split(ConfigUtils.getLineBreakSymbol())).create();
+	}
+	
+	public static String implementDetails(int reportNumber, String message) {
+		Status status = getStatus(reportNumber);
+		return message.replaceAll("_Status_", status.getWord()+(status.equals(Status.DONE) ? Message.APPRECIATION_SUFFIX.get().replaceAll("_Appreciation_", getAppreciation(reportNumber)) : ""))
+				.replaceAll("_Date_", getDate(reportNumber)).replaceAll("_Signalman_", getPlayerName("Signalman", reportNumber, true)).replaceAll("_Reported_", getPlayerName("Reported", reportNumber, true))
+				.replaceAll("_Reason_", MessageUtils.getMenuSentence(FilesManager.getReports.getString(getConfigPath(reportNumber)+".Reason"), Message.REPORT_DETAILS, "_Reason_", true));
 	}
 	
 	public static void remove(int reportNumber) {

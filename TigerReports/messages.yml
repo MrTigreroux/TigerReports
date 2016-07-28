@@ -17,6 +17,7 @@ Messages:
   Cooldown-stopped: "&7[&6Reports&7] &eLe temps d'attente avant votre prochain signalement vient d'être retir\xe9, vous pouvez maintenant utiliser la commande &b/report&e."
   Notifications: "&7[&6Reports&7] &eLes notifications de signalements ont \xe9t\xe9 _State_&e."
   Comment-notification: "&7[&6Reports&7] _Player_ &ea répondu à votre signalement de &c_Reported_ &ed'il y a _Time_: &6_Message_&e."
+  Report-chat-details: "§7§m---------------------------------------------------//§r                              _Report_//§7§m---------------------------------------------------//§7Statut: _Status_ §7| Date: §e_Date_//§7Signaleur: §a_Signalman_ §7| §7Signalé: §c_Reported_//§7Raison: §6_Reason_//§7§m---------------------------------------------------//"
 ErrorMessages:
   Invalid-syntax: "&7[&6Reports&7] &eVeuillez d\xe9tailler votre commande tel que &b_Command_&e."
   Permission-command: "&7[&6Reports&7] &cVous n'avez pas acc\u00E8s \u00E0 cette commande."
@@ -47,6 +48,7 @@ Menus:
   Reports: "&eSignalements"
   Reports-details: "//&6Clic &7pour afficher tous les signalements."
   Report-title: "&6Report &7> &e_Report_"
+  Report-chat-action: "// //§6Clic gauche §7pour afficher//§7dans le chat."
   Teleport-to-current-position: "//&6Clic gauche &7pour vous t\xe9l\xe9porter \u00E0 la//&7position actuelle du joueur &e_Player_&7."
   Can-not-teleport-to-current-position: "//&6&mClic gauche &7&mpour vous t\xe9l\xe9porter \u00E0 la//&7&mposition actuelle du joueur &e&m_Player_&7&m."
   Teleport-to-old-position: "//&6Clic droit &7pour vous t\xe9l\xe9porter \u00E0 l'ancienne//&7position du joueur &e_Player_&7."

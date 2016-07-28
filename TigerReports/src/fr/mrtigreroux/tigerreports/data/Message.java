@@ -28,6 +28,7 @@ public enum Message {
 	COOLDOWN_STOPPED("Messages.Cooldown-stopped", "§7[§6Reports§7] §eLe temps d'attente avant votre prochain signalement vient d'être retiré, vous pouvez maintenant utiliser la commande §b/report§e."),
 	NOTIFICATIONS("Messages.Notifications", "§7[§6Reports§7] §eLes notifications de signalements ont été _State_§e."),
 	COMMENT_NOTIFICATION("Messages.Comment-notification", "§7[§6Reports§7] _Player_ §ea répondu à votre signalement de §c_Reported_ §ed'il y a _Time_: §6_Message_§e."),
+	REPORT_CHAT_DETAILS("Messages.Report-chat-details", "§7§m---------------------------------------------------//§r                              _Report_//§7§m---------------------------------------------------//§7Statut: _Status_ §7| Date: §e_Date_//§7Signaleur: §a_Signalman_ §7| §7Signalé: §c_Reported_//§7Raison: §6_Reason_//§7§m---------------------------------------------------//"),
 	
 	INVALID_SYNTAX("ErrorMessages.Invalid-syntax", "§7[§6Reports§7] §eVeuillez détailler votre commande tel que §b_Command_§e."),
 	PERMISSION_COMMAND("ErrorMessages.Permission-command", "§7[§6Reports§7] §cVous n'avez pas accès à cette commande."),
@@ -58,6 +59,7 @@ public enum Message {
 	REPORTS("Menus.Reports", "§eSignalements"),
 	REPORTS_DETAILS("Menus.Reports-details", "//§6Clic §7pour afficher tous les signalements."),
 	REPORT_TITLE("Menus.Report-title", "§6Report §7> §e_Report_"),
+	REPORT_CHAT_ACTION("Menus.Report-chat-action", "// //§6Clic gauche §7pour afficher//§7dans le chat."),
 	TELEPORT_TO_CURRENT_POSITION("Menus.Teleport-to-current-position", "//§6Clic gauche §7pour vous téléporter à la//§7position actuelle du joueur §e_Player_§7."),
 	CAN_NOT_TELEPORT_TO_CURRENT_POSITION("Menus.Can-not-teleport-to-current-position", "//§6§mClic gauche §7§mpour vous téléporter à la//§7§mposition actuelle du joueur §e§m_Player_§7§m."),
 	TELEPORT_TO_OLD_POSITION("Menus.Teleport-to-old-position", "//§6Clic droit §7pour vous téléporter à l'ancienne//§7position du joueur §e_Player_§7."),
