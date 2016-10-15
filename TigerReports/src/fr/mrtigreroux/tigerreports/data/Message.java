@@ -28,7 +28,8 @@ public enum Message {
 	COOLDOWN_STOPPED("Messages.Cooldown-stopped", "§7[§6Reports§7] §eLe temps d'attente avant votre prochain signalement vient d'être retiré, vous pouvez maintenant utiliser la commande §b/report§e."),
 	NOTIFICATIONS("Messages.Notifications", "§7[§6Reports§7] §eLes notifications de signalements ont été _State_§e."),
 	COMMENT_NOTIFICATION("Messages.Comment-notification", "§7[§6Reports§7] _Player_ §ea répondu à votre signalement de §c_Reported_ §ed'il y a _Time_: §6_Message_§e."),
-	REPORT_CHAT_DETAILS("Messages.Report-chat-details", "§7§m---------------------------------------------------//§r                              _Report_//§7§m---------------------------------------------------//§7Statut: _Status_ §7| Date: §e_Date_//§7Signaleur: §a_Signalman_ §7| §7Signalé: §c_Reported_//§7Raison: §6_Reason_//§7§m---------------------------------------------------//"),
+	REPORT_CHAT_DETAILS("Messages.Report-chat-details", "§7§m---------------------------------------------------//§r                              _Report_//§7§m---------------------------------------------------//§7Statut: _Status_ §7| Date: §e_Date_//§7Signaleur: §a_Signalman_ §7| §7Signalé: §c_Reported_//§7Raison: §6_Reason_//§7§m---------------------------------------------------"),
+	REPORT_MESSAGES_HISTORY("Messages.Report-messages-history", "§7§m---------------------------------------------------//§r              _Report_ §7> §eHistorique des messages//§7§m---------------------------------------------------//§eMessages du joueur signalé §c_Reported_§e://_ReportedMessages_// //§eMessages du joueur signaleur §a_Signalman_§e://_SignalmanMessages_§7§m---------------------------------------------------"),
 	
 	INVALID_SYNTAX("ErrorMessages.Invalid-syntax", "§7[§6Reports§7] §eVeuillez détailler votre commande tel que §b_Command_§e."),
 	PERMISSION_COMMAND("ErrorMessages.Permission-command", "§7[§6Reports§7] §cVous n'avez pas accès à cette commande."),
@@ -71,7 +72,7 @@ public enum Message {
 	ARCHIVE("Menus.Archive", "§8Archiver le signalement"),
 	ARCHIVE_DETAILS("Menus.Archive-details", "//§6Clic §7pour archiver le signalement."),
 	DATA("Menus.Data", "§eDonnées collectées"),
-	DATA_DETAILS("Menus.Data-details", "//§eSignalé: §c_Reported_//_DefaultData_//_AdvancedData_"),
+	DATA_DETAILS("Menus.Data-details", "//§eSignalé: §c_Reported_//_DefaultData_//_AdvancedData_// //§6Clic gauche §7pour afficher l'historique//§7des messages."),
 	DEFAULT_DATA("Menus.Default-data", " §7Gamemode: _Gamemode_§7,  §7Au sol: _OnGround_// §7Sneak: _Sneak_§7,  §7Sprint: _Sprint_// §7Vie: §c_Health_§7,  §7Nourriture: §6_Food_// §7Effets: _Effects_"),
 	PLAYER_WAS_OFFLINE("Menus.Player-was-offline", "§7Le joueur était déconnecté lors//§7du signalement."),
 	EFFECT("Menus.Effect", "// §7- §b_Type_ _Amplifier_ §7(§8_Duration_ secondes§7)"),

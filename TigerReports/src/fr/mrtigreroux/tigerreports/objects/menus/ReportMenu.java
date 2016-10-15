@@ -102,6 +102,12 @@ public class ReportMenu extends Menu {
 			ReportUtils.setAppreciation(reportNumber, "False");
 			ReportUtils.setStatus(reportNumber, Status.DONE);
 			u.openReportsMenu(1, false);
+		} else if(slot == MenuItem.DATA.getPosition()) {
+			String messagesHistory = Message.REPORT_MESSAGES_HISTORY.get();
+			for(String type : Arrays.asList("Reported", "Signalman")) messagesHistory = messagesHistory.replaceAll("_"+type+"_", ReportUtils.getPlayerName(type, reportNumber, false)).replaceAll("_"+type+"Messages_", ReportUtils.getMessagesHistory(type, reportNumber));
+			p.sendMessage(messagesHistory.replaceAll("_Report_", ReportUtils.getName(reportNumber)).split(ConfigUtils.getLineBreakSymbol()));
+			p.playSound(p.getLocation(), ConfigUtils.getMenuSound(), 1, 1);
+			p.closeInventory();
 		} else if(slot == MenuItem.REMOVE.getPosition()) u.openConfirmationMenu(reportNumber, "REMOVE");
 		else if(slot == MenuItem.COMMENTS.getPosition()) u.openCommentsMenu(1, reportNumber);
 		else if(slot == 21 || slot == 23) {

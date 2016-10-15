@@ -114,12 +114,14 @@ public class ReportCommand implements CommandExecutor {
 				Collection<PotionEffect> effects = r.getActivePotionEffects();
 				for(PotionEffect effect : effects) configEffects += effect.getType().getName()+":"+effect.getAmplifier()+"/"+effect.getDuration()+",";
 				FilesManager.getReports.set(reportPath+".Reported.Effects", configEffects.length() > 0 ? configEffects.substring(0, configEffects.length()-1): "None");
+				FilesManager.getReports.set(reportPath+".Reported.Messages", new User(r).getLastMessages());
 			}
 			FilesManager.getReports.set(reportPath+".Signalman.UUID", p.getUniqueId().toString());
 			FilesManager.getReports.set(reportPath+".Signalman.IP", p.getAddress().toString());
 			FilesManager.getReports.set(reportPath+".Signalman.Gamemode", p.getGameMode().toString().toLowerCase());
 			Location loc = p.getLocation();
 			FilesManager.getReports.set(reportPath+".Signalman.Location", loc.getWorld().getName()+":"+loc.getX()+"/"+loc.getY()+"/"+loc.getZ()+"/"+loc.getYaw()+"/"+loc.getPitch());
+			FilesManager.getReports.set(reportPath+".Signalman.Messages", new User(p).getLastMessages());
 			FilesManager.saveReports();
 		}
 		

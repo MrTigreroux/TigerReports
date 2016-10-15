@@ -68,6 +68,12 @@ public class ReportUtils {
 		}
 	}
 	
+	public static String getMessagesHistory(String type, int reportNumber) {
+		String messagesHistory = FilesManager.getReports.getString(getConfigPath(reportNumber)+"."+type+".Messages");
+		if(messagesHistory == null || messagesHistory.isEmpty()) return Message.NONE_MALE.get();
+		else return "§7- §r"+messagesHistory.replaceAll("#next#", ConfigUtils.getLineBreakSymbol()+"§7- §r");
+	}
+	
 	public static String getDate(int reportNumber) {
 		String date = FilesManager.getReports.getString(getConfigPath(reportNumber)+".Date");
 		return date != null ? date.replaceAll("-", ":") : Message.NOT_FOUND_FEMALE.get();

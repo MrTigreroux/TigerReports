@@ -1,5 +1,7 @@
 package fr.mrtigreroux.tigerreports.objects;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -160,6 +162,21 @@ public class User {
 		} catch(Exception invalidNotification) {
 			;
 		}
+	}
+	
+	public String getLastMessages() {
+		return UserData.LastMessages.get(uuid);
+	}
+	
+	public void updateLastMessages(String newMessage) {
+		int lastMessagesNumber = ConfigUtils.getMessagesHistory();
+		if(lastMessagesNumber <= 0) return;
+		ArrayList<String> lastMessages = new ArrayList<String>();
+		String lastMessagesString = getLastMessages();
+		if(lastMessagesString != null) lastMessages = new ArrayList<String>(Arrays.asList(lastMessagesString.split("#next#")));
+		if(lastMessages.size() >= lastMessagesNumber) lastMessages.remove(0);
+		lastMessages.add(newMessage);
+		UserData.LastMessages.put(uuid, String.join("#next#", lastMessages));
 	}
 	
 }

@@ -12,6 +12,7 @@ Config:
   MinCharacters: 4
   ReportCooldown: 300
   PunishSeconds: 3600
+  MessagesHistory: 5
   MenuSound: ENTITY_ITEM_PICKUP
   ErrorSound: ENTITY_ITEM_BREAK
   ReportSound: ENTITY_BAT_DEATH

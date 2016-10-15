@@ -83,5 +83,9 @@ public class ConfigUtils {
 		String icon = config.getString(path);
 		return icon != null && icon.startsWith("Skull-") ? icon.split("-")[1] : null;
 	}
+
+	public static int getMessagesHistory() {
+		return FilesManager.getConfig.getInt("Config.MessagesHistory");
+	}
 	
 }
