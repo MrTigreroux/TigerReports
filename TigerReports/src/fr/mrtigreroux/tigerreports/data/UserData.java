@@ -21,6 +21,7 @@ public class UserData {
 	public static HashMap<UUID, Material> SignMaterial = new HashMap<UUID, Material>();
 	public static HashMap<UUID, Byte>     SignData = new HashMap<UUID, Byte>();
 	public static HashMap<UUID, String>   LastMessages = new HashMap<UUID, String>();
+	public static HashMap<String, Long>     LastReported = new HashMap<String, Long>();
 
 	public static ArrayList<UUID>         NotificationsDisabled = new ArrayList<UUID>();
 	

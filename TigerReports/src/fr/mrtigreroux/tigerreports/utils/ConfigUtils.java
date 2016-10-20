@@ -87,5 +87,9 @@ public class ConfigUtils {
 	public static int getMessagesHistory() {
 		return FilesManager.getConfig.getInt("Config.MessagesHistory");
 	}
+
+	public static int getReportedImmunity() {
+		return FilesManager.getConfig.getInt("Config.ReportedImmunity")*1000;
+	}
 	
 }

@@ -5,6 +5,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -177,6 +183,21 @@ public class User {
 		if(lastMessages.size() >= lastMessagesNumber) lastMessages.remove(0);
 		lastMessages.add(newMessage);
 		UserData.LastMessages.put(uuid, String.join("#next#", lastMessages));
+	}
+	
+	public void printInChat(int reportNumber, String[] lines) {
+		String reportName = ReportUtils.getName(reportNumber);
+		for(String line : lines) {
+			if(line.contains("_ReportButton_")) {
+				TextComponent reportButton = new TextComponent(Message.REPORT_BUTTON.get().replaceAll("_Report_", reportName));
+				reportButton.setColor(ChatColor.valueOf(MessageUtils.getLastColor(Message.REPORT_BUTTON.get(), "_Report_").name()));
+				reportButton.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/reports #"+reportNumber));
+				reportButton.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(Message.ALERT_DETAILS.get().replaceAll("_Report_", reportName)).create()));
+				p.spigot().sendMessage(reportButton);
+			} else p.sendMessage(line);
+		}
+		p.playSound(p.getLocation(), ConfigUtils.getMenuSound(), 1, 1);
+		p.closeInventory();
 	}
 	
 }

@@ -1,11 +1,12 @@
 name: TigerReports
-version: 1.9
+version: 2.0
 description: Plugin de gestion de signalements.
 author: MrTigreroux
 main: fr.mrtigreroux.tigerreports.TigerReports
 commands:
   tigerreports:
     description: Informations sur le plugin TigerReports.
+    aliases: [tigerreport, tr, help]
   report:
     description: Permet de signaler un joueur.
   reports:

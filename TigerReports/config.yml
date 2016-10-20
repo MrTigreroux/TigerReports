@@ -6,6 +6,7 @@ TigerReports:
 Config:
   ColorCharacter: '&'
   LineBreakSymbol: "//"
+  HelpLanguage: French
   PermissionRequired: no
   ReportOnline: no
   MaxReports: 100
@@ -13,6 +14,7 @@ Config:
   ReportCooldown: 300
   PunishSeconds: 3600
   MessagesHistory: 5
+  ReportedImmunity: 120
   MenuSound: ENTITY_ITEM_PICKUP
   ErrorSound: ENTITY_ITEM_BREAK
   ReportSound: ENTITY_BAT_DEATH

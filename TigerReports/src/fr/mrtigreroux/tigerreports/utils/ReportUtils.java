@@ -42,7 +42,7 @@ public class ReportUtils {
 		}
 	}
 	
-	public static String getData(int reportNumber, boolean advanced) {
+	public static String implementData(int reportNumber, String message, boolean advanced) {
 		String reportedPath = getConfigPath(reportNumber)+".Reported";
 		String signalmanPath = getConfigPath(reportNumber)+".Signalman";
 		String effects = "";
@@ -55,7 +55,7 @@ public class ReportUtils {
 					effects += Message.EFFECT.get().replaceAll("_Type_", type.substring(0, 1)+type.substring(1, type.length()).toLowerCase()).replaceAll("_Amplifier_", effect.split(":")[1].replaceAll("/"+duration, "")).replaceAll("_Duration_", ""+Long.parseLong(duration)/20);
 				}
 			} else effects = Message.NONE_MALE.get();
-			return Message.DATA_DETAILS.get().replaceAll("_Reported_", ReportUtils.getPlayerName("Reported", reportNumber, true)).replaceAll("_DefaultData_", Message.DEFAULT_DATA.get()
+			return message.replaceAll("_Reported_", ReportUtils.getPlayerName("Reported", reportNumber, true)).replaceAll("_DefaultData_", Message.DEFAULT_DATA.get()
 					.replaceAll("_Gamemode_", MessageUtils.getGamemodeWord(FilesManager.getReports.getString(reportedPath+".Gamemode"))).replaceAll("_OnGround_", (FilesManager.getReports.getBoolean(reportedPath+".OnGround") ? Message.YES : Message.NO).get())
 					.replaceAll("_Sneak_", (FilesManager.getReports.getBoolean(reportedPath+".Sneak") ? Message.YES : Message.NO).get()).replaceAll("_Sprint_", (FilesManager.getReports.getBoolean(reportedPath+".Sprint") ? Message.YES : Message.NO).get())
 					.replaceAll("_Health_", FilesManager.getReports.getString(reportedPath+".Health")).replaceAll("_Food_", FilesManager.getReports.getString(reportedPath+".Food")).replaceAll("_Effects_", effects))
@@ -63,7 +63,7 @@ public class ReportUtils {
 							.replaceAll("_IP_", FilesManager.getReports.getString(reportedPath+".IP"))+Message.ADVANCED_DATA_SIGNALMAN.get().replaceAll("_Player_", ReportUtils.getPlayerName("Signalman", reportNumber, true))
 							.replaceAll("_UUID_", MessageUtils.getMenuSentence(FilesManager.getReports.getString(signalmanPath+".UUID"), Message.ADVANCED_DATA_SIGNALMAN, "_UUID_", false)).replaceAll("_IP_", FilesManager.getReports.getString(signalmanPath+".IP")));
 		} catch (Exception dataNotFound) {
-			return Message.DATA_DETAILS.get().replaceAll("_Reported_", ReportUtils.getPlayerName("Reported", reportNumber, true)).replaceAll("_DefaultData_", Message.PLAYER_WAS_OFFLINE.get()).replaceAll("_AdvancedData_", advanced == false ? "" : Message.ADVANCED_DATA_SIGNALMAN.get().replaceAll("_Player_", ReportUtils.getPlayerName("Signalman", reportNumber, true))
+			return message.replaceAll("_Reported_", ReportUtils.getPlayerName("Reported", reportNumber, true)).replaceAll("_DefaultData_", Message.PLAYER_WAS_OFFLINE.get()).replaceAll("_AdvancedData_", advanced == false ? "" : Message.ADVANCED_DATA_SIGNALMAN.get().replaceAll("_Player_", ReportUtils.getPlayerName("Signalman", reportNumber, true))
 					.replaceAll("_UUID_", MessageUtils.getMenuSentence(FilesManager.getReports.getString(signalmanPath+".UUID"), Message.ADVANCED_DATA_SIGNALMAN, "_UUID_", false)).replaceAll("_IP_", FilesManager.getReports.getString(signalmanPath+".IP")));
 		}
 	}

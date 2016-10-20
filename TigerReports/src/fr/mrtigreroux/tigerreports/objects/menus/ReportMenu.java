@@ -51,7 +51,7 @@ public class ReportMenu extends Menu {
 					.lore(u.hasPermission(Permission.TELEPORT) ? ((UserUtils.isOnline(name) ? Message.TELEPORT_TO_CURRENT_POSITION.get() : Message.CAN_NOT_TELEPORT_TO_CURRENT_POSITION.get()).replaceAll("_Player_", name)+(ReportUtils.getOldLocation(type, reportNumber) != null ? Message.TELEPORT_TO_OLD_POSITION.get() : Message.CAN_NOT_TELEPORT_TO_OLD_POSITION.get()).replaceAll("_Player_", name)).split(ConfigUtils.getLineBreakSymbol()) : null).create());
 		}
 		
-		inv.setItem(MenuItem.DATA.getPosition(), MenuItem.DATA.getWithDetails(ReportUtils.getData(reportNumber, u.hasPermission(Permission.ADVANCED))));
+		inv.setItem(MenuItem.DATA.getPosition(), MenuItem.DATA.getWithDetails(ReportUtils.implementData(reportNumber, Message.DATA_DETAILS.get(), u.hasPermission(Permission.ADVANCED))));
 		
 		int statusPosition = 29;
 		List<Status> statusList = Arrays.asList(Status.values());
@@ -82,11 +82,7 @@ public class ReportMenu extends Menu {
 			if(reportNumber < 1) reportNumber = totalSounds-1;
 			u.openReportMenu(reportNumber);
 		} else if(slot == 18) {
-			for(String line : ReportUtils.implementDetails(reportNumber, Message.REPORT_CHAT_DETAILS.get()).replaceAll("_Report_", ReportUtils.getName(reportNumber)).split(ConfigUtils.getLineBreakSymbol()))
-				p.sendMessage(line);
-			p.playSound(p.getLocation(), ConfigUtils.getMenuSound(), 1, 1);
-			p.closeInventory();
-			return;
+			u.printInChat(reportNumber, ReportUtils.implementDetails(reportNumber, Message.REPORT_CHAT_DETAILS.get()).replaceAll("_Report_", ReportUtils.getName(reportNumber)).split(ConfigUtils.getLineBreakSymbol()));
 		} else if(slot == MenuItem.PUNISH_ABUSE.getPosition()) {
 			long seconds = ReportUtils.getPunishSeconds();
 			String signalman = ReportUtils.getPlayerName("Signalman", reportNumber, false);
@@ -103,11 +99,13 @@ public class ReportMenu extends Menu {
 			ReportUtils.setStatus(reportNumber, Status.DONE);
 			u.openReportsMenu(1, false);
 		} else if(slot == MenuItem.DATA.getPosition()) {
-			String messagesHistory = Message.REPORT_MESSAGES_HISTORY.get();
-			for(String type : Arrays.asList("Reported", "Signalman")) messagesHistory = messagesHistory.replaceAll("_"+type+"_", ReportUtils.getPlayerName(type, reportNumber, false)).replaceAll("_"+type+"Messages_", ReportUtils.getMessagesHistory(type, reportNumber));
-			p.sendMessage(messagesHistory.replaceAll("_Report_", ReportUtils.getName(reportNumber)).split(ConfigUtils.getLineBreakSymbol()));
-			p.playSound(p.getLocation(), ConfigUtils.getMenuSound(), 1, 1);
-			p.closeInventory();
+			if(click == ClickType.LEFT) {
+				u.printInChat(reportNumber, ReportUtils.implementData(reportNumber, Message.REPORT_CHAT_DATA.get(), u.hasPermission(Permission.ADVANCED)).replaceAll("_Report_", ReportUtils.getName(reportNumber)).split(ConfigUtils.getLineBreakSymbol()));
+			} else if(click == ClickType.RIGHT) {
+				String messagesHistory = Message.REPORT_MESSAGES_HISTORY.get();
+				for(String type : Arrays.asList("Reported", "Signalman")) messagesHistory = messagesHistory.replaceAll("_"+type+"_", ReportUtils.getPlayerName(type, reportNumber, false)).replaceAll("_"+type+"Messages_", ReportUtils.getMessagesHistory(type, reportNumber));
+				u.printInChat(reportNumber, messagesHistory.replaceAll("_Report_", ReportUtils.getName(reportNumber)).split(ConfigUtils.getLineBreakSymbol()));
+			}
 		} else if(slot == MenuItem.REMOVE.getPosition()) u.openConfirmationMenu(reportNumber, "REMOVE");
 		else if(slot == MenuItem.COMMENTS.getPosition()) u.openCommentsMenu(1, reportNumber);
 		else if(slot == 21 || slot == 23) {

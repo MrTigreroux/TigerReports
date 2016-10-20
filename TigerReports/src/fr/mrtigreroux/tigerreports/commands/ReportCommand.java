@@ -20,6 +20,7 @@ import org.bukkit.potion.PotionEffect;
 import fr.mrtigreroux.tigerreports.data.Message;
 import fr.mrtigreroux.tigerreports.data.Permission;
 import fr.mrtigreroux.tigerreports.data.Status;
+import fr.mrtigreroux.tigerreports.data.UserData;
 import fr.mrtigreroux.tigerreports.managers.FilesManager;
 import fr.mrtigreroux.tigerreports.objects.User;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
@@ -75,6 +76,14 @@ public class ReportCommand implements CommandExecutor {
 			MessageUtils.sendErrorMessage(p, Message.PERMISSION_REPORT.get().replaceAll("_Player_", reported));
 			return true;
 		}
+		if(UserData.LastReported.containsKey(ruuid) && System.currentTimeMillis()-UserData.LastReported.get(ruuid) < ConfigUtils.getReportedImmunity()) {
+			long current = System.currentTimeMillis()/1000;
+			long immunityEnd = (UserData.LastReported.get(ruuid)+ConfigUtils.getReportedImmunity())/1000;
+			if(current < immunityEnd) {
+				MessageUtils.sendErrorMessage(p, Message.PLAYER_ALREADY_REPORTED.get().replaceAll("_Player_", reported).replaceAll("_Time_", MessageUtils.convertToSentence(immunityEnd-current)));
+				return true;
+			}
+		}
 		
 		if(args.length == 1) {
 			u.openReasonMenu(1, reported);
@@ -124,6 +133,7 @@ public class ReportCommand implements CommandExecutor {
 			FilesManager.getReports.set(reportPath+".Signalman.Messages", new User(p).getLastMessages());
 			FilesManager.saveReports();
 		}
+		UserData.LastReported.put(ruuid, System.currentTimeMillis());
 		
 		TextComponent alert = new TextComponent(Message.ALERT.get().replaceAll("_Signalman_", ReportUtils.getPlayerName("Signalman", reportNumber, false)).replaceAll("_Reported_", ReportUtils.getPlayerName("Reported", reportNumber, !ReportUtils.onlinePlayerRequired())).replaceAll("_Reason_", reason));
 		alert.setColor(ChatColor.valueOf(MessageUtils.getLastColor(Message.ALERT.get(), "_Reason_").name()));
