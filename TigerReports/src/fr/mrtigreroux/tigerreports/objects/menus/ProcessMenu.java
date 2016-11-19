@@ -9,7 +9,6 @@ import org.bukkit.inventory.ItemStack;
 
 import fr.mrtigreroux.tigerreports.data.MenuItem;
 import fr.mrtigreroux.tigerreports.data.Message;
-import fr.mrtigreroux.tigerreports.data.Status;
 import fr.mrtigreroux.tigerreports.objects.CustomItem;
 import fr.mrtigreroux.tigerreports.objects.User;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
@@ -55,7 +54,7 @@ public class ProcessMenu extends Menu {
 		if(slot == 11 || slot == 13 || slot == 15) {
 			String appreciation = slot == 11 ? "True" : slot == 13 ? "Uncertain" : "False";
 			ReportUtils.setAppreciation(reportNumber, appreciation);
-			ReportUtils.setStatus(reportNumber, Status.DONE);
+			ReportUtils.setDone(reportNumber, p.getUniqueId());
 			UserUtils.addAppreciation(UserUtils.getUniqueId(ReportUtils.getPlayerName("Signalman", reportNumber, false)), appreciation, 1);
 			MessageUtils.sendStaffMessage(Message.STAFF_PROCESS.get().replaceAll("_Player_", p.getName()).replaceAll("_Report_", ReportUtils.getName(reportNumber)).replaceAll("_Appreciation_", Message.valueOf(appreciation.toUpperCase()).get()), ConfigUtils.getStaffSound());
 			u.openReportsMenu(1, false);

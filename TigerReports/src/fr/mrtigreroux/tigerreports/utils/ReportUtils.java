@@ -1,5 +1,7 @@
 package fr.mrtigreroux.tigerreports.utils;
 
+import java.util.UUID;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
@@ -36,10 +38,23 @@ public class ReportUtils {
 	public static Status getStatus(int reportNumber) {
 		String status = FilesManager.getReports.getString(getConfigPath(reportNumber)+".Status");
 		try {
-			return status != null ? Status.valueOf(status.toUpperCase()) : Status.WAITING;
+			if(status != null && status.startsWith(Status.DONE.getConfigWord())) return Status.DONE;
+			return status != null ? Status.valueOf(status.toUpperCase().replaceAll(" ", "_")) : Status.WAITING;
 		} catch (Exception invalidStatus) {
 			return Status.WAITING;
 		}
+	}
+	
+	public static void setDone(int reportNumber, UUID uuid) {
+		FilesManager.getReports.set(getConfigPath(reportNumber)+".Status", Status.DONE.getConfigWord()+" by "+uuid);
+		FilesManager.saveReports();
+	}
+	
+	public static String getProcessor(int reportNumber) {
+		String status = FilesManager.getReports.getString(getConfigPath(reportNumber)+".Status");
+		String processor = null;
+		if(status != null && status.startsWith(Status.DONE.getConfigWord())) processor = UserUtils.getName(status.replaceFirst(Status.DONE.getConfigWord()+" by ", ""));
+		return processor != null ? processor : Message.NOT_FOUND_MALE.get();
 	}
 	
 	public static String implementData(int reportNumber, String message, boolean advanced) {
@@ -170,7 +185,7 @@ public class ReportUtils {
 	
 	public static String implementDetails(int reportNumber, String message) {
 		Status status = getStatus(reportNumber);
-		return message.replaceAll("_Status_", status.getWord()+(status.equals(Status.DONE) ? Message.APPRECIATION_SUFFIX.get().replaceAll("_Appreciation_", getAppreciation(reportNumber)) : ""))
+		return message.replaceAll("_Status_", status.equals(Status.DONE) ? status.getWord(getProcessor(reportNumber))+Message.APPRECIATION_SUFFIX.get().replaceAll("_Appreciation_", getAppreciation(reportNumber)) : status.getWord(null))
 				.replaceAll("_Date_", getDate(reportNumber)).replaceAll("_Signalman_", getPlayerName("Signalman", reportNumber, true)).replaceAll("_Reported_", getPlayerName("Reported", reportNumber, true))
 				.replaceAll("_Reason_", MessageUtils.getMenuSentence(FilesManager.getReports.getString(getConfigPath(reportNumber)+".Reason"), Message.REPORT_DETAILS, "_Reason_", true));
 	}
@@ -192,7 +207,7 @@ public class ReportUtils {
 	
 	public static void archive(int reportNumber) {
 		String path = getConfigPath(reportNumber);
-		FilesManager.getReports.set("Archives."+FilesManager.getReports.getString(path+".Date"), "Status:"+getStatus(reportNumber).getConfigWord()+",Appreciation:"+FilesManager.getReports.getString(path+".Appreciation")+
+		FilesManager.getReports.set("Archives."+FilesManager.getReports.getString(path+".Date"), "Archived_on:"+MessageUtils.getNowDate()+",Status:"+FilesManager.getReports.getString(path+".Status")+",Appreciation:"+FilesManager.getReports.getString(path+".Appreciation")+
 				",REPORTED:_LastName:"+UserUtils.getName(FilesManager.getReports.getString(path+".Reported.UUID"))+",UUID:"+FilesManager.getReports.getString(path+".Reported.UUID")+",IP:"+FilesManager.getReports.getString(path+".Reported.IP")+
 				",Gamemode:"+FilesManager.getReports.getString(path+".Reported.Gamemode")+",Location:"+FilesManager.getReports.getString(path+".Reported.Location")+",OnGround:"+FilesManager.getReports.getString(path+".Reported.OnGround")+
 				",Health:"+FilesManager.getReports.getString(path+".Reported.Health")+",Food:"+FilesManager.getReports.getString(path+".Reported.Food")+",Effects:"+FilesManager.getReports.getString(path+".Reported.Effects")+

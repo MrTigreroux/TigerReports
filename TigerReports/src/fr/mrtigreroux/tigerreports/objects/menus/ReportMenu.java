@@ -57,8 +57,8 @@ public class ReportMenu extends Menu {
 		List<Status> statusList = Arrays.asList(Status.values());
 		boolean archive = u.hasPermission(Permission.ARCHIVE);
 		for(Status status : statusList) {
-			inv.setItem(statusPosition, new CustomItem().type(Material.STAINED_CLAY).damage(status.getColor()).glow(status.equals(ReportUtils.getStatus(reportNumber))).name(Message.CHANGE_STATUS.get().replaceAll("_Status_", status.getWord()))
-					.lore(Message.CHANGE_STATUS_DETAILS.get().replaceAll("_Status_", status.getWord()).split(ConfigUtils.getLineBreakSymbol())).create());
+			inv.setItem(statusPosition, new CustomItem().type(Material.STAINED_CLAY).damage(status.getColor()).glow(status.equals(ReportUtils.getStatus(reportNumber))).name(status == Status.DONE ? Message.PROCESS_STATUS.get() : Message.CHANGE_STATUS.get().replaceAll("_Status_", status.getWord(null)))
+					.lore((status == Status.DONE ? Message.PROCESS_STATUS_DETAILS.get() : Message.CHANGE_STATUS_DETAILS.get()).replaceAll("_Status_", status.getWord(null)).split(ConfigUtils.getLineBreakSymbol())).create());
 			statusPosition += status.equals(Status.IN_PROGRESS) && !archive ? 2 : 1;
 		}
 		if(archive) inv.setItem(MenuItem.ARCHIVE.getPosition(), MenuItem.ARCHIVE.get());
