@@ -34,10 +34,13 @@ public class UserUtils {
 	}
 	
 	public static String getName(String uuid) {
+		UUID uniqueId = UUID.fromString(uuid);
 		try {
-			return Bukkit.getPlayer(UUID.fromString(uuid)).getName();
+			return Bukkit.getPlayer(uniqueId).getName();
 		} catch(Exception offlinePlayer) {
-			for(String name : Arrays.asList(Bukkit.getOfflinePlayer(UUID.fromString(uuid)).getName(), FilesManager.getData.getString("Data."+uuid+".Name"))) if(name != null) return name;
+			if(uniqueId != null) {
+				for(String name : Arrays.asList(Bukkit.getOfflinePlayer(uniqueId).getName(), FilesManager.getData.getString("Data."+uuid+".Name"))) if(name != null) return name;
+			}
 			Bukkit.getLogger().log(Level.WARNING, "TigerReports > Le pseudo de l'UUID <"+uuid+"> est introuvable.");
 			return null;
 		}

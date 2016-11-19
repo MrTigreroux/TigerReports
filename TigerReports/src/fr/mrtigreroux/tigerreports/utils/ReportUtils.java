@@ -53,7 +53,7 @@ public class ReportUtils {
 	public static String getProcessor(int reportNumber) {
 		String status = FilesManager.getReports.getString(getConfigPath(reportNumber)+".Status");
 		String processor = null;
-		if(status != null && status.startsWith(Status.DONE.getConfigWord())) processor = UserUtils.getName(status.replaceFirst(Status.DONE.getConfigWord()+" by ", ""));
+		if(status != null && status.startsWith(Status.DONE.getConfigWord()+" by ")) processor = UserUtils.getName(status.replaceFirst(Status.DONE.getConfigWord()+" by ", ""));
 		return processor != null ? processor : Message.NOT_FOUND_MALE.get();
 	}
 	
