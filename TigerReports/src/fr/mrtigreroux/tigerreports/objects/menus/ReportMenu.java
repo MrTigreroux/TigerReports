@@ -103,7 +103,7 @@ public class ReportMenu extends Menu {
 				u.printInChat(reportNumber, ReportUtils.implementData(reportNumber, Message.REPORT_CHAT_DATA.get(), u.hasPermission(Permission.ADVANCED)).replaceAll("_Report_", ReportUtils.getName(reportNumber)).split(ConfigUtils.getLineBreakSymbol()));
 			} else if(click == ClickType.RIGHT) {
 				String messagesHistory = Message.REPORT_MESSAGES_HISTORY.get();
-				for(String type : Arrays.asList("Reported", "Signalman")) messagesHistory = messagesHistory.replaceAll("_"+type+"_", ReportUtils.getPlayerName(type, reportNumber, false)).replaceAll("_"+type+"Messages_", ReportUtils.getMessagesHistory(type, reportNumber));
+				for(String type : Arrays.asList("Reported", "Signalman")) messagesHistory = messagesHistory.replace("_"+type+"_", ReportUtils.getPlayerName(type, reportNumber, false)).replace("_"+type+"Messages_", ReportUtils.getMessagesHistory(type, reportNumber));
 				u.printInChat(reportNumber, messagesHistory.replaceAll("_Report_", ReportUtils.getName(reportNumber)).split(ConfigUtils.getLineBreakSymbol()));
 			}
 		} else if(slot == MenuItem.REMOVE.getPosition()) u.openConfirmationMenu(reportNumber, "REMOVE");
