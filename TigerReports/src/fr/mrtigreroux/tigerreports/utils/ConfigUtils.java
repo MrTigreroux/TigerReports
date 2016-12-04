@@ -8,7 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 
-import fr.mrtigreroux.tigerreports.managers.FilesManager;
+import fr.mrtigreroux.tigerreports.data.ConfigFile;
 
 /**
  * @author MrTigreroux
@@ -23,11 +23,11 @@ public class ConfigUtils {
 	}
 	
 	public static char getColorCharacter() {
-		return FilesManager.getConfig.contains("Config.ColorCharacter") && FilesManager.getConfig.getString("Config.ColorCharacter") != null && FilesManager.getConfig.getString("Config.ColorCharacter").length() >= 1 ? FilesManager.getConfig.getString("Config.ColorCharacter").charAt(0) : '&';
+		return ConfigFile.CONFIG.get().contains("Config.ColorCharacter") && ConfigFile.CONFIG.get().getString("Config.ColorCharacter") != null && ConfigFile.CONFIG.get().getString("Config.ColorCharacter").length() >= 1 ? ConfigFile.CONFIG.get().getString("Config.ColorCharacter").charAt(0) : '&';
 	}
 	
 	public static String getLineBreakSymbol() {
-		return FilesManager.getConfig.get("Config.LineBreakSymbol") != null ? FilesManager.getConfig.getString("Config.LineBreakSymbol") : "//";
+		return ConfigFile.CONFIG.get().get("Config.LineBreakSymbol") != null ? ConfigFile.CONFIG.get().getString("Config.LineBreakSymbol") : "//";
 	}
 	
 	public static boolean exist(ConfigurationSection config, String path) {
@@ -36,7 +36,7 @@ public class ConfigUtils {
 
 	public static Sound getSound(String type, String default1, String default2) {
 		String path = "Config."+type;
-		String configSound = FilesManager.getConfig.getString(path) != null ? FilesManager.getConfig.getString(path).toUpperCase() : "";
+		String configSound = ConfigFile.CONFIG.get().getString(path) != null ? ConfigFile.CONFIG.get().getString(path).toUpperCase() : "";
 		for(String sound : Arrays.asList(configSound, default1, default2)) {
 			try {
 				return Sound.valueOf(sound);
@@ -67,7 +67,7 @@ public class ConfigUtils {
 
 	public static Material getMaterial(ConfigurationSection config, String path) {
 		String icon = config.getString(path);
-		return icon != null && icon.startsWith("Material-") ? Material.matchMaterial(icon.split("-")[1].toUpperCase().replaceAll(":"+getDamage(config, path), "")) : null;
+		return icon != null && icon.startsWith("Material-") ? Material.matchMaterial(icon.split("-")[1].toUpperCase().replace(":"+getDamage(config, path), "")) : null;
 	}
 
 	public static short getDamage(ConfigurationSection config, String path) {
@@ -85,11 +85,11 @@ public class ConfigUtils {
 	}
 
 	public static int getMessagesHistory() {
-		return FilesManager.getConfig.getInt("Config.MessagesHistory");
+		return ConfigFile.CONFIG.get().getInt("Config.MessagesHistory");
 	}
 
 	public static int getReportedImmunity() {
-		return FilesManager.getConfig.getInt("Config.ReportedImmunity")*1000;
+		return ConfigFile.CONFIG.get().getInt("Config.ReportedImmunity")*1000;
 	}
 	
 }

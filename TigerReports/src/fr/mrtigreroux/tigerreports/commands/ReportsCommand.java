@@ -1,7 +1,5 @@
 package fr.mrtigreroux.tigerreports.commands;
 
-import java.util.UUID;
-
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -10,8 +8,8 @@ import org.bukkit.entity.Player;
 import fr.mrtigreroux.tigerreports.data.Message;
 import fr.mrtigreroux.tigerreports.data.Permission;
 import fr.mrtigreroux.tigerreports.data.Status;
-import fr.mrtigreroux.tigerreports.data.UserData;
 import fr.mrtigreroux.tigerreports.managers.FilesManager;
+import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.objects.User;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
@@ -29,61 +27,65 @@ public class ReportsCommand implements CommandExecutor {
 		if(args.length == 1 && args[0].equalsIgnoreCase("reload")) {
 			if(!s.hasPermission(Permission.MANAGE.get())) MessageUtils.sendErrorMessage(s, Message.PERMISSION_COMMAND.get());
 			else {
-				FilesManager.loadConfig(FilesManager.getConfig, FilesManager.config);
-				FilesManager.loadConfig(FilesManager.getMessages, FilesManager.messages);
-				FilesManager.loadConfig(FilesManager.getReports, FilesManager.reports);
-				FilesManager.loadConfig(FilesManager.getData, FilesManager.data);
+				FilesManager.loadFiles();
 				s.sendMessage(Message.RELOAD.get());
 			}
 			return true;
 		}
 		
-		if(!UserUtils.isPlayer(s)) return true;
-		Player p = (Player) s;
-		User u = new User(p);
-		if(!u.hasPermission(Permission.STAFF)) {
+		if(!UserUtils.checkPlayer(s)) return true;
+		if(!s.hasPermission(Permission.STAFF.get())) {
 			MessageUtils.sendErrorMessage(s, Message.PERMISSION_COMMAND.get());
 			return true;
 		}
+		Player p = (Player) s;
+		User u = UserUtils.getUser(p);
 		
 		if(args.length == 0) u.openReportsMenu(1, true);
 		else if(args.length == 1) {
 			if(args[0].equalsIgnoreCase("notify")) {
-				UUID uuid = p.getUniqueId();
-				if(UserData.NotificationsDisabled.contains(uuid)) {
-					UserData.NotificationsDisabled.remove(uuid);
-					p.sendMessage(Message.NOTIFICATIONS.get().replaceAll("_State_", Message.ACTIVATED.get()));
+				if(u.acceptsNotifications()) {
+					u.setNotifications(false);
+					p.sendMessage(Message.NOTIFICATIONS.get().replace("_State_", Message.ACTIVATED.get()));
 				} else {
-					UserData.NotificationsDisabled.add(uuid);
-					p.sendMessage(Message.NOTIFICATIONS.get().replaceAll("_State_", Message.DISABLED.get()));
+					u.setNotifications(true);
+					p.sendMessage(Message.NOTIFICATIONS.get().replace("_State_", Message.DISABLED.get()));
 				}
 			} else if(args[0].equalsIgnoreCase("archiveall")) {
 				if(!u.hasPermission(Permission.ARCHIVE)) MessageUtils.sendErrorMessage(s, Message.PERMISSION_COMMAND.get());
 				else {
-					for(int reportNumber = 1; reportNumber <= ReportUtils.getTotalReports(); reportNumber++)
-						if(ReportUtils.getStatus(reportNumber) == Status.DONE) {
-							ReportUtils.archive(reportNumber);
+					for(int reportNumber = 1; reportNumber <= ReportUtils.getTotalReports(); reportNumber++) {
+						Report r = new Report(reportNumber);
+						if(r.getStatus() == Status.DONE) {
+							r.archive();
 							reportNumber--;
 						}
-					MessageUtils.sendStaffMessage(Message.STAFF_ARCHIVEALL.get().replaceAll("_Player_", p.getName()), ConfigUtils.getStaffSound());
+					}
+					MessageUtils.sendStaffMessage(Message.STAFF_ARCHIVEALL.get().replace("_Player_", p.getName()), ConfigUtils.getStaffSound());
 				}
 			} else {
 				try {
-					u.openReportMenu(Integer.parseInt(args[0].replaceAll("#", "")));
+					u.openReportMenu(new Report(Integer.parseInt(args[0].replace("#", ""))));
 				} catch(Exception invalidNumber) {
-					MessageUtils.sendErrorMessage(s, Message.INVALID_REPORTNUMBER.get().replaceAll("_Number_", args[0]));
+					MessageUtils.sendErrorMessage(s, Message.INVALID_REPORTNUMBER.get().replace("_Number_", args[0]));
 				}
 			}
-		} else if(args.length == 2 && args[0].equalsIgnoreCase("stopcooldown") || args[0].equalsIgnoreCase("user")) {
+		} else if(args.length == 2 && args[0].equalsIgnoreCase("stopcooldown") || args[0].equalsIgnoreCase("sc")) {
 			Player t = UserUtils.getPlayer(args[1]);
 			if(t == null) {
-				MessageUtils.sendErrorMessage(s, Message.PLAYER_OFFLINE.get().replaceAll("_Player_", args[1]));
+				MessageUtils.sendErrorMessage(s, Message.PLAYER_OFFLINE.get().replace("_Player_", args[1]));
 				return true;
 			}
-			
-			if(args[0].equalsIgnoreCase("stopcooldown")) new User(t).stopCooldown(p.getName());
-			else if(args[0].equalsIgnoreCase("user")) u.openUserMenu(t.getUniqueId().toString());
-		} else s.sendMessage(Message.INVALID_SYNTAX.get().replaceAll("_Command_", "/"+label+" "+Message.REPORTS_SYNTAX.get()));
+			UserUtils.getUser(t).stopCooldown(p.getName());
+		} else if(args[0].equalsIgnoreCase("user")) {
+			String target = UserUtils.getUniqueId(args[1]);
+			if(!UserUtils.isValid(target)) {
+				MessageUtils.sendErrorMessage(s, Message.INVALID_PLAYER.get().replace("_Player_", args[1]));
+				return true;
+			}
+			u.openUserMenu(UserUtils.getUniqueId(args[1]));
+		}
+		else s.sendMessage(Message.INVALID_SYNTAX.get().replace("_Command_", "/"+label+" "+Message.REPORTS_SYNTAX.get()));
 		return true;
 	}
 

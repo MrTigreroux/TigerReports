@@ -2,7 +2,6 @@ package fr.mrtigreroux.tigerreports.data;
 
 import org.bukkit.ChatColor;
 
-import fr.mrtigreroux.tigerreports.managers.FilesManager;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 
 /**
@@ -16,7 +15,7 @@ public enum Message {
 	ALERT("Messages.Alert", "§7[§cReport§7] §a_Signalman_ §7» §c_Reported_§7: §6_Reason_§7."),
 	ALERT_DETAILS("Messages.Alert-details", "§6Clic gauche §7pour afficher les détails du §c_Report_§7."),
 	TELEPORT_CURRENT_LOCATION("Messages.Teleport-to-current-location", "§7[§6Report§7] §eVous avez été téléporté au joueur _Player_§e."),
-	TELEPORT_OLD_LOCATION("Messages.Teleport-to-old-location", "§7[§6Report§7] §eVous avez été téléporté au joueur _Player_ §elors du signalement."),
+	TELEPORT_OLD_LOCATION("Messages.Teleport-to-old-location", "§7[§6Report§7] §eVous avez été téléporté au joueur _Player_ §elors du signalement _Report_§e."),
 	STAFF_PUNISH("Messages.Staff-punish", "§7[§6Reports§7] §a_Player_ §evient de §csanctionner §eet traiter comme §cfaux §ele signalement de §6_Signalman_ §ependant _Time_§e."),
 	PUNISHED("Messages.Punished", "§7[§6Reports§7] §eVous venez d'être §csanctionné §epour votre signalement jugé abusif. Vous ne pouvez plus signaler de joueur pendant §6_Time_§e."),
 	STAFF_PROCESS("Messages.Staff-process", "§7[§6Reports§7] §a_Player_ §evient de §btraiter §ele _Report_ §eavec l'appréciation: _Appreciation_§e."),
@@ -53,8 +52,6 @@ public enum Message {
 	REASONS("Menus.Reasons", "§eMotifs de signalement"),
 	REASON("Menus.Reason", "§7Signaler pour: §e_Reason_"),
 	REASON_DETAILS("Menus.Reason-details", "//§6Clic §7pour signaler le joueur §c_Player_//§7avec le motif: §e_Reason_§7."),
-	SIGNALMAN("Menus.Signalman", "§7Signaleur: §a_Player_"),
-	REPORTED("Menus.Reported", "§7Signalé: §c_Player_"),
 	REPORT("Menus.Report", "_Report_"),
 	REPORT_DETAILS("Menus.Report-details", "//§7Statut: _Status_//§7Date: §e_Date_// //§7Signaleur: §a_Signalman_//§7Signalé: §c_Reported_//§7Raison: §6_Reason_ §r_Actions_"),
 	REPORT_SHOW_ACTION("Menus.Report-show-action", "// //§6Clic gauche §7pour afficher les détails."),
@@ -64,6 +61,9 @@ public enum Message {
 	REPORTS_DETAILS("Menus.Reports-details", "//§6Clic §7pour afficher tous les signalements."),
 	REPORT_TITLE("Menus.Report-title", "§6Report §7> §e_Report_"),
 	REPORT_CHAT_ACTION("Menus.Report-chat-action", "// //§6Clic gauche §7pour afficher dans//§7le chat."),
+	SIGNALMAN("Menus.Signalman", "§7Signaleur: §a_Player_"),
+	REPORTED("Menus.Reported", "§7Signalé: §c_Player_"),
+	PLAYER_DETAILS("Menus.Player-details", "//§7Signalements effectués: §b_Reports_//§7Signalements reçus: §b_ReportedTime_//_Teleportation_"),
 	TELEPORT_TO_CURRENT_POSITION("Menus.Teleport-to-current-position", "//§6Clic gauche §7pour vous téléporter à la//§7position actuelle du joueur §e_Player_§7."),
 	CAN_NOT_TELEPORT_TO_CURRENT_POSITION("Menus.Can-not-teleport-to-current-position", "//§6§mClic gauche §7§mpour vous téléporter à la//§7§mposition actuelle du joueur §e§m_Player_§7§m."),
 	TELEPORT_TO_OLD_POSITION("Menus.Teleport-to-old-position", "//§6Clic droit §7pour vous téléporter à l'ancienne//§7position du joueur §e_Player_§7."),
@@ -113,8 +113,8 @@ public enum Message {
 	WRITE_COMMENT_DETAILS("Menus.Write-comment-details", "//§6Clic §7pour rédiger un nouveau//§7commentaire sur ce signalement."),
 	USER_TITLE("Menus.User-title", "§6Joueur §7> §e_Target_"),
 	USER("Menus.User", "§7Joueur: §e_Target_"),
-	USER_APPRECIATION("Menus.User-appreciation", "§7Appréciation: _Appreciation_ §7x§b_Number_"),
-	USER_APPRECIATION_DETAILS("Menus.User-appreciation-details", "//§6Clic gauche §7pour ajouter une appréciation.//§6Clic droit §7pour retirer une appréciation."),
+	USER_STATISTIC("Menus.User-statistic", "§7_Statistic_§7: §b_Number_"),
+	USER_STATISTIC_DETAILS("Menus.User-statistic-details", "//§6Clic gauche §7pour augmenter de un.//§6Clic droit §7pour réduire de un."),
 	COOLDOWN_STATUS("Menus.Cooldown-status", "§7Attente: §e_Time_"),
 	COOLDOWN_STATUS_DETAILS("Menus.Cooldown-status-details", "//§6Clic §7pour annuler l'attente du//§7joueur §e_Player_§7."),
 	PAGE_SWITCH_PREVIOUS("Menus.Switch-to-previous-page", "§6§l< §7Page précédente"),
@@ -151,9 +151,13 @@ public enum Message {
 	IMPORTANT("Words.Important", "§cImportant"),
 	DONE("Words.Done", "§bTraité par _Name_"),
 	APPRECIATION_SUFFIX("Words.Appreciation-suffix", " §7(_Appreciation_§7)"),
+	APPRECIATION("Words.Appreciation", "§7Appréciation _Appreciation_"),
 	TRUE("Words.True-appreciation", "§aVrai"),
 	UNCERTAIN("Words.Uncertain-appreciation", "§6Incertain"),
 	FALSE("Words.False-appreciation", "§cFaux"),
+	REPORTS_STATISTIC("Words.Reports-statistic", "Signalements effectués"),
+	REPORTED_TIME_STATISTIC("Words.Reported-time-statistic", "Signalements reçus"),
+	PROCESSED_REPORTS_STATISTIC("Words.Processed-reports-statistic", "Signalements traités"),
 	YES("Words.Yes-state", "§aoui"),
 	NO("Words.No-state", "§cnon"),
 	SURVIVAL("Words.Survival", "§6survie"),
@@ -175,7 +179,7 @@ public enum Message {
 	}
 	
 	public String get() {
-		if(FilesManager.getMessages.get(path) != null) return ChatColor.translateAlternateColorCodes(ConfigUtils.getColorCharacter(), FilesManager.getMessages.getString(path));
+		if(ConfigFile.MESSAGES.get().get(path) != null) return ChatColor.translateAlternateColorCodes(ConfigUtils.getColorCharacter(), ConfigFile.MESSAGES.get().getString(path));
 		else return defaultMessage;
 	}
 	

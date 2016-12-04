@@ -14,8 +14,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.server.ServerCommandEvent;
 
 import fr.mrtigreroux.tigerreports.commands.HelpCommand;
-import fr.mrtigreroux.tigerreports.managers.FilesManager;
-import fr.mrtigreroux.tigerreports.objects.User;
+import fr.mrtigreroux.tigerreports.data.ConfigFile;
 import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 @SuppressWarnings("deprecation")
@@ -26,27 +25,26 @@ public class PlayerListener implements Listener {
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent e) {
 		Player p = e.getPlayer();
-		User u = new User(p);
 		String uuid = p.getUniqueId().toString();
-		for(String notification : UserUtils.getNotifications(uuid)) u.sendNotification(notification);
+		for(String notification : UserUtils.getNotifications(uuid)) UserUtils.getUser(p).sendNotification(notification);
 
-		FilesManager.getData.set("Data."+uuid+".Name", p.getName());
-		FilesManager.saveData();
+		ConfigFile.DATA.get().set("Data."+uuid+".Name", p.getName());
+		ConfigFile.DATA.save();
 	}
 	
 	@EventHandler
 	public void onPlayerChat(PlayerChatEvent e) {
-		new User(e.getPlayer()).updateLastMessages(e.getMessage());
+		UserUtils.getUser(e.getPlayer()).updateLastMessages(e.getMessage());
 	}
 	
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent e) {
-		if(helpCommands.contains(e.getMessage().replaceAll(" ", ""))) HelpCommand.onCommand(e.getPlayer());
+		if(helpCommands.contains(e.getMessage().replace(" ", ""))) HelpCommand.onCommand(e.getPlayer());
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onServerCommandPreprocess(ServerCommandEvent e) {
-		if(helpCommands.contains("/"+e.getCommand().replaceAll(" ", ""))) HelpCommand.onCommand(e.getSender());
+		if(helpCommands.contains("/"+e.getCommand().replace(" ", ""))) HelpCommand.onCommand(e.getSender());
 	}
 	
 }

@@ -4,10 +4,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import fr.mrtigreroux.tigerreports.data.ConfigFile;
 import fr.mrtigreroux.tigerreports.managers.CommandsManager;
 import fr.mrtigreroux.tigerreports.managers.FilesManager;
 import fr.mrtigreroux.tigerreports.managers.ListenersManager;
-import fr.mrtigreroux.tigerreports.objects.User;
+import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 /**
  * @author MrTigreroux
@@ -21,16 +22,16 @@ public class TigerReports extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		instance = this;
-		FilesManager.checkFiles();
+		FilesManager.loadFiles();
 		CommandsManager.registerCommands();
 		ListenersManager.registerListeners();
-		for(Player p : Bukkit.getOnlinePlayers()) FilesManager.getData.set("Data."+p.getUniqueId()+".Name", p.getName());
-		FilesManager.saveData();
+		for(Player p : Bukkit.getOnlinePlayers()) ConfigFile.DATA.get().set("Data."+p.getUniqueId()+".Name", p.getName());
+		ConfigFile.DATA.save();
 	}
 	
 	@Override
 	public void onDisable() {
-		for(Player p : Bukkit.getOnlinePlayers()) if(new User(p).getOpenedMenu() != null) p.closeInventory();
+		for(Player p : Bukkit.getOnlinePlayers()) if(UserUtils.getUser(p).getOpenedMenu() != null) p.closeInventory();
 	}
 	
 	public static TigerReports getInstance() {

@@ -17,7 +17,7 @@ import org.bukkit.entity.Player;
 
 import fr.mrtigreroux.tigerreports.data.Message;
 import fr.mrtigreroux.tigerreports.data.Permission;
-import fr.mrtigreroux.tigerreports.data.UserData;
+import fr.mrtigreroux.tigerreports.objects.User;
 
 /**
  * @author MrTigreroux
@@ -38,23 +38,25 @@ public class MessageUtils {
 	public static void sendStaffMessage(Object message, Sound sound) {
 		boolean isTextComponent = false;
 		if(message instanceof TextComponent) isTextComponent = true;
-		for(Player p : Bukkit.getOnlinePlayers())
-			if(p.hasPermission(Permission.STAFF.get()) && !UserData.NotificationsDisabled.contains(p.getUniqueId())) {
+		for(Player p : Bukkit.getOnlinePlayers()) {
+			User u = UserUtils.getUser(p);
+			if(u.hasPermission(Permission.STAFF) && u.acceptsNotifications()) {
 				if(isTextComponent) p.spigot().sendMessage((TextComponent) message);
 				else p.sendMessage((String) message);
 				if(sound != null) p.playSound(p.getLocation(), sound, 1, 1);
 			}
+		}
 		if(isTextComponent) sendConsoleMessage(((TextComponent) message).getText());
 		else sendConsoleMessage((String) message);
 	}
 
 	public static void sendConsoleMessage(String message) {
-		Bukkit.getConsoleSender().sendMessage(message.replaceAll("é", "e").replaceAll("è", "e").replaceAll("à", "a").replaceAll("»", ">").replaceAll("ç", "c").replaceAll("î", "i").replaceAll("ê", "e").replaceAll("û", "u"));
+		Bukkit.getConsoleSender().sendMessage(message.replace("é", "e").replace("è", "e").replace("à", "a").replace("»", ">").replace("ç", "c").replace("î", "i").replace("ê", "e").replace("û", "u"));
 	}
 
 	public static String cleanDouble(Double number) {
 		String process = number+" ";
-		String result = process.replaceAll(".0 ", "").replaceAll(" ", "");
+		String result = process.replace(".0 ", "").replace(" ", "");
 		if(result.contains("E")) {
 			double Power = Math.pow(10D, Double.parseDouble(result.substring(result.indexOf("E")+1)));
 			double WithoutPower = Double.parseDouble(result.substring(0, result.indexOf("E")));
@@ -69,12 +71,12 @@ public class MessageUtils {
 	}
 	
 	public static String getDateArrangedByHeight(String date) {
-		date = date.replaceAll("/", "").replaceAll("-", "").replaceAll(" ", "").replaceAll(":", "");
+		date = date.replace("/", "").replace("-", "").replace(" ", "").replace(":", "");
 		return date.substring(4, 8)+date.substring(2, 4)+date.substring(0, 2)+date.substring(8, 10)+date.substring(10, 12)+date.substring(12, 14);
 	}
 
 	public static Double getSeconds(String date) {
-		date = date.replaceAll("/", "").replaceAll(":", "").replaceAll("-", "").replaceAll(" ", "");
+		date = date.replace("/", "").replace(":", "").replace("-", "").replace(" ", "");
 		return Double.parseDouble(date.substring(4, 8))*(365*24*60*60)+Double.parseDouble(date.substring(0, 2))*(24*60*60)+Double.parseDouble(date.substring(2, 4))*(30*24*60*60)+Double.parseDouble(date.substring(8, 10))*(60*60)+Double.parseDouble(date.substring(10, 12))*60+Double.parseDouble(date.substring(12, 14));
 	}
 	
@@ -156,7 +158,7 @@ public class MessageUtils {
 					sentence += word.substring(0, word.length()/2)+lineBreak+lastColor+word.substring(word.length()/2, word.length())+" ";
 					maxLength += 35;
 				}
-				else if(sentence.replaceAll(lineBreak, "").replaceAll(lastColor.toString(), "").length() >= maxLength) {
+				else if(sentence.replace(lineBreak, "").replace(lastColor.toString(), "").length() >= maxLength) {
 					sentence += lineBreak+lastColor+word+" ";
 					maxLength += 35;
 				} else sentence += word+" ";

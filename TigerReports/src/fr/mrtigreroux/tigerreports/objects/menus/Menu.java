@@ -9,6 +9,7 @@ import org.bukkit.inventory.ItemStack;
 
 import fr.mrtigreroux.tigerreports.data.MenuItem;
 import fr.mrtigreroux.tigerreports.objects.CustomItem;
+import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.objects.User;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 
@@ -22,16 +23,16 @@ public abstract class Menu {
 	protected Player p;
 	protected int size;
 	protected int page;
-	protected int reportNumber;
+	protected Report r;
 	protected String action;
 	protected String target;
 	
-	public Menu(User u, int size, int page, int reportNumber, String action, String target) {
+	public Menu(User u, int size, int page, Report r, String action, String target) {
 		this.u = u;
 		this.p = u.getPlayer();
 		this.size = size;
 		this.page = page;
-		this.reportNumber = reportNumber;
+		this.r = r;
 		this.action = action;
 		this.target = target;
 	}

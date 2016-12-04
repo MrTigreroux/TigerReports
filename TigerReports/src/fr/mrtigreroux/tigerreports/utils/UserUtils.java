@@ -1,7 +1,7 @@
 package fr.mrtigreroux.tigerreports.utils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -10,24 +10,32 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import fr.mrtigreroux.tigerreports.data.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.Message;
-import fr.mrtigreroux.tigerreports.managers.FilesManager;
+import fr.mrtigreroux.tigerreports.objects.User;
 
 /**
  * @author MrTigreroux
  */
 
 public class UserUtils {
+	
+	public static HashMap<UUID, User> Users = new HashMap<>();
+	public static HashMap<String, Long> LastTimeReported = new HashMap<>();
+	public static HashMap<UUID, String> LastNameFound = new HashMap<>();
+	public static HashMap<String, String> LastUniqueIdFound = new HashMap<>();
 
 	@SuppressWarnings("deprecation")
 	public static String getUniqueId(String name) {
 		try {
 			return Bukkit.getPlayerExact(name).getUniqueId().toString();
-		} catch(Exception offlinePlayer) {
+		} catch (Exception offlinePlayer) {
 			try {
-				return Bukkit.getOfflinePlayer(name).getUniqueId().toString();
-			} catch(Exception invalidPlayer) {
-				Bukkit.getLogger().log(Level.WARNING, "TigerReports > L'UUID du pseudo <"+name+"> est introuvable.");
+				String uuid = ((uuid = LastUniqueIdFound.get(name)) != null ? uuid : Bukkit.getOfflinePlayer(name).getUniqueId().toString());
+				if(uuid != null) LastUniqueIdFound.put(name, uuid);
+				return uuid;
+			} catch (Exception invalidPlayer) {
+				Bukkit.getLogger().log(Level.WARNING, "[TigerReports] UUID of pseudo <"+name+"> not found.");
 				return null;
 			}
 		}
@@ -37,16 +45,20 @@ public class UserUtils {
 		UUID uniqueId = UUID.fromString(uuid);
 		try {
 			return Bukkit.getPlayer(uniqueId).getName();
-		} catch(Exception offlinePlayer) {
+		} catch (Exception offlinePlayer) {
 			if(uniqueId != null) {
-				for(String name : Arrays.asList(Bukkit.getOfflinePlayer(uniqueId).getName(), FilesManager.getData.getString("Data."+uuid+".Name"))) if(name != null) return name;
+				String name = ((name = LastNameFound.get(uniqueId)) != null ? name : ((name = ConfigFile.DATA.get().getString("Data."+uuid+".Name")) != null ? name : ((name = Bukkit.getOfflinePlayer(uniqueId).getName()))));
+				if(name != null) {
+					LastNameFound.put(uniqueId, name);
+					return name;
+				}
 			}
-			Bukkit.getLogger().log(Level.WARNING, "TigerReports > Le pseudo de l'UUID <"+uuid+"> est introuvable.");
+			Bukkit.getLogger().log(Level.WARNING, "[TigerReports] Pseudo of UUID <"+uuid+"> not found.");
 			return null;
 		}
 	}
 	
-	public static boolean hasPermission(CommandSender s, String permission) {
+	public static boolean checkPermission(CommandSender s, String permission) {
 		if(!s.hasPermission("tigerreports."+permission)) {
 			s.sendMessage(Message.PERMISSION_COMMAND.get());
 			if(s instanceof Player) {
@@ -57,7 +69,7 @@ public class UserUtils {
 		} else return true;
 	}
 	
-	public static boolean isPlayer(CommandSender s) {
+	public static boolean checkPlayer(CommandSender s) {
 		if(!(s instanceof Player)) {
 			s.sendMessage(Message.PLAYER_ONLY.get());
 			return false;
@@ -67,8 +79,8 @@ public class UserUtils {
 	public static Player getPlayer(String name) {
 		try {
 			Player p = Bukkit.getPlayerExact(name);
-			FilesManager.getData.set("Data."+p.getUniqueId()+".Name", p.getName());
-			FilesManager.saveData();
+			ConfigFile.DATA.get().set("Data."+p.getUniqueId()+".Name", p.getName());
+			ConfigFile.DATA.save();
 			return p;
 		} catch (Exception offlinePlayer) {
 			return null;
@@ -76,30 +88,40 @@ public class UserUtils {
 	}
 	
 	public static boolean isValid(String uuid) {
-		return FilesManager.getData.get("Data."+uuid+".Name") != null;
+		return ConfigFile.DATA.get().get("Data."+uuid+".Name") != null;
 	}
 	
 	public static boolean isOnline(String name) {
 		return getPlayer(name) != null;
 	}
-	
-	public static int getAppreciation(String uuid, String appreciation) {
-		return FilesManager.getData.get("Data."+uuid+".Appreciations."+appreciation) != null ? FilesManager.getData.getInt("Data."+uuid+".Appreciations."+appreciation) : 0;
+
+	public static int getStat(String uuid, String stat) {
+		return ConfigFile.DATA.get().get("Data."+uuid+".Statistics."+stat) != null ? ConfigFile.DATA.get().getInt("Data."+uuid+".Statistics."+stat) : 0;
 	}
 	
-	public static void addAppreciation(String uuid, String appreciation, int value) {
-		int score = getAppreciation(uuid, appreciation)+value;
-		FilesManager.getData.set("Data."+uuid+".Appreciations."+appreciation, score > 0 ? score : 0);
-		FilesManager.saveData();
+	public static void changeStat(String uuid, String stat, int value) {
+		int score = getStat(uuid, stat)+value;
+		ConfigFile.DATA.get().set("Data."+uuid+".Statistics."+stat, score > 0 ? score : 0);
+		ConfigFile.DATA.save();
 	}
 	
 	public static List<String> getNotifications(String uuid) {
-		return FilesManager.getData.get("Data."+uuid+".Notifications") != null ? FilesManager.getData.getStringList("Data."+uuid+".Notifications") : new ArrayList<String>();
+		return ConfigFile.DATA.get().get("Data."+uuid+".Notifications") != null ? ConfigFile.DATA.get().getStringList("Data."+uuid+".Notifications") : new ArrayList<String>();
 	}
 	
 	public static void setNotifications(String uuid, List<String> notifications) {
-		FilesManager.getData.set("Data."+uuid+".Notifications", notifications);
-		FilesManager.saveData();
+		ConfigFile.DATA.get().set("Data."+uuid+".Notifications", notifications);
+		ConfigFile.DATA.save();
+	}
+	
+	public static User getUser(Player p) {
+		UUID uuid = p.getUniqueId();
+		User u = Users.get(uuid);
+		if(u == null) {
+			u = new User(p);
+			Users.put(uuid, u);
+		}
+		return u;
 	}
 	
 }

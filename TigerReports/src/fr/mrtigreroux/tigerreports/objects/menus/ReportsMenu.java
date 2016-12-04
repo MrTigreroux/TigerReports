@@ -7,6 +7,7 @@ import org.bukkit.inventory.ItemStack;
 import fr.mrtigreroux.tigerreports.data.MenuItem;
 import fr.mrtigreroux.tigerreports.data.Message;
 import fr.mrtigreroux.tigerreports.data.Permission;
+import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.objects.User;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.ReportUtils;
@@ -18,12 +19,12 @@ import fr.mrtigreroux.tigerreports.utils.ReportUtils;
 public class ReportsMenu extends Menu {
 	
 	public ReportsMenu(User u, int page) {
-		super(u, 54, page, 0, null, null);
+		super(u, 54, page, null, null, null);
 	}
 	
 	@Override
 	public void open(boolean sound) {
-		Inventory inv = getInventory(Message.REPORTS_TITLE.get().replaceAll("_Page_", ""+page), true);
+		Inventory inv = getInventory(Message.REPORTS_TITLE.get().replace("_Page_", ""+page), true);
 		
 		inv.setItem(4, MenuItem.REPORTS_ICON.get());
 		int firstReport = 1;
@@ -34,7 +35,7 @@ public class ReportsMenu extends Menu {
 		int totalReports = ReportUtils.getTotalReports();
 		for(int reportNumber = firstReport; reportNumber <= firstReport+26; reportNumber++) {
 			if(reportNumber > totalReports) break;
-			inv.setItem(reportNumber-firstReport+18, ReportUtils.getItem(reportNumber, Message.REPORT_SHOW_ACTION.get()+(u.hasPermission(Permission.REMOVE) ? Message.REPORT_REMOVE_ACTION.get() : null)));
+			inv.setItem(reportNumber-firstReport+18, new Report(reportNumber).getItem(Message.REPORT_SHOW_ACTION.get()+(u.hasPermission(Permission.REMOVE) ? Message.REPORT_REMOVE_ACTION.get() : null)));
 		}
 		
 		if(firstReport+26 < totalReports) inv.setItem(size-3, MenuItem.PAGE_SWITCH_NEXT.get());
@@ -46,9 +47,9 @@ public class ReportsMenu extends Menu {
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
 		if(slot >= 18 && slot <= size-9) {
-			int reportNumber = slot-18+((page-1)*27)+1;
-			if(click.equals(ClickType.DROP) && u.hasPermission(Permission.REMOVE)) u.openConfirmationMenu(reportNumber, "REMOVE");
-			else u.openReportMenu(reportNumber);
+			Report r = new Report(slot-18+((page-1)*27)+1);
+			if(click.equals(ClickType.DROP) && u.hasPermission(Permission.REMOVE)) u.openConfirmationMenu(r, "REMOVE");
+			else u.openReportMenu(r);
 		}
 	}
 	

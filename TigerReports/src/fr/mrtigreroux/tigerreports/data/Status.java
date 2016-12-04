@@ -8,28 +8,28 @@ import org.bukkit.Material;
 
 public enum Status {
 
-	WAITING(Message.WAITING.get(), Material.PAPER, 5),
-	IN_PROGRESS(Message.IN_PROGRESS.get(), Material.PAPER, 4),
-	IMPORTANT(Message.IMPORTANT.get(), Material.EMPTY_MAP, 14),
-	DONE(Message.DONE.get(), Material.BOOK, 3);
+	WAITING(Message.WAITING, Material.PAPER, 5),
+	IN_PROGRESS(Message.IN_PROGRESS, Material.PAPER, 4),
+	IMPORTANT(Message.IMPORTANT, Material.EMPTY_MAP, 14),
+	DONE(Message.DONE, Material.BOOK, 3);
 	
 	
-	private final String word;
+	private final Message word;
 	private final Material material;
 	private final int color;
 	
-	Status(String word, Material material, int color) {
+	Status(Message word, Material material, int color) {
 		this.word = word;
 		this.material = material;
 		this.color = color;
 	}
 
 	public String getConfigWord() {
-		return toString().substring(0, 1).toUpperCase()+toString().substring(1, toString().length()).toLowerCase().replaceAll("_", " ");
+		return toString().substring(0, 1).toUpperCase()+toString().substring(1, toString().length()).toLowerCase().replace("_", " ");
 	}
 	
 	public String getWord(String processor) {
-		return processor != null ? word.replaceAll("_Name_", processor) : word;
+		return processor != null ? word.get().replace("_Name_", processor) : word.get();
 	}
 	
 	public Material getMaterial() {
