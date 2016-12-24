@@ -51,7 +51,6 @@ public class User {
 	private String lastMessages = null;
 	private boolean notifications = true;
 	
-	
 	public User(Player p) {
 		this.p = p;
 		this.uuid = p.getUniqueId();

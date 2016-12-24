@@ -36,8 +36,7 @@ public class MessageUtils {
 	}
 
 	public static void sendStaffMessage(Object message, Sound sound) {
-		boolean isTextComponent = false;
-		if(message instanceof TextComponent) isTextComponent = true;
+		boolean isTextComponent = message instanceof TextComponent;
 		for(Player p : Bukkit.getOnlinePlayers()) {
 			User u = UserUtils.getUser(p);
 			if(u.hasPermission(Permission.STAFF) && u.acceptsNotifications()) {

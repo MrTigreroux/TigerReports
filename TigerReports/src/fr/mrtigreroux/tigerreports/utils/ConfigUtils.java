@@ -92,4 +92,8 @@ public class ConfigUtils {
 		return ConfigFile.CONFIG.get().getInt("Config.ReportedImmunity")*1000;
 	}
 	
+	public static int getReportsNotificationsInterval() {
+		return ConfigFile.CONFIG.get().getInt("Config.ReportsNotifications.MinutesInterval")*1200;
+	}
+	
 }

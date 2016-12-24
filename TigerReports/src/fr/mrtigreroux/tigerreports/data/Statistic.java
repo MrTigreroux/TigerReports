@@ -4,6 +4,10 @@ import org.bukkit.Material;
 
 import fr.mrtigreroux.tigerreports.objects.CustomItem;
 
+/**
+ * @author MrTigreroux
+ */
+
 public enum Statistic {
 
 	TRUE_APPRECIATION(20, "Appreciations.True", Message.APPRECIATION, Message.TRUE, new CustomItem().type(Material.STAINED_CLAY).damage((short) 5)),

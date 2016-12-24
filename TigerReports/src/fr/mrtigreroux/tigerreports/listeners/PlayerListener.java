@@ -11,10 +11,14 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.server.ServerCommandEvent;
 
 import fr.mrtigreroux.tigerreports.commands.HelpCommand;
 import fr.mrtigreroux.tigerreports.data.ConfigFile;
+import fr.mrtigreroux.tigerreports.data.Permission;
+import fr.mrtigreroux.tigerreports.runnables.ReportsNotifier;
+import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 @SuppressWarnings("deprecation")
@@ -27,9 +31,18 @@ public class PlayerListener implements Listener {
 		Player p = e.getPlayer();
 		String uuid = p.getUniqueId().toString();
 		for(String notification : UserUtils.getNotifications(uuid)) UserUtils.getUser(p).sendNotification(notification);
+		if(p.hasPermission(Permission.STAFF.get()) && ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.ReportsNotifications.Connection")) {
+			String reportsNotifications = ReportsNotifier.getReportsNotification();
+			if(reportsNotifications != null) p.sendMessage(reportsNotifications);
+		}
 
 		ConfigFile.DATA.get().set("Data."+uuid+".Name", p.getName());
 		ConfigFile.DATA.save();
+	}
+	
+	@EventHandler
+	public void onPlayerQuit(PlayerQuitEvent e) {
+		UserUtils.Users.remove(e.getPlayer().getUniqueId());
 	}
 	
 	@EventHandler

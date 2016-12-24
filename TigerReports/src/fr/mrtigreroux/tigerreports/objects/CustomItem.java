@@ -83,11 +83,6 @@ public class CustomItem {
 		if(strings != null) this.lore = Arrays.asList(strings);
 		return this;
 	}
-
-	public CustomItem lore(List<String> lore) {
-		this.lore = lore;
-		return this;
-	}
 	
 	public CustomItem skullOwner(String name) {
 		skullOwner = name;
@@ -123,6 +118,7 @@ public class CustomItem {
 			skullM.setOwner(skullOwner);
 			item.setItemMeta(skullM);
 		}
+		
 		if(displayName != null || lore != null || hideFlags) {
 			ItemMeta itemM = item.getItemMeta();
 			if(hideFlags) itemM.addItemFlags(ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_POTION_EFFECTS, ItemFlag.HIDE_UNBREAKABLE, ItemFlag.HIDE_DESTROYS, ItemFlag.HIDE_PLACED_ON);
@@ -134,12 +130,14 @@ public class CustomItem {
 			if(lore != null) itemM.setLore(lore);
 			item.setItemMeta(itemM);
 		}
+		
 		if(enchantments != null) {
 			for(Enchantment enchant : enchantments.keySet()) {
 				int level = enchantments.get(enchant).intValue();
 				item.addUnsafeEnchantment(enchant, level);
 			}
 		}
+		
 		return item;
 	}
 	

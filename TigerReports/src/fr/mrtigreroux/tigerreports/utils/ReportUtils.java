@@ -13,7 +13,7 @@ public class ReportUtils {
 	}
 	
 	public static int getNewReportNumber() {
-		for(int reportNumber = 1; reportNumber <= getMaxReports(); reportNumber++) if(ConfigFile.REPORTS.get().get(getConfigPath(reportNumber)) == null) return reportNumber;
+		for(int reportNumber = 1; reportNumber <= getMaxReports(); reportNumber++) if(!exist(reportNumber)) return reportNumber;
 		return -1;
 	}
 

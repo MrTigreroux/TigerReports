@@ -2,12 +2,16 @@ package fr.mrtigreroux.tigerreports;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import fr.mrtigreroux.tigerreports.commands.ReportCommand;
+import fr.mrtigreroux.tigerreports.commands.ReportsCommand;
 import fr.mrtigreroux.tigerreports.data.ConfigFile;
-import fr.mrtigreroux.tigerreports.managers.CommandsManager;
-import fr.mrtigreroux.tigerreports.managers.FilesManager;
-import fr.mrtigreroux.tigerreports.managers.ListenersManager;
+import fr.mrtigreroux.tigerreports.listeners.InventoryListener;
+import fr.mrtigreroux.tigerreports.listeners.PlayerListener;
+import fr.mrtigreroux.tigerreports.listeners.SignListener;
+import fr.mrtigreroux.tigerreports.runnables.ReportsNotifier;
 import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 /**
@@ -22,11 +26,20 @@ public class TigerReports extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		instance = this;
-		FilesManager.loadFiles();
-		CommandsManager.registerCommands();
-		ListenersManager.registerListeners();
+		loadFiles();
+		
+		PluginManager pm = Bukkit.getServer().getPluginManager();
+		pm.registerEvents(new InventoryListener(), this);
+		pm.registerEvents(new SignListener(), this);
+		pm.registerEvents(new PlayerListener(), this);
+		
+		this.getCommand("report").setExecutor(new ReportCommand());
+		this.getCommand("reports").setExecutor(new ReportsCommand());
+		
 		for(Player p : Bukkit.getOnlinePlayers()) ConfigFile.DATA.get().set("Data."+p.getUniqueId()+".Name", p.getName());
 		ConfigFile.DATA.save();
+		
+		ReportsNotifier.start();
 	}
 	
 	@Override
@@ -36,6 +49,10 @@ public class TigerReports extends JavaPlugin {
 	
 	public static TigerReports getInstance() {
 		return instance;
+	}
+	
+	public static void loadFiles() {
+		for(ConfigFile configFiles : ConfigFile.values()) configFiles.load();
 	}
 	
 }

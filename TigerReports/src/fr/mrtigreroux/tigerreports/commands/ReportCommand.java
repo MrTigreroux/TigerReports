@@ -36,14 +36,9 @@ public class ReportCommand implements CommandExecutor {
 
 	@Override
 	public boolean onCommand(CommandSender s, Command cmd, String label, String[] args) {
-		if(!UserUtils.checkPlayer(s) || (ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.PermissionRequired") && !UserUtils.checkPermission(s, Permission.REPORT.get()))) return true;
+		if(!UserUtils.checkPlayer(s) || (ReportUtils.permissionRequired() && !UserUtils.checkPermission(s, Permission.REPORT.get()))) return true;
 		Player p = (Player) s;
 		User u = UserUtils.getUser(p);
-		
-		if(ReportUtils.permissionRequired() && !u.hasPermission(Permission.REPORT)) {
-			MessageUtils.sendErrorMessage(s, Message.PERMISSION_COMMAND.get());
-			return true;
-		}
 		
 		String cooldown = u.getCooldown();
 		if(cooldown != null) {

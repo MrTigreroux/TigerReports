@@ -5,12 +5,13 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.Message;
 import fr.mrtigreroux.tigerreports.data.Permission;
 import fr.mrtigreroux.tigerreports.data.Status;
-import fr.mrtigreroux.tigerreports.managers.FilesManager;
 import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.objects.User;
+import fr.mrtigreroux.tigerreports.runnables.ReportsNotifier;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 import fr.mrtigreroux.tigerreports.utils.ReportUtils;
@@ -27,7 +28,8 @@ public class ReportsCommand implements CommandExecutor {
 		if(args.length == 1 && args[0].equalsIgnoreCase("reload")) {
 			if(!s.hasPermission(Permission.MANAGE.get())) MessageUtils.sendErrorMessage(s, Message.PERMISSION_COMMAND.get());
 			else {
-				FilesManager.loadFiles();
+				TigerReports.loadFiles();
+				ReportsNotifier.start();
 				s.sendMessage(Message.RELOAD.get());
 			}
 			return true;
@@ -44,13 +46,9 @@ public class ReportsCommand implements CommandExecutor {
 		if(args.length == 0) u.openReportsMenu(1, true);
 		else if(args.length == 1) {
 			if(args[0].equalsIgnoreCase("notify")) {
-				if(u.acceptsNotifications()) {
-					u.setNotifications(false);
-					p.sendMessage(Message.NOTIFICATIONS.get().replace("_State_", Message.ACTIVATED.get()));
-				} else {
-					u.setNotifications(true);
-					p.sendMessage(Message.NOTIFICATIONS.get().replace("_State_", Message.DISABLED.get()));
-				}
+				boolean acceptsNotifications = u.acceptsNotifications();
+				u.setNotifications(!acceptsNotifications);
+				p.sendMessage(Message.NOTIFICATIONS.get().replace("_State_", (acceptsNotifications ? Message.DISABLED : Message.ACTIVATED).get()));
 			} else if(args[0].equalsIgnoreCase("archiveall")) {
 				if(!u.hasPermission(Permission.ARCHIVE)) MessageUtils.sendErrorMessage(s, Message.PERMISSION_COMMAND.get());
 				else {

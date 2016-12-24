@@ -9,6 +9,10 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
 
+/**
+ * @author MrTigreroux
+ */
+
 public enum ConfigFile {
 
 	CONFIG, DATA, MESSAGES, REPORTS;
