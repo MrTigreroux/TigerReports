@@ -10,6 +10,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import fr.mrtigreroux.tigerreports.data.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.MenuItem;
 import fr.mrtigreroux.tigerreports.data.Message;
 import fr.mrtigreroux.tigerreports.data.Permission;
@@ -76,7 +77,7 @@ public class ReportMenu extends Menu {
 		inv.setItem(MenuItem.COMMENTS.getPosition(), MenuItem.COMMENTS.getWithDetails(Message.COMMENTS_DETAILS.get()));
 		
 		p.openInventory(inv);
-		if(sound) p.playSound(p.getLocation(), ConfigUtils.getMenuSound(), 1, 1);
+		if(sound) u.playSound(ConfigSound.MENU.get());
 		u.setOpenedMenu(this);
 	}
 
@@ -103,7 +104,7 @@ public class ReportMenu extends Menu {
 			UserUtils.getUser(s).startCooldown(seconds);
 			String time = MessageUtils.convertToSentence(seconds);
 			s.sendMessage(Message.PUNISHED.get().replace("_Time_", time));
-			MessageUtils.sendStaffMessage(Message.STAFF_PUNISH.get().replace("_Player_", p.getName()).replace("_Signalman_", s.getName()).replace("_Time_", time), ConfigUtils.getStaffSound());
+			MessageUtils.sendStaffMessage(Message.STAFF_PUNISH.get().replace("_Player_", p.getName()).replace("_Signalman_", s.getName()).replace("_Time_", time), ConfigSound.STAFF.get());
 			r.setAppreciation("False");
 			r.setDone(u.getPlayer().getUniqueId());
 			u.openReportsMenu(1, false);
@@ -140,7 +141,7 @@ public class ReportMenu extends Menu {
 				locType = "OLD";
 			} else return;
 			p.teleport(loc);
-			p.playSound(p.getLocation(), ConfigUtils.getTeleportSound(), 1, 1);
+			u.playSound(ConfigSound.TELEPORT.get());
 			p.sendMessage(Message.valueOf("TELEPORT_"+locType+"_LOCATION").get().replace("_Player_", Message.valueOf(type.toUpperCase()+"_NAME").get().replace("_Player_", name)).replace("_Report_", r.getName()));
 		} else if(u.hasPermission(Permission.ARCHIVE)) {
 			if(slot >= 29 && slot <= 31) {

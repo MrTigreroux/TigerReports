@@ -7,11 +7,11 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import fr.mrtigreroux.tigerreports.data.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.MenuItem;
 import fr.mrtigreroux.tigerreports.objects.CustomItem;
 import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.objects.User;
-import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 
 /**
  * @author MrTigreroux
@@ -54,7 +54,7 @@ public abstract class Menu {
 		if(slot == -1 || item == null || item.getType() == Material.AIR || (item.getType() == Material.STAINED_GLASS_PANE && ((slot >= size-9 && slot <= size-1) || (slot >= 9 && slot <= 17)))) return;
 		if(slot == size-5 && item.isSimilar(MenuItem.CLOSE.get())) {
 			p.closeInventory();
-			p.playSound(p.getLocation(), ConfigUtils.getMenuSound(), 1, 1);
+			u.playSound(ConfigSound.MENU.get());
 			return;
 		}
 		if(page != 0) {

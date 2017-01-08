@@ -18,6 +18,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 
 import fr.mrtigreroux.tigerreports.data.ConfigFile;
+import fr.mrtigreroux.tigerreports.data.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.Message;
 import fr.mrtigreroux.tigerreports.data.Permission;
 import fr.mrtigreroux.tigerreports.data.Status;
@@ -98,7 +99,7 @@ public class ReportCommand implements CommandExecutor {
 		int reportNumber = ReportUtils.getNewReportNumber();
 		Report r = new Report(reportNumber);
 		
-		if(reportNumber == -1) MessageUtils.sendStaffMessage(Message.STAFF_MAX_REPORTS_REACHED.get().replace("_Number_", ""+ReportUtils.getMaxReports()), ConfigUtils.getStaffSound());
+		if(reportNumber == -1) MessageUtils.sendStaffMessage(Message.STAFF_MAX_REPORTS_REACHED.get().replace("_Number_", ""+ReportUtils.getMaxReports()), ConfigSound.STAFF.get());
 		else {
 			String reportPath = r.getConfigPath();
 			r.setStatus(Status.WAITING);
@@ -141,7 +142,7 @@ public class ReportCommand implements CommandExecutor {
 			alert.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/reports #"+reportNumber));
 			alert.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(Message.ALERT_DETAILS.get().replace("_Report_", r.getName())).create()));
 		}
-		MessageUtils.sendStaffMessage(alert, ConfigUtils.getReportSound());
+		MessageUtils.sendStaffMessage(alert, ConfigSound.REPORT.get());
 		
 		s.sendMessage(Message.REPORT_SENT.get().replace("_Player_", r.getPlayerName("Reported", false)).replace("_Reason_", reason));
 		u.startCooldown(ReportUtils.getCooldown());

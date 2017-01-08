@@ -21,6 +21,10 @@ import fr.mrtigreroux.tigerreports.runnables.ReportsNotifier;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
+/**
+ * @author MrTigreroux
+ */
+
 @SuppressWarnings("deprecation")
 public class PlayerListener implements Listener {
 

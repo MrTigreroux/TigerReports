@@ -7,17 +7,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import fr.mrtigreroux.tigerreports.data.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.Message;
 import fr.mrtigreroux.tigerreports.data.Permission;
-import fr.mrtigreroux.tigerreports.objects.User;
 
 /**
  * @author MrTigreroux
@@ -32,20 +35,18 @@ public class MessageUtils {
 		s.sendMessage(message);
 		if(!(s instanceof Player)) return;
 		Player p = (Player) s;
-		p.playSound(p.getLocation(), ConfigUtils.getErrorSound(), 1, 1);
+		p.playSound(p.getLocation(), ConfigSound.ERROR.get(), 1, 1);
 	}
 
 	public static void sendStaffMessage(Object message, Sound sound) {
 		boolean isTextComponent = message instanceof TextComponent;
 		for(Player p : Bukkit.getOnlinePlayers()) {
-			User u = UserUtils.getUser(p);
-			if(u.hasPermission(Permission.STAFF) && u.acceptsNotifications()) {
-				if(isTextComponent) p.spigot().sendMessage((TextComponent) message);
-				else p.sendMessage((String) message);
-				if(sound != null) p.playSound(p.getLocation(), sound, 1, 1);
-			}
+			if(!p.hasPermission(Permission.STAFF.get()) || !UserUtils.getUser(p).acceptsNotifications()) continue;
+			if(isTextComponent) p.spigot().sendMessage((TextComponent) message);
+			else p.sendMessage((String) message);
+			if(sound != null) p.playSound(p.getLocation(), sound, 1, 1);
 		}
-		if(isTextComponent) sendConsoleMessage(((TextComponent) message).getText());
+		if(isTextComponent) sendConsoleMessage(((TextComponent) message).toLegacyText());
 		else sendConsoleMessage((String) message);
 	}
 
@@ -57,10 +58,10 @@ public class MessageUtils {
 		String process = number+" ";
 		String result = process.replace(".0 ", "").replace(" ", "");
 		if(result.contains("E")) {
-			double Power = Math.pow(10D, Double.parseDouble(result.substring(result.indexOf("E")+1)));
-			double WithoutPower = Double.parseDouble(result.substring(0, result.indexOf("E")));
-			long Total = (long) (WithoutPower * Power);
-			result = ""+Total;
+			double power = Math.pow(10D, Double.parseDouble(result.substring(result.indexOf("E")+1)));
+			double withoutPower = Double.parseDouble(result.substring(0, result.indexOf("E")));
+			long total = (long) (withoutPower * power);
+			result = ""+total;
 		}
 		return result;
 	}
@@ -137,10 +138,11 @@ public class MessageUtils {
 		}
 		return date;
 	}
-	
 	public static ChatColor getLastColor(String text, String lastWord) {
 		String color = null;
-		for(String code : ChatColor.getLastColors(text.substring(0, text.indexOf(lastWord))).split("§")) if(colorCodes.contains(code)) color = code;
+		int index = lastWord != null ? text.indexOf(lastWord) : text.length();
+		if(index == 0) return ChatColor.WHITE;
+		for(String code : org.bukkit.ChatColor.getLastColors(text.substring(0, index)).split("§")) if(colorCodes.contains(code)) color = code;
 		if(color == null) color = "f";
 		return ChatColor.getByChar(color.charAt(0));
 	}
@@ -156,8 +158,7 @@ public class MessageUtils {
 				if(word.length() >= 25) {
 					sentence += word.substring(0, word.length()/2)+lineBreak+lastColor+word.substring(word.length()/2, word.length())+" ";
 					maxLength += 35;
-				}
-				else if(sentence.replace(lineBreak, "").replace(lastColor.toString(), "").length() >= maxLength) {
+				} else if(sentence.replace(lineBreak, "").replace(lastColor.toString(), "").length() >= maxLength) {
 					sentence += lineBreak+lastColor+word+" ";
 					maxLength += 35;
 				} else sentence += word+" ";
@@ -172,6 +173,24 @@ public class MessageUtils {
 				}
 			}
 			return sentence;
+		}
+	}
+	
+	public static Object getAdvancedMessage(String line, String placeHolder, String replacement, String hover, String command) {
+		if(!line.contains(placeHolder)) return line;
+		else {
+			TextComponent advancedLine = new TextComponent("");
+			for(String part : line.replace(placeHolder, "¤µ¤"+placeHolder+"¤µ¤").split("¤µ¤")) {
+				if(!part.equals(placeHolder)) advancedLine.addExtra(part);
+				else {
+					TextComponent advancedText = new TextComponent(replacement);
+					advancedText.setColor(ChatColor.valueOf(MessageUtils.getLastColor(replacement, null).name()));
+					advancedText.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(hover.replace(ConfigUtils.getLineBreakSymbol(), "\n")).create()));
+					if(command != null) advancedText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command));
+					advancedLine.addExtra(advancedText);
+				} 
+			}
+			return advancedLine;
 		}
 	}
 	

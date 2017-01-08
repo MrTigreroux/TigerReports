@@ -7,6 +7,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import fr.mrtigreroux.tigerreports.data.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.MenuItem;
 import fr.mrtigreroux.tigerreports.data.Message;
 import fr.mrtigreroux.tigerreports.objects.CustomItem;
@@ -45,7 +46,7 @@ public class ProcessMenu extends Menu {
 		inv.setItem(18, MenuItem.CANCEL_APPRECIATION.get());
 		
 		p.openInventory(inv);
-		if(sound) p.playSound(p.getLocation(), ConfigUtils.getMenuSound(), 1, 1);
+		if(sound) u.playSound(ConfigSound.MENU.get());
 		u.setOpenedMenu(this);
 	}
 
@@ -56,7 +57,7 @@ public class ProcessMenu extends Menu {
 			r.setAppreciation(appreciation);
 			r.setDone(p.getUniqueId());
 			UserUtils.changeStat(UserUtils.getUniqueId(r.getPlayerName("Signalman", false)), "Appreciations."+appreciation, 1);
-			MessageUtils.sendStaffMessage(Message.STAFF_PROCESS.get().replace("_Player_", p.getName()).replace("_Report_", r.getName()).replace("_Appreciation_", Message.valueOf(appreciation.toUpperCase()).get()), ConfigUtils.getStaffSound());
+			MessageUtils.sendStaffMessage(Message.STAFF_PROCESS.get().replace("_Player_", p.getName()).replace("_Report_", r.getName()).replace("_Appreciation_", Message.valueOf(appreciation.toUpperCase()).get()), ConfigSound.STAFF.get());
 			u.openReportsMenu(1, false);
 		} else if(slot == MenuItem.CANCEL_APPRECIATION.getPosition()) u.openReportMenu(r);
 	}

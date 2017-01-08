@@ -6,6 +6,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import fr.mrtigreroux.tigerreports.data.ConfigFile;
+import fr.mrtigreroux.tigerreports.data.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.MenuItem;
 import fr.mrtigreroux.tigerreports.data.Message;
 import fr.mrtigreroux.tigerreports.objects.CustomItem;
@@ -42,14 +43,14 @@ public class ReasonMenu extends Menu {
 		
 		if(ConfigUtils.exist(ConfigFile.CONFIG.get(), "Config.DefaultReasons.Reason"+(firstReason+27))) inv.setItem(size-3, MenuItem.PAGE_SWITCH_NEXT.get());
 		p.openInventory(inv);
-		if(sound) p.playSound(p.getLocation(), ConfigUtils.getMenuSound(), 1, 1);
+		if(sound) u.playSound(ConfigSound.MENU.get());
 		u.setOpenedMenu(this);
 	}
 
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
 		if(slot >= 18 && slot <= size-9) {
-			p.playSound(p.getLocation(), ConfigUtils.getMenuSound(), 1, 1);
+			u.playSound(ConfigSound.MENU.get());
 			p.chat("/report "+target+" "+ConfigFile.CONFIG.get().getString("Config.DefaultReasons.Reason"+(slot-18+((page-1)*27)+1)+".Name"));
 			p.closeInventory();
 		}

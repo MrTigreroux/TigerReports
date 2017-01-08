@@ -9,6 +9,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import fr.mrtigreroux.tigerreports.data.ConfigFile;
+import fr.mrtigreroux.tigerreports.data.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.MenuItem;
 import fr.mrtigreroux.tigerreports.data.Message;
 import fr.mrtigreroux.tigerreports.data.Permission;
@@ -54,7 +55,7 @@ public class CommentsMenu extends Menu {
 		
 		if(firstComment+26 < totalComments) inv.setItem(size-3, MenuItem.PAGE_SWITCH_NEXT.get());
 		p.openInventory(inv);
-		if(sound) p.playSound(p.getLocation(), ConfigUtils.getMenuSound(), 1, 1);
+		if(sound) u.playSound(ConfigSound.MENU.get());
 		u.setOpenedMenu(this);
 	}
 

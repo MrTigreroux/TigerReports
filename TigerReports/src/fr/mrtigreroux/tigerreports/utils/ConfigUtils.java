@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 
 import fr.mrtigreroux.tigerreports.data.ConfigFile;
@@ -32,37 +31,6 @@ public class ConfigUtils {
 	
 	public static boolean exist(ConfigurationSection config, String path) {
 		return config.get(path) != null;
-	}
-
-	public static Sound getSound(String type, String default1, String default2) {
-		String path = "Config."+type;
-		String configSound = ConfigFile.CONFIG.get().getString(path) != null ? ConfigFile.CONFIG.get().getString(path).toUpperCase() : "";
-		for(String sound : Arrays.asList(configSound, default1, default2)) {
-			try {
-				return Sound.valueOf(sound);
-			} catch (Exception invalidSound) {}
-		}
-		return null;
-	}
-	
-	public static Sound getMenuSound() {
-		return getSound("MenuSound", "ITEM_PICKUP", "ENTITY_ITEM_PICKUP");
-	}
-
-	public static Sound getErrorSound() {
-		return getSound("ErrorSound", "ITEM_BREAK", "ENTITY_ITEM_BREAK");
-	}
-
-	public static Sound getReportSound() {
-		return getSound("ReportSound", "BAT_DEATH", "ENTITY_BAT_DEATH");
-	}
-
-	public static Sound getTeleportSound() {
-		return getSound("TeleportSound", "ENDERMAN_TELEPORT", "ENTITY_ENDERMEN_TELEPORT");
-	}
-
-	public static Sound getStaffSound() {
-		return getSound("StaffSound", "ITEM_PICKUP", "ENTITY_ITEM_PICKUP");
 	}
 
 	public static Material getMaterial(ConfigurationSection config, String path) {

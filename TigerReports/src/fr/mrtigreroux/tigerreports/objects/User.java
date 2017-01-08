@@ -5,14 +5,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -20,6 +17,7 @@ import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 
 import fr.mrtigreroux.tigerreports.data.ConfigFile;
+import fr.mrtigreroux.tigerreports.data.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.Message;
 import fr.mrtigreroux.tigerreports.data.Permission;
 import fr.mrtigreroux.tigerreports.objects.menus.ProcessMenu;
@@ -59,6 +57,10 @@ public class User {
 	public Player getPlayer() {
 		return p;
 	}
+
+	public void playSound(Sound sound) {
+		if(sound != null) p.playSound(p.getLocation(), sound, 1, 1);
+	}
 	
 	public String getCooldown() {
 		String cooldown = ConfigFile.DATA.get().get("Data."+uuid+".Cooldown") != null ? ConfigFile.DATA.get().getString("Data."+uuid+".Cooldown") : MessageUtils.getNowDate();
@@ -73,7 +75,7 @@ public class User {
 	}
 
 	public void stopCooldown(String author) {
-		MessageUtils.sendStaffMessage(Message.STAFF_STOPCOOLDOWN.get().replace("_Player_", author).replace("_Target_", p.getName()), ConfigUtils.getStaffSound());
+		MessageUtils.sendStaffMessage(Message.STAFF_STOPCOOLDOWN.get().replace("_Player_", author).replace("_Target_", p.getName()), ConfigSound.STAFF.get());
 		p.sendMessage(Message.COOLDOWN_STOPPED.get());
 		ConfigFile.DATA.get().set("Data."+uuid+".Cooldown", null);
 		ConfigFile.DATA.save();
@@ -119,6 +121,61 @@ public class User {
 	public boolean hasPermission(Permission permission) {
 		return p.hasPermission(permission.get());
 	}
+	
+	public void updateLastMessages(String newMessage) {
+		int lastMessagesNumber = ConfigUtils.getMessagesHistory();
+		if(lastMessagesNumber <= 0) return;
+		
+		ArrayList<String> lastMessagesList = new ArrayList<String>();
+		if(lastMessages != null) lastMessagesList = new ArrayList<String>(Arrays.asList(lastMessages.split("#next#")));
+		if(lastMessagesList.size() >= lastMessagesNumber) lastMessagesList.remove(0);
+		lastMessagesList.add(newMessage);
+		this.lastMessages = String.join("#next#", lastMessagesList);
+		save();
+	}
+	
+	public String getLastMessages() {
+		return lastMessages;
+	}
+	
+	public void sendMessage(Object message) {
+		if(message instanceof TextComponent) p.spigot().sendMessage((TextComponent) message);
+		else p.sendMessage((String) message);
+	}
+	
+	public void printInChat(Report r, String[] lines) {
+		String reportName = r.getName();
+		for(String line : lines) sendMessage(MessageUtils.getAdvancedMessage(line, "_ReportButton_", Message.REPORT_BUTTON.get().replace("_Report_", reportName), Message.ALERT_DETAILS.get().replace("_Report_", reportName), "/reports #"+r.getNumber()));
+		playSound(ConfigSound.MENU.get());
+		p.closeInventory();
+	}
+	
+	public boolean acceptsNotifications() {
+		return notifications;
+	}
+	
+	public void setNotifications(boolean state) {
+		notifications = state;
+		save();
+	}
+	
+	public void sendNotification(String comment) {
+		try {
+			Report r = new Report(Integer.parseInt(comment.split(":")[0].replaceFirst("Report#", "")));
+			String commentPath = r.getConfigPath()+".Comments.Comment"+comment.split(":")[1].replaceFirst("Comment#", "");
+			if(!ConfigFile.REPORTS.get().getString(commentPath+".Status").equals("Sent")) return;
+			p.sendMessage(Message.COMMENT_NOTIFICATION.get().replace("_Player_", ConfigFile.REPORTS.get().getString(commentPath+".Author"))
+					.replace("_Reported_", r.getPlayerName("Reported", false)).replace("_Time_", MessageUtils.convertToSentence(MessageUtils.getSeconds(MessageUtils.getNowDate())-MessageUtils.getSeconds(r.getDate())))
+					.replace("_Message_", ConfigFile.REPORTS.get().getString(commentPath+".Message")));
+			List<String> notifications = UserUtils.getNotifications(uuid.toString());
+			notifications.remove(comment);
+			UserUtils.setNotifications(uuid.toString(), notifications);
+			ConfigFile.REPORTS.get().set(commentPath+".Status", "Read");
+			ConfigFile.REPORTS.save();
+		} catch(Exception invalidNotification) {
+			;
+		}
+	}
 
 	@SuppressWarnings("deprecation")
 	public void comment(int reportNumber) {
@@ -146,7 +203,9 @@ public class User {
 			ReflectionUtils.setDeclaredField(tileEntity, "isEditable", true);
 			ReflectionUtils.setDeclaredField(tileEntity, "h", ReflectionUtils.getHandle(p));
 			ReflectionUtils.sendPacket(p,  ReflectionUtils.getPacket("PacketPlayOutOpenSignEditor", ReflectionUtils.callDeclaredConstructor(ReflectionUtils.getNMSClass("BlockPosition"), s.getX(), s.getY(), s.getZ())));
-		} catch(Exception Error) {}
+		} catch(Exception Error) {
+			;
+		}
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -160,78 +219,20 @@ public class User {
 		save();
 	}
 	
-	public void sendNotification(String comment) {
-		try {
-			Report r = new Report(Integer.parseInt(comment.split(":")[0].replaceFirst("Report#", "")));
-			String commentPath = r.getConfigPath()+".Comments.Comment"+comment.split(":")[1].replaceFirst("Comment#", "");
-			if(!ConfigFile.REPORTS.get().getString(commentPath+".Status").equals("Sent")) return;
-			p.sendMessage(Message.COMMENT_NOTIFICATION.get().replace("_Player_", ConfigFile.REPORTS.get().getString(commentPath+".Author"))
-					.replace("_Reported_", r.getPlayerName("Reported", false)).replace("_Time_", MessageUtils.convertToSentence(MessageUtils.getSeconds(MessageUtils.getNowDate())-MessageUtils.getSeconds(r.getDate())))
-					.replace("_Message_", ConfigFile.REPORTS.get().getString(commentPath+".Message")));
-			List<String> notifications = UserUtils.getNotifications(uuid.toString());
-			notifications.remove(comment);
-			UserUtils.setNotifications(uuid.toString(), notifications);
-			ConfigFile.REPORTS.get().set(commentPath+".Status", "Read");
-			ConfigFile.REPORTS.save();
-		} catch(Exception invalidNotification) {
-			;
-		}
-	}
-	
-	public String getLastMessages() {
-		return lastMessages;
-	}
-	
-	public void updateLastMessages(String newMessage) {
-		int lastMessagesNumber = ConfigUtils.getMessagesHistory();
-		if(lastMessagesNumber <= 0) return;
-		
-		ArrayList<String> lastMessagesList = new ArrayList<String>();
-		if(lastMessages != null) lastMessagesList = new ArrayList<String>(Arrays.asList(lastMessages.split("#next#")));
-		if(lastMessagesList.size() >= lastMessagesNumber) lastMessagesList.remove(0);
-		lastMessagesList.add(newMessage);
-		this.lastMessages = String.join("#next#", lastMessagesList);
-		save();
-	}
-	
-	public void printInChat(Report r, String[] lines) {
-		String reportName = r.getName();
-		for(String line : lines) {
-			if(line.contains("_ReportButton_")) {
-				TextComponent reportButton = new TextComponent(Message.REPORT_BUTTON.get().replace("_Report_", reportName));
-				reportButton.setColor(ChatColor.valueOf(MessageUtils.getLastColor(Message.REPORT_BUTTON.get(), "_Report_").name()));
-				reportButton.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/reports #"+r.getNumber()));
-				reportButton.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(Message.ALERT_DETAILS.get().replace("_Report_", reportName)).create()));
-				p.spigot().sendMessage(reportButton);
-			} else p.sendMessage(line);
-		}
-		p.playSound(p.getLocation(), ConfigUtils.getMenuSound(), 1, 1);
-		p.closeInventory();
-	}
-	
-	public boolean acceptsNotifications() {
-		return notifications;
-	}
-	
-	public void setNotifications(boolean state) {
-		notifications = state;
-		save();
+	public void setCommentingReport(int reportNumber) {
+		commentingReport = reportNumber;
 	}
 	
 	public int getCommentingReport() {
 		return commentingReport;
 	}
 	
-	public void setCommentingReport(int reportNumber) {
-		commentingReport = reportNumber;
+	public void setModifiedComment(int commentNumber) {
+		modifiedComment = commentNumber;
 	}
 	
 	public int getModifiedComment() {
 		return modifiedComment;
-	}
-
-	public void setModifiedComment(int commentNumber) {
-		modifiedComment = commentNumber;
 	}
 	
 	public void save() {

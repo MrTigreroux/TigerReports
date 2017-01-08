@@ -42,6 +42,10 @@ public class Report {
 		return path;
 	}
 
+	public boolean exist() {
+		return ConfigFile.REPORTS.get().get(path) != null;
+	}
+
 	public String getName() {
 		return name;
 	}
@@ -55,6 +59,23 @@ public class Report {
 			else reportedName = name;
 		}
 		return name != null ? suffix ? name += Message.valueOf((UserUtils.isOnline(name) ? "ONLINE" : "OFFLINE")+"_SUFFIX").get() : name : Message.NOT_FOUND_MALE.get();
+	}
+	
+	public String getDate() {
+		if(date == null) date = ConfigFile.REPORTS.get().getString(path+".Date");
+		return date != null ? date.replace("-", ":") : Message.NOT_FOUND_FEMALE.get();
+	}
+	
+	public Location getOldLocation(String type) {
+		String configLoc = ConfigFile.REPORTS.get().getString(path+"."+type+".Location");
+		if(configLoc == null) return null;
+		try {
+			String world = configLoc.split(":")[0];
+			String[] coords = configLoc.replace(world+":", "").split("/");
+			return new Location(Bukkit.getWorld(world), Double.parseDouble(coords[0]), Double.parseDouble(coords[1]), Double.parseDouble(coords[2]), Float.parseFloat(coords[3]), Float.parseFloat(coords[4]));
+		} catch (Exception invalidLocation) {
+			return null;
+		}
 	}
 
 	public void setStatus(Status status) {
@@ -72,17 +93,16 @@ public class Report {
 		}
 	}
 	
-	public void setDone(UUID uuid) {
-		ConfigFile.REPORTS.get().set(path+".Status", Status.DONE.getConfigWord()+" by "+uuid);
-		ConfigFile.REPORTS.save();
-		UserUtils.changeStat(uuid.toString(), "ProcessedReports", 1);
+	public String getReason() {
+		if(reason == null) reason = MessageUtils.getMenuSentence(ConfigFile.REPORTS.get().getString(path+".Reason"), Message.REPORT_DETAILS, "_Reason_", true);
+		return reason;
 	}
-	
-	public String getProcessor() {
-		String status = ConfigFile.REPORTS.get().getString(path+".Status");
-		String processor = null;
-		if(status != null && status.startsWith(Status.DONE.getConfigWord()+" by ")) processor = UserUtils.getName(status.replaceFirst(Status.DONE.getConfigWord()+" by ", ""));
-		return processor != null ? processor : Message.NOT_FOUND_MALE.get();
+
+	public String implementDetails(String message) {
+		Status status = getStatus();
+		return message.replace("_Status_", status.equals(Status.DONE) ? status.getWord(getProcessor())+Message.APPRECIATION_SUFFIX.get().replace("_Appreciation_", getAppreciation()) : status.getWord(null))
+				.replace("_Date_", getDate()).replace("_Signalman_", getPlayerName("Signalman", true)).replace("_Reported_", getPlayerName("Reported", true))
+				.replace("_Reason_", getReason());
 	}
 	
 	public String implementData(String message, boolean advanced) {
@@ -117,35 +137,27 @@ public class Report {
 		else return "§7- §r"+messagesHistory.replace("#next#", ConfigUtils.getLineBreakSymbol()+"§7- §r");
 	}
 	
-	public String getDate() {
-		if(date == null) date = ConfigFile.REPORTS.get().getString(path+".Date");
-		return date != null ? date.replace("-", ":") : Message.NOT_FOUND_FEMALE.get();
+	public ItemStack getItem(String actions) {
+		Status status = getStatus();
+		return new CustomItem().type(status.getMaterial()).hideFlags(true).glow(status.equals(Status.WAITING)).name(Message.REPORT.get().replace("_Report_", getName()))
+				.lore(implementDetails(Message.REPORT_DETAILS.get()).replace("_Actions_", actions != null ? actions : "").split(ConfigUtils.getLineBreakSymbol())).create();
 	}
 	
-	public Location getOldLocation(String type) {
-		String configLoc = ConfigFile.REPORTS.get().getString(path+"."+type+".Location");
-		if(configLoc == null) return null;
-		try {
-			String world = configLoc.split(":")[0];
-			String[] coords = configLoc.replace(world+":", "").split("/");
-			return new Location(Bukkit.getWorld(world), Double.parseDouble(coords[0]), Double.parseDouble(coords[1]), Double.parseDouble(coords[2]), Float.parseFloat(coords[3]), Float.parseFloat(coords[4]));
-		} catch (Exception invalidLocation) {
-			return null;
-		}
+	public String getText() {
+		return Message.REPORT.get().replace("_Report_", getName())+"\n"+implementDetails(Message.REPORT_DETAILS.get()).replace("_Actions_", "");
 	}
-
-	public boolean exist() {
-		return ConfigFile.REPORTS.get().get(path) != null;
+	
+	public void setDone(UUID uuid) {
+		ConfigFile.REPORTS.get().set(path+".Status", Status.DONE.getConfigWord()+" by "+uuid);
+		ConfigFile.REPORTS.save();
+		UserUtils.changeStat(uuid.toString(), "ProcessedReports", 1);
 	}
-
-	public int getTotalComments() {
-		int totalComments = 0;
-		String path = this.path+".Comments.Comment";
-		for(int commentNumber = 1; commentNumber <= ReportUtils.getMaxReports(); commentNumber++) {
-			if(ConfigFile.REPORTS.get().get(path+commentNumber) == null) break;
-			else totalComments++;
-		}
-		return totalComments;
+	
+	public String getProcessor() {
+		String status = ConfigFile.REPORTS.get().getString(path+".Status");
+		String processor = null;
+		if(status != null && status.startsWith(Status.DONE.getConfigWord()+" by ")) processor = UserUtils.getName(status.replaceFirst(Status.DONE.getConfigWord()+" by ", ""));
+		return processor != null ? processor : Message.NOT_FOUND_MALE.get();
 	}
 
 	public void setAppreciation(String appreciation) {
@@ -161,23 +173,15 @@ public class Report {
 			return Message.NONE_FEMALE.get();
 		}
 	}
-	
-	public ItemStack getItem(String actions) {
-		Status status = getStatus();
-		return new CustomItem().type(status.getMaterial()).hideFlags(true).glow(status.equals(Status.WAITING)).name(Message.REPORT.get().replace("_Report_", getName()))
-				.lore(implementDetails(Message.REPORT_DETAILS.get()).replace("_Actions_", actions != null ? actions : "").split(ConfigUtils.getLineBreakSymbol())).create();
-	}
-	
-	public String getReason() {
-		if(reason == null) reason = MessageUtils.getMenuSentence(ConfigFile.REPORTS.get().getString(path+".Reason"), Message.REPORT_DETAILS, "_Reason_", true);
-		return reason;
-	}
-	
-	public String implementDetails(String message) {
-		Status status = getStatus();
-		return message.replace("_Status_", status.equals(Status.DONE) ? status.getWord(getProcessor())+Message.APPRECIATION_SUFFIX.get().replace("_Appreciation_", getAppreciation()) : status.getWord(null))
-				.replace("_Date_", getDate()).replace("_Signalman_", getPlayerName("Signalman", true)).replace("_Reported_", getPlayerName("Reported", true))
-				.replace("_Reason_", getReason());
+
+	public int getTotalComments() {
+		int totalComments = 0;
+		String path = this.path+".Comments.Comment";
+		for(int commentNumber = 1; commentNumber <= ReportUtils.getMaxReports(); commentNumber++) {
+			if(ConfigFile.REPORTS.get().get(path+commentNumber) == null) break;
+			else totalComments++;
+		}
+		return totalComments;
 	}
 	
 	public void remove() {

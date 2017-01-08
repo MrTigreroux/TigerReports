@@ -9,6 +9,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import fr.mrtigreroux.tigerreports.data.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.Message;
 import fr.mrtigreroux.tigerreports.data.Permission;
 import fr.mrtigreroux.tigerreports.data.Statistic;
@@ -50,7 +51,7 @@ public class UserMenu extends Menu {
 		}
 		
 		p.openInventory(inv);
-		if(sound) p.playSound(p.getLocation(), ConfigUtils.getMenuSound(), 1, 1);
+		if(sound) u.playSound(ConfigSound.MENU.get());
 		u.setOpenedMenu(this);
 	}
 

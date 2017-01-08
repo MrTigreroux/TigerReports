@@ -6,13 +6,13 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
+import fr.mrtigreroux.tigerreports.data.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.Message;
 import fr.mrtigreroux.tigerreports.data.Permission;
 import fr.mrtigreroux.tigerreports.data.Status;
 import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.objects.User;
 import fr.mrtigreroux.tigerreports.runnables.ReportsNotifier;
-import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 import fr.mrtigreroux.tigerreports.utils.ReportUtils;
 import fr.mrtigreroux.tigerreports.utils.UserUtils;
@@ -59,7 +59,7 @@ public class ReportsCommand implements CommandExecutor {
 							reportNumber--;
 						}
 					}
-					MessageUtils.sendStaffMessage(Message.STAFF_ARCHIVEALL.get().replace("_Player_", p.getName()), ConfigUtils.getStaffSound());
+					MessageUtils.sendStaffMessage(Message.STAFF_ARCHIVEALL.get().replace("_Player_", p.getName()), ConfigSound.STAFF.get());
 				}
 			} else {
 				try {
@@ -68,22 +68,23 @@ public class ReportsCommand implements CommandExecutor {
 					MessageUtils.sendErrorMessage(s, Message.INVALID_REPORTNUMBER.get().replace("_Number_", args[0]));
 				}
 			}
-		} else if(args.length == 2 && args[0].equalsIgnoreCase("stopcooldown") || args[0].equalsIgnoreCase("sc")) {
-			Player t = UserUtils.getPlayer(args[1]);
-			if(t == null) {
-				MessageUtils.sendErrorMessage(s, Message.PLAYER_OFFLINE.get().replace("_Player_", args[1]));
-				return true;
-			}
-			UserUtils.getUser(t).stopCooldown(p.getName());
-		} else if(args[0].equalsIgnoreCase("user")) {
-			String target = UserUtils.getUniqueId(args[1]);
-			if(!UserUtils.isValid(target)) {
-				MessageUtils.sendErrorMessage(s, Message.INVALID_PLAYER.get().replace("_Player_", args[1]));
-				return true;
-			}
-			u.openUserMenu(UserUtils.getUniqueId(args[1]));
-		}
-		else s.sendMessage(Message.INVALID_SYNTAX.get().replace("_Command_", "/"+label+" "+Message.REPORTS_SYNTAX.get()));
+		} else if(args.length == 2) {
+			if(args[0].equalsIgnoreCase("stopcooldown") || args[0].equalsIgnoreCase("sc")) {
+				Player t = UserUtils.getPlayer(args[1]);
+				if(t == null) {
+					MessageUtils.sendErrorMessage(s, Message.PLAYER_OFFLINE.get().replace("_Player_", args[1]));
+					return true;
+				}
+				UserUtils.getUser(t).stopCooldown(p.getName());
+			} else if(args[0].equalsIgnoreCase("user")) {
+				String target = UserUtils.getUniqueId(args[1]);
+				if(!UserUtils.isValid(target)) {
+					MessageUtils.sendErrorMessage(s, Message.INVALID_PLAYER.get().replace("_Player_", args[1]));
+					return true;
+				}
+				u.openUserMenu(UserUtils.getUniqueId(args[1]));
+			} else s.sendMessage(Message.INVALID_SYNTAX.get().replace("_Command_", "/"+label+" "+Message.REPORTS_SYNTAX.get()));
+		} else s.sendMessage(Message.INVALID_SYNTAX.get().replace("_Command_", "/"+label+" "+Message.REPORTS_SYNTAX.get()));
 		return true;
 	}
 

@@ -11,6 +11,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import fr.mrtigreroux.tigerreports.data.ConfigFile;
+import fr.mrtigreroux.tigerreports.data.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.Message;
 import fr.mrtigreroux.tigerreports.objects.User;
 
@@ -63,7 +64,7 @@ public class UserUtils {
 			s.sendMessage(Message.PERMISSION_COMMAND.get());
 			if(s instanceof Player) {
 				Player p = (Player) s;
-				p.playSound(p.getLocation(), ConfigUtils.getErrorSound(), 1, 1);
+				p.playSound(p.getLocation(), ConfigSound.ERROR.get(), 1, 1);
 			}
 			return false;
 		} else return true;

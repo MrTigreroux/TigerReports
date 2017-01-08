@@ -5,12 +5,17 @@ import java.util.HashMap;
 import org.bukkit.Bukkit;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
+import fr.mrtigreroux.tigerreports.data.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.Message;
 import fr.mrtigreroux.tigerreports.data.Status;
 import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 import fr.mrtigreroux.tigerreports.utils.ReportUtils;
+
+/**
+ * @author MrTigreroux
+ */
 
 public class ReportsNotifier implements Runnable {
 
@@ -19,7 +24,7 @@ public class ReportsNotifier implements Runnable {
 	@Override
 	public void run() {
 		String reportsNotifications = getReportsNotification();
-		if(reportsNotifications != null) MessageUtils.sendStaffMessage(reportsNotifications, ConfigUtils.getStaffSound());
+		if(reportsNotifications != null) MessageUtils.sendStaffMessage(reportsNotifications, ConfigSound.STAFF.get());
 	}
 	
 	public static String getReportsNotification() {
