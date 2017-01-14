@@ -96,6 +96,16 @@ public class ReportCommand implements CommandExecutor {
 		}
 		if(ConfigUtils.getLineBreakSymbol().length() >= 1) reason = reason.replace(ConfigUtils.getLineBreakSymbol(), ConfigUtils.getLineBreakSymbol().substring(0, 1));
 		
+		 if(!ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.CustomReasons")) {
+			for(int reasonNumber = 1; reasonNumber <= 100; reasonNumber++) {
+				String defaultReason = ConfigFile.CONFIG.get().getString("Config.DefaultReasons.Reason"+reasonNumber+".Name");
+				if(defaultReason == null) {
+					u.openReasonMenu(1, reportedName);
+					return true;
+				} else if(reason.equals(defaultReason)) break;
+			}
+		}
+		
 		int reportNumber = ReportUtils.getNewReportNumber();
 		Report r = new Report(reportNumber);
 		

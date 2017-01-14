@@ -10,7 +10,7 @@ Config:
   PermissionRequired: no
   ReportOnline: no
   MaxReports: 100
-  MinCharacters: 4
+  MinCharacters: 3
   ReportCooldown: 300
   PunishSeconds: 3600
   MessagesHistory: 5
@@ -18,6 +18,7 @@ Config:
   ReportsNotifications:
     Connection: yes
     MinutesInterval: 0
+  CustomReasons: yes
   MenuSound: ENTITY_ITEM_PICKUP
   ErrorSound: ENTITY_ITEM_BREAK
   ReportSound: ENTITY_BAT_DEATH
