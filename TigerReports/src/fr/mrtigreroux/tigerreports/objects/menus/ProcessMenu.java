@@ -54,8 +54,7 @@ public class ProcessMenu extends Menu {
 	public void onClick(ItemStack item, int slot, ClickType click) {
 		if(slot == 11 || slot == 13 || slot == 15) {
 			String appreciation = slot == 11 ? "True" : slot == 13 ? "Uncertain" : "False";
-			r.setAppreciation(appreciation);
-			r.setDone(p.getUniqueId());
+			r.setDone(p.getUniqueId(), appreciation);
 			UserUtils.changeStat(UserUtils.getUniqueId(r.getPlayerName("Signalman", false)), "Appreciations."+appreciation, 1);
 			MessageUtils.sendStaffMessage(Message.STAFF_PROCESS.get().replace("_Player_", p.getName()).replace("_Report_", r.getName()).replace("_Appreciation_", Message.valueOf(appreciation.toUpperCase()).get()), ConfigSound.STAFF.get());
 			u.openReportsMenu(1, false);

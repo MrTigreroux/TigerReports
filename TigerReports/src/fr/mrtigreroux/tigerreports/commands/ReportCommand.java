@@ -1,6 +1,7 @@
 package fr.mrtigreroux.tigerreports.commands;
 
 import java.util.Collection;
+import java.util.UUID;
 
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -40,8 +41,9 @@ public class ReportCommand implements CommandExecutor {
 		if(!UserUtils.checkPlayer(s) || (ReportUtils.permissionRequired() && !UserUtils.checkPermission(s, Permission.REPORT.get()))) return true;
 		Player p = (Player) s;
 		User u = UserUtils.getUser(p);
+		UUID uuid = p.getUniqueId();
 		
-		String cooldown = u.getCooldown();
+		String cooldown = UserUtils.getCooldown(uuid);
 		if(cooldown != null) {
 			MessageUtils.sendErrorMessage(p, Message.COOLDOWN.get().replace("_Time_", cooldown));
 			return true;
@@ -134,7 +136,7 @@ public class ReportCommand implements CommandExecutor {
 				ConfigFile.REPORTS.get().set(reportPath+".Reported.Effects", configEffects.length() > 0 ? configEffects.substring(0, configEffects.length()-1): "None");
 				ConfigFile.REPORTS.get().set(reportPath+".Reported.Messages", UserUtils.getUser(rp).getLastMessages());
 			}
-			ConfigFile.REPORTS.get().set(reportPath+".Signalman.UUID", p.getUniqueId().toString());
+			ConfigFile.REPORTS.get().set(reportPath+".Signalman.UUID", uuid.toString());
 			ConfigFile.REPORTS.get().set(reportPath+".Signalman.IP", p.getAddress().toString());
 			ConfigFile.REPORTS.get().set(reportPath+".Signalman.Gamemode", p.getGameMode().toString().toLowerCase());
 			Location loc = p.getLocation();
@@ -143,7 +145,7 @@ public class ReportCommand implements CommandExecutor {
 			ConfigFile.REPORTS.save();
 		}
 		UserUtils.LastTimeReported.put(ruuid, System.currentTimeMillis());
-		UserUtils.changeStat(p.getUniqueId().toString(), "Reports", 1);
+		UserUtils.changeStat(uuid.toString(), "Reports", 1);
 		UserUtils.changeStat(ruuid.toString(), "ReportedTime", 1);
 		
 		TextComponent alert = new TextComponent(Message.ALERT.get().replace("_Signalman_", r.getPlayerName("Signalman", false)).replace("_Reported_", r.getPlayerName("Reported", !ReportUtils.onlinePlayerRequired())).replace("_Reason_", reason));
@@ -155,7 +157,7 @@ public class ReportCommand implements CommandExecutor {
 		MessageUtils.sendStaffMessage(alert, ConfigSound.REPORT.get());
 		
 		s.sendMessage(Message.REPORT_SENT.get().replace("_Player_", r.getPlayerName("Reported", false)).replace("_Reason_", reason));
-		u.startCooldown(ReportUtils.getCooldown());
+		UserUtils.startCooldown(uuid, ReportUtils.getCooldown());
 		return true;
 	}
 

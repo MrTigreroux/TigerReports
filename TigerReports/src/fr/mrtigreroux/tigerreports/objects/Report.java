@@ -147,10 +147,11 @@ public class Report {
 		return Message.REPORT.get().replace("_Report_", getName())+"\n"+implementDetails(Message.REPORT_DETAILS.get()).replace("_Actions_", "");
 	}
 	
-	public void setDone(UUID uuid) {
+	public void setDone(UUID uuid, String appreciation) {
 		ConfigFile.REPORTS.get().set(path+".Status", Status.DONE.getConfigWord()+" by "+uuid);
-		ConfigFile.REPORTS.save();
+		ConfigFile.REPORTS.get().set(path+".Appreciation", appreciation);
 		UserUtils.changeStat(uuid.toString(), "ProcessedReports", 1);
+		ConfigFile.REPORTS.save();
 	}
 	
 	public String getProcessor() {
@@ -158,11 +159,6 @@ public class Report {
 		String processor = null;
 		if(status != null && status.startsWith(Status.DONE.getConfigWord()+" by ")) processor = UserUtils.getName(status.replaceFirst(Status.DONE.getConfigWord()+" by ", ""));
 		return processor != null ? processor : Message.NOT_FOUND_MALE.get();
-	}
-
-	public void setAppreciation(String appreciation) {
-		ConfigFile.REPORTS.get().set(path+".Appreciation", appreciation);
-		ConfigFile.REPORTS.save();
 	}
 
 	public String getAppreciation() {

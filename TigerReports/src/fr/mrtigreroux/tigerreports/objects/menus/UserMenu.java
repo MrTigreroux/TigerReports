@@ -2,9 +2,7 @@ package fr.mrtigreroux.tigerreports.objects.menus;
 
 import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -35,7 +33,7 @@ public class UserMenu extends Menu {
 		
 		inv.setItem(4, new CustomItem().skullOwner(UserUtils.getName(target)).name(Message.USER.get().replace("_Target_", name)).create());
 		try {
-			String cooldown = new User(UserUtils.getPlayer(name)).getCooldown();
+			String cooldown = UserUtils.getCooldown(UUID.fromString(target));
 			inv.setItem(8, new CustomItem().type(Material.GOLD_AXE).hideFlags(true).name(Message.COOLDOWN_STATUS.get().replace("_Time_", cooldown != null ? cooldown : Message.NONE_FEMALE.get()))
 					.lore(cooldown != null ? Message.COOLDOWN_STATUS_DETAILS.get().replace("_Player_", name).split(ConfigUtils.getLineBreakSymbol()) : null).create());
 		} catch(Exception playerOffline) {
@@ -59,10 +57,9 @@ public class UserMenu extends Menu {
 	public void onClick(ItemStack item, int slot, ClickType click) {
 		if(slot == 8) {
 			try {
-				Player t = Bukkit.getPlayer(UUID.fromString(target));
-				User tu = UserUtils.getUser(t);
-				if(tu.getCooldown() != null) {
-					tu.stopCooldown(p.getName());
+				UUID uuid = UUID.fromString(target);
+				if(UserUtils.getCooldown(uuid) != null) {
+					UserUtils.stopCooldown(uuid, p.getName());
 					open(false);
 				}
 			} catch(Exception playerOffline) {

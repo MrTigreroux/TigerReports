@@ -1,5 +1,7 @@
 package fr.mrtigreroux.tigerreports.commands;
 
+import java.util.UUID;
+
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -69,21 +71,14 @@ public class ReportsCommand implements CommandExecutor {
 				}
 			}
 		} else if(args.length == 2) {
-			if(args[0].equalsIgnoreCase("stopcooldown") || args[0].equalsIgnoreCase("sc")) {
-				Player t = UserUtils.getPlayer(args[1]);
-				if(t == null) {
-					MessageUtils.sendErrorMessage(s, Message.PLAYER_OFFLINE.get().replace("_Player_", args[1]));
-					return true;
-				}
-				UserUtils.getUser(t).stopCooldown(p.getName());
-			} else if(args[0].equalsIgnoreCase("user")) {
-				String target = UserUtils.getUniqueId(args[1]);
-				if(!UserUtils.isValid(target)) {
-					MessageUtils.sendErrorMessage(s, Message.INVALID_PLAYER.get().replace("_Player_", args[1]));
-					return true;
-				}
-				u.openUserMenu(UserUtils.getUniqueId(args[1]));
-			} else s.sendMessage(Message.INVALID_SYNTAX.get().replace("_Command_", "/"+label+" "+Message.REPORTS_SYNTAX.get()));
+			String uuid = UserUtils.getUniqueId(args[1]);
+			if(uuid == null) {
+				MessageUtils.sendErrorMessage(s, Message.INVALID_PLAYER.get().replace("_Player_", args[1]));
+				return true;
+			}
+			if(args[0].equalsIgnoreCase("stopcooldown") || args[0].equalsIgnoreCase("sc")) UserUtils.stopCooldown(UUID.fromString(uuid), p.getName());
+			else if(args[0].equalsIgnoreCase("user")) u.openUserMenu(uuid);
+			else s.sendMessage(Message.INVALID_SYNTAX.get().replace("_Command_", "/"+label+" "+Message.REPORTS_SYNTAX.get()));
 		} else s.sendMessage(Message.INVALID_SYNTAX.get().replace("_Command_", "/"+label+" "+Message.REPORTS_SYNTAX.get()));
 		return true;
 	}

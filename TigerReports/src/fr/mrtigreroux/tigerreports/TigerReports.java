@@ -1,5 +1,11 @@
 package fr.mrtigreroux.tigerreports;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.logging.Level;
+
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
@@ -40,6 +46,23 @@ public class TigerReports extends JavaPlugin {
 		ConfigFile.DATA.save();
 		
 		ReportsNotifier.start();
+		
+		try {
+			HttpURLConnection con = (HttpURLConnection) new URL("http://www.spigotmc.org/api/general.php").openConnection();
+			con.setDoOutput(true);
+			con.setRequestMethod("POST");
+			con.getOutputStream().write(("key=98BE0FE67F88AB82B4C197FAF1DC3B69206EFDCC4D3B80FC83A00037510B99B4&resource=25773").getBytes("UTF-8"));
+			String version = new BufferedReader(new InputStreamReader(con.getInputStream())).readLine();
+			if(!this.getDescription().getVersion().equals(version)) {
+        		Bukkit.getLogger().log(Level.WARNING, "------------------------------------------------------");
+        		Bukkit.getLogger().log(Level.WARNING, "[TigerReports] The plugin has been updated !");
+        		Bukkit.getLogger().log(Level.WARNING, "New version "+version+" is now available on:");
+        		Bukkit.getLogger().log(Level.WARNING, "https://www.spigotmc.org/resources/tigerreports.25773/");
+        		Bukkit.getLogger().log(Level.WARNING, "------------------------------------------------------");
+			}
+		} catch (Exception noUpdate) {
+			;
+		}
 	}
 	
 	@Override

@@ -125,4 +125,29 @@ public class UserUtils {
 		return u;
 	}
 	
+	public static String getCooldown(UUID uuid) {
+		String cooldown = ConfigFile.DATA.get().get("Data."+uuid+".Cooldown") != null ? ConfigFile.DATA.get().getString("Data."+uuid+".Cooldown") : MessageUtils.getNowDate();
+		double seconds = MessageUtils.getSeconds(cooldown)-MessageUtils.getSeconds(MessageUtils.getNowDate());
+		if(seconds <= 0) return null;
+		return MessageUtils.convertToSentence(seconds);
+	}
+	
+	public static void startCooldown(UUID uuid, double seconds) {
+		ConfigFile.DATA.get().set("Data."+uuid+".Cooldown", MessageUtils.convertToDate(MessageUtils.getSeconds(MessageUtils.getNowDate())+seconds));
+		ConfigFile.DATA.save();
+	}
+	
+	public static void stopCooldown(UUID uuid, String author) {
+		Player p = null;
+		try {
+			p = Bukkit.getPlayer(uuid);
+		} catch (Exception offlinePlayer) {
+			;
+		}
+		MessageUtils.sendStaffMessage(Message.STAFF_STOPCOOLDOWN.get().replace("_Player_", author).replace("_Target_", p != null ? p.getName() : getName(uuid.toString())), ConfigSound.STAFF.get());
+		if(p != null) p.sendMessage(Message.COOLDOWN_STOPPED.get());
+		ConfigFile.DATA.get().set("Data."+uuid+".Cooldown", null);
+		ConfigFile.DATA.save();
+	}
+	
 }

@@ -2,6 +2,7 @@ package fr.mrtigreroux.tigerreports.objects.menus;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -96,17 +97,13 @@ public class ReportMenu extends Menu {
 		} else if(slot == MenuItem.PUNISH_ABUSE.getPosition()) {
 			long seconds = ReportUtils.getPunishSeconds();
 			String signalman = r.getPlayerName("Signalman", false);
-			if(!UserUtils.isOnline(signalman)) {
-				MessageUtils.sendErrorMessage(p, Message.PLAYER_OFFLINE.get().replace("_Player_", signalman));
-				return;
-			}
-			Player s = UserUtils.getPlayer(signalman);
-			UserUtils.getUser(s).startCooldown(seconds);
+			UserUtils.startCooldown(UUID.fromString(UserUtils.getUniqueId(signalman)), seconds);
+			r.setDone(u.getPlayer().getUniqueId(), "False");
+			
 			String time = MessageUtils.convertToSentence(seconds);
-			s.sendMessage(Message.PUNISHED.get().replace("_Time_", time));
-			MessageUtils.sendStaffMessage(Message.STAFF_PUNISH.get().replace("_Player_", p.getName()).replace("_Signalman_", s.getName()).replace("_Time_", time), ConfigSound.STAFF.get());
-			r.setAppreciation("False");
-			r.setDone(u.getPlayer().getUniqueId());
+			Player s = UserUtils.getPlayer(signalman);
+			if(s != null) s.sendMessage(Message.PUNISHED.get().replace("_Time_", time));
+			MessageUtils.sendStaffMessage(Message.STAFF_PUNISH.get().replace("_Player_", p.getName()).replace("_Signalman_", signalman).replace("_Time_", time), ConfigSound.STAFF.get());
 			u.openReportsMenu(1, false);
 		} else if(slot == MenuItem.DATA.getPosition()) {
 			if(click == ClickType.LEFT) {
@@ -132,7 +129,7 @@ public class ReportMenu extends Menu {
 				}
 				loc = t.getLocation();
 				locType = "CURRENT";
-			} else if(click.toString().contains("RIGHT")){
+			} else if(click.toString().contains("RIGHT")) {
 				loc = r.getOldLocation(type);
 				if(loc == null) {
 					MessageUtils.sendErrorMessage(p, Message.LOCATION_UNKNOWN.get().replace("_Player_", name));
