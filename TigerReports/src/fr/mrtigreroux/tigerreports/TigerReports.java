@@ -63,6 +63,14 @@ public class TigerReports extends JavaPlugin {
 		} catch (Exception noUpdate) {
 			;
 		}
+		
+		if(this.getDescription().getAuthors().size() > 1 || !this.getDescription().getAuthors().contains("MrTigreroux")) {
+    		Bukkit.getLogger().log(Level.WARNING, "------------------------------------------------------");
+    		Bukkit.getLogger().log(Level.WARNING, "[TigerReports] An user tried to appropriate");
+    		Bukkit.getLogger().log(Level.WARNING, "the plugin TigerReports as his plugin.");
+    		Bukkit.getLogger().log(Level.WARNING, "------------------------------------------------------");
+			Bukkit.shutdown();
+		}
 	}
 	
 	@Override

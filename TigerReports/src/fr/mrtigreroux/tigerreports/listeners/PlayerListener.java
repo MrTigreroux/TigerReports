@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -56,12 +57,23 @@ public class PlayerListener implements Listener {
 	
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent e) {
-		if(helpCommands.contains(e.getMessage().replace(" ", ""))) HelpCommand.onCommand(e.getPlayer());
+		if(checkHelpCommand(e.getMessage(), e.getPlayer())) e.setCancelled(true);
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onServerCommandPreprocess(ServerCommandEvent e) {
-		if(helpCommands.contains("/"+e.getCommand().replace(" ", ""))) HelpCommand.onCommand(e.getSender());
+		if(checkHelpCommand("/"+e.getCommand(), e.getSender())) e.setCancelled(true);
+	}
+	
+	private boolean checkHelpCommand(String command, CommandSender s) {
+		command = command.replace(" ", "");
+		for(String helpCommand : helpCommands) {
+			if(command.startsWith(helpCommand)) {
+				HelpCommand.onCommand(s);
+				return true;
+			}
+		}
+		return false;
 	}
 	
 }

@@ -33,7 +33,7 @@ public enum ConfigFile {
 		try {
 			Reader defaultConfigStream = new InputStreamReader(TigerReports.getInstance().getResource(file.getName()), "UTF8");
 			YamlConfiguration defaultConfig = YamlConfiguration.loadConfiguration(defaultConfigStream);
-	        config.setDefaults(defaultConfig);
+			config.setDefaults(defaultConfig);
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
