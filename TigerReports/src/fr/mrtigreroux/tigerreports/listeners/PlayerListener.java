@@ -62,7 +62,7 @@ public class PlayerListener implements Listener {
 
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onServerCommandPreprocess(ServerCommandEvent e) {
-		if(checkHelpCommand("/"+e.getCommand(), e.getSender())) e.setCancelled(true);
+		checkHelpCommand("/"+e.getCommand(), e.getSender());
 	}
 	
 	private boolean checkHelpCommand(String command, CommandSender s) {
