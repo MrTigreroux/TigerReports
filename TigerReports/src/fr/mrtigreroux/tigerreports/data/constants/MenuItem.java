@@ -1,8 +1,9 @@
-package fr.mrtigreroux.tigerreports.data;
+package fr.mrtigreroux.tigerreports.data.constants;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
+import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.objects.CustomItem;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 
@@ -18,6 +19,7 @@ public enum MenuItem {
 
 	REASONS_ICON(0, Material.BOOK, Message.REASONS),
 	REPORTS_ICON(0, Material.BOOKSHELF, Message.REPORTS),
+	ARCHIVED_REPORTS_ICON(0, Material.BOOKSHELF, Message.ARCHIVED_REPORTS),
 	PUNISH_ABUSE(22, Material.GOLD_AXE, Message.PUNISH_ABUSE, true),
 	DATA(26, Material.ENCHANTED_BOOK, Message.DATA),
 	ARCHIVE(33, Material.STAINED_CLAY, (short) 9, Message.ARCHIVE, Message.ARCHIVE_DETAILS.get(), false),
@@ -26,12 +28,12 @@ public enum MenuItem {
 	CANCEL_APPRECIATION(18, Material.FEATHER, Message.CANCEL_PROCESS, Message.CANCEL_PROCESS_DETAILS.get(), false),
 	WRITE_COMMENT(44, Material.BOOK_AND_QUILL, Message.WRITE_COMMENT, Message.WRITE_COMMENT_DETAILS.get(), false);
 	
-	private int position = 0;
-	private Material material;
+	private final int position;
+	private final Material material;
 	private Short durability = 0;
-	private Message name;
+	private final Message name;
 	private String details = null;
-	private boolean hideFlags = false;
+	private final boolean hideFlags;
 	
 	MenuItem(int position, Material material, Message name) {
 		this(position, material, name, null, false);

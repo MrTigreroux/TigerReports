@@ -1,15 +1,17 @@
 package fr.mrtigreroux.tigerreports.objects.menus;
 
+import java.util.List;
+
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import fr.mrtigreroux.tigerreports.data.ConfigSound;
-import fr.mrtigreroux.tigerreports.data.MenuItem;
-import fr.mrtigreroux.tigerreports.data.Message;
-import fr.mrtigreroux.tigerreports.data.Permission;
+import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
+import fr.mrtigreroux.tigerreports.data.config.Message;
+import fr.mrtigreroux.tigerreports.data.constants.MenuItem;
+import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.objects.Report;
-import fr.mrtigreroux.tigerreports.objects.User;
+import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.utils.ReportUtils;
 
 /**
@@ -18,8 +20,8 @@ import fr.mrtigreroux.tigerreports.utils.ReportUtils;
 
 public class ReportsMenu extends Menu {
 	
-	public ReportsMenu(User u, int page) {
-		super(u, 54, page, null, null, null);
+	public ReportsMenu(OnlineUser u, int page) {
+		super(u, 54, page, -1, null, null);
 	}
 	
 	@Override
@@ -30,15 +32,18 @@ public class ReportsMenu extends Menu {
 		int firstReport = 1;
 		if(page >= 2) {
 			inv.setItem(size-7, MenuItem.PAGE_SWITCH_PREVIOUS.get());
-			firstReport = ((page-1)*27)+1;
-		}
-		int totalReports = ReportUtils.getTotalReports();
-		for(int reportNumber = firstReport; reportNumber <= firstReport+26; reportNumber++) {
-			if(reportNumber > totalReports) break;
-			inv.setItem(reportNumber-firstReport+18, new Report(reportNumber).getItem(Message.REPORT_SHOW_ACTION.get()+(u.hasPermission(Permission.REMOVE) ? Message.REPORT_REMOVE_ACTION.get() : null)));
+			firstReport += (page-1)*27;
 		}
 		
-		if(firstReport+26 < totalReports) inv.setItem(size-3, MenuItem.PAGE_SWITCH_NEXT.get());
+		List<Report> reports = ReportUtils.getReports(firstReport, firstReport+27);
+		int position = 18;
+		for(Report r : reports) {
+			inv.setItem(position, r.getItem(Message.REPORT_SHOW_ACTION.get()+(u.hasPermission(Permission.REMOVE) ? Message.REPORT_REMOVE_ACTION.get() : "")));
+			if(position >= 46) break;
+			else position++;
+		}
+		
+		if(reports.size() == 28) inv.setItem(size-3, MenuItem.PAGE_SWITCH_NEXT.get());
 		p.openInventory(inv);
 		if(sound) u.playSound(ConfigSound.MENU.get());
 		u.setOpenedMenu(this);
@@ -47,7 +52,7 @@ public class ReportsMenu extends Menu {
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
 		if(slot >= 18 && slot <= size-9) {
-			Report r = new Report(slot-18+((page-1)*27)+1);
+			Report r = ReportUtils.getReport(getIndex(slot));
 			if(click.equals(ClickType.DROP) && u.hasPermission(Permission.REMOVE)) u.openConfirmationMenu(r, "REMOVE");
 			else u.openReportMenu(r);
 		}

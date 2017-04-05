@@ -1,4 +1,4 @@
-package fr.mrtigreroux.tigerreports.data;
+package fr.mrtigreroux.tigerreports.data.config;
 
 import java.util.Arrays;
 
@@ -16,8 +16,8 @@ public enum ConfigSound {
 	STAFF("ITEM_PICKUP", "ENTITY_ITEM_PICKUP"),
 	TELEPORT("ENDERMAN_TELEPORT", "ENTITY_ENDERMEN_TELEPORT");
 	
-	private String oldSound;
-	private String newSound;
+	private final String oldSound;
+	private final String newSound;
 	
 	ConfigSound(String oldSound, String newSound) {
 		this.oldSound = oldSound;
@@ -25,12 +25,12 @@ public enum ConfigSound {
 	}
 	
 	public String getConfigName() {
-		return this.name().substring(0, 1)+this.name().substring(1).toLowerCase()+"Sound";
+		return name().substring(0, 1)+name().substring(1).toLowerCase()+"Sound";
 	}
 	
 	public Sound get() {
 		String path = "Config."+getConfigName();
-		String configSound = ConfigFile.CONFIG.get().getString(path) != null ? ConfigFile.CONFIG.get().getString(path).toUpperCase() : "";
+		String configSound = (configSound = ConfigFile.CONFIG.get().getString(path)) != null ? configSound.toUpperCase() : "";
 		for(String sound : Arrays.asList(configSound, oldSound, newSound)) {
 			try {
 				return Sound.valueOf(sound);

@@ -1,9 +1,8 @@
-package fr.mrtigreroux.tigerreports.objects;
+package fr.mrtigreroux.tigerreports.objects.users;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 import net.md_5.bungee.api.chat.TextComponent;
 
@@ -16,10 +15,12 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 
-import fr.mrtigreroux.tigerreports.data.ConfigFile;
-import fr.mrtigreroux.tigerreports.data.ConfigSound;
-import fr.mrtigreroux.tigerreports.data.Message;
-import fr.mrtigreroux.tigerreports.data.Permission;
+import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
+import fr.mrtigreroux.tigerreports.data.config.Message;
+import fr.mrtigreroux.tigerreports.data.constants.Permission;
+import fr.mrtigreroux.tigerreports.objects.Comment;
+import fr.mrtigreroux.tigerreports.objects.Report;
+import fr.mrtigreroux.tigerreports.objects.menus.ArchivedReportsMenu;
 import fr.mrtigreroux.tigerreports.objects.menus.ProcessMenu;
 import fr.mrtigreroux.tigerreports.objects.menus.CommentsMenu;
 import fr.mrtigreroux.tigerreports.objects.menus.ConfirmationMenu;
@@ -31,27 +32,26 @@ import fr.mrtigreroux.tigerreports.objects.menus.UserMenu;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 import fr.mrtigreroux.tigerreports.utils.ReflectionUtils;
-import fr.mrtigreroux.tigerreports.utils.UserUtils;
+import fr.mrtigreroux.tigerreports.utils.ReportUtils;
 
 /**
  * @author MrTigreroux
  */
 
-public class User {
+public class OnlineUser extends User {
 	
 	private Player p;
-	private UUID uuid;
 	private Menu openedMenu = null;
-	private int commentingReport = -1;
-	private int modifiedComment = -1;
+	private Report commentingReport = null;
+	private Comment modifiedComment = null;
 	private Material signMaterial = null;
 	private Byte signData = null;
 	private String lastMessages = null;
 	private boolean notifications = true;
 	
-	public User(Player p) {
+	public OnlineUser(Player p) {
+		super(p.getUniqueId().toString());
 		this.p = p;
-		this.uuid = p.getUniqueId();
 	}
 	
 	public Player getPlayer() {
@@ -62,8 +62,8 @@ public class User {
 		if(sound != null) p.playSound(p.getLocation(), sound, 1, 1);
 	}
 
-	public void openReasonMenu(int page, String target) {
-		new ReasonMenu(this, page, target).open(true);
+	public void openReasonMenu(int page, User tu) {
+		new ReasonMenu(this, page, tu).open(true);
 	}
 
 	public void openReportsMenu(int page, boolean sound) {
@@ -71,23 +71,27 @@ public class User {
 	}
 	
 	public void openReportMenu(Report r) {
-		new ReportMenu(this, r).open(true);
+		new ReportMenu(this, r.getId()).open(true);
 	}
 
 	public void openAppreciationMenu(Report r) {
-		new ProcessMenu(this, r).open(true);
+		new ProcessMenu(this, r.getId()).open(true);
 	}
 	
 	public void openConfirmationMenu(Report r, String action) {
-		new ConfirmationMenu(this, r, action).open(true);
+		new ConfirmationMenu(this, r.getId(), action).open(true);
 	}
 
 	public void openCommentsMenu(int page, Report r) {
-		new CommentsMenu(this, page, r).open(true);
+		new CommentsMenu(this, page, r.getId()).open(true);
+	}
+	
+	public void openArchivedReportsMenu(int page, boolean sound) {
+		new ArchivedReportsMenu(this, page).open(sound);
 	}
 
-	public void openUserMenu(String target) {
-		new UserMenu(this, target).open(true);
+	public void openUserMenu(User tu) {
+		new UserMenu(this, tu).open(true);
 	}
 	
 	public void setOpenedMenu(Menu menu) {
@@ -99,17 +103,22 @@ public class User {
 		return openedMenu;
 	}
 	
+	public void setCooldown(String cooldown) {
+		this.cooldown = cooldown;
+		save();
+	}
+	
 	public boolean hasPermission(Permission permission) {
 		return p.hasPermission(permission.get());
 	}
 	
 	public void updateLastMessages(String newMessage) {
-		int lastMessagesNumber = ConfigUtils.getMessagesHistory();
-		if(lastMessagesNumber <= 0) return;
+		int lastMessagesAmount = ConfigUtils.getMessagesHistory();
+		if(lastMessagesAmount <= 0) return;
 		
 		ArrayList<String> lastMessagesList = new ArrayList<String>();
 		if(lastMessages != null) lastMessagesList = new ArrayList<String>(Arrays.asList(lastMessages.split("#next#")));
-		if(lastMessagesList.size() >= lastMessagesNumber) lastMessagesList.remove(0);
+		if(lastMessagesList.size() >= lastMessagesAmount) lastMessagesList.remove(0);
 		lastMessagesList.add(newMessage);
 		this.lastMessages = String.join("#next#", lastMessagesList);
 		save();
@@ -119,6 +128,7 @@ public class User {
 		return lastMessages;
 	}
 	
+	@Override
 	public void sendMessage(Object message) {
 		if(message instanceof TextComponent) p.spigot().sendMessage((TextComponent) message);
 		else p.sendMessage((String) message);
@@ -126,40 +136,38 @@ public class User {
 	
 	public void printInChat(Report r, String[] lines) {
 		String reportName = r.getName();
-		for(String line : lines) sendMessage(MessageUtils.getAdvancedMessage(line, "_ReportButton_", Message.REPORT_BUTTON.get().replace("_Report_", reportName), Message.ALERT_DETAILS.get().replace("_Report_", reportName), "/reports #"+r.getNumber()));
+		for(String line : lines) sendMessage(MessageUtils.getAdvancedMessage(line, "_ReportButton_", Message.REPORT_BUTTON.get().replace("_Report_", reportName), Message.ALERT_DETAILS.get().replace("_Report_", reportName), "/reports #"+r.getId()));
 		playSound(ConfigSound.MENU.get());
 		p.closeInventory();
+	}
+	
+	public void setStaffNotifications(boolean state) {
+		notifications = state;
+		save();
 	}
 	
 	public boolean acceptsNotifications() {
 		return notifications;
 	}
 	
-	public void setNotifications(boolean state) {
-		notifications = state;
-		save();
-	}
-	
-	public void sendNotification(String comment) {
+	public void sendNotification(String comment, boolean direct) {
 		try {
-			Report r = new Report(Integer.parseInt(comment.split(":")[0].replaceFirst("Report#", "")));
-			String commentPath = r.getConfigPath()+".Comments.Comment"+comment.split(":")[1].replaceFirst("Comment#", "");
-			if(!ConfigFile.REPORTS.get().getString(commentPath+".Status").equals("Sent")) return;
-			p.sendMessage(Message.COMMENT_NOTIFICATION.get().replace("_Player_", ConfigFile.REPORTS.get().getString(commentPath+".Author"))
+			String[] parts = comment.split(":");
+			Report r = ReportUtils.getReportById(Integer.parseInt(parts[0].replace("Report", "")));
+			Comment c = r.getComments().get(Integer.parseInt(parts[1].replace("Comment", "")));
+			if(!direct && !c.getStatus(true).equals("Sent")) return;
+			p.sendMessage(Message.COMMENT_NOTIFICATION.get().replace("_Player_", c.getAuthor())
 					.replace("_Reported_", r.getPlayerName("Reported", false)).replace("_Time_", MessageUtils.convertToSentence(MessageUtils.getSeconds(MessageUtils.getNowDate())-MessageUtils.getSeconds(r.getDate())))
-					.replace("_Message_", ConfigFile.REPORTS.get().getString(commentPath+".Message")));
-			List<String> notifications = UserUtils.getNotifications(uuid.toString());
+					.replace("_Message_",c.getMessage()));
+			List<String> notifications = getNotifications();
 			notifications.remove(comment);
-			UserUtils.setNotifications(uuid.toString(), notifications);
-			ConfigFile.REPORTS.get().set(commentPath+".Status", "Read");
-			ConfigFile.REPORTS.save();
-		} catch(Exception invalidNotification) {
-			;
-		}
+			setNotifications(notifications);
+			c.setStatus("Read");
+		} catch (Exception invalidNotification) {}
 	}
 
 	@SuppressWarnings("deprecation")
-	public void comment(int reportNumber) {
+	public void comment(Report r) {
 		try {
 			Location loc = p.getLocation();
 			World world = loc.getWorld();
@@ -171,22 +179,19 @@ public class User {
 			if(support.getType() == Material.AIR) support.setType(Material.BEDROCK);
 			b.setType(Material.SIGN_POST);
 			Sign s = (Sign) b.getState();
-			if(!(s instanceof Sign)) return;
 			s.setLine(0, "§7[§6TigerReports§7]");
 			s.setLine(1, "§e"+p.getName());
 			s.setLine(2, "§8rédige un");
 			s.setLine(3, "§8commentaire");
 			s.update();
 			
-			commentingReport = reportNumber;
+			setCommentingReport(r);
 			save();
 			Object tileEntity = ReflectionUtils.getDeclaredField(s,  "sign");
 			ReflectionUtils.setDeclaredField(tileEntity, "isEditable", true);
 			ReflectionUtils.setDeclaredField(tileEntity, "h", ReflectionUtils.getHandle(p));
 			ReflectionUtils.sendPacket(p,  ReflectionUtils.getPacket("PacketPlayOutOpenSignEditor", ReflectionUtils.callDeclaredConstructor(ReflectionUtils.getNMSClass("BlockPosition"), s.getX(), s.getY(), s.getZ())));
-		} catch(Exception Error) {
-			;
-		}
+		} catch (Exception error) {}
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -200,24 +205,20 @@ public class User {
 		save();
 	}
 	
-	public void setCommentingReport(int reportNumber) {
-		commentingReport = reportNumber;
+	public void setCommentingReport(Report r) {
+		this.commentingReport = r;
 	}
 	
-	public int getCommentingReport() {
+	public Report getCommentingReport() {
 		return commentingReport;
 	}
 	
-	public void setModifiedComment(int commentNumber) {
-		modifiedComment = commentNumber;
+	public void setModifiedComment(Comment c) {
+		modifiedComment = c;
 	}
 	
-	public int getModifiedComment() {
+	public Comment getModifiedComment() {
 		return modifiedComment;
-	}
-	
-	public void save() {
-		UserUtils.Users.put(uuid, this);
 	}
 	
 }

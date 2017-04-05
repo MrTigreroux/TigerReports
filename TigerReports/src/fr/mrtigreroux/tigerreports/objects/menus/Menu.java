@@ -7,11 +7,16 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import fr.mrtigreroux.tigerreports.data.ConfigSound;
-import fr.mrtigreroux.tigerreports.data.MenuItem;
+import fr.mrtigreroux.tigerreports.TigerReports;
+import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
+import fr.mrtigreroux.tigerreports.data.config.Message;
+import fr.mrtigreroux.tigerreports.data.constants.MenuItem;
 import fr.mrtigreroux.tigerreports.objects.CustomItem;
 import fr.mrtigreroux.tigerreports.objects.Report;
-import fr.mrtigreroux.tigerreports.objects.User;
+import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
+import fr.mrtigreroux.tigerreports.objects.users.User;
+import fr.mrtigreroux.tigerreports.utils.MessageUtils;
+import fr.mrtigreroux.tigerreports.utils.ReportUtils;
 
 /**
  * @author MrTigreroux
@@ -19,25 +24,24 @@ import fr.mrtigreroux.tigerreports.objects.User;
 
 public abstract class Menu {
 
-	protected User u;
+	protected OnlineUser u;
 	protected Player p;
-	protected int size;
-	protected int page;
+	protected int size, page;
 	protected Report r;
 	protected String action;
-	protected String target;
+	protected User tu;
 	
-	public Menu(User u, int size, int page, Report r, String action, String target) {
+	public Menu(OnlineUser u, int size, int page, int reportId, String action, User tu) {
 		this.u = u;
 		this.p = u.getPlayer();
 		this.size = size;
 		this.page = page;
-		this.r = r;
+		this.r = reportId != -1 ? ReportUtils.getReportById(reportId) : null;
 		this.action = action;
-		this.target = target;
+		this.tu = tu;
 	}
 	
-	public Inventory getInventory(String title, boolean borders) {
+	protected Inventory getInventory(String title, boolean borders) {
 		if(title.length() > 32) title = title.substring(0, 29)+"..";
 		Inventory inv = Bukkit.createInventory(null, size, title);
 		if(borders) {
@@ -60,12 +64,25 @@ public abstract class Menu {
 		if(page != 0) {
 			int newPage = slot == size-7 && item.isSimilar(MenuItem.PAGE_SWITCH_PREVIOUS.get()) ? page-1 : slot == size-3 && item.isSimilar(MenuItem.PAGE_SWITCH_NEXT.get()) ? page+1 : 0;
 			if(newPage != 0) {
-				this.page = newPage;
+				page = newPage;
 				open(true);
 				return;
 			}
 		}
 		onClick(item, slot, click);
+	}
+	
+	protected int getIndex(int slot) {
+		return slot-17+((page-1)*27);
+	}
+	
+	protected boolean checkReport() {
+		if(r == null || !TigerReports.Reports.containsKey(r.getId())) {
+			p.closeInventory();
+			MessageUtils.sendErrorMessage(p, Message.INVALID_REPORT.get());
+			return false;
+		}
+		return true;
 	}
 	
 	public abstract void open(boolean sound);

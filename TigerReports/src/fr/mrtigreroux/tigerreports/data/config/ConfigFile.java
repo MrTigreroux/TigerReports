@@ -1,4 +1,4 @@
-package fr.mrtigreroux.tigerreports.data;
+package fr.mrtigreroux.tigerreports.data.config;
 
 import java.io.File;
 import java.io.Reader;
@@ -18,7 +18,7 @@ import fr.mrtigreroux.tigerreports.TigerReports;
 
 public enum ConfigFile {
 
-	CONFIG, DATA, MESSAGES, REPORTS;
+	CONFIG, MESSAGES;
 	
 	private File file = null;
 	private FileConfiguration config = null;
@@ -34,8 +34,8 @@ public enum ConfigFile {
 			Reader defaultConfigStream = new InputStreamReader(TigerReports.getInstance().getResource(file.getName()), "UTF8");
 			YamlConfiguration defaultConfig = YamlConfiguration.loadConfiguration(defaultConfigStream);
 			config.setDefaults(defaultConfig);
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
+		} catch (UnsupportedEncodingException ex) {
+			ex.printStackTrace();
 		}
 	}
 	
@@ -46,7 +46,7 @@ public enum ConfigFile {
 	public void save() {
 		try {
 			get().save(file);
-		} catch(Exception error) {
+		} catch (Exception ex) {
 			load();
 		}
 	}

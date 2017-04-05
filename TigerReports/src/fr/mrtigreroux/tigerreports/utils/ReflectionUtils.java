@@ -39,8 +39,7 @@ public class ReflectionUtils {
     
     public static Class<?>[] toParamTypes(Object... params) {
         Class<?>[] classes = new Class<?>[params.length];
-        for(int i = 0; i < params.length; i++)
-                classes[i] = wrapperToPrimitive(params[i].getClass());
+        for(int i = 0; i < params.length; i++) classes[i] = wrapperToPrimitive(params[i].getClass());
         return classes;
     }
     
@@ -81,7 +80,7 @@ public class ReflectionUtils {
     public static Class<?> getClass(String name) {
         try {
         	return Class.forName(name);
-        } catch(Exception e) {
+        } catch (Exception ex) {
         	return null;
         }
     }
@@ -99,8 +98,8 @@ public class ReflectionUtils {
             Method m = object.getClass().getDeclaredMethod(method, toParamTypes(params));
             m.setAccessible(true);
             return m.invoke(object, params);
-        } catch(Exception e) {
-            e.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();
             return null;
         }
     }
@@ -110,8 +109,8 @@ public class ReflectionUtils {
             Method m = object.getClass().getMethod(method, toParamTypes(params));
             m.setAccessible(true);
             return m.invoke(object, params);
-        } catch(Exception e) {
-            e.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();
             return null;
         }
     }
@@ -121,8 +120,8 @@ public class ReflectionUtils {
         	Constructor<?> con = clazz.getDeclaredConstructor(toParamTypes(params));
             con.setAccessible(true);
             return con.newInstance(params);
-        } catch(Exception e) {
-            e.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();
             return null;
         }
     }
@@ -132,8 +131,8 @@ public class ReflectionUtils {
     		Constructor<?> con = clazz.getConstructor(toParamTypes(params));
     		con.setAccessible(true);
     		return con.newInstance(params);
-    	} catch(Exception e) {
-    		e.printStackTrace();
+    	} catch (Exception ex) {
+    		ex.printStackTrace();
     		return null;
     	}
     }
@@ -143,8 +142,8 @@ public class ReflectionUtils {
         	Field f = object.getClass().getDeclaredField(field);
         	f.setAccessible(true);
         	return f.get(object);
-        } catch(Exception e) {
-        	e.printStackTrace();
+        } catch (Exception ex) {
+        	ex.printStackTrace();
         	return null;
         }
     }
@@ -154,8 +153,8 @@ public class ReflectionUtils {
 	        Field f = object.getClass().getField(field);
 	        f.setAccessible(true);
 	        return f.get(object);
-        } catch(Exception e) {
-        	e.printStackTrace();
+        } catch (Exception ex) {
+        	ex.printStackTrace();
         	return null;
         }
     }
@@ -165,8 +164,8 @@ public class ReflectionUtils {
         	Field f = object.getClass().getDeclaredField(field);
         	f.setAccessible(true);
         	f.set(object, value);
-        } catch(Exception e) {
-        	e.printStackTrace();
+        } catch (Exception ex) {
+        	ex.printStackTrace();
         }
     }
     
@@ -175,8 +174,8 @@ public class ReflectionUtils {
         	Field f = object.getClass().getField(field);
         	f.setAccessible(true);
         	f.set(object, value);
-        } catch(Exception e) {
-        	e.printStackTrace();
+        } catch (Exception ex) {
+        	ex.printStackTrace();
         }
     }
     

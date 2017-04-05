@@ -1,16 +1,18 @@
 package fr.mrtigreroux.tigerreports.listeners;
 
+import java.util.Arrays;
+
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.SignChangeEvent;
 
-import fr.mrtigreroux.tigerreports.data.ConfigFile;
+import fr.mrtigreroux.tigerreports.TigerReports;
+import fr.mrtigreroux.tigerreports.objects.Comment;
 import fr.mrtigreroux.tigerreports.objects.Report;
-import fr.mrtigreroux.tigerreports.objects.User;
+import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
-import fr.mrtigreroux.tigerreports.utils.ReportUtils;
 import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 /**
@@ -21,27 +23,27 @@ public class SignListener implements Listener {
 
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
 	public void onSignChange(SignChangeEvent e) {
-		User u = UserUtils.getUser(e.getPlayer());
-		int reportNumber = u.getCommentingReport();
-		if(reportNumber == -1) return;
+		Player p = e.getPlayer();
+		OnlineUser u = UserUtils.getOnlineUser(p);
+		Report r = u.getCommentingReport();
+		if(r == null) return;
 		
 		String message = "";
-		for(String line : e.getLines()) if(line != null && !line.equals("")) message = message.equals("") ? line : message+" "+line;
-		Player p = e.getPlayer();
+		for(String line : e.getLines()) if(line != null && !line.equals("")) message += message.equals("") ? line : " "+line;
 		if(!message.equals("")) {
-			int modifiedComment = u.getModifiedComment();
-			boolean commentModified = modifiedComment != -1;
-			String path = ReportUtils.getConfigPath(reportNumber)+".Comments.Comment"+(commentModified ? modifiedComment : ReportUtils.getNewCommentNumber(reportNumber));
-			ConfigFile.REPORTS.get().set(path+".Status", ConfigFile.REPORTS.get().getString(path+".Status") != null ? ConfigFile.REPORTS.get().getString(path+".Status") : "Private");
-			ConfigFile.REPORTS.get().set(path+".Author", p.getDisplayName());
-			ConfigFile.REPORTS.get().set(path+".Date", MessageUtils.getNowDate());
-			ConfigFile.REPORTS.get().set(path+".Message", commentModified ? ConfigFile.REPORTS.get().getString(path+".Message")+" "+message : message);
-			ConfigFile.REPORTS.save();
+			Comment c = u.getModifiedComment();
+			r.checkComments();
+			if(c == null) {
+				String date = MessageUtils.getNowDate();
+				int commentId = TigerReports.getDb().insert("INSERT INTO report"+r.getId()+"_comments (status,date,author,message) VALUES (?,?,?,?);", Arrays.asList("Private", date, p.getDisplayName(), message));
+				new Comment(r, commentId, "Private", date, p.getDisplayName(), message).save();
+			} else c.addMessage(message);
 		}
-		u.setCommentingReport(-1);
-		u.setModifiedComment(-1);
+		
+		u.setCommentingReport(null);
+		u.setModifiedComment(null);
 		u.updateSignBlock(e.getBlock());
-		u.openCommentsMenu(1, new Report(reportNumber));
+		u.openCommentsMenu(1, r);
 		e.setCancelled(true);
 	}
 	

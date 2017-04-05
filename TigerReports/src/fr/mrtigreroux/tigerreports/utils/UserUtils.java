@@ -1,8 +1,6 @@
 package fr.mrtigreroux.tigerreports.utils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.Arrays;
 import java.util.UUID;
 import java.util.logging.Level;
 
@@ -10,21 +8,18 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import fr.mrtigreroux.tigerreports.data.ConfigFile;
-import fr.mrtigreroux.tigerreports.data.ConfigSound;
-import fr.mrtigreroux.tigerreports.data.Message;
-import fr.mrtigreroux.tigerreports.objects.User;
+import fr.mrtigreroux.tigerreports.TigerReports;
+import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
+import fr.mrtigreroux.tigerreports.data.config.Message;
+import fr.mrtigreroux.tigerreports.objects.users.OfflineUser;
+import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
+import fr.mrtigreroux.tigerreports.objects.users.User;
 
 /**
  * @author MrTigreroux
  */
 
 public class UserUtils {
-	
-	public static HashMap<UUID, User> Users = new HashMap<>();
-	public static HashMap<String, Long> LastTimeReported = new HashMap<>();
-	public static HashMap<UUID, String> LastNameFound = new HashMap<>();
-	public static HashMap<String, String> LastUniqueIdFound = new HashMap<>();
 
 	@SuppressWarnings("deprecation")
 	public static String getUniqueId(String name) {
@@ -32,8 +27,8 @@ public class UserUtils {
 			return Bukkit.getPlayerExact(name).getUniqueId().toString();
 		} catch (Exception offlinePlayer) {
 			try {
-				String uuid = ((uuid = LastUniqueIdFound.get(name)) != null ? uuid : Bukkit.getOfflinePlayer(name).getUniqueId().toString());
-				if(uuid != null) LastUniqueIdFound.put(name, uuid);
+				String uuid = ((uuid = TigerReports.LastUniqueIdFound.get(name)) != null ? uuid : Bukkit.getOfflinePlayer(name).getUniqueId().toString());
+				if(uuid != null) TigerReports.LastUniqueIdFound.put(name, uuid);
 				return uuid;
 			} catch (Exception invalidPlayer) {
 				Bukkit.getLogger().log(Level.WARNING, "[TigerReports] UUID of pseudo <"+name+"> not found.");
@@ -48,9 +43,14 @@ public class UserUtils {
 			return Bukkit.getPlayer(uniqueId).getName();
 		} catch (Exception offlinePlayer) {
 			if(uniqueId != null) {
-				String name = ((name = LastNameFound.get(uniqueId)) != null ? name : ((name = ConfigFile.DATA.get().getString("Data."+uuid+".Name")) != null ? name : ((name = Bukkit.getOfflinePlayer(uniqueId).getName()))));
+				String name = ((name = TigerReports.LastNameFound.get(uuid)) != null ? name : Bukkit.getOfflinePlayer(uniqueId).getName());
+				if(name == null) {
+					try {
+						name = (String) TigerReports.getDb().query("SELECT name FROM users WHERE uuid = ?", Arrays.asList(uuid)).getResult(0, "name");
+					} catch (Exception nameNotFound) {}
+				}
 				if(name != null) {
-					LastNameFound.put(uniqueId, name);
+					TigerReports.LastNameFound.put(uuid, name);
 					return name;
 				}
 			}
@@ -79,75 +79,41 @@ public class UserUtils {
 	
 	public static Player getPlayer(String name) {
 		try {
-			Player p = Bukkit.getPlayerExact(name);
-			ConfigFile.DATA.get().set("Data."+p.getUniqueId()+".Name", p.getName());
-			ConfigFile.DATA.save();
-			return p;
+			return Bukkit.getPlayerExact(name);
 		} catch (Exception offlinePlayer) {
 			return null;
 		}
 	}
 	
 	public static boolean isValid(String uuid) {
-		return ConfigFile.DATA.get().get("Data."+uuid+".Name") != null;
+		return TigerReports.getDb().query("SELECT uuid FROM users WHERE uuid = ?", Arrays.asList(uuid)).getResult(0, "uuid") != null;
 	}
 	
 	public static boolean isOnline(String name) {
 		return getPlayer(name) != null;
 	}
-
-	public static int getStat(String uuid, String stat) {
-		return ConfigFile.DATA.get().get("Data."+uuid+".Statistics."+stat) != null ? ConfigFile.DATA.get().getInt("Data."+uuid+".Statistics."+stat) : 0;
-	}
 	
-	public static void changeStat(String uuid, String stat, int value) {
-		int score = getStat(uuid, stat)+value;
-		ConfigFile.DATA.get().set("Data."+uuid+".Statistics."+stat, score > 0 ? score : 0);
-		ConfigFile.DATA.save();
-	}
-	
-	public static List<String> getNotifications(String uuid) {
-		return ConfigFile.DATA.get().get("Data."+uuid+".Notifications") != null ? ConfigFile.DATA.get().getStringList("Data."+uuid+".Notifications") : new ArrayList<String>();
-	}
-	
-	public static void setNotifications(String uuid, List<String> notifications) {
-		ConfigFile.DATA.get().set("Data."+uuid+".Notifications", notifications);
-		ConfigFile.DATA.save();
-	}
-	
-	public static User getUser(Player p) {
-		UUID uuid = p.getUniqueId();
-		User u = Users.get(uuid);
+	public static User getUser(String uuid) {
+		if(uuid == null) return null;
+		User u = TigerReports.Users.get(uuid);
 		if(u == null) {
-			u = new User(p);
-			Users.put(uuid, u);
+			try {
+				u = new OnlineUser(Bukkit.getPlayer(UUID.fromString(uuid)));
+			} catch (Exception offlinePlayer) {
+				u = new OfflineUser(uuid);
+			}
+			u.save();
 		}
 		return u;
 	}
 	
-	public static String getCooldown(UUID uuid) {
-		String cooldown = ConfigFile.DATA.get().get("Data."+uuid+".Cooldown") != null ? ConfigFile.DATA.get().getString("Data."+uuid+".Cooldown") : MessageUtils.getNowDate();
-		double seconds = MessageUtils.getSeconds(cooldown)-MessageUtils.getSeconds(MessageUtils.getNowDate());
-		if(seconds <= 0) return null;
-		return MessageUtils.convertToSentence(seconds);
-	}
-	
-	public static void startCooldown(UUID uuid, double seconds) {
-		ConfigFile.DATA.get().set("Data."+uuid+".Cooldown", MessageUtils.convertToDate(MessageUtils.getSeconds(MessageUtils.getNowDate())+seconds));
-		ConfigFile.DATA.save();
-	}
-	
-	public static void stopCooldown(UUID uuid, String author) {
-		Player p = null;
-		try {
-			p = Bukkit.getPlayer(uuid);
-		} catch (Exception offlinePlayer) {
-			;
+	public static OnlineUser getOnlineUser(Player p) {
+		User u = TigerReports.Users.get(p.getUniqueId().toString());
+		if(u == null || !(u instanceof OnlineUser)) {
+			u = new OnlineUser(p);
+			u.save();
 		}
-		MessageUtils.sendStaffMessage(Message.STAFF_STOPCOOLDOWN.get().replace("_Player_", author).replace("_Target_", p != null ? p.getName() : getName(uuid.toString())), ConfigSound.STAFF.get());
-		if(p != null) p.sendMessage(Message.COOLDOWN_STOPPED.get());
-		ConfigFile.DATA.get().set("Data."+uuid+".Cooldown", null);
-		ConfigFile.DATA.save();
+		return (OnlineUser) u;
 	}
 	
 }

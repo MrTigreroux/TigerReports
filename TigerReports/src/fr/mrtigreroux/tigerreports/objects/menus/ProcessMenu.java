@@ -7,15 +7,12 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import fr.mrtigreroux.tigerreports.data.ConfigSound;
-import fr.mrtigreroux.tigerreports.data.MenuItem;
-import fr.mrtigreroux.tigerreports.data.Message;
+import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
+import fr.mrtigreroux.tigerreports.data.config.Message;
+import fr.mrtigreroux.tigerreports.data.constants.MenuItem;
 import fr.mrtigreroux.tigerreports.objects.CustomItem;
-import fr.mrtigreroux.tigerreports.objects.Report;
-import fr.mrtigreroux.tigerreports.objects.User;
+import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
-import fr.mrtigreroux.tigerreports.utils.MessageUtils;
-import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 /**
  * @author MrTigreroux
@@ -23,12 +20,14 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 public class ProcessMenu extends Menu {
 	
-	public ProcessMenu(User u, Report r) {
-		super(u, 27, 0, r, null, null);
+	public ProcessMenu(OnlineUser u, int reportId) {
+		super(u, 27, 0, reportId, null, null);
 	}
 	
 	@Override
 	public void open(boolean sound) {
+		if(!checkReport()) return;
+		
 		Inventory inv = getInventory(Message.PROCESS_TITLE.get().replace("_Report_", r.getName()), false);
 		
 		ItemStack gui = new CustomItem().type(Material.STAINED_GLASS_PANE).damage((byte) 7).name("").create();
@@ -52,11 +51,10 @@ public class ProcessMenu extends Menu {
 
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
+		if(!checkReport()) return;
 		if(slot == 11 || slot == 13 || slot == 15) {
 			String appreciation = slot == 11 ? "True" : slot == 13 ? "Uncertain" : "False";
-			r.setDone(p.getUniqueId(), appreciation);
-			UserUtils.changeStat(UserUtils.getUniqueId(r.getPlayerName("Signalman", false)), "Appreciations."+appreciation, 1);
-			MessageUtils.sendStaffMessage(Message.STAFF_PROCESS.get().replace("_Player_", p.getName()).replace("_Report_", r.getName()).replace("_Appreciation_", Message.valueOf(appreciation.toUpperCase()).get()), ConfigSound.STAFF.get());
+			r.process(p.getUniqueId().toString(), p.getName(), appreciation, false);
 			u.openReportsMenu(1, false);
 		} else if(slot == MenuItem.CANCEL_APPRECIATION.getPosition()) u.openReportMenu(r);
 	}

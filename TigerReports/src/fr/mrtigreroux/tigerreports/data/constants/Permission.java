@@ -1,4 +1,4 @@
-package fr.mrtigreroux.tigerreports.data;
+package fr.mrtigreroux.tigerreports.data.constants;
 
 /**
  * @author MrTigreroux

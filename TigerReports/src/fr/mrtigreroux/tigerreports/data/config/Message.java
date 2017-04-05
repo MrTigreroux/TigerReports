@@ -1,4 +1,4 @@
-package fr.mrtigreroux.tigerreports.data;
+package fr.mrtigreroux.tigerreports.data.config;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.bukkit.ChatColor;
@@ -19,14 +19,16 @@ public enum Message {
 	TELEPORT_OLD_LOCATION("Messages.Teleport-to-old-location"),
 	STAFF_PUNISH("Messages.Staff-punish"),
 	PUNISHED("Messages.Punished"),
-	STAFF_PROCESS("Messages.Staff-process"),
-	STAFF_ARCHIVEALL("Messages.Staff-archiveall"),
 	STAFF_STOPCOOLDOWN("Messages.Staff-stop-cooldown"),
+	COOLDOWN_STOPPED("Messages.Cooldown-stopped"),
+	STAFF_PROCESS("Messages.Staff-process"),
 	STAFF_ARCHIVE("Messages.Staff-archive"),
+	STAFF_ARCHIVEALL("Messages.Staff-archiveall"),
+	STAFF_RESTORE("Messages.Staff-restore"),
+	STAFF_REMOVE_ARCHIVE("Messages.Staff-remove-archive"),
 	STAFF_REMOVE("Messages.Staff-remove"),
 	STAFF_MAX_REPORTS_REACHED("Messages.Staff-max-reports-reached"),
-	COOLDOWN_STOPPED("Messages.Cooldown-stopped"),
-	NOTIFICATIONS("Messages.Notifications"),
+	STAFF_NOTIFICATIONS("Messages.Staff-notifications"),
 	COMMENT_NOTIFICATION("Messages.Comment-notification"),
 	REPORTS_NOTIFICATION("Messages.Reports-notification"),
 	REPORT_BUTTON("Messages.Report-button"),
@@ -46,7 +48,7 @@ public enum Message {
 	TOO_SHORT_REASON("ErrorMessages.Too-short-reason"),
 	PLAYER_OFFLINE("ErrorMessages.Player-offline"),
 	LOCATION_UNKNOWN("ErrorMessages.Location-unknown"),
-	INVALID_REPORTNUMBER("ErrorMessages.Invalid-report-number"),
+	INVALID_REPORT_ID("ErrorMessages.Invalid-report-id"),
 	INVALID_REPORT("ErrorMessages.Invalid-report"),
 	INVALID_PLAYER("ErrorMessages.Invalid-player"),
 	
@@ -119,6 +121,9 @@ public enum Message {
 	USER_STATISTIC_DETAILS("Menus.User-statistic-details"),
 	COOLDOWN_STATUS("Menus.Cooldown-status"),
 	COOLDOWN_STATUS_DETAILS("Menus.Cooldown-status-details"),
+	ARCHIVED_REPORTS_TITLE("Menus.Archived-reports-title"),
+	ARCHIVED_REPORTS("Menus.Archived-reports"),
+	REPORT_RESTORE_ACTION("Menus.Report-restore-action"),
 	PAGE_SWITCH_PREVIOUS("Menus.Switch-to-previous-page"),
 	PAGE_SWITCH_NEXT("Menus.Switch-to-next-page"),
 	CLOSE("Menus.Close"),
@@ -158,7 +163,7 @@ public enum Message {
 	UNCERTAIN("Words.Uncertain-appreciation"),
 	FALSE("Words.False-appreciation"),
 	REPORTS_STATISTIC("Words.Reports-statistic"),
-	REPORTED_TIME_STATISTIC("Words.Reported-time-statistic"),
+	REPORTED_TIMES_STATISTIC("Words.Reported-times-statistic"),
 	PROCESSED_REPORTS_STATISTIC("Words.Processed-reports-statistic"),
 	YES("Words.Yes-state"),
 	NO("Words.No-state"),

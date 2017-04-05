@@ -7,14 +7,12 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import fr.mrtigreroux.tigerreports.data.ConfigSound;
-import fr.mrtigreroux.tigerreports.data.Message;
-import fr.mrtigreroux.tigerreports.data.Permission;
+import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
+import fr.mrtigreroux.tigerreports.data.config.Message;
+import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.objects.CustomItem;
-import fr.mrtigreroux.tigerreports.objects.Report;
-import fr.mrtigreroux.tigerreports.objects.User;
+import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
-import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 
 /**
  * @author MrTigreroux
@@ -22,13 +20,17 @@ import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 
 public class ConfirmationMenu extends Menu {
 	
-	public ConfirmationMenu(User u, Report r, String action) {
-		super(u, 27, 0, r, action, null);
+	public ConfirmationMenu(OnlineUser u, int reportId, String action) {
+		super(u, 27, 0, reportId, action, null);
 	}
 	
 	@Override
 	public void open(boolean sound) {
+		if(!checkReport()) return;
+		
 		String report = r.getName();
+		final boolean removeArchive = action.equals("REMOVE_ARCHIVE");
+		if(removeArchive) action = "REMOVE";
 		Inventory inv = getInventory(Message.valueOf("CONFIRM_"+action+"_TITLE").get().replace("_Report_", report), false);
 		
 		ItemStack gui = new CustomItem().type(Material.STAINED_GLASS_PANE).damage((byte) 7).name("").create();
@@ -40,21 +42,27 @@ public class ConfirmationMenu extends Menu {
 		
 		p.openInventory(inv);
 		if(sound) u.playSound(ConfigSound.MENU.get());
+		if(removeArchive) action = "REMOVE_ARCHIVE";
 		u.setOpenedMenu(this);
 	}
 
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
+		if(!checkReport()) return;
 		if(slot == 11) {
-			if(!u.hasPermission(Permission.valueOf(action))) {
+			if(!u.hasPermission(Permission.valueOf(action.equals("REMOVE_ARCHIVE") ? "REMOVE" : action))) {
 				u.openReportMenu(r);
 				return;
 			}
-			MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage(Message.valueOf("STAFF_"+action).get().replace("_Player_", p.getName()), "_Report_", r.getName(), r.getText(), null), ConfigSound.STAFF.get());
-			if(action.equals("REMOVE")) r.remove();
-			else r.archive();
-			u.openReportsMenu(1, false);
-		} else if(slot == 15) u.openReportMenu(r);
+			
+			if(action.equals("REMOVE")) r.remove(p.getName(), false);
+			else if(action.equals("REMOVE_ARCHIVE")) r.removeFromArchives(p.getName(), false);
+			else r.archive(p.getName(), false);
+			p.closeInventory();
+		} else if(slot == 15) {
+			if(action.equals("REMOVE_ARCHIVE")) u.openArchivedReportsMenu(1, true);
+			else u.openReportMenu(r);
+		}
 	}
 	
 }

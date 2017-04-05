@@ -1,11 +1,14 @@
 package fr.mrtigreroux.tigerreports.utils;
 
+import java.text.Normalizer;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -14,13 +17,16 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
 
-import fr.mrtigreroux.tigerreports.data.ConfigSound;
-import fr.mrtigreroux.tigerreports.data.Message;
-import fr.mrtigreroux.tigerreports.data.Permission;
+import fr.mrtigreroux.tigerreports.TigerReports;
+import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
+import fr.mrtigreroux.tigerreports.data.config.Message;
+import fr.mrtigreroux.tigerreports.data.constants.Permission;
 
 /**
  * @author MrTigreroux
@@ -28,8 +34,8 @@ import fr.mrtigreroux.tigerreports.data.Permission;
 
 public class MessageUtils {
 
-	private static final List<String> units = Arrays.asList("YEAR", "MONTH", "WEEK", "DAY", "HOUR", "MINUTE", "SECOND");
-	private static final Set<String> colorCodes = new HashSet<String>(Arrays.asList("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"));
+	private static final List<String> UNITS = Arrays.asList("YEAR", "MONTH", "WEEK", "DAY", "HOUR", "MINUTE", "SECOND");
+	private static final Set<String> COLOR_CODES = new HashSet<String>(Arrays.asList("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"));
 	
 	public static void sendErrorMessage(CommandSender s, String message) {
 		s.sendMessage(message);
@@ -41,7 +47,7 @@ public class MessageUtils {
 	public static void sendStaffMessage(Object message, Sound sound) {
 		boolean isTextComponent = message instanceof TextComponent;
 		for(Player p : Bukkit.getOnlinePlayers()) {
-			if(!p.hasPermission(Permission.STAFF.get()) || !UserUtils.getUser(p).acceptsNotifications()) continue;
+			if(!p.hasPermission(Permission.STAFF.get()) || !UserUtils.getOnlineUser(p).acceptsNotifications()) continue;
 			if(isTextComponent) p.spigot().sendMessage((TextComponent) message);
 			else p.sendMessage((String) message);
 			if(sound != null) p.playSound(p.getLocation(), sound, 1, 1);
@@ -51,7 +57,10 @@ public class MessageUtils {
 	}
 
 	public static void sendConsoleMessage(String message) {
-		Bukkit.getConsoleSender().sendMessage(message.replace("é", "e").replace("è", "e").replace("à", "a").replace("»", ">").replace("ç", "c").replace("î", "i").replace("ê", "e").replace("û", "u"));
+		String temp = Normalizer.normalize(message, Normalizer.Form.NFD);
+	    Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+	    message = pattern.matcher(temp).replaceAll("");
+		Bukkit.getConsoleSender().sendMessage(message.replace("»", ">"));//.replace("é", "e").replace("è", "e").replace("à", "a").replace("»", ">").replace("ç", "c").replace("î", "i").replace("ê", "e").replace("û", "u"));
 	}
 
 	public static String cleanDouble(Double number) {
@@ -67,12 +76,7 @@ public class MessageUtils {
 	}
 	
 	public static String getNowDate() {
-		return new SimpleDateFormat("dd/MM/yyyy HH-mm-ss").format(new Date());
-	}
-	
-	public static String getDateArrangedByHeight(String date) {
-		date = date.replace("/", "").replace("-", "").replace(" ", "").replace(":", "");
-		return date.substring(4, 8)+date.substring(2, 4)+date.substring(0, 2)+date.substring(8, 10)+date.substring(10, 12)+date.substring(12, 14);
+		return new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date());
 	}
 
 	public static Double getSeconds(String date) {
@@ -119,8 +123,8 @@ public class MessageUtils {
 		for(int valueNumber = 0; valueNumber <= 6; valueNumber++) {
 			switch(values.get(valueNumber)) {
 				case 0: break;
-				case 1: sentence += 1+" "+Message.valueOf(units.get(valueNumber)).get()+" "; break;
-				default: sentence += values.get(valueNumber)+" "+Message.valueOf(units.get(valueNumber)+"S").get()+" "; break;
+				case 1: sentence += "1 "+Message.valueOf(UNITS.get(valueNumber)).get()+" "; break;
+				default: sentence += values.get(valueNumber)+" "+Message.valueOf(UNITS.get(valueNumber)+"S").get()+" "; break;
 			}
 		}
 		if(sentence.endsWith(" ")) sentence = sentence.substring(0, sentence.length()-1);
@@ -142,7 +146,7 @@ public class MessageUtils {
 		String color = null;
 		int index = lastWord != null ? text.indexOf(lastWord) : text.length();
 		if(index == 0) return ChatColor.WHITE;
-		for(String code : org.bukkit.ChatColor.getLastColors(text.substring(0, index)).split("§")) if(colorCodes.contains(code)) color = code;
+		for(String code : org.bukkit.ChatColor.getLastColors(text.substring(0, index)).split("§")) if(COLOR_CODES.contains(code)) color = code;
 		if(color == null) color = "f";
 		return ChatColor.getByChar(color.charAt(0));
 	}
@@ -197,9 +201,34 @@ public class MessageUtils {
 	public static String getGamemodeWord(String gamemode) {
 		try {
 			return Message.valueOf(gamemode.toUpperCase()).get();
-		} catch(Exception invalidGamemode) {
-			return gamemode.substring(0, 1).toUpperCase()+gamemode.substring(1, gamemode.length()).toLowerCase();
+		} catch (Exception invalidGamemode) {
+			return gamemode.substring(0, 1).toUpperCase()+gamemode.substring(1).toLowerCase();
 		}
+	}
+	
+	public static String formatConfigLocation(Location loc) {
+		String configLoc = TigerReports.getBungeeManager().getServerName()+"/"+loc.getWorld().getName();
+		for(String coords : new String[]{""+loc.getX(), ""+loc.getY(), ""+loc.getZ(), ""+loc.getYaw(), ""+loc.getPitch()}) {
+			int end = (end = coords.indexOf('.')+3) < coords.length() ? end : coords.length();
+			configLoc += "/"+coords.substring(0, end);
+		}
+		return configLoc;
+	}
+	
+	public static String getConfigServerLocation(String configLoc) {
+		return configLoc != null ? configLoc.split("/")[0] : null;
+	}
+	
+	public static Location getConfigLocation(String configLoc) {
+		if(configLoc == null) return null;
+		String[] coords = configLoc.split("/");
+		return new Location(Bukkit.getWorld(coords[1]), Double.parseDouble(coords[2]), Double.parseDouble(coords[3]), Double.parseDouble(coords[4]), Float.parseFloat(coords[5]), Float.parseFloat(coords[6]));
+	}
+	
+	public static String formatConfigEffects(Collection<PotionEffect> effects) {
+		String configEffects = "";
+		for(PotionEffect effect : effects) configEffects += effect.getType().getName()+":"+effect.getAmplifier()+"/"+effect.getDuration()+",";
+		return configEffects.length() > 1 ? configEffects.substring(0, configEffects.length()-1) : null;
 	}
 	
 }

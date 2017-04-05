@@ -15,9 +15,11 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.server.ServerCommandEvent;
 
+import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.commands.HelpCommand;
-import fr.mrtigreroux.tigerreports.data.ConfigFile;
-import fr.mrtigreroux.tigerreports.data.Permission;
+import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
+import fr.mrtigreroux.tigerreports.data.constants.Permission;
+import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.runnables.ReportsNotifier;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.UserUtils;
@@ -29,30 +31,30 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
 @SuppressWarnings("deprecation")
 public class PlayerListener implements Listener {
 
-private final static Set<String> helpCommands = new HashSet<String>(Arrays.asList("/tigerreports", "/helptigerreports", "/helptigerreport", "/tigerreport", "/tigerreporthelp", "/tigerreportshelp"));
+	private final static Set<String> helpCommands = new HashSet<String>(Arrays.asList("/tigerreports", "/helptigerreports", "/helptigerreport", "/tigerreport", "/tigerreporthelp", "/tigerreportshelp"));
 	
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent e) {
 		Player p = e.getPlayer();
-		String uuid = p.getUniqueId().toString();
-		for(String notification : UserUtils.getNotifications(uuid)) UserUtils.getUser(p).sendNotification(notification);
-		if(p.hasPermission(Permission.STAFF.get()) && ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.ReportsNotifications.Connection")) {
+		OnlineUser u = UserUtils.getOnlineUser(p);
+		for(String notification : u.getNotifications()) u.sendNotification(notification, false);
+		if(u.hasPermission(Permission.STAFF) && ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.ReportsNotifications.Connection")) {
 			String reportsNotifications = ReportsNotifier.getReportsNotification();
 			if(reportsNotifications != null) p.sendMessage(reportsNotifications);
 		}
-
-		ConfigFile.DATA.get().set("Data."+uuid+".Name", p.getName());
-		ConfigFile.DATA.save();
+		
+		TigerReports.getDb().updateAsynchronously("REPLACE INTO users (uuid,name) VALUES (?,?);", Arrays.asList(p.getUniqueId().toString(), p.getName()));
+		u.updateImmunity(u.hasPermission(Permission.EXEMPT) ? "always" : null, false);
 	}
 	
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent e) {
-		UserUtils.Users.remove(e.getPlayer().getUniqueId());
+		TigerReports.Users.remove(e.getPlayer().getUniqueId().toString());
 	}
 	
 	@EventHandler
 	public void onPlayerChat(PlayerChatEvent e) {
-		UserUtils.getUser(e.getPlayer()).updateLastMessages(e.getMessage());
+		UserUtils.getOnlineUser(e.getPlayer()).updateLastMessages(e.getMessage());
 	}
 	
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
