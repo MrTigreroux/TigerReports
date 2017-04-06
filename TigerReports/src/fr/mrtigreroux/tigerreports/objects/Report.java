@@ -155,7 +155,7 @@ public class Report {
 			TigerReports.getBungeeManager().sendPluginNotification(uuid+"/"+player+" process "+reportId+" "+appreciation);
 			TigerReports.getDb().update("UPDATE reports SET status = ?,appreciation = ? WHERE report_id = ?", Arrays.asList(status, appreciation, reportId));
 			UserUtils.getUser(uuid).changeStatistic("processed_reports", 1, false);
-			UserUtils.getUser(signalmanUniqueId).changeStatistic(appreciation+"_appreciations", 1, false);
+			UserUtils.getUser(signalmanUniqueId).changeStatistic(appreciation.toLowerCase()+"_appreciations", 1, false);
 		}
 	}
 	

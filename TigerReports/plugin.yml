@@ -1,6 +1,6 @@
 name: TigerReports
-version: 3.0
-description: Plugin de gestion de signalements.
+version: 3.0.1
+description: Plugin to manage reports / Plugin de gestion de signalements.
 author: MrTigreroux
 main: fr.mrtigreroux.tigerreports.TigerReports
 commands:

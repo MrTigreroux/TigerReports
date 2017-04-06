@@ -58,9 +58,9 @@ public class MessageUtils {
 
 	public static void sendConsoleMessage(String message) {
 		String temp = Normalizer.normalize(message, Normalizer.Form.NFD);
-	    Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
-	    message = pattern.matcher(temp).replaceAll("");
-		Bukkit.getConsoleSender().sendMessage(message.replace("»", ">"));//.replace("é", "e").replace("è", "e").replace("à", "a").replace("»", ">").replace("ç", "c").replace("î", "i").replace("ê", "e").replace("û", "u"));
+		Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+		message = pattern.matcher(temp).replaceAll("");
+		Bukkit.getConsoleSender().sendMessage(message.replace("»", ">"));
 	}
 
 	public static String cleanDouble(Double number) {

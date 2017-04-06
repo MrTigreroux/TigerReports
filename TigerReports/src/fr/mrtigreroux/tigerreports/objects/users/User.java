@@ -128,7 +128,7 @@ public abstract class User {
 	
 	public void changeStatistic(String statistic, int value, boolean bungee) {
 		if(statistics == null) getStatistics();
-		statistics.put(statistic, statistics.get(statistic)+value);
+		statistics.put(statistic, (statistics.get(statistic) != null ? statistics.get(statistic) : 0)+value);
 		save();
 		if(!bungee) {
 			TigerReports.getBungeeManager().sendPluginNotification(value+" change_statistic "+statistic+" "+uuid);

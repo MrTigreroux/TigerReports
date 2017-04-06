@@ -62,8 +62,7 @@ public class ArchivedReportsMenu extends Menu {
 		}
 		
 		if(slot >= 18 && slot <= size-9) {
-			Map<String, Object> result = TigerReports.getDb().query("SELECT * FROM archived_reports LIMIT 1 OFFSET ?", Arrays.asList(getIndex(slot))).getResult(0);
-			Report r = ReportUtils.formatReport(result, true);
+			Report r = ReportUtils.formatReport(TigerReports.getDb().query("SELECT * FROM archived_reports LIMIT 1 OFFSET ?", Arrays.asList(getIndex(slot)-1)).getResult(0), true);
 			if(click.equals(ClickType.DROP) && u.hasPermission(Permission.REMOVE)) u.openConfirmationMenu(r, "REMOVE_ARCHIVE");
 			else {
 				r.unarchive(p.getName(), false);
