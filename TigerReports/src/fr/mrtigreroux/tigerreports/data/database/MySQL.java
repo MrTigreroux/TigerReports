@@ -34,7 +34,7 @@ public class MySQL extends Database {
 	public void openConnection() {
         try {
         	Class.forName("com.mysql.jdbc.Driver");
-        	connection = DriverManager.getConnection("jdbc:mysql://"+host+":"+port+"/"+database, username, password);
+        	connection = DriverManager.getConnection("jdbc:mysql://"+host+":"+port+"/"+database+"?useUnicode=true&characterEncoding=UTF-8", username, password);
         } catch (SQLException ex) {
         	logError("Error on connection to database:", ex);
         } catch (ClassNotFoundException ex) {
