@@ -18,7 +18,7 @@ public class HelpCommand {
 			s.sendMessage("§7§m---------------------------------------------------");
 			s.sendMessage("§7Commands:");
 			s.sendMessage("§7- §b/report <player> <reason> §7: §eLets report a player.");
-			s.sendMessage("§7- §b/reports reload §7: §eLets reload configuration files.");
+			s.sendMessage("§7- §b/reports reload §7: §eLets reload the plugin.");
 			s.sendMessage("§7- §b/reports §7: §eLets show all reports.");
 			s.sendMessage("§7- §b/reports #<report id> §7: §eLets show specific report.");
 			s.sendMessage("§7- §b/reports user <player> §7: §eLets manage data of an user.");
@@ -34,7 +34,7 @@ public class HelpCommand {
 			s.sendMessage("§7§m---------------------------------------------------");
 			s.sendMessage("§7Commandes:");
 			s.sendMessage("§7- §b/report <joueur> <raison> §7: §ePermet de signaler un joueur.");
-			s.sendMessage("§7- §b/reports reload §7: §ePermet d'actualiser les fichiers de configuration.");
+			s.sendMessage("§7- §b/reports reload §7: §ePermet de recharger le plugin.");
 			s.sendMessage("§7- §b/reports §7: §ePermet d'afficher l'ensemble des signalements.");
 			s.sendMessage("§7- §b/reports #<identifiant du signalement> §7: §ePermet d'afficher un signalement.");
 			s.sendMessage("§7- §b/reports user <joueur> §7: §ePermet de gérer les données d'un joueur.");

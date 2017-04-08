@@ -137,11 +137,11 @@ public abstract class User {
 	}
 
 	public List<String> getNotifications() {
+		List<String> notifications = null;
 		try {
-			return Arrays.asList(((String) TigerReports.getDb().query("SELECT notifications FROM users WHERE uuid = ?", Arrays.asList(uuid)).getResult(0, "notifications")).split("#next#"));
-		} catch (Exception noNotifications) {
-			return new ArrayList<String>();
-		}
+			notifications = Arrays.asList(((String) TigerReports.getDb().query("SELECT notifications FROM users WHERE uuid = ?", Arrays.asList(uuid)).getResult(0, "notifications")).split("#next#"));
+		} catch (Exception noNotifications) {}
+		return notifications != null ? notifications : new ArrayList<String>();
 	}
 	
 	public void setNotifications(List<String> notifications) {

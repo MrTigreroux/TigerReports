@@ -62,7 +62,11 @@ public class CommentsMenu extends Menu {
 		if(slot == 0) u.openReportMenu(r);
 		else if(slot == 8) u.comment(r);
 		else if(slot >= 18 && slot <= size-9) {
-			Comment c = r.getComments().get(getIndex(slot));
+			Comment c = new ArrayList<Comment>(r.getComments().values()).get(getIndex(slot)-1);
+			if(c == null) {
+				open(true);
+				return;
+			}
 			if(click.toString().contains("LEFT")) {
 				if(!c.getAuthor().equalsIgnoreCase(p.getDisplayName())) {
 					u.playSound(ConfigSound.ERROR.get());

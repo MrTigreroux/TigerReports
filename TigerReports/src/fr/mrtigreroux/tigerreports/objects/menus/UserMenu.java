@@ -52,15 +52,13 @@ public class UserMenu extends Menu {
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
 		if(slot == 8) {
-			try {
-				if(tu.getCooldown() != null) {
-					tu.stopCooldown(p.getName(), false);
-					open(false);
-				}
-			} catch (Exception playerOffline) {}
-		} else if(u.hasPermission(Permission.ADVANCED)) {
+			if(tu.getCooldown() != null) {
+				tu.stopCooldown(p.getName(), false);
+				open(false);
+			}
+		} else if(slot != 4 && u.hasPermission(Permission.ADVANCED)) {
 			String stat = "";
-			for(Statistic stats : Statistic.values()) if(stats.getPosition() == slot) stat = stats.getConfigName();
+			for(Statistic statistics : Statistic.values()) if(statistics.getPosition() == slot) stat = statistics.getConfigName();
 			tu.changeStatistic(stat, click.toString().contains("RIGHT") ? -1 : 1, false);
 			open(true);
 		}

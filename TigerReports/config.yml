@@ -1,7 +1,7 @@
 TigerReports:
   Version: 1.8+ spigot
   Creator: MrTigreroux
-  Description: Plugin for reporting management / Plugin de gestion de signalements.
+  Description: Plugin to manage reports / Plugin de gestion de signalements.
   Finished on: 30/06/2016
 Config:
   ColorCharacter: '&'

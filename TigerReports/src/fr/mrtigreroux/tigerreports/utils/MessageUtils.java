@@ -142,6 +142,7 @@ public class MessageUtils {
 		}
 		return date;
 	}
+	
 	public static ChatColor getLastColor(String text, String lastWord) {
 		String color = null;
 		int index = lastWord != null ? text.indexOf(lastWord) : text.length();
