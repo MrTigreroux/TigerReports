@@ -23,6 +23,11 @@ public class ReflectionUtils {
         String pkg = Bukkit.getServer().getClass().getPackage().getName();
         return pkg.substring(pkg.lastIndexOf(".") + 1);
     }
+	
+	public static double getVersion() {
+		String version = ver();
+		return Double.parseDouble(version.substring(1, version.lastIndexOf("_")).replace("_", "."));
+	}
    
     public static Class<?> wrapperToPrimitive(Class<?> clazz) {
         if(clazz == Boolean.class) return boolean.class;

@@ -33,7 +33,8 @@ public class ArchivedReportsMenu extends Menu {
 		
 		Inventory inv = getInventory(Message.ARCHIVED_REPORTS_TITLE.get().replace("_Page_", ""+page), true);
 		
-		inv.setItem(4, MenuItem.ARCHIVED_REPORTS_ICON.get());
+		inv.setItem(0, MenuItem.REPORTS.getWithDetails(Message.REPORTS_DETAILS.get()));
+		inv.setItem(4, MenuItem.ARCHIVED_REPORTS.get());
 		int firstReport = 1;
 		if(page >= 2) {
 			inv.setItem(size-7, MenuItem.PAGE_SWITCH_PREVIOUS.get());
@@ -61,7 +62,8 @@ public class ArchivedReportsMenu extends Menu {
 			return;
 		}
 		
-		if(slot >= 18 && slot <= size-9) {
+		if(slot == 0) u.openReportsMenu(1, true);
+		else if(slot >= 18 && slot <= size-9) {
 			Report r = ReportUtils.formatReport(TigerReports.getDb().query("SELECT * FROM archived_reports LIMIT 1 OFFSET ?", Arrays.asList(getIndex(slot)-1)).getResult(0), true);
 			if(r == null) {
 				open(true);

@@ -50,7 +50,7 @@ public class ReportMenu extends Menu {
 		}
 		
 		Inventory inv = getInventory(Message.REPORT_TITLE.get().replace("_Report_", r.getName()), true);
-		inv.setItem(0, MenuItem.REPORTS_ICON.getWithDetails(Message.REPORTS_DETAILS.get()));
+		inv.setItem(0, MenuItem.REPORTS.getWithDetails(Message.REPORTS_DETAILS.get()));
 		inv.setItem(4, r.getItem(null));
 		inv.setItem(18, r.getItem(Message.REPORT_CHAT_ACTION.get()));
 		
@@ -78,7 +78,7 @@ public class ReportMenu extends Menu {
 		inv.setItem(MenuItem.DATA.getPosition(), MenuItem.DATA.getWithDetails(r.implementData(Message.DATA_DETAILS.get(), u.hasPermission(Permission.ADVANCED))));
 		
 		int statusPosition = 29;
-		boolean archive = u.hasPermission(Permission.ARCHIVE);
+		boolean archive = u.hasPermission(Permission.ARCHIVE) && (r.getStatus() == Status.DONE || !ReportUtils.onlyDoneArchives());
 		for(Status status : Status.values()) {
 			inv.setItem(statusPosition, new CustomItem().type(Material.STAINED_CLAY).damage(status.getColor()).glow(status.equals(r.getStatus())).name(status == Status.DONE ? Message.PROCESS_STATUS.get() : Message.CHANGE_STATUS.get().replace("_Status_", status.getWord(null)))
 					.lore((status == Status.DONE ? Message.PROCESS_STATUS_DETAILS.get() : Message.CHANGE_STATUS_DETAILS.get()).replace("_Status_", status.getWord(null)).split(ConfigUtils.getLineBreakSymbol())).create());
@@ -149,7 +149,7 @@ public class ReportMenu extends Menu {
 				bungeeManager.sendPluginMessage("ConnectOther", p.getName(), serverName);
 				bungeeManager.sendServerPluginNotification(serverName, p.getName()+" teleport "+configLoc);
 			}
-		} else if(u.hasPermission(Permission.ARCHIVE)) {
+		} else if(u.hasPermission(Permission.ARCHIVE) && (r.getStatus() == Status.DONE || !ReportUtils.onlyDoneArchives())) {
 			if(slot >= 29 && slot <= 31) {
 				r.setStatus(Arrays.asList(Status.values()).get(slot-29), false);
 				if(!u.hasPermission(Permission.ADVANCED) && slot == 31) u.openReportsMenu(1, true);

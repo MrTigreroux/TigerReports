@@ -28,7 +28,8 @@ public class ReportsMenu extends Menu {
 	public void open(boolean sound) {
 		Inventory inv = getInventory(Message.REPORTS_TITLE.get().replace("_Page_", ""+page), true);
 		
-		inv.setItem(4, MenuItem.REPORTS_ICON.get());
+		inv.setItem(4, MenuItem.REPORTS.get());
+		if(u.hasPermission(Permission.ARCHIVE)) inv.setItem(MenuItem.ARCHIVED_REPORTS.getPosition(), MenuItem.ARCHIVED_REPORTS.getWithDetails(Message.ARCHIVED_REPORTS_DETAILS.get()));
 		int firstReport = 1;
 		if(page >= 2) {
 			inv.setItem(size-7, MenuItem.PAGE_SWITCH_PREVIOUS.get());
@@ -51,7 +52,8 @@ public class ReportsMenu extends Menu {
 
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
-		if(slot >= 18 && slot <= size-9) {
+		if(slot == MenuItem.ARCHIVED_REPORTS.getPosition() && u.hasPermission(Permission.ARCHIVE)) u.openArchivedReportsMenu(1, true);
+		else if(slot >= 18 && slot <= size-9) {
 			Report r = ReportUtils.getReport(getIndex(slot));
 			if(click.equals(ClickType.DROP) && u.hasPermission(Permission.REMOVE)) u.openConfirmationMenu(r, "REMOVE");
 			else u.openReportMenu(r);

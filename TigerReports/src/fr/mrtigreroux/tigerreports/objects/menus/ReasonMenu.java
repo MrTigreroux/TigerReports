@@ -28,7 +28,7 @@ public class ReasonMenu extends Menu {
 	public void open(boolean sound) {
 		Inventory inv = getInventory(Message.REASON_TITLE.get().replace("_Target_", tu.getName()), true);
 		
-		inv.setItem(4, MenuItem.REASONS_ICON.get());
+		inv.setItem(4, MenuItem.REASONS.get());
 		int firstReason = 1;
 		if(page >= 2) {
 			inv.setItem(size-7, MenuItem.PAGE_SWITCH_PREVIOUS.get());

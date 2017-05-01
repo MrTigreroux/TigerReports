@@ -1,5 +1,5 @@
 TigerReports:
-  Version: 1.8+ spigot
+  Version: 1.7+ spigot
   Creator: MrTigreroux
   Description: Plugin to manage reports / Plugin de gestion de signalements.
   Finished on: 30/06/2016
@@ -33,6 +33,8 @@ Config:
   # Notifications of reports to process / Notifications à propos des signalements à traiter
   # Connection:    Show at staff connection / Afficher à la connexion d'un membre de l'équipe
   # MinutesInterval:    Show each x minutes / Afficher toutes les x minutes
+  OnlyDoneArchives: no
+  # Prevent archive of unprocessed reports / Empêcher l'archivage de signalements non traités
   MenuSound: ENTITY_ITEM_PICKUP
   ErrorSound: ENTITY_ITEM_BREAK
   ReportSound: ENTITY_BAT_DEATH

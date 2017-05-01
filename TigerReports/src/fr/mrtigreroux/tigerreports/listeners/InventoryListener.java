@@ -52,7 +52,9 @@ public class InventoryListener implements Listener {
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onInventoryClose(InventoryCloseEvent e) {
 		UserUtils.getOnlineUser((Player) e.getPlayer()).setOpenedMenu(null);
-		TigerReports.getDb().startClosing();
+		try {
+			TigerReports.getDb().startClosing();
+		} catch (Exception ex) {}
 	}
 	
 }

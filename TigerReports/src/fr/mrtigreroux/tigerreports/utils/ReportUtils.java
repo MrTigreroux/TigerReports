@@ -99,5 +99,9 @@ public class ReportUtils {
 	public static long getPunishSeconds() {
 		return ConfigFile.CONFIG.get().getLong("Config.PunishSeconds", 3600);
 	}
+
+	public static boolean onlyDoneArchives() {
+		return ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.OnlyDoneArchives");
+	}
 	
 }
