@@ -10,7 +10,9 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 public class ReflectionUtils {
-       
+	
+	private static double version = 0;
+	
 	public static String cbVer() {
         return "org.bukkit.craftbukkit."+ver()+".";
 	}
@@ -25,8 +27,11 @@ public class ReflectionUtils {
     }
 	
 	public static double getVersion() {
-		String version = ver();
-		return Double.parseDouble(version.substring(1, version.lastIndexOf("_")).replace("_", "."));
+		if(version == 0) {
+			String ver = ver();
+			version = Double.parseDouble(ver.substring(1, ver.lastIndexOf("_")).replace("_", "."));
+		}
+		return version;
 	}
    
     public static Class<?> wrapperToPrimitive(Class<?> clazz) {
