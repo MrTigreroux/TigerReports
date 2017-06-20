@@ -7,7 +7,6 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.objects.CustomItem;
@@ -18,16 +17,14 @@ import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
  * @author MrTigreroux
  */
 
-public class ConfirmationMenu extends Menu {
+public class ConfirmationMenu extends Menu implements ReportManagement {
 	
 	public ConfirmationMenu(OnlineUser u, int reportId, String action) {
-		super(u, 27, 0, reportId, action, null);
+		super(u, 27, 0, Permission.STAFF, reportId, action, null);
 	}
 	
 	@Override
-	public void open(boolean sound) {
-		if(!checkReport()) return;
-		
+	public void onOpen() {
 		String report = r.getName();
 		final boolean removeArchive = action.equals("REMOVE_ARCHIVE");
 		if(removeArchive) action = "REMOVE";
@@ -40,17 +37,14 @@ public class ConfirmationMenu extends Menu {
 		inv.setItem(13, r.getItem(null));
 		inv.setItem(15, new CustomItem().type(Material.STAINED_CLAY).damage((byte) 14).name(Message.valueOf("CANCEL_"+action).get()).lore(Message.valueOf("CANCEL_"+action+"_DETAILS").get().split(ConfigUtils.getLineBreakSymbol())).create());
 		
-		p.openInventory(inv);
-		if(sound) u.playSound(ConfigSound.MENU.get());
 		if(removeArchive) action = "REMOVE_ARCHIVE";
-		u.setOpenedMenu(this);
+		p.openInventory(inv);
 	}
 
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
-		if(!checkReport()) return;
 		if(slot == 11) {
-			if(!u.hasPermission(Permission.valueOf(action.equals("REMOVE_ARCHIVE") ? "REMOVE" : action))) {
+			if(!Permission.valueOf(action.equals("REMOVE_ARCHIVE") ? "REMOVE" : action).check(u)) {
 				u.openReportMenu(r);
 				return;
 			}

@@ -1,6 +1,7 @@
 package fr.mrtigreroux.tigerreports.data.config;
 
 import java.io.File;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.logging.Level;
@@ -8,7 +9,6 @@ import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.craftbukkit.libs.jline.internal.InputStreamReader;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
 

@@ -7,7 +7,6 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.data.constants.Statistic;
@@ -23,11 +22,11 @@ import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 public class UserMenu extends Menu {
 	
 	public UserMenu(OnlineUser u, User tu) {
-		super(u, 54, 0, -1, null, tu);
+		super(u, 54, 0, Permission.STAFF, -1, null, tu);
 	}
 	
 	@Override
-	public void open(boolean sound) {
+	public void onOpen() {
 		String name = tu.getName();
 		Inventory inv = getInventory(Message.USER_TITLE.get().replace("_Target_", name), true);
 		
@@ -41,12 +40,10 @@ public class UserMenu extends Menu {
 		for(Statistic stat : Statistic.values()) {
 			int value = (int) statistics.get(stat.getConfigName());
 			inv.setItem(stat.getPosition(), stat.getItem().amount(value).name(Message.USER_STATISTIC.get().replace("_Statistic_", stat.getName()).replace("_Amount_", ""+value))
-					.lore(u.hasPermission(Permission.ADVANCED) ? Message.USER_STATISTIC_DETAILS.get().split(ConfigUtils.getLineBreakSymbol()) : null).create());
+					.lore(Permission.ADVANCED.check(u) ? Message.USER_STATISTIC_DETAILS.get().split(ConfigUtils.getLineBreakSymbol()) : null).create());
 		}
 		
 		p.openInventory(inv);
-		if(sound) u.playSound(ConfigSound.MENU.get());
-		u.setOpenedMenu(this);
 	}
 
 	@Override
@@ -56,7 +53,7 @@ public class UserMenu extends Menu {
 				tu.stopCooldown(p.getName(), false);
 				open(false);
 			}
-		} else if(slot != 4 && u.hasPermission(Permission.ADVANCED)) {
+		} else if(slot != 4 && Permission.ADVANCED.check(u)) {
 			String stat = "";
 			for(Statistic statistics : Statistic.values()) if(statistics.getPosition() == slot) stat = statistics.getConfigName();
 			tu.changeStatistic(stat, click.toString().contains("RIGHT") ? -1 : 1, false);

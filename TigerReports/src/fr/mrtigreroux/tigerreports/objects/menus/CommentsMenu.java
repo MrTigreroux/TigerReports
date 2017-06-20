@@ -20,16 +20,14 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
  * @author MrTigreroux
  */
 
-public class CommentsMenu extends Menu {
+public class CommentsMenu extends Menu implements ReportManagement {
 	
 	public CommentsMenu(OnlineUser u, int page, int reportId) {
-		super(u, 54, page, reportId, null, null);
+		super(u, 54, page, Permission.STAFF, reportId, null, null);
 	}
 	
 	@Override
-	public void open(boolean sound) {
-		if(!checkReport()) return;
-		
+	public void onOpen() {
 		Inventory inv = getInventory(Message.COMMENTS_TITLE.get().replace("_Report_", r.getName()), true);
 		
 		inv.setItem(0, r.getItem(Message.REPORT_SHOW_ACTION.get()));
@@ -45,20 +43,17 @@ public class CommentsMenu extends Menu {
 		List<Comment> comments = new ArrayList<Comment>(r.getComments().values());
 		int position = 18;
 		for(Comment c : comments) {
-			inv.setItem(position, c.getItem(u.hasPermission(Permission.REMOVE)));
+			inv.setItem(position, c.getItem(Permission.REMOVE.check(u)));
 			if(position >= 46) break;
 			else position++;
 		}
 		
 		if(firstComment+26 < comments.size()) inv.setItem(size-3, MenuItem.PAGE_SWITCH_NEXT.get());
 		p.openInventory(inv);
-		if(sound) u.playSound(ConfigSound.MENU.get());
-		u.setOpenedMenu(this);
 	}
 
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
-		if(!checkReport()) return;
 		if(slot == 0) u.openReportMenu(r);
 		else if(slot == 8) u.comment(r);
 		else if(slot >= 18 && slot <= size-9) {
@@ -69,7 +64,7 @@ public class CommentsMenu extends Menu {
 			}
 			if(click.toString().contains("LEFT")) {
 				if(!c.getAuthor().equalsIgnoreCase(p.getDisplayName())) {
-					u.playSound(ConfigSound.ERROR.get());
+					u.playSound(ConfigSound.ERROR);
 					return;
 				}
 				u.setModifiedComment(c);
@@ -94,7 +89,7 @@ public class CommentsMenu extends Menu {
 				}
 				su.setNotifications(notifications);
 				open(true);
-			} else if(click.equals(ClickType.DROP) && u.hasPermission(Permission.REMOVE)) {
+			} else if(click.equals(ClickType.DROP) && Permission.REMOVE.check(u)) {
 				c.remove();
 				open(true);
 			}

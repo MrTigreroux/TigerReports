@@ -11,6 +11,7 @@ import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.MenuItem;
+import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.objects.CustomItem;
 import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
@@ -24,21 +25,32 @@ import fr.mrtigreroux.tigerreports.utils.ReportUtils;
 
 public abstract class Menu {
 
-	protected OnlineUser u;
-	protected Player p;
+	protected final OnlineUser u;
+	protected final Player p;
 	protected int size, page;
+	private Permission permission;
 	protected Report r;
 	protected String action;
 	protected User tu;
 	
-	public Menu(OnlineUser u, int size, int page, int reportId, String action, User tu) {
+	public Menu(OnlineUser u, int size, int page, Permission permission, int reportId, String action, User tu) {
 		this.u = u;
 		this.p = u.getPlayer();
 		this.size = size;
 		this.page = page;
+		this.permission = permission;
 		this.r = reportId != -1 ? ReportUtils.getReportById(reportId) : null;
 		this.action = action;
 		this.tu = tu;
+	}
+	
+	private boolean checkPermission() {
+		if(!permission.check(u)) {
+			p.closeInventory();
+			MessageUtils.sendErrorMessage(p, Message.PERMISSION_COMMAND.get());
+			return false;
+		}
+		return true;
 	}
 	
 	protected Inventory getInventory(String title, boolean borders) {
@@ -47,22 +59,41 @@ public abstract class Menu {
 		if(borders) {
 			ItemStack gui = new CustomItem().type(Material.STAINED_GLASS_PANE).damage((byte) 7).name("").create();
 			int size = inv.getSize();
-			for(int position = 9; position <= 17; position++) inv.setItem(position, gui);
-			for(int position = size-9; position <= size-1; position++) inv.setItem(position, gui);
+			for(int position = 9; position < 18; position++) inv.setItem(position, gui);
+			for(int position = size-9; position < size; position++) inv.setItem(position, gui);
 			inv.setItem(size-5, MenuItem.CLOSE.get());
 		}
 		return inv;
 	}
 	
-	public void click(ItemStack item, int slot, ClickType click) {
-		if(slot == -1 || item == null || item.getType() == Material.AIR || (item.getType() == Material.STAINED_GLASS_PANE && ((slot >= size-9 && slot <= size-1) || (slot >= 9 && slot <= 17)))) return;
-		if(slot == size-5 && item.isSimilar(MenuItem.CLOSE.get())) {
+	private boolean checkReport() {
+		if(this instanceof ReportManagement && (r == null || !TigerReports.Reports.containsKey(r.getId()))) {
 			p.closeInventory();
-			u.playSound(ConfigSound.MENU.get());
+			MessageUtils.sendErrorMessage(p, Message.INVALID_REPORT.get());
+			return false;
+		}
+		return true;
+	}
+	
+	public void open(boolean sound) {
+		checkPermission();
+		checkReport();
+		onOpen();
+		if(sound) u.playSound(ConfigSound.MENU);
+		u.setOpenedMenu(this);
+	}
+	
+	public void click(ItemStack item, int slot, ClickType click) {
+		checkPermission();
+		checkReport();
+		if(slot == -1 || item == null || item.getType() == Material.AIR || (item.getType() == Material.STAINED_GLASS_PANE && ((slot >= size-9 && slot < size) || (slot >= 9 && slot <= 17)))) return;
+		if(slot == size-5) {
+			p.closeInventory();
+			u.playSound(ConfigSound.MENU);
 			return;
 		}
 		if(page != 0) {
-			int newPage = slot == size-7 && item.isSimilar(MenuItem.PAGE_SWITCH_PREVIOUS.get()) ? page-1 : slot == size-3 && item.isSimilar(MenuItem.PAGE_SWITCH_NEXT.get()) ? page+1 : 0;
+			int newPage = page-(slot == size-7 ? 1 : slot == size-3 ? -1 : page);
 			if(newPage != 0) {
 				page = newPage;
 				open(true);
@@ -76,16 +107,7 @@ public abstract class Menu {
 		return slot-17+((page-1)*27);
 	}
 	
-	protected boolean checkReport() {
-		if(r == null || !TigerReports.Reports.containsKey(r.getId())) {
-			p.closeInventory();
-			MessageUtils.sendErrorMessage(p, Message.INVALID_REPORT.get());
-			return false;
-		}
-		return true;
-	}
-	
-	public abstract void open(boolean sound);
+	public abstract void onOpen();
 	public abstract void onClick(ItemStack item, int slot, ClickType click);
 	
 }

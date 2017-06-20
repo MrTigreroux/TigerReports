@@ -9,7 +9,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
-import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.objects.users.OfflineUser;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
@@ -57,17 +56,6 @@ public class UserUtils {
 			Bukkit.getLogger().log(Level.WARNING, "[TigerReports] Pseudo of UUID <"+uuid+"> not found.");
 			return null;
 		}
-	}
-	
-	public static boolean checkPermission(CommandSender s, String permission) {
-		if(!s.hasPermission("tigerreports."+permission)) {
-			s.sendMessage(Message.PERMISSION_COMMAND.get());
-			if(s instanceof Player) {
-				Player p = (Player) s;
-				p.playSound(p.getLocation(), ConfigSound.ERROR.get(), 1, 1);
-			}
-			return false;
-		} else return true;
 	}
 	
 	public static boolean checkPlayer(CommandSender s) {

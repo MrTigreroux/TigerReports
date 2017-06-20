@@ -21,11 +21,11 @@ import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 public class ReasonMenu extends Menu {
 	
 	public ReasonMenu(OnlineUser u, int page, User tu) {
-		super(u, 54, page, -1, null, tu);
+		super(u, 54, page, null, -1, null, tu);
 	}
 	
 	@Override
-	public void open(boolean sound) {
+	public void onOpen() {
 		Inventory inv = getInventory(Message.REASON_TITLE.get().replace("_Target_", tu.getName()), true);
 		
 		inv.setItem(4, MenuItem.REASONS.get());
@@ -45,14 +45,12 @@ public class ReasonMenu extends Menu {
 		
 		if(ConfigUtils.exist(ConfigFile.CONFIG.get(), "Config.DefaultReasons.Reason"+(firstReason+27))) inv.setItem(size-3, MenuItem.PAGE_SWITCH_NEXT.get());
 		p.openInventory(inv);
-		if(sound) u.playSound(ConfigSound.MENU.get());
-		u.setOpenedMenu(this);
 	}
 
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
 		if(slot >= 18 && slot <= size-9) {
-			u.playSound(ConfigSound.MENU.get());
+			u.playSound(ConfigSound.MENU);
 			p.chat("/report "+tu.getName()+" "+ConfigFile.CONFIG.get().getString("Config.DefaultReasons.Reason"+(getIndex(slot))+".Name"));
 			p.closeInventory();
 		}

@@ -7,9 +7,9 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.MenuItem;
+import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.objects.CustomItem;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
@@ -18,16 +18,14 @@ import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
  * @author MrTigreroux
  */
 
-public class ProcessMenu extends Menu {
+public class ProcessMenu extends Menu implements ReportManagement {
 	
 	public ProcessMenu(OnlineUser u, int reportId) {
-		super(u, 27, 0, reportId, null, null);
+		super(u, 27, 0, Permission.STAFF, reportId, null, null);
 	}
 	
 	@Override
-	public void open(boolean sound) {
-		if(!checkReport()) return;
-		
+	public void onOpen() {
 		Inventory inv = getInventory(Message.PROCESS_TITLE.get().replace("_Report_", r.getName()), false);
 		
 		ItemStack gui = new CustomItem().type(Material.STAINED_GLASS_PANE).damage((byte) 7).name("").create();
@@ -45,13 +43,10 @@ public class ProcessMenu extends Menu {
 		inv.setItem(18, MenuItem.CANCEL_APPRECIATION.get());
 		
 		p.openInventory(inv);
-		if(sound) u.playSound(ConfigSound.MENU.get());
-		u.setOpenedMenu(this);
 	}
 
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
-		if(!checkReport()) return;
 		if(slot == 11 || slot == 13 || slot == 15) {
 			String appreciation = slot == 11 ? "True" : slot == 13 ? "Uncertain" : "False";
 			r.process(p.getUniqueId().toString(), p.getName(), appreciation, false);

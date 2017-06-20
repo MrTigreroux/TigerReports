@@ -9,6 +9,7 @@ import java.util.Map;
 import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
+import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.data.constants.Statistic;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
@@ -53,7 +54,8 @@ public abstract class User {
 	
 	public String getImmunity() {
 		if(immunity == null) {
-			immunity = (String) TigerReports.getDb().query("SELECT immunity FROM users WHERE uuid = ?", Arrays.asList(uuid)).getResult(0, "immunity");
+			if(this instanceof OnlineUser) immunity = Permission.EXEMPT.check((OnlineUser) this) ? "always" : null;
+			else immunity = (String) TigerReports.getDb().query("SELECT immunity FROM users WHERE uuid = ?", Arrays.asList(uuid)).getResult(0, "immunity");
 			save();
 		}
 		

@@ -27,8 +27,7 @@ public class ReportsCommand implements CommandExecutor {
 	@Override
 	public boolean onCommand(CommandSender s, Command cmd, String label, String[] args) {
 		if(args.length == 1 && args[0].equalsIgnoreCase("reload")) {
-			if(!s.hasPermission(Permission.MANAGE.get())) MessageUtils.sendErrorMessage(s, Message.PERMISSION_COMMAND.get());
-			else {
+			if(Permission.MANAGE.check(s)) {
 				TigerReports.Reports.clear();
 				TigerReports.Users.clear();
 				TigerReports.loadFiles();
@@ -41,10 +40,7 @@ public class ReportsCommand implements CommandExecutor {
 		}
 		
 		if(!UserUtils.checkPlayer(s)) return true;
-		if(!s.hasPermission(Permission.STAFF.get())) {
-			MessageUtils.sendErrorMessage(s, Message.PERMISSION_COMMAND.get());
-			return true;
-		}
+		if(!Permission.STAFF.check(s)) return true;
 		Player p = (Player) s;
 		OnlineUser u = UserUtils.getOnlineUser(p);
 		
@@ -55,8 +51,7 @@ public class ReportsCommand implements CommandExecutor {
 				u.setStaffNotifications(newState);
 				p.sendMessage(Message.STAFF_NOTIFICATIONS.get().replace("_State_", (newState ? Message.ACTIVATED : Message.DISABLED).get()));
 			} else if(args[0].equalsIgnoreCase("archiveall")) {
-				if(!u.hasPermission(Permission.ARCHIVE)) MessageUtils.sendErrorMessage(s, Message.PERMISSION_COMMAND.get());
-				else {
+				if(Permission.ARCHIVE.check(s)) {
 					for(Map<String, Object> result : TigerReports.getDb().query("SELECT * FROM reports", null).getResultList()) {
 						String status = (String) result.get("status");
 						if(status == null) continue;
@@ -65,8 +60,7 @@ public class ReportsCommand implements CommandExecutor {
 					MessageUtils.sendStaffMessage(Message.STAFF_ARCHIVEALL.get().replace("_Player_", p.getName()), ConfigSound.STAFF.get());
 				}
 			} else if(args[0].equalsIgnoreCase("archives")) {
-				if(!u.hasPermission(Permission.ARCHIVE)) MessageUtils.sendErrorMessage(s, Message.PERMISSION_COMMAND.get());
-				else u.openArchivedReportsMenu(1, true);
+				if(Permission.ARCHIVE.check(s)) u.openArchivedReportsMenu(1, true);
 			} else {
 				try {
 					u.openReportMenu(ReportUtils.getReportById(Integer.parseInt(args[0].replace("#", ""))));

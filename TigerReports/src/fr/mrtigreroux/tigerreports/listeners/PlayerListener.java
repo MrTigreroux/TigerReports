@@ -38,13 +38,13 @@ public class PlayerListener implements Listener {
 		Player p = e.getPlayer();
 		OnlineUser u = UserUtils.getOnlineUser(p);
 		for(String notification : u.getNotifications()) u.sendNotification(notification, false);
-		if(u.hasPermission(Permission.STAFF) && ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.ReportsNotifications.Connection")) {
+		if(Permission.STAFF.check(u) && ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.ReportsNotifications.Connection")) {
 			String reportsNotifications = ReportsNotifier.getReportsNotification();
 			if(reportsNotifications != null) p.sendMessage(reportsNotifications);
 		}
 		
 		TigerReports.getDb().updateAsynchronously("REPLACE INTO users (uuid,name) VALUES (?,?);", Arrays.asList(p.getUniqueId().toString(), p.getName()));
-		u.updateImmunity(u.hasPermission(Permission.EXEMPT) ? "always" : null, false);
+		u.updateImmunity(Permission.EXEMPT.check(u) ? "always" : null, false);
 	}
 	
 	@EventHandler

@@ -8,7 +8,6 @@ import net.md_5.bungee.api.chat.TextComponent;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -58,8 +57,8 @@ public class OnlineUser extends User {
 		return p;
 	}
 
-	public void playSound(Sound sound) {
-		if(sound != null) p.playSound(p.getLocation(), sound, 1, 1);
+	public void playSound(ConfigSound sound) {
+		if(sound != null) p.playSound(p.getLocation(), sound.get(), 1, 1);
 	}
 
 	public void openReasonMenu(int page, User tu) {
@@ -108,8 +107,8 @@ public class OnlineUser extends User {
 		save();
 	}
 	
-	public boolean hasPermission(Permission permission) {
-		return p.hasPermission(permission.get());
+	public boolean t(Permission permission) {
+		return permission == null ? true : p.hasPermission(permission.get());
 	}
 	
 	public void updateLastMessages(String newMessage) {
@@ -137,7 +136,7 @@ public class OnlineUser extends User {
 	public void printInChat(Report r, String[] lines) {
 		String reportName = r.getName();
 		for(String line : lines) sendMessage(MessageUtils.getAdvancedMessage(line, "_ReportButton_", Message.REPORT_BUTTON.get().replace("_Report_", reportName), Message.ALERT_DETAILS.get().replace("_Report_", reportName), "/reports #"+r.getId()));
-		playSound(ConfigSound.MENU.get());
+		playSound(ConfigSound.MENU);
 		p.closeInventory();
 	}
 	

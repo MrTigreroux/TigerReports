@@ -31,7 +31,7 @@ public class ReportCommand implements CommandExecutor {
 
 	@Override
 	public boolean onCommand(CommandSender s, Command cmd, String label, String[] args) {
-		if(!UserUtils.checkPlayer(s) || (ReportUtils.permissionRequired() && !UserUtils.checkPermission(s, Permission.REPORT.get()))) return true;
+		if(!UserUtils.checkPlayer(s) || (ReportUtils.permissionRequired() && !Permission.REPORT.check(s))) return true;
 		Player p = (Player) s;
 		OnlineUser u = UserUtils.getOnlineUser(p);
 		String uuid = p.getUniqueId().toString();

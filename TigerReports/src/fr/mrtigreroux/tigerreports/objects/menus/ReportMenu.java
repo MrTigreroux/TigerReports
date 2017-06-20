@@ -30,20 +30,18 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
  * @author MrTigreroux
  */
 
-public class ReportMenu extends Menu {
+public class ReportMenu extends Menu implements ReportManagement {
 	
 	private QueryResult statisticsQuery = null;
 	
 	public ReportMenu(OnlineUser u, int reportId) {
-		super(u, 54, 0, reportId, null, null);
+		super(u, 54, 0, Permission.STAFF, reportId, null, null);
 	}
 	
 	@Override
-	public void open(boolean sound) {
-		if(!checkReport()) return;
-		
+	public void onOpen() {
 		Status reportStatus = r.getStatus();
-		if((reportStatus == Status.IMPORTANT || reportStatus == Status.DONE) && !u.hasPermission(Permission.ADVANCED)) {
+		if((reportStatus == Status.IMPORTANT || reportStatus == Status.DONE) && !Permission.ADVANCED.check(u)) {
 			MessageUtils.sendErrorMessage(p, Message.PERMISSION_ACCESS_DETAILS.get().replace("_Report_", r.getName()));
 			p.closeInventory();
 			return;
@@ -72,13 +70,13 @@ public class ReportMenu extends Menu {
 				details = details.replace("_"+statName.substring(0, 1).toUpperCase()+statName.substring(1).replace("_", "")+"_", value);
 			}
 			inv.setItem(type.equals("Signalman") ? 21 : 23, new CustomItem().skullOwner(name).name(Message.valueOf(type.toUpperCase()).get().replace("_Player_", r.getPlayerName(type, true)))
-					.lore(details.replace("_Teleportation_", u.hasPermission(Permission.TELEPORT) ? ((UserUtils.isOnline(name) ? Message.TELEPORT_TO_CURRENT_POSITION.get() : Message.CAN_NOT_TELEPORT_TO_CURRENT_POSITION.get()).replace("_Player_", name)+(r.getOldLocation(type) != null ? Message.TELEPORT_TO_OLD_POSITION.get() : Message.CAN_NOT_TELEPORT_TO_OLD_POSITION.get()).replace("_Player_", name)) : "").split(ConfigUtils.getLineBreakSymbol())).create());
+					.lore(details.replace("_Teleportation_", Permission.TELEPORT.check(u) ? ((UserUtils.isOnline(name) ? Message.TELEPORT_TO_CURRENT_POSITION.get() : Message.CAN_NOT_TELEPORT_TO_CURRENT_POSITION.get()).replace("_Player_", name)+(r.getOldLocation(type) != null ? Message.TELEPORT_TO_OLD_POSITION.get() : Message.CAN_NOT_TELEPORT_TO_OLD_POSITION.get()).replace("_Player_", name)) : "").split(ConfigUtils.getLineBreakSymbol())).create());
 		}
 		
-		inv.setItem(MenuItem.DATA.getPosition(), MenuItem.DATA.getWithDetails(r.implementData(Message.DATA_DETAILS.get(), u.hasPermission(Permission.ADVANCED))));
+		inv.setItem(MenuItem.DATA.getPosition(), MenuItem.DATA.getWithDetails(r.implementData(Message.DATA_DETAILS.get(), Permission.ADVANCED.check(u))));
 		
 		int statusPosition = 29;
-		boolean archive = u.hasPermission(Permission.ARCHIVE) && (r.getStatus() == Status.DONE || !ReportUtils.onlyDoneArchives());
+		boolean archive = Permission.ARCHIVE.check(u) && (r.getStatus() == Status.DONE || !ReportUtils.onlyDoneArchives());
 		for(Status status : Status.values()) {
 			inv.setItem(statusPosition, new CustomItem().type(Material.STAINED_CLAY).damage(status.getColor()).glow(status.equals(r.getStatus())).name(status == Status.DONE ? Message.PROCESS_STATUS.get() : Message.CHANGE_STATUS.get().replace("_Status_", status.getWord(null)))
 					.lore((status == Status.DONE ? Message.PROCESS_STATUS_DETAILS.get() : Message.CHANGE_STATUS_DETAILS.get()).replace("_Status_", status.getWord(null)).split(ConfigUtils.getLineBreakSymbol())).create());
@@ -86,17 +84,14 @@ public class ReportMenu extends Menu {
 		}
 		if(archive) inv.setItem(MenuItem.ARCHIVE.getPosition(), MenuItem.ARCHIVE.get());
 		
-		if(u.hasPermission(Permission.REMOVE)) inv.setItem(MenuItem.REMOVE.getPosition(), MenuItem.REMOVE.get());
+		if(Permission.REMOVE.check(u)) inv.setItem(MenuItem.REMOVE.getPosition(), MenuItem.REMOVE.get());
 		inv.setItem(MenuItem.COMMENTS.getPosition(), MenuItem.COMMENTS.getWithDetails(Message.COMMENTS_DETAILS.get()));
 		
 		p.openInventory(inv);
-		if(sound) u.playSound(ConfigSound.MENU.get());
-		u.setOpenedMenu(this);
 	}
 
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
-		if(!checkReport()) return;
 		if(slot == 0) u.openReportsMenu(1, true);
 		else if(slot == 18) u.printInChat(r, r.implementDetails(Message.REPORT_CHAT_DETAILS.get()).replace("_Report_", r.getName()).split(ConfigUtils.getLineBreakSymbol()));
 		else if(slot == MenuItem.PUNISH_ABUSE.getPosition()) {
@@ -106,7 +101,7 @@ public class ReportMenu extends Menu {
 			u.openReportsMenu(1, false);
 		} else if(slot == MenuItem.DATA.getPosition()) {
 			if(click == ClickType.LEFT) {
-				u.printInChat(r, r.implementData(Message.REPORT_CHAT_DATA.get(), u.hasPermission(Permission.ADVANCED)).replace("_Report_", r.getName()).split(ConfigUtils.getLineBreakSymbol()));
+				u.printInChat(r, r.implementData(Message.REPORT_CHAT_DATA.get(), Permission.ADVANCED.check(u)).replace("_Report_", r.getName()).split(ConfigUtils.getLineBreakSymbol()));
 			} else if(click == ClickType.RIGHT) {
 				String messagesHistory = Message.REPORT_MESSAGES_HISTORY.get();
 				for(String type : Arrays.asList("Reported", "Signalman")) messagesHistory = messagesHistory.replace("_"+type+"_", r.getPlayerName(type, false)).replace("_"+type+"Messages_", r.getMessagesHistory(type));
@@ -115,7 +110,7 @@ public class ReportMenu extends Menu {
 		} else if(slot == MenuItem.REMOVE.getPosition()) u.openConfirmationMenu(r, "REMOVE");
 		else if(slot == MenuItem.COMMENTS.getPosition()) u.openCommentsMenu(1, r);
 		else if(slot == 21 || slot == 23) {
-			if(!u.hasPermission(Permission.TELEPORT)) return;
+			if(!Permission.TELEPORT.check(u)) return;
 			String type = slot == 21 ? "Signalman" : "Reported";
 			String name = r.getPlayerName(type, false);
 			Player t = UserUtils.getPlayer(name);
@@ -142,24 +137,24 @@ public class ReportMenu extends Menu {
 				locType = "OLD";
 			} else return;
 			p.sendMessage(Message.valueOf("TELEPORT_"+locType+"_LOCATION").get().replace("_Player_", Message.valueOf(type.toUpperCase()+"_NAME").get().replace("_Player_", name)).replace("_Report_", r.getName()));
-			u.playSound(ConfigSound.TELEPORT.get());
+			u.playSound(ConfigSound.TELEPORT);
 			BungeeManager bungeeManager = TigerReports.getBungeeManager();
 			if(serverName.equals("localhost") || bungeeManager.getServerName().equals(serverName)) p.teleport(loc);
 			else {
 				bungeeManager.sendPluginMessage("ConnectOther", p.getName(), serverName);
 				bungeeManager.sendServerPluginNotification(serverName, p.getName()+" teleport "+configLoc);
 			}
-		} else if(u.hasPermission(Permission.ARCHIVE) && (r.getStatus() == Status.DONE || !ReportUtils.onlyDoneArchives())) {
+		} else if(Permission.ARCHIVE.check(u) && (r.getStatus() == Status.DONE || !ReportUtils.onlyDoneArchives())) {
 			if(slot >= 29 && slot <= 31) {
 				r.setStatus(Arrays.asList(Status.values()).get(slot-29), false);
-				if(!u.hasPermission(Permission.ADVANCED) && slot == 31) u.openReportsMenu(1, true);
+				if(!Permission.ADVANCED.check(u) && slot == 31) u.openReportsMenu(1, true);
 				else open(true);
 			} else if(slot == 32) u.openAppreciationMenu(r);
 			else if(slot == 33) u.openConfirmationMenu(r, "ARCHIVE");
 		} else if(slot == 29 || slot == 30 || slot == 32) {
 			if(slot == 32) slot = 31;
 			r.setStatus(Arrays.asList(Status.values()).get(slot-29), false);
-			if(!u.hasPermission(Permission.ADVANCED) && slot == 31) u.openReportsMenu(1, true);
+			if(!Permission.ADVANCED.check(u) && slot == 31) u.openReportsMenu(1, true);
 			else open(true);
 		} else if(slot == 33) u.openAppreciationMenu(r);
 	}
