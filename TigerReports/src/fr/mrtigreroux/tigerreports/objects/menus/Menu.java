@@ -28,7 +28,7 @@ public abstract class Menu {
 	protected final OnlineUser u;
 	protected final Player p;
 	protected int size, page;
-	private Permission permission;
+	private final Permission permission;
 	protected Report r;
 	protected String action;
 	protected User tu;
@@ -39,13 +39,13 @@ public abstract class Menu {
 		this.size = size;
 		this.page = page;
 		this.permission = permission;
-		this.r = reportId != -1 ? ReportUtils.getReportById(reportId) : null;
+		this.r = ReportUtils.getReportById(reportId);
 		this.action = action;
 		this.tu = tu;
 	}
 	
 	private boolean checkPermission() {
-		if(!permission.check(u)) {
+		if(permission != null && !permission.check(u)) {
 			p.closeInventory();
 			MessageUtils.sendErrorMessage(p, Message.PERMISSION_COMMAND.get());
 			return false;

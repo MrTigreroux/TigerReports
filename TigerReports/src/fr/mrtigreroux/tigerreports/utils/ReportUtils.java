@@ -40,7 +40,7 @@ public class ReportUtils {
 	}
 	
 	public static Report getReportById(int reportId) {
-		return TigerReports.Reports.containsKey(reportId) ? TigerReports.Reports.get(reportId) : formatReport(TigerReports.getDb().query("SELECT * FROM reports WHERE report_id = ?", Arrays.asList(reportId)).getResult(0), true);
+		return reportId <= 0 ? null : TigerReports.Reports.containsKey(reportId) ? TigerReports.Reports.get(reportId) : formatReport(TigerReports.getDb().query("SELECT * FROM reports WHERE report_id = ?", Arrays.asList(reportId)).getResult(0), true);
 	}
 	
 	public static Report getReport(int reportIndex) {

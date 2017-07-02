@@ -1,7 +1,6 @@
 package fr.mrtigreroux.tigerreports.objects.users;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import net.md_5.bungee.api.chat.TextComponent;
@@ -16,7 +15,6 @@ import org.bukkit.entity.Player;
 
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
-import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.objects.Comment;
 import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.objects.menus.ArchivedReportsMenu;
@@ -45,7 +43,7 @@ public class OnlineUser extends User {
 	private Comment modifiedComment = null;
 	private Material signMaterial = null;
 	private Byte signData = null;
-	private String lastMessages = null;
+	private List<String> lastMessages = new ArrayList<>();
 	private boolean notifications = true;
 	
 	public OnlineUser(Player p) {
@@ -107,24 +105,17 @@ public class OnlineUser extends User {
 		save();
 	}
 	
-	public boolean t(Permission permission) {
-		return permission == null ? true : p.hasPermission(permission.get());
-	}
-	
 	public void updateLastMessages(String newMessage) {
 		int lastMessagesAmount = ConfigUtils.getMessagesHistory();
 		if(lastMessagesAmount <= 0) return;
 		
-		ArrayList<String> lastMessagesList = new ArrayList<String>();
-		if(lastMessages != null) lastMessagesList = new ArrayList<String>(Arrays.asList(lastMessages.split("#next#")));
-		if(lastMessagesList.size() >= lastMessagesAmount) lastMessagesList.remove(0);
-		lastMessagesList.add(newMessage);
-		this.lastMessages = String.join("#next#", lastMessagesList);
+		if(lastMessages.size() >= lastMessagesAmount) lastMessages.remove(0);
+		lastMessages.add(newMessage);
 		save();
 	}
 	
 	public String getLastMessages() {
-		return lastMessages;
+		return String.join("#next#", lastMessages);
 	}
 	
 	@Override
