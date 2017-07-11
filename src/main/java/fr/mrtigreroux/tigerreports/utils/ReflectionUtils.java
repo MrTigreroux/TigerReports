@@ -11,7 +11,7 @@ import org.bukkit.entity.Player;
 
 public class ReflectionUtils {
 	
-	private static double version = 0;
+	private static Version version = null;
 	
 	public static String cbVer() {
         return "org.bukkit.craftbukkit."+ver()+".";
@@ -26,13 +26,17 @@ public class ReflectionUtils {
         return pkg.substring(pkg.lastIndexOf(".") + 1);
     }
 	
-	public static double getVersion() {
-		if(version == 0) {
+	public static Version getVersion() {
+		if(version == null) {
 			String ver = ver();
-			version = Double.parseDouble(ver.substring(1, ver.lastIndexOf("_")).replace("_", "."));
+			version = new Version(ver.substring(1, ver.lastIndexOf("_")).replace("_", "."));
 		}
 		return version;
 	}
+
+	public static boolean isAtLeast(String atLeast) {
+        return getVersion().compareTo(new Version(atLeast)) >= 0;
+    }
    
     public static Class<?> wrapperToPrimitive(Class<?> clazz) {
         if(clazz == Boolean.class) return boolean.class;
