@@ -62,18 +62,6 @@ public class MessageUtils {
 		message = pattern.matcher(temp).replaceAll("");
 		Bukkit.getConsoleSender().sendMessage(message.replace("§", ">"));
 	}
-
-	public static String cleanDouble(Double number) {
-		String process = number+" ";
-		String result = process.replace(".0 ", "").replace(" ", "");
-		if(result.contains("E")) {
-			double power = Math.pow(10D, Double.parseDouble(result.substring(result.indexOf("E")+1)));
-			double withoutPower = Double.parseDouble(result.substring(0, result.indexOf("E")));
-			long total = (long) (withoutPower * power);
-			result = ""+total;
-		}
-		return result;
-	}
 	
 	public static String getNowDate() {
 		return new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date());
@@ -111,7 +99,7 @@ public class MessageUtils {
 			values.set(5, values.get(5)+1);
 			seconds -= 60;
 		}
-		values.set(6, values.get(6)+Integer.parseInt(cleanDouble(seconds)));
+		values.set(6, values.get(6)+ (int)Math.round(seconds));
 		
 		return values;
 	}
