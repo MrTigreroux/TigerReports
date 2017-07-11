@@ -52,7 +52,7 @@ public class PlayerListener implements Listener {
 		TigerReports.Users.remove(e.getPlayer().getUniqueId().toString());
 	}
 	
-	@EventHandler
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onPlayerChat(PlayerChatEvent e) {
 		UserUtils.getOnlineUser(e.getPlayer()).updateLastMessages(e.getMessage());
 	}

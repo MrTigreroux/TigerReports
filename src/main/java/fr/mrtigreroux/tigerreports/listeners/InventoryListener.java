@@ -49,7 +49,7 @@ public class InventoryListener implements Listener {
 		}
 	}
 	
-	@EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.LOW)
 	public void onInventoryClose(InventoryCloseEvent e) {
 		UserUtils.getOnlineUser((Player) e.getPlayer()).setOpenedMenu(null);
 		try {
