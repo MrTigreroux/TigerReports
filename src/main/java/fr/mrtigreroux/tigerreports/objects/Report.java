@@ -133,7 +133,7 @@ public class Report {
 	public String getMessagesHistory(String type) {
 		String messagesHistory = advancedData.get(type.toLowerCase()+"_messages");
 		if(messagesHistory == null || messagesHistory.isEmpty()) return Message.NONE_MALE.get();
-		else return "ง7- งr"+messagesHistory.replace("#next#", ConfigUtils.getLineBreakSymbol()+"ง7- งr");
+		else return "ยง7- ยงr"+messagesHistory.replace("#next#", ConfigUtils.getLineBreakSymbol()+"ยง7- ยงr");
 	}
 	
 	public ItemStack getItem(String actions) {

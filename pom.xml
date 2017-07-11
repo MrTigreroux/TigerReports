@@ -48,10 +48,6 @@
             		<groupId>com.google.code.gson</groupId>
             	</exclusion>
             	<exclusion>
-            		<artifactId>guava</artifactId>
-            		<groupId>com.google.guava</groupId>
-            	</exclusion>
-            	<exclusion>
             		<artifactId>snakeyaml</artifactId>
             		<groupId>org.yaml</groupId>
             	</exclusion>

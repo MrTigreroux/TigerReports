@@ -169,10 +169,10 @@ public class OnlineUser extends User {
 			if(support.getType() == Material.AIR) support.setType(Material.BEDROCK);
 			b.setType(Material.SIGN_POST);
 			Sign s = (Sign) b.getState();
-			s.setLine(0, "§7[§6TigerReports§7]");
-			s.setLine(1, "§e"+p.getName());
-			s.setLine(2, "§8rédige un");
-			s.setLine(3, "§8commentaire");
+			s.setLine(0, "Â§7[Â§6TigerReportsÂ§7]");
+			s.setLine(1, "Â§e"+p.getName());
+			s.setLine(2, "Â§8rÂ§dige un");
+			s.setLine(3, "Â§8commentaire");
 			s.update();
 			
 			setCommentingReport(r);

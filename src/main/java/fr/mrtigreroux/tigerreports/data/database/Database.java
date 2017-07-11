@@ -13,8 +13,6 @@ import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 
-import com.mysql.jdbc.Statement;
-
 import fr.mrtigreroux.tigerreports.TigerReports;
 
 /**
@@ -97,7 +95,7 @@ public abstract class Database {
     
 	public int insert(final String query, final List<Object> parameters) {
 		checkConnection();
-		try (PreparedStatement ps = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);) {
+		try (PreparedStatement ps = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);) {
 			prepare(ps, parameters);
 			ps.executeUpdate();
 			

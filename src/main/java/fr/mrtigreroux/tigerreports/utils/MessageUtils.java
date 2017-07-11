@@ -60,7 +60,7 @@ public class MessageUtils {
 		String temp = Normalizer.normalize(message, Normalizer.Form.NFD);
 		Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
 		message = pattern.matcher(temp).replaceAll("");
-		Bukkit.getConsoleSender().sendMessage(message.replace("»", ">"));
+		Bukkit.getConsoleSender().sendMessage(message.replace("Â§", ">"));
 	}
 
 	public static String cleanDouble(Double number) {
@@ -147,7 +147,7 @@ public class MessageUtils {
 		String color = null;
 		int index = lastWord != null ? text.indexOf(lastWord) : text.length();
 		if(index == 0) return ChatColor.WHITE;
-		for(String code : org.bukkit.ChatColor.getLastColors(text.substring(0, index)).split("§")) if(COLOR_CODES.contains(code)) color = code;
+		for(String code : org.bukkit.ChatColor.getLastColors(text.substring(0, index)).split("Â§")) if(COLOR_CODES.contains(code)) color = code;
 		if(color == null) color = "f";
 		return ChatColor.getByChar(color.charAt(0));
 	}
@@ -185,7 +185,7 @@ public class MessageUtils {
 		if(!line.contains(placeHolder)) return line;
 		else {
 			TextComponent advancedLine = new TextComponent("");
-			for(String part : line.replace(placeHolder, "¤µ¤"+placeHolder+"¤µ¤").split("¤µ¤")) {
+			for(String part : line.replace(placeHolder, "Â§Â§Â§"+placeHolder+"Â§Â§Â§").split("Â§Â§Â§")) {
 				if(!part.equals(placeHolder)) advancedLine.addExtra(part);
 				else {
 					TextComponent advancedText = new TextComponent(replacement);
