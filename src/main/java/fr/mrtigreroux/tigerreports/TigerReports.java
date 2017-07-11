@@ -54,12 +54,6 @@ public class TigerReports extends JavaPlugin {
 		getCommand("report").setExecutor(new ReportCommand());
 		getCommand("reports").setExecutor(new ReportsCommand());
 		
-		try {
-			Class.forName("fr.mrtigreroux.tigerreports.utils.UserUtils");
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		}
-		
 		ReportsNotifier.start();
 		
 		try {
