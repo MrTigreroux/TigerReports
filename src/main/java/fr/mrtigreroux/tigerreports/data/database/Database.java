@@ -30,7 +30,6 @@ public abstract class Database {
 	public abstract void openConnection();
 	public abstract void initialize();
 	public abstract boolean existsTable(String tableName);
-	public abstract void createCommentsTable(int reportId);
 
 	public void checkConnection() {
 		cancelClosing();

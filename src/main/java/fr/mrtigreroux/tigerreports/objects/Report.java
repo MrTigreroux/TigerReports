@@ -174,15 +174,10 @@ public class Report {
 		}
 	}
 	
-	public void checkComments() {
-		if(comments == null || comments.isEmpty()) TigerReports.getDb().createCommentsTable(reportId);
-	}
-	
 	public Map<Integer, Comment> getComments() {
 		if(comments != null) return comments;
 		comments = new HashMap<>();
-		if(!TigerReports.getDb().existsTable("report"+reportId+"_comments")) return comments;
-		for(Map<String, Object> rows : TigerReports.getDb().query("SELECT * FROM report"+reportId+"_comments", null).getResultList()) {
+		for(Map<String, Object> rows : TigerReports.getDb().query("SELECT * FROM report_comments WHERE report_id = ?;", Collections.singletonList(reportId)).getResultList()) {
 			int commentId = (int) rows.get("comment_id");
 			comments.put(commentId, new Comment(this, commentId, (String) rows.get("status"), (String) rows.get("date"), (String) rows.get("author"), (String) rows.get("message")));
 		}
