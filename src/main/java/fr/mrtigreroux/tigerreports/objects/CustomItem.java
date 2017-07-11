@@ -21,8 +21,8 @@ import fr.mrtigreroux.tigerreports.utils.ReflectionUtils;
 public class CustomItem {
 
 	private Material material = null;
-	private Integer amount = Integer.valueOf(1);
-	private Short damage = Short.valueOf((short) 0);
+	private Integer amount = 1;
+	private Short damage = (short) 0;
 	private String displayName = null;
 	private List<String> lore = null;
 	private Map<Enchantment, Integer> enchantments = null;
@@ -92,7 +92,7 @@ public class CustomItem {
 	}
 
 	public CustomItem enchant(Enchantment enchantment, Integer level) {
-		if(enchantments == null) enchantments = new HashMap<Enchantment, Integer>();
+		if(enchantments == null) enchantments = new HashMap<>();
 		enchantments.put(enchantment, level);
 		return this;
 	}
@@ -113,7 +113,7 @@ public class CustomItem {
 	}
 
 	public ItemStack create() {
-		ItemStack item = new ItemStack(getMaterial(), getAmount().intValue(), getDamage());
+		ItemStack item = new ItemStack(getMaterial(), getAmount(), getDamage());
 		
 		if(skullOwner != null) {
 			SkullMeta skullM = (SkullMeta) item.getItemMeta();
@@ -135,7 +135,7 @@ public class CustomItem {
 		
 		if(enchantments != null) {
 			for(Enchantment enchant : enchantments.keySet()) {
-				int level = enchantments.get(enchant).intValue();
+				int level = enchantments.get(enchant);
 				item.addUnsafeEnchantment(enchant, level);
 			}
 		}

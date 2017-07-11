@@ -15,7 +15,7 @@ import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 
 public class ConfigUtils {
 	
-	private final static Set<String> ACTIVATION_WORDS = new HashSet<String>(Arrays.asList("true", "t" ,"on", "enabled", "yes", "y", "activated", "a"));
+	private final static Set<String> ACTIVATION_WORDS = new HashSet<>(Arrays.asList("true", "t", "on", "enabled", "yes", "y", "activated", "a"));
 	
 	public static boolean isEnabled(ConfigurationSection config, String path) {
 		return config.get(path) != null && ACTIVATION_WORDS.contains(config.getString(path));

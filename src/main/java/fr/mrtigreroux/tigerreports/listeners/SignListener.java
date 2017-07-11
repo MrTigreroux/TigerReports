@@ -28,16 +28,16 @@ public class SignListener implements Listener {
 		Report r = u.getCommentingReport();
 		if(r == null) return;
 		
-		String message = "";
-		for(String line : e.getLines()) if(line != null && !line.equals("")) message += message.equals("") ? line : " "+line;
-		if(!message.equals("")) {
+		StringBuilder message = new StringBuilder();
+		for(String line : e.getLines()) if(line != null && !line.equals("")) message.append(message.toString().equals("") ? line : " " + line);
+		if(!message.toString().equals("")) {
 			Comment c = u.getModifiedComment();
 			r.checkComments();
 			if(c == null) {
 				String date = MessageUtils.getNowDate();
-				int commentId = TigerReports.getDb().insert("INSERT INTO report"+r.getId()+"_comments (status,date,author,message) VALUES (?,?,?,?);", Arrays.asList("Private", date, p.getDisplayName(), message));
-				new Comment(r, commentId, "Private", date, p.getDisplayName(), message).save();
-			} else c.addMessage(message);
+				int commentId = TigerReports.getDb().insert("INSERT INTO report"+r.getId()+"_comments (status,date,author,message) VALUES (?,?,?,?);", Arrays.asList("Private", date, p.getDisplayName(), message.toString()));
+				new Comment(r, commentId, "Private", date, p.getDisplayName(), message.toString()).save();
+			} else c.addMessage(message.toString());
 		}
 		
 		u.setCommentingReport(null);

@@ -54,7 +54,7 @@ public class InventoryListener implements Listener {
 		UserUtils.getOnlineUser((Player) e.getPlayer()).setOpenedMenu(null);
 		try {
 			TigerReports.getDb().startClosing();
-		} catch (Exception ex) {}
+		} catch (Exception ignored) {}
 	}
 	
 }

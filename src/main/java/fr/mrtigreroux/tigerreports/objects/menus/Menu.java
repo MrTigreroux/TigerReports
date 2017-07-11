@@ -27,11 +27,11 @@ public abstract class Menu {
 
 	protected final OnlineUser u;
 	protected final Player p;
-	protected int size, page;
+	int size, page;
 	private final Permission permission;
 	protected Report r;
-	protected String action;
-	protected User tu;
+	String action;
+	User tu;
 	
 	public Menu(OnlineUser u, int size, int page, Permission permission, int reportId, String action, User tu) {
 		this.u = u;
@@ -103,7 +103,7 @@ public abstract class Menu {
 		onClick(item, slot, click);
 	}
 	
-	protected int getIndex(int slot) {
+	int getIndex(int slot) {
 		return slot-17+((page-1)*27);
 	}
 	

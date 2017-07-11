@@ -1,12 +1,6 @@
 package fr.mrtigreroux.tigerreports.utils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -40,11 +34,11 @@ public class ReportUtils {
 	}
 	
 	public static Report getReportById(int reportId) {
-		return reportId <= 0 ? null : TigerReports.Reports.containsKey(reportId) ? TigerReports.Reports.get(reportId) : formatReport(TigerReports.getDb().query("SELECT * FROM reports WHERE report_id = ?", Arrays.asList(reportId)).getResult(0), true);
+		return reportId <= 0 ? null : TigerReports.Reports.containsKey(reportId) ? TigerReports.Reports.get(reportId) : formatReport(TigerReports.getDb().query("SELECT * FROM reports WHERE report_id = ?", Collections.singletonList(reportId)).getResult(0), true);
 	}
 	
 	public static Report getReport(int reportIndex) {
-		return formatReport(TigerReports.getDb().query("SELECT * FROM reports LIMIT 1 OFFSET ?", Arrays.asList(reportIndex-1)).getResult(0), true);
+		return formatReport(TigerReports.getDb().query("SELECT * FROM reports LIMIT 1 OFFSET ?", Collections.singletonList(reportIndex - 1)).getResult(0), true);
 	}
 	
 	public static List<Report> getReports(int min, int max) {
@@ -62,8 +56,8 @@ public class ReportUtils {
 			return r;
 		}
 		
-		Map<String, String> advancedData = new HashMap<String, String>();
-		Set<String> advancedKeys = new HashSet<String>(result.keySet());
+		Map<String, String> advancedData = new HashMap<>();
+		Set<String> advancedKeys = new HashSet<>(result.keySet());
 		advancedKeys.removeAll(Arrays.asList("report_id", "status", "appreciation", "date", "reported_uuid", "signalman_uuid", "reason"));
 		for(String key : advancedKeys) advancedData.put(key, (String) result.get(key));
 		r.setAdvancedData(advancedData);

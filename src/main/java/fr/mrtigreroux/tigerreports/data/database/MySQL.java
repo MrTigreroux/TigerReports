@@ -40,19 +40,15 @@ public class MySQL extends Database {
         } catch (ClassNotFoundException ex) {
         	logError("MySQL is missing.", null);
         }
-        return;
-    }
+	}
 	
 	@Override
 	public void initialize() {
-		Bukkit.getScheduler().runTaskAsynchronously(TigerReports.getInstance(), new Runnable() {
-			@Override
-			public void run() {
-				update("CREATE TABLE IF NOT EXISTS users (uuid char(36) NOT NULL,name varchar(20),cooldown varchar(20),immunity varchar(20),notifications varchar(255),true_appreciations int(5) DEFAULT 0,uncertain_appreciations int(5) DEFAULT 0,false_appreciations int(5) DEFAULT 0,reports int(5) DEFAULT 0,reported_times int(5) DEFAULT 0,processed_reports int(5) DEFAULT 0, PRIMARY KEY (uuid));", null);
-				update("CREATE TABLE IF NOT EXISTS reports (report_id int(11) NOT NULL AUTO_INCREMENT, status varchar(50) NOT NULL DEFAULT 'Waiting',appreciation varchar(10),date varchar(20) NOT NULL,reported_uuid char(36) NOT NULL,signalman_uuid char(36) NOT NULL,reason varchar(150),reported_ip varchar(22),reported_location varchar(60),reported_messages varchar(255),reported_gamemode char(10),reported_on_ground char(5),reported_sneak varchar(5),reported_sprint varchar(5),reported_health varchar(10),reported_food varchar(10),reported_effects varchar(100),signalman_ip varchar(22) NOT NULL,signalman_location varchar(60) NOT NULL,signalman_messages varchar(255), PRIMARY KEY (report_id));", null);
-				update("CREATE TABLE IF NOT EXISTS archived_reports (report_id int(11) NOT NULL, status varchar(50) NOT NULL,appreciation varchar(10),date varchar(20) NOT NULL,reported_uuid char(36) NOT NULL,signalman_uuid char(36) NOT NULL,reason varchar(150),reported_ip varchar(22),reported_location varchar(60),reported_messages varchar(255),reported_gamemode char(10),reported_on_ground char(5),reported_sneak varchar(5),reported_sprint varchar(5),reported_health varchar(10),reported_food varchar(10),reported_effects varchar(100),signalman_ip varchar(22) NOT NULL,signalman_location varchar(60) NOT NULL,signalman_messages varchar(255), PRIMARY KEY (report_id));", null);
-			}
-		});
+		Bukkit.getScheduler().runTaskAsynchronously(TigerReports.getInstance(), () -> {
+            update("CREATE TABLE IF NOT EXISTS users (uuid char(36) NOT NULL,name varchar(20),cooldown varchar(20),immunity varchar(20),notifications varchar(255),true_appreciations int(5) DEFAULT 0,uncertain_appreciations int(5) DEFAULT 0,false_appreciations int(5) DEFAULT 0,reports int(5) DEFAULT 0,reported_times int(5) DEFAULT 0,processed_reports int(5) DEFAULT 0, PRIMARY KEY (uuid));", null);
+            update("CREATE TABLE IF NOT EXISTS reports (report_id int(11) NOT NULL AUTO_INCREMENT, status varchar(50) NOT NULL DEFAULT 'Waiting',appreciation varchar(10),date varchar(20) NOT NULL,reported_uuid char(36) NOT NULL,signalman_uuid char(36) NOT NULL,reason varchar(150),reported_ip varchar(22),reported_location varchar(60),reported_messages varchar(255),reported_gamemode char(10),reported_on_ground char(5),reported_sneak varchar(5),reported_sprint varchar(5),reported_health varchar(10),reported_food varchar(10),reported_effects varchar(100),signalman_ip varchar(22) NOT NULL,signalman_location varchar(60) NOT NULL,signalman_messages varchar(255), PRIMARY KEY (report_id));", null);
+            update("CREATE TABLE IF NOT EXISTS archived_reports (report_id int(11) NOT NULL, status varchar(50) NOT NULL,appreciation varchar(10),date varchar(20) NOT NULL,reported_uuid char(36) NOT NULL,signalman_uuid char(36) NOT NULL,reason varchar(150),reported_ip varchar(22),reported_location varchar(60),reported_messages varchar(255),reported_gamemode char(10),reported_on_ground char(5),reported_sneak varchar(5),reported_sprint varchar(5),reported_health varchar(10),reported_food varchar(10),reported_effects varchar(100),signalman_ip varchar(22) NOT NULL,signalman_location varchar(60) NOT NULL,signalman_messages varchar(255), PRIMARY KEY (report_id));", null);
+        });
 	}
 	
 	@Override

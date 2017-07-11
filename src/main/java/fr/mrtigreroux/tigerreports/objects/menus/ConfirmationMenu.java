@@ -48,10 +48,18 @@ public class ConfirmationMenu extends Menu implements ReportManagement {
 				u.openReportMenu(r);
 				return;
 			}
-			
-			if(action.equals("REMOVE")) r.remove(p.getName(), false);
-			else if(action.equals("REMOVE_ARCHIVE")) r.removeFromArchives(p.getName(), false);
-			else r.archive(p.getName(), false);
+
+			switch (action) {
+				case "REMOVE":
+					r.remove(p.getName(), false);
+					break;
+				case "REMOVE_ARCHIVE":
+					r.removeFromArchives(p.getName(), false);
+					break;
+				default:
+					r.archive(p.getName(), false);
+					break;
+			}
 			p.closeInventory();
 		} else if(slot == 15) {
 			if(action.equals("REMOVE_ARCHIVE")) u.openArchivedReportsMenu(1, true);

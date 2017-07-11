@@ -31,7 +31,7 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
 @SuppressWarnings("deprecation")
 public class PlayerListener implements Listener {
 
-	private final static Set<String> helpCommands = new HashSet<String>(Arrays.asList("/tigerreports", "/helptigerreports", "/helptigerreport", "/tigerreport", "/tigerreporthelp", "/tigerreportshelp"));
+	private final static Set<String> helpCommands = new HashSet<>(Arrays.asList("/tigerreports", "/helptigerreports", "/helptigerreport", "/tigerreport", "/tigerreporthelp", "/tigerreportshelp"));
 	
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent e) {

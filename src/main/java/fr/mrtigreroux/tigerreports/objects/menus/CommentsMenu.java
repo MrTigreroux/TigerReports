@@ -40,7 +40,7 @@ public class CommentsMenu extends Menu implements ReportManagement {
 			firstComment += (page-1)*27;
 		}
 		
-		List<Comment> comments = new ArrayList<Comment>(r.getComments().values());
+		List<Comment> comments = new ArrayList<>(r.getComments().values());
 		int position = 18;
 		for(Comment c : comments) {
 			inv.setItem(position, c.getItem(Permission.REMOVE.check(u)));
@@ -57,7 +57,7 @@ public class CommentsMenu extends Menu implements ReportManagement {
 		if(slot == 0) u.openReportMenu(r);
 		else if(slot == 8) u.comment(r);
 		else if(slot >= 18 && slot <= size-9) {
-			Comment c = new ArrayList<Comment>(r.getComments().values()).get(getIndex(slot)-1);
+			Comment c = new ArrayList<>(r.getComments().values()).get(getIndex(slot)-1);
 			if(c == null) {
 				open(true);
 				return;

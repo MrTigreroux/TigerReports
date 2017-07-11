@@ -21,11 +21,11 @@ import fr.mrtigreroux.tigerreports.TigerReports;
 
 public abstract class Database {
     
-	protected Connection connection;
-	protected int closingTaskId = -1;
-	
+	Connection connection;
+	private int closingTaskId = -1;
+
 	public Database() {}
-	
+
 	public abstract boolean isValid() throws SQLException;
 	public abstract void openConnection();
 	public abstract void initialize();
@@ -36,7 +36,7 @@ public abstract class Database {
 		cancelClosing();
 		try {
 			if(connection != null && isValid()) return;
-		} catch (SQLException ex) {}
+		} catch (SQLException ignored) {}
 		openConnection();
 	}
 	
@@ -52,7 +52,7 @@ public abstract class Database {
 
 	public void update(final String query, final List<Object> parameters) {
 		checkConnection();
-		try (PreparedStatement ps = connection.prepareStatement(query);) {
+		try (PreparedStatement ps = connection.prepareStatement(query)) {
 			prepare(ps, parameters);
 			ps.executeUpdate();
 		} catch (SQLException ex) {
@@ -61,26 +61,21 @@ public abstract class Database {
 	}
 	
 	public void updateAsynchronously(final String query, final List<Object> parameters) {
-		Bukkit.getScheduler().runTaskAsynchronously(TigerReports.getInstance(), new Runnable() {
-			@Override
-			public void run() {
-				update(query, parameters);
-			}
-		});
+		Bukkit.getScheduler().runTaskAsynchronously(TigerReports.getInstance(), () -> update(query, parameters));
 	}
 	
 	public QueryResult query(final String query, final List<Object> parameters) {
 		checkConnection();
-	    try (PreparedStatement ps = connection.prepareStatement(query);) {
+	    try (PreparedStatement ps = connection.prepareStatement(query)) {
 	    	prepare(ps, parameters);
 	    	ResultSet rs = ps.executeQuery();
 			
-			List<Map<String, Object>> resultList = new ArrayList<Map<String, Object>>();
-		    Map<String, Object> row = null;
+			List<Map<String, Object>> resultList = new ArrayList<>();
+		    Map<String, Object> row;
 		    ResultSetMetaData metaData = rs.getMetaData();
 		    int columnCount = metaData.getColumnCount();
 		    while(rs.next()) {
-		        row = new HashMap<String, Object>();
+		        row = new HashMap<>();
 		        for(int i = 1; i <= columnCount; i++) row.put(metaData.getColumnName(i), rs.getObject(i));
 		        resultList.add(row);
 		    }
@@ -118,15 +113,12 @@ public abstract class Database {
 	
 	public void startClosing() {
 		if(closingTaskId != -1 || connection == null) return;
-		closingTaskId = Bukkit.getScheduler().scheduleSyncDelayedTask(TigerReports.getInstance(), new Runnable() {
-			@Override
-			public void run() {
-				if(closingTaskId != -1) {
-					closeConnection();
-					closingTaskId = -1;
-				}
-			}
-		}, 1200);
+		closingTaskId = Bukkit.getScheduler().scheduleSyncDelayedTask(TigerReports.getInstance(), () -> {
+            if(closingTaskId != -1) {
+                closeConnection();
+                closingTaskId = -1;
+            }
+        }, 1200);
 	}
 	
 	public void cancelClosing() {

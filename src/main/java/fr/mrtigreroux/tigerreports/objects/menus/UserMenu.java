@@ -38,7 +38,7 @@ public class UserMenu extends Menu {
 		
 		Map<String, Integer> statistics = tu.getStatistics();
 		for(Statistic stat : Statistic.values()) {
-			int value = (int) statistics.get(stat.getConfigName());
+			int value = statistics.get(stat.getConfigName());
 			inv.setItem(stat.getPosition(), stat.getItem().amount(value).name(Message.USER_STATISTIC.get().replace("_Statistic_", stat.getName()).replace("_Amount_", ""+value))
 					.lore(Permission.ADVANCED.check(u) ? Message.USER_STATISTIC_DETAILS.get().split(ConfigUtils.getLineBreakSymbol()) : null).create());
 		}

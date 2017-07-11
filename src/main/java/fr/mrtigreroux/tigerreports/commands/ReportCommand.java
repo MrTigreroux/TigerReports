@@ -79,7 +79,7 @@ public class ReportCommand implements CommandExecutor {
 		}
 		
 		StringBuilder sb = new StringBuilder();
-		for(int argNumber = 1; argNumber < args.length ; argNumber++) sb.append(args[argNumber]+" ");
+		for(int argNumber = 1; argNumber < args.length ; argNumber++) sb.append(args[argNumber]).append(" ");
 		String reason = sb.toString().trim();
 		if(reason.length() < ReportUtils.getMinCharacters()) {
 			MessageUtils.sendErrorMessage(p, Message.TOO_SHORT_REASON.get().replace("_Reason_", reason));
@@ -101,8 +101,8 @@ public class ReportCommand implements CommandExecutor {
 		
 		if(reportId != -1) {
 			List<Object> parameters;
-			if(rp != null) parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", MessageUtils.getNowDate(), ruuid, uuid.toString(), reason, rp.getAddress().toString(), MessageUtils.formatConfigLocation(rp.getLocation()), UserUtils.getOnlineUser(rp).getLastMessages(), rp.getGameMode().toString().toLowerCase(), rp.getLocation().getBlock().getRelative(BlockFace.DOWN).getType() != Material.AIR, rp.isSneaking(), rp.isSprinting(), MessageUtils.cleanDouble(rp.getHealth())+"/"+MessageUtils.cleanDouble(rp.getMaxHealth()), rp.getFoodLevel(), MessageUtils.formatConfigEffects(rp.getActivePotionEffects()), p.getAddress().toString(), MessageUtils.formatConfigLocation(p.getLocation()), u.getLastMessages());
-			else parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", MessageUtils.getNowDate(), ruuid, uuid.toString(), reason, null, null, null, null, null, null, null, null, null, null, p.getAddress().toString(), MessageUtils.formatConfigLocation(p.getLocation()), u.getLastMessages());
+			if(rp != null) parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", MessageUtils.getNowDate(), ruuid, uuid, reason, rp.getAddress().toString(), MessageUtils.formatConfigLocation(rp.getLocation()), UserUtils.getOnlineUser(rp).getLastMessages(), rp.getGameMode().toString().toLowerCase(), rp.getLocation().getBlock().getRelative(BlockFace.DOWN).getType() != Material.AIR, rp.isSneaking(), rp.isSprinting(), MessageUtils.cleanDouble(rp.getHealth())+"/"+MessageUtils.cleanDouble(rp.getMaxHealth()), rp.getFoodLevel(), MessageUtils.formatConfigEffects(rp.getActivePotionEffects()), p.getAddress().toString(), MessageUtils.formatConfigLocation(p.getLocation()), u.getLastMessages());
+			else parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", MessageUtils.getNowDate(), ruuid, uuid, reason, null, null, null, null, null, null, null, null, null, null, p.getAddress().toString(), MessageUtils.formatConfigLocation(p.getLocation()), u.getLastMessages());
 			reportId = TigerReports.getDb().insert("INSERT INTO reports (status,appreciation,date,reported_uuid,signalman_uuid,reason,reported_ip,reported_location,reported_messages,reported_gamemode,reported_on_ground,reported_sneak,reported_sprint,reported_health,reported_food,reported_effects,signalman_ip,signalman_location,signalman_messages) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);", parameters);
 		}
 		

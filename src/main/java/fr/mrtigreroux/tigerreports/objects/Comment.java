@@ -1,6 +1,7 @@
 package fr.mrtigreroux.tigerreports.objects;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -16,10 +17,10 @@ import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 
 public class Comment {
 
-	final Report r;
-	final int commentId;
-	final String date, author;
-	String status, message;
+	private final Report r;
+	private final int commentId;
+	private final String date, author;
+	private String status, message;
 	
 	public Comment(Report r, int commentId, String status, String date, String author, String message) {
 		this.r = r;
@@ -71,7 +72,7 @@ public class Comment {
 	
 	public void remove() {
 		r.comments.remove(commentId);
-		TigerReports.getDb().updateAsynchronously("DELETE FROM report"+r.getId()+"_comments WHERE comment_id = ?", Arrays.asList(commentId));
+		TigerReports.getDb().updateAsynchronously("DELETE FROM report"+r.getId()+"_comments WHERE comment_id = ?", Collections.singletonList(commentId));
 	}
 	
 	public void save() {
