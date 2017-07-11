@@ -1,0 +1,84 @@
+TigerReports:
+  Version: 1.7+ spigot
+  Creator: MrTigreroux
+  Description: Plugin to manage reports / Plugin de gestion de signalements.
+  Finished on: 30/06/2016
+Config:
+  ColorCharacter: '&'
+  # Character used for colors in messages.yml / Caractère utilisé pour les couleurs dans messages.yml
+  LineBreakSymbol: "//"
+  # Symbol used to separate lines in messages.yml / Symbole utilisé pour séparer les lignes dans messages.yml
+  HelpLanguage: French
+  # Language used in help message of /tigerreports command / Langue utilisée pour le message d'aide de la commande /tigerreports
+  # Only 2 languages : French and English / Seulement 2 langues : French et English
+  PermissionRequired: no
+  # Permission needed to use /report command / Permission requise pour utiliser la commande /report
+  ReportOnline: no
+  # Report only online players / Signaler uniquement des joueurs connectés
+  MaxReports: 100
+  # Maximum amount of saved reports, others are just displayed in chat / Nombre maximum de signalements sauvegardés, les autres sont simplement affichés dans le chat
+  MinCharacters: 3
+  # Minimum of characters in reason of a report / Caractères minimum pour la raison d'un signalement
+  ReportCooldown: 300
+  # Cooldown between each report in seconds / Temps d'attente entre chaque signalement en secondes
+  ReportedImmunity: 120
+  # Time in seconds during reported player can not be reported again / Temps en secondes durant lequel un joueur signalé ne peut être à nouveau signalé.
+  PunishSeconds: 3600
+  # Cooldown inflicted on abusive report / Temps d'attente infligé pour un signalement abusif
+  MessagesHistory: 5
+  # Saved messages amount / Nombre de messages sauvegardés
+  ReportsNotifications:
+    Connection: yes
+    MinutesInterval: 0
+  # Notifications of reports to process / Notifications à propos des signalements à traiter
+  # Connection:    Show at staff connection / Afficher à la connexion d'un membre de l'équipe
+  # MinutesInterval:    Show each x minutes / Afficher toutes les x minutes
+  OnlyDoneArchives: no
+  # Prevent archive of unprocessed reports / Empêcher l'archivage de signalements non traités
+  MenuSound: ENTITY_ITEM_PICKUP
+  ErrorSound: ENTITY_ITEM_BREAK
+  ReportSound: ENTITY_BAT_DEATH
+  TeleportSound: ENTITY_ENDERMEN_TELEPORT
+  StaffSound: ENTITY_ITEM_PICKUP
+  # Bukkit sounds used on specific actions / Sons bukkit utilisés pour certaines actions
+  CustomReasons: yes
+  # Allow custom reasons / Autoriser les raisons personnalisées
+  DefaultReasons:
+    Reason1:
+      Name: "Fly"
+      Item: Material-Feather
+    Reason2:
+      Name: "Speed"
+      Item: Material-Chainmail_leggings
+    Reason3:
+      Name: "ForceField"
+      Item: Material-Iron_sword
+    Reason4:
+      Name: "Reach"
+      Item: Material-Stick
+    Reason5:
+      Name: "RapidBowShot"
+      Item: Material-Bow
+    Reason6:
+      Name: "NoKnockback"
+      Item: Material-Fishing_rod
+    Reason7:
+      Name: "Grief"
+      Item: Material-TNT
+    Reason8:
+      Name: "Vol"
+      Item: Material-Chest
+    Reason9:
+      Name: "Insultes"
+      Item: Material-Sign
+  # Default reasons shown in a menu / Raisons par défaut affichées dans un menu
+  # Name:    Reason of report / Raison du signalement
+  # Item:    Material-<item_type>(:damage) or/ou Skull-<pseudo>
+  # Examples:    Material-Stone = Stone / Pierre    Material-Wool:2 = Magenta Wool / Laine magenta    Skull-MrTigreroux = Skull of player MrTigreroux / Tête du joueur MrTigreroux
+MySQL:
+  Host: ""
+  Port: 0
+  Database: ""
+  Username: ""
+  Password: ""
+  # Login IDs of connection to MySQL database / Identifiants de connexion à une base de données MySQL
