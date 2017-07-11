@@ -30,7 +30,7 @@ public class InventoryListener implements Listener {
 		return false;
 	}
 	
-	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
 	public void onInventoryDrag(InventoryDragEvent e) {
 		if(!(e.getWhoClicked() instanceof Player)) return;
 		OnlineUser u = UserUtils.getOnlineUser((Player) e.getWhoClicked());
@@ -38,7 +38,7 @@ public class InventoryListener implements Listener {
 		if(inv != null && inv.getType() == InventoryType.CHEST && u.getOpenedMenu() != null && isReportMenu(inv)) e.setCancelled(true);
 	}
 	
-	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
 	public void onInventoryClick(InventoryClickEvent e) {
 		if(!(e.getWhoClicked() instanceof Player)) return;
 		OnlineUser u = UserUtils.getOnlineUser((Player) e.getWhoClicked());
@@ -49,7 +49,7 @@ public class InventoryListener implements Listener {
 		}
 	}
 	
-	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
 	public void onInventoryClose(InventoryCloseEvent e) {
 		UserUtils.getOnlineUser((Player) e.getPlayer()).setOpenedMenu(null);
 		try {
