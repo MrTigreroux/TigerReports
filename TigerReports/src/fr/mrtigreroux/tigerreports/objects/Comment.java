@@ -16,10 +16,10 @@ import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 
 public class Comment {
 
-	final Report r;
-	final int commentId;
-	final String date, author;
-	String status, message;
+	private final Report r;
+	private final int commentId;
+	private final String date, author;
+	private String status, message;
 	
 	public Comment(Report r, int commentId, String status, String date, String author, String message) {
 		this.r = r;
@@ -46,7 +46,7 @@ public class Comment {
 	public void setStatus(String status) {
 		this.status = status;
 		save();
-		TigerReports.getDb().updateAsynchronously("UPDATE report"+r.getId()+"_comments SET status = ? WHERE comment_id = ?", Arrays.asList(this.status, commentId));
+		TigerReports.getDb().updateAsynchronously("UPDATE comments SET status = ? WHERE report_id = ? AND comment_id = ?", Arrays.asList(this.status, r.getId(), commentId));
 	}
 	
 	public String getAuthor() {
@@ -60,7 +60,7 @@ public class Comment {
 	public void addMessage(String message) {
 		this.message += " "+message;
 		save();
-		TigerReports.getDb().updateAsynchronously("UPDATE report"+r.getId()+"_comments SET message = ? WHERE comment_id = ?", Arrays.asList(this.message, commentId));
+		TigerReports.getDb().updateAsynchronously("UPDATE comments SET message = ? WHERE report_id = ? AND comment_id = ?", Arrays.asList(this.message, r.getId(), commentId));
 	}
 	
 	public ItemStack getItem(boolean removePermission) {
@@ -71,7 +71,7 @@ public class Comment {
 	
 	public void remove() {
 		r.comments.remove(commentId);
-		TigerReports.getDb().updateAsynchronously("DELETE FROM report"+r.getId()+"_comments WHERE comment_id = ?", Arrays.asList(commentId));
+		TigerReports.getDb().updateAsynchronously("DELETE FROM comments WHERE report_id = ? AND comment_id = ?", Arrays.asList(r.getId(), commentId));
 	}
 	
 	public void save() {

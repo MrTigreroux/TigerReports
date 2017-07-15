@@ -40,7 +40,7 @@ public class CommentsMenu extends Menu implements ReportManagement {
 			firstComment += (page-1)*27;
 		}
 		
-		List<Comment> comments = new ArrayList<Comment>(r.getComments().values());
+		List<Comment> comments = new ArrayList<>(r.getComments().values());
 		int position = 18;
 		for(Comment c : comments) {
 			inv.setItem(position, c.getItem(Permission.REMOVE.check(u)));
@@ -57,42 +57,38 @@ public class CommentsMenu extends Menu implements ReportManagement {
 		if(slot == 0) u.openReportMenu(r);
 		else if(slot == 8) u.comment(r);
 		else if(slot >= 18 && slot <= size-9) {
-			Comment c = new ArrayList<Comment>(r.getComments().values()).get(getIndex(slot)-1);
-			if(c == null) {
-				open(true);
-				return;
-			}
-			if(click.toString().contains("LEFT")) {
-				if(!c.getAuthor().equalsIgnoreCase(p.getDisplayName())) {
-					u.playSound(ConfigSound.ERROR);
+			Comment c = new ArrayList<>(r.getComments().values()).get(getIndex(slot)-1);
+			if(c != null) {
+				if(click.toString().contains("LEFT")) {
+					if(!c.getAuthor().equalsIgnoreCase(p.getDisplayName())) {
+						u.playSound(ConfigSound.ERROR);
+						return;
+					}
+					u.setModifiedComment(c);
+					u.comment(r);
 					return;
-				}
-				u.setModifiedComment(c);
-				u.comment(r);
-			} else if(click.toString().contains("RIGHT")) {
-				String comment = "Report"+r.getId()+":Comment"+c.getId();
-				User su = UserUtils.getUser(r.getSignalmanUniqueId());
-				boolean isPrivate = c.getStatus(true).equals("Private");
-				if(isPrivate && su instanceof OnlineUser) {
-					((OnlineUser) su).sendNotification(comment, true);
-					open(true);
-					return;
-				}
-				
-				List<String> notifications = su.getNotifications();
-				if(isPrivate) {
-					c.setStatus("Sent");
-					notifications.add(comment);
-				} else {
-					c.setStatus("Private");
-					notifications.remove(comment);
-				}
-				su.setNotifications(notifications);
-				open(true);
-			} else if(click.equals(ClickType.DROP) && Permission.REMOVE.check(u)) {
-				c.remove();
-				open(true);
+				} else if(click.toString().contains("RIGHT")) {
+					String comment = "Report"+r.getId()+":Comment"+c.getId();
+					User su = UserUtils.getUser(r.getSignalmanUniqueId());
+					boolean isPrivate = c.getStatus(true).equals("Private");
+					if(isPrivate && su instanceof OnlineUser) {
+						((OnlineUser) su).sendNotification(comment, true);
+						open(true);
+						return;
+					}
+					
+					List<String> notifications = su.getNotifications();
+					if(isPrivate) {
+						c.setStatus("Sent");
+						notifications.add(comment);
+					} else {
+						c.setStatus("Private");
+						notifications.remove(comment);
+					}
+					su.setNotifications(notifications);
+				} else if(click.equals(ClickType.DROP) && Permission.REMOVE.check(u)) c.remove();
 			}
+			open(true);
 		}
 	}
 	

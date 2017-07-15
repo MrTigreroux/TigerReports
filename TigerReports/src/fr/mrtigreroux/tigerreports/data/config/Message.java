@@ -35,6 +35,7 @@ public enum Message {
 	REPORT_CHAT_DETAILS("Messages.Report-chat-details"),
 	REPORT_CHAT_DATA("Messages.Report-chat-data"),
 	REPORT_MESSAGES_HISTORY("Messages.Report-messages-history"),
+	REPORT_MESSAGE_FORMAT("Messages.Report-message-format"),
 	
 	INVALID_SYNTAX("ErrorMessages.Invalid-syntax"),
 	PERMISSION_COMMAND("ErrorMessages.Permission-command"),

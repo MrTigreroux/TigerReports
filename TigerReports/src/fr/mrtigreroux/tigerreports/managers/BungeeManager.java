@@ -67,7 +67,7 @@ public class BungeeManager implements PluginMessageListener {
 			out.write(messageBytes);
 			
 			p.sendPluginMessage(main, "BungeeCord", out.toByteArray());
-		} catch (IOException ex) {}
+		} catch (IOException ignored) {}
 	}
 
 	public void sendPluginNotification(String message) {
@@ -116,7 +116,7 @@ public class BungeeManager implements PluginMessageListener {
 					case "teleport": UserUtils.getPlayer(parts[0]).teleport(MessageUtils.getConfigLocation(parts[2])); break;
 					default: break;
 				}
-			} catch (Exception ex) {}
+			} catch (Exception ignored) {}
 		} else if(subchannel.equals("GetServer")) serverName = in.readUTF();
 	}
 	

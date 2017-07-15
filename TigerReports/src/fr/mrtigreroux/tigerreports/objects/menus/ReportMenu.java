@@ -2,6 +2,7 @@ package fr.mrtigreroux.tigerreports.objects.menus;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -52,11 +53,11 @@ public class ReportMenu extends Menu implements ReportManagement {
 		inv.setItem(4, r.getItem(null));
 		inv.setItem(18, r.getItem(Message.REPORT_CHAT_ACTION.get()));
 		
-		inv.setItem(MenuItem.PUNISH_ABUSE.getPosition(), MenuItem.PUNISH_ABUSE.getWithDetails(Message.PUNISH_ABUSE_DETAILS.get().replace("_Player_", r.getPlayerName("Signalman", false)).replace("_Time_", MessageUtils.convertToSentence(ReportUtils.getPunishSeconds()))));
+		inv.setItem(MenuItem.PUNISH_ABUSE.getPosition(), MenuItem.PUNISH_ABUSE.getWithDetails(Message.PUNISH_ABUSE_DETAILS.get().replace("_Player_", r.getPlayerName("Signalman", false, true)).replace("_Time_", MessageUtils.convertToSentence(ReportUtils.getPunishSeconds()))));
 		
 		if(statisticsQuery == null) statisticsQuery = TigerReports.getDb().query("SELECT true_appreciations,uncertain_appreciations,false_appreciations,reports,reported_times,processed_reports FROM users WHERE uuid IN (?,?)", Arrays.asList(r.getSignalmanUniqueId(), r.getReportedUniqueId()));
 		for(String type : new String[]{"Signalman", "Reported"}) {
-			String name = r.getPlayerName(type, false);
+			String name = r.getPlayerName(type, false, false);
 			String details = Message.PLAYER_DETAILS.get();
 			Map<String, Object> statistics = statisticsQuery.getResult(type.equals("Signalman") ? 0 : 1);
 			for(Statistic stat : Statistic.values()) {
@@ -69,7 +70,7 @@ public class ReportMenu extends Menu implements ReportManagement {
 				}
 				details = details.replace("_"+statName.substring(0, 1).toUpperCase()+statName.substring(1).replace("_", "")+"_", value);
 			}
-			inv.setItem(type.equals("Signalman") ? 21 : 23, new CustomItem().skullOwner(name).name(Message.valueOf(type.toUpperCase()).get().replace("_Player_", r.getPlayerName(type, true)))
+			inv.setItem(type.equals("Signalman") ? 21 : 23, new CustomItem().skullOwner(name).name(Message.valueOf(type.toUpperCase()).get().replace("_Player_", r.getPlayerName(type, true, true)))
 					.lore(details.replace("_Teleportation_", Permission.TELEPORT.check(u) ? ((UserUtils.isOnline(name) ? Message.TELEPORT_TO_CURRENT_POSITION.get() : Message.CAN_NOT_TELEPORT_TO_CURRENT_POSITION.get()).replace("_Player_", name)+(r.getOldLocation(type) != null ? Message.TELEPORT_TO_OLD_POSITION.get() : Message.CAN_NOT_TELEPORT_TO_OLD_POSITION.get()).replace("_Player_", name)) : "").split(ConfigUtils.getLineBreakSymbol())).create());
 		}
 		
@@ -100,19 +101,28 @@ public class ReportMenu extends Menu implements ReportManagement {
 			r.process(p.getUniqueId().toString(), null, "False", false);
 			u.openReportsMenu(1, false);
 		} else if(slot == MenuItem.DATA.getPosition()) {
-			if(click == ClickType.LEFT) {
-				u.printInChat(r, r.implementData(Message.REPORT_CHAT_DATA.get(), Permission.ADVANCED.check(u)).replace("_Report_", r.getName()).split(ConfigUtils.getLineBreakSymbol()));
-			} else if(click == ClickType.RIGHT) {
-				String messagesHistory = Message.REPORT_MESSAGES_HISTORY.get();
-				for(String type : Arrays.asList("Reported", "Signalman")) messagesHistory = messagesHistory.replace("_"+type+"_", r.getPlayerName(type, false)).replace("_"+type+"Messages_", r.getMessagesHistory(type));
-				u.printInChat(r, messagesHistory.replace("_Report_", r.getName()).split(ConfigUtils.getLineBreakSymbol()));
+			if(click == ClickType.LEFT) u.printInChat(r, r.implementData(Message.REPORT_CHAT_DATA.get(), Permission.ADVANCED.check(u)).replace("_Report_", r.getName()).split(ConfigUtils.getLineBreakSymbol()));
+			else if(click == ClickType.RIGHT) {
+				Map<Double, String> sortedMessages = new TreeMap<>();
+				for(String type : new String[] {"Reported", "Signalman"}) {
+					for(String message : r.getMessagesHistory(type)) {
+						if(message != null && message.length() >= 20) {
+							String date = message.substring(0, 19);
+							sortedMessages.put(MessageUtils.getSeconds(date), Message.REPORT_MESSAGE_FORMAT.get().replace("_Date_", date).replace("_Player_", r.getPlayerName(type, false, true)).replace("_Message_", message.substring(20)));
+						}
+					}
+				}
+				String messages = "";
+				for(String message : sortedMessages.values()) messages += message;
+				
+				u.printInChat(r, Message.REPORT_MESSAGES_HISTORY.get().replace("_Report_", r.getName()).replace("_Messages_", !messages.isEmpty() ? messages : Message.NONE_MALE.get()).split(ConfigUtils.getLineBreakSymbol()));
 			}
 		} else if(slot == MenuItem.REMOVE.getPosition()) u.openConfirmationMenu(r, "REMOVE");
 		else if(slot == MenuItem.COMMENTS.getPosition()) u.openCommentsMenu(1, r);
 		else if(slot == 21 || slot == 23) {
 			if(!Permission.TELEPORT.check(u)) return;
 			String type = slot == 21 ? "Signalman" : "Reported";
-			String name = r.getPlayerName(type, false);
+			String name = r.getPlayerName(type, false, false);
 			Player t = UserUtils.getPlayer(name);
 			String locType;
 			String serverName;

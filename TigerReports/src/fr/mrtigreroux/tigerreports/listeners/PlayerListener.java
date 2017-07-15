@@ -31,7 +31,7 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
 @SuppressWarnings("deprecation")
 public class PlayerListener implements Listener {
 
-	private final static Set<String> helpCommands = new HashSet<String>(Arrays.asList("/tigerreports", "/helptigerreports", "/helptigerreport", "/tigerreport", "/tigerreporthelp", "/tigerreportshelp"));
+	private final static Set<String> helpCommands = new HashSet<>(Arrays.asList("/tigerreports", "/helptigerreports", "/helptigerreport", "/tigerreport", "/tigerreporthelp", "/tigerreportshelp"));
 	
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent e) {
@@ -49,7 +49,10 @@ public class PlayerListener implements Listener {
 	
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent e) {
-		TigerReports.Users.remove(e.getPlayer().getUniqueId().toString());
+		String uuid = e.getPlayer().getUniqueId().toString();
+		try {
+			if(TigerReports.Users.get(uuid).getLastMessages() == null) TigerReports.Users.remove(uuid);
+		} catch (Exception userNotSaved) {}
 	}
 	
 	@EventHandler

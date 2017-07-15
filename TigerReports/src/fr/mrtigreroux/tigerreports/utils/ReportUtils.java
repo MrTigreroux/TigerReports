@@ -1,12 +1,6 @@
 package fr.mrtigreroux.tigerreports.utils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -17,9 +11,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import com.google.common.primitives.Ints;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
-import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
-import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
-import fr.mrtigreroux.tigerreports.data.config.Message;
+import fr.mrtigreroux.tigerreports.data.config.*;
 import fr.mrtigreroux.tigerreports.objects.Report;
 
 /**
@@ -30,7 +22,7 @@ public class ReportUtils {
 	
 	public static void sendReport(Report r) {
 		int reportId = r.getId();
-		TextComponent alert = new TextComponent(Message.ALERT.get().replace("_Signalman_", r.getPlayerName("Signalman", false)).replace("_Reported_", r.getPlayerName("Reported", !ReportUtils.onlinePlayerRequired())).replace("_Reason_", r.getReason()));
+		TextComponent alert = new TextComponent(Message.ALERT.get().replace("_Signalman_", r.getPlayerName("Signalman", false, true)).replace("_Reported_", r.getPlayerName("Reported", !ReportUtils.onlinePlayerRequired(), true)).replace("_Reason_", r.getReason()));
 		alert.setColor(ChatColor.valueOf(MessageUtils.getLastColor(Message.ALERT.get(), "_Reason_").name()));
 		if(reportId != -1) {
 			alert.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/reports #"+reportId));
@@ -40,11 +32,11 @@ public class ReportUtils {
 	}
 	
 	public static Report getReportById(int reportId) {
-		return reportId <= 0 ? null : TigerReports.Reports.containsKey(reportId) ? TigerReports.Reports.get(reportId) : formatReport(TigerReports.getDb().query("SELECT * FROM reports WHERE report_id = ?", Arrays.asList(reportId)).getResult(0), true);
+		return reportId <= 0 ? null : TigerReports.Reports.containsKey(reportId) ? TigerReports.Reports.get(reportId) : formatReport(TigerReports.getDb().query("SELECT * FROM reports WHERE report_id = ?", Collections.singletonList(reportId)).getResult(0), true);
 	}
 	
 	public static Report getReport(int reportIndex) {
-		return formatReport(TigerReports.getDb().query("SELECT * FROM reports LIMIT 1 OFFSET ?", Arrays.asList(reportIndex-1)).getResult(0), true);
+		return formatReport(TigerReports.getDb().query("SELECT * FROM reports LIMIT 1 OFFSET ?", Collections.singletonList(reportIndex-1)).getResult(0), true);
 	}
 	
 	public static List<Report> getReports(int min, int max) {
@@ -62,8 +54,8 @@ public class ReportUtils {
 			return r;
 		}
 		
-		Map<String, String> advancedData = new HashMap<String, String>();
-		Set<String> advancedKeys = new HashSet<String>(result.keySet());
+		Map<String, String> advancedData = new HashMap<>();
+		Set<String> advancedKeys = new HashSet<>(result.keySet());
 		advancedKeys.removeAll(Arrays.asList("report_id", "status", "appreciation", "date", "reported_uuid", "signalman_uuid", "reason"));
 		for(String key : advancedKeys) advancedData.put(key, (String) result.get(key));
 		r.setAdvancedData(advancedData);

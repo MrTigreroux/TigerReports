@@ -1,6 +1,5 @@
 package fr.mrtigreroux.tigerreports.objects.users;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import net.md_5.bungee.api.chat.TextComponent;
@@ -17,15 +16,7 @@ import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.objects.Comment;
 import fr.mrtigreroux.tigerreports.objects.Report;
-import fr.mrtigreroux.tigerreports.objects.menus.ArchivedReportsMenu;
-import fr.mrtigreroux.tigerreports.objects.menus.ProcessMenu;
-import fr.mrtigreroux.tigerreports.objects.menus.CommentsMenu;
-import fr.mrtigreroux.tigerreports.objects.menus.ConfirmationMenu;
-import fr.mrtigreroux.tigerreports.objects.menus.Menu;
-import fr.mrtigreroux.tigerreports.objects.menus.ReasonMenu;
-import fr.mrtigreroux.tigerreports.objects.menus.ReportMenu;
-import fr.mrtigreroux.tigerreports.objects.menus.ReportsMenu;
-import fr.mrtigreroux.tigerreports.objects.menus.UserMenu;
+import fr.mrtigreroux.tigerreports.objects.menus.*;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 import fr.mrtigreroux.tigerreports.utils.ReflectionUtils;
@@ -43,7 +34,6 @@ public class OnlineUser extends User {
 	private Comment modifiedComment = null;
 	private Material signMaterial = null;
 	private Byte signData = null;
-	private List<String> lastMessages = new ArrayList<>();
 	private boolean notifications = true;
 	
 	public OnlineUser(Player p) {
@@ -110,12 +100,8 @@ public class OnlineUser extends User {
 		if(lastMessagesAmount <= 0) return;
 		
 		if(lastMessages.size() >= lastMessagesAmount) lastMessages.remove(0);
-		lastMessages.add(newMessage);
+		lastMessages.add(MessageUtils.getNowDate()+":"+newMessage);
 		save();
-	}
-	
-	public String getLastMessages() {
-		return String.join("#next#", lastMessages);
 	}
 	
 	@Override
@@ -147,8 +133,8 @@ public class OnlineUser extends User {
 			Comment c = r.getComments().get(Integer.parseInt(parts[1].replace("Comment", "")));
 			if(!direct && !c.getStatus(true).equals("Sent")) return;
 			p.sendMessage(Message.COMMENT_NOTIFICATION.get().replace("_Player_", c.getAuthor())
-					.replace("_Reported_", r.getPlayerName("Reported", false)).replace("_Time_", MessageUtils.convertToSentence(MessageUtils.getSeconds(MessageUtils.getNowDate())-MessageUtils.getSeconds(r.getDate())))
-					.replace("_Message_",c.getMessage()));
+					.replace("_Reported_", r.getPlayerName("Reported", false, true)).replace("_Time_", MessageUtils.convertToSentence(MessageUtils.getSeconds(MessageUtils.getNowDate())-MessageUtils.getSeconds(r.getDate())))
+					.replace("_Message_", c.getMessage()));
 			List<String> notifications = getNotifications();
 			notifications.remove(comment);
 			setNotifications(notifications);

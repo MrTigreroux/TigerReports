@@ -13,8 +13,6 @@ import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 
-import com.mysql.jdbc.Statement;
-
 import fr.mrtigreroux.tigerreports.TigerReports;
 
 /**
@@ -24,21 +22,19 @@ import fr.mrtigreroux.tigerreports.TigerReports;
 public abstract class Database {
     
 	protected Connection connection;
-	protected int closingTaskId = -1;
+	private int closingTaskId = -1;
 	
 	public Database() {}
 	
-	public abstract boolean isValid() throws SQLException;
 	public abstract void openConnection();
 	public abstract void initialize();
-	public abstract boolean existsTable(String tableName);
-	public abstract void createCommentsTable(int reportId);
+	public abstract boolean isValid() throws SQLException;
 
 	public void checkConnection() {
 		cancelClosing();
 		try {
 			if(connection != null && isValid()) return;
-		} catch (SQLException ex) {}
+		} catch (Exception ignored) {}
 		openConnection();
 	}
 	
@@ -54,7 +50,7 @@ public abstract class Database {
 
 	public void update(final String query, final List<Object> parameters) {
 		checkConnection();
-		try (PreparedStatement ps = connection.prepareStatement(query);) {
+		try (PreparedStatement ps = connection.prepareStatement(query)) {
 			prepare(ps, parameters);
 			ps.executeUpdate();
 		} catch (SQLException ex) {
@@ -73,16 +69,16 @@ public abstract class Database {
 	
 	public QueryResult query(final String query, final List<Object> parameters) {
 		checkConnection();
-	    try (PreparedStatement ps = connection.prepareStatement(query);) {
+	    try (PreparedStatement ps = connection.prepareStatement(query)) {
 	    	prepare(ps, parameters);
 	    	ResultSet rs = ps.executeQuery();
 			
-			List<Map<String, Object>> resultList = new ArrayList<Map<String, Object>>();
+			List<Map<String, Object>> resultList = new ArrayList<>();
 		    Map<String, Object> row = null;
 		    ResultSetMetaData metaData = rs.getMetaData();
 		    int columnCount = metaData.getColumnCount();
 		    while(rs.next()) {
-		        row = new HashMap<String, Object>();
+		        row = new HashMap<>();
 		        for(int i = 1; i <= columnCount; i++) row.put(metaData.getColumnName(i), rs.getObject(i));
 		        resultList.add(row);
 		    }
@@ -97,7 +93,7 @@ public abstract class Database {
     
 	public int insert(final String query, final List<Object> parameters) {
 		checkConnection();
-		try (PreparedStatement ps = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);) {
+		try (PreparedStatement ps = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS)) {
 			prepare(ps, parameters);
 			ps.executeUpdate();
 			

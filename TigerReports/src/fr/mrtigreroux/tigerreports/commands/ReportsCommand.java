@@ -54,8 +54,7 @@ public class ReportsCommand implements CommandExecutor {
 				if(Permission.ARCHIVE.check(s)) {
 					for(Map<String, Object> result : TigerReports.getDb().query("SELECT * FROM reports", null).getResultList()) {
 						String status = (String) result.get("status");
-						if(status == null) continue;
-						else if(status.startsWith("Done")) ReportUtils.formatReport(result, true).archive(null, false);
+						if(status != null && status.startsWith("Done")) ReportUtils.formatReport(result, true).archive(null, false);
 					}
 					MessageUtils.sendStaffMessage(Message.STAFF_ARCHIVEALL.get().replace("_Player_", p.getName()), ConfigSound.STAFF.get());
 				}

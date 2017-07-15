@@ -1,6 +1,6 @@
 package fr.mrtigreroux.tigerreports.objects.menus;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -39,7 +39,7 @@ public class ArchivedReportsMenu extends Menu {
 		}
 		
 		int position = 18;
-		List<Map<String, Object>> results = TigerReports.getDb().query("SELECT report_id,status,appreciation,date,reported_uuid,signalman_uuid,reason FROM archived_reports LIMIT 28 OFFSET ?", Arrays.asList(firstReport-1)).getResultList();
+		List<Map<String, Object>> results = TigerReports.getDb().query("SELECT report_id,status,appreciation,date,reported_uuid,signalman_uuid,reason FROM archived_reports LIMIT 28 OFFSET ?", Collections.singletonList(firstReport-1)).getResultList();
 		for(Map<String, Object> result : results) {
 			inv.setItem(position, ReportUtils.formatReport(result, false).getItem(Message.REPORT_RESTORE_ACTION.get()+(Permission.REMOVE.check(u) ? Message.REPORT_REMOVE_ACTION.get() : null)));
 			if(position >= 46) break;
@@ -54,7 +54,7 @@ public class ArchivedReportsMenu extends Menu {
 	public void onClick(ItemStack item, int slot, ClickType click) {
 		if(slot == 0) u.openReportsMenu(1, true);
 		else if(slot >= 18 && slot <= size-9) {
-			Report r = ReportUtils.formatReport(TigerReports.getDb().query("SELECT * FROM archived_reports LIMIT 1 OFFSET ?", Arrays.asList(getIndex(slot)-1)).getResult(0), true);
+			Report r = ReportUtils.formatReport(TigerReports.getDb().query("SELECT * FROM archived_reports LIMIT 1 OFFSET ?", Collections.singletonList(getIndex(slot)-1)).getResult(0), true);
 			if(r == null) {
 				open(true);
 				return;

@@ -1,6 +1,7 @@
 package fr.mrtigreroux.tigerreports.utils;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.UUID;
 import java.util.logging.Level;
 
@@ -74,7 +75,7 @@ public class UserUtils {
 	}
 	
 	public static boolean isValid(String uuid) {
-		return TigerReports.getDb().query("SELECT uuid FROM users WHERE uuid = ?", Arrays.asList(uuid)).getResult(0, "uuid") != null;
+		return TigerReports.getDb().query("SELECT uuid FROM users WHERE uuid = ?", Collections.singletonList(uuid)).getResult(0, "uuid") != null;
 	}
 	
 	public static boolean isOnline(String name) {

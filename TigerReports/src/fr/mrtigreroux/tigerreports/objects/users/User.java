@@ -1,10 +1,6 @@
 package fr.mrtigreroux.tigerreports.objects.users;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
@@ -21,11 +17,12 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 public abstract class User {
 
-	protected final String uuid;
-	protected String name = null;
-	protected String immunity = null;
+	private final String uuid;
+	private String name = null;
+	private String immunity = null;
 	protected String cooldown = null;
-	protected Map<String, Integer> statistics = null;
+	private Map<String, Integer> statistics = null;
+	protected List<String> lastMessages = new ArrayList<>();
 	
 	public User(String uuid) {
 		this.uuid = uuid;
@@ -53,17 +50,18 @@ public abstract class User {
 	}
 	
 	public String getImmunity() {
+		if(this instanceof OnlineUser) immunity = Permission.EXEMPT.check((OnlineUser) this) ? "always" : null;
 		if(immunity == null) {
-			if(this instanceof OnlineUser) immunity = Permission.EXEMPT.check((OnlineUser) this) ? "always" : null;
-			else immunity = (String) TigerReports.getDb().query("SELECT immunity FROM users WHERE uuid = ?", Arrays.asList(uuid)).getResult(0, "immunity");
+			immunity = (String) TigerReports.getDb().query("SELECT immunity FROM users WHERE uuid = ?", Collections.singletonList(uuid)).getResult(0, "immunity");
+			if(immunity == null) {
+				immunity = "|";
+				save();
+				return null;
+			}
 			save();
 		}
 		
-		if(immunity == null) {
-			immunity = "|";
-			save();
-			return null;
-		} else if(immunity.equals("always")) return immunity;
+		if(immunity.equals("always")) return immunity;
 		else if(immunity.equals("|")) return null;
 		else {
 			double seconds = MessageUtils.getSeconds(immunity)-MessageUtils.getSeconds(MessageUtils.getNowDate());
@@ -94,7 +92,7 @@ public abstract class User {
 	
 	public String getCooldown() {
 		if(cooldown == null || (cooldown.startsWith("|") && System.currentTimeMillis()-Long.parseLong(cooldown.replace("|", "")) > 300000)) {
-			cooldown = (String) TigerReports.getDb().query("SELECT cooldown FROM users WHERE uuid = ?", Arrays.asList(uuid)).getResult(0, "cooldown");
+			cooldown = (String) TigerReports.getDb().query("SELECT cooldown FROM users WHERE uuid = ?", Collections.singletonList(uuid)).getResult(0, "cooldown");
 			save();
 		}
 		
@@ -112,14 +110,14 @@ public abstract class User {
 		sendMessage(Message.COOLDOWN_STOPPED.get());
 		if(!bungee) {
 			TigerReports.getBungeeManager().sendPluginNotification(player+" stop_cooldown user "+uuid);
-			updateCooldown(null, bungee);
+			updateCooldown(null, false);
 		}
 	}
 
 	public Map<String, Integer> getStatistics() {
 		if(statistics != null) return statistics;
-		statistics = new HashMap<String, Integer>();
-		Map<String, Object> result = TigerReports.getDb().query("SELECT true_appreciations,uncertain_appreciations,false_appreciations,reports,reported_times,processed_reports FROM users WHERE uuid = ?", Arrays.asList(uuid)).getResult(0);
+		statistics = new HashMap<>();
+		Map<String, Object> result = TigerReports.getDb().query("SELECT true_appreciations,uncertain_appreciations,false_appreciations,reports,reported_times,processed_reports FROM users WHERE uuid = ?", Collections.singletonList(uuid)).getResult(0);
 		for(Statistic statistic : Statistic.values()) {
 			String statName = statistic.getConfigName();
 			statistics.put(statName, result != null ? (Integer) result.get(statName) : 0);
@@ -141,13 +139,17 @@ public abstract class User {
 	public List<String> getNotifications() {
 		List<String> notifications = null;
 		try {
-			notifications = Arrays.asList(((String) TigerReports.getDb().query("SELECT notifications FROM users WHERE uuid = ?", Arrays.asList(uuid)).getResult(0, "notifications")).split("#next#"));
+			notifications = Arrays.asList(((String) TigerReports.getDb().query("SELECT notifications FROM users WHERE uuid = ?", Collections.singletonList(uuid)).getResult(0, "notifications")).split("#next#"));
 		} catch (Exception noNotifications) {}
-		return notifications != null ? notifications : new ArrayList<String>();
+		return notifications != null ? notifications : new ArrayList<>();
 	}
 	
 	public void setNotifications(List<String> notifications) {
 		TigerReports.getDb().updateAsynchronously("UPDATE users SET notifications = ? WHERE uuid = ?", Arrays.asList(String.join("#next#", notifications), uuid));
+	}
+	
+	public String getLastMessages() {
+		return !lastMessages.isEmpty() ? String.join("#next#", lastMessages) : null;
 	}
 	
 	public void save() {

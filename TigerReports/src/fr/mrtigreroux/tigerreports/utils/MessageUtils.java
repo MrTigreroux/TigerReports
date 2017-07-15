@@ -35,7 +35,7 @@ import fr.mrtigreroux.tigerreports.data.constants.Permission;
 public class MessageUtils {
 
 	private static final List<String> UNITS = Arrays.asList("YEAR", "MONTH", "WEEK", "DAY", "HOUR", "MINUTE", "SECOND");
-	private static final Set<String> COLOR_CODES = new HashSet<String>(Arrays.asList("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"));
+	private static final Set<String> COLOR_CODES = new HashSet<>(Arrays.asList("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"));
 	
 	public static void sendErrorMessage(CommandSender s, String message) {
 		s.sendMessage(message);
@@ -61,18 +61,6 @@ public class MessageUtils {
 		Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
 		message = pattern.matcher(temp).replaceAll("");
 		Bukkit.getConsoleSender().sendMessage(message.replace("»", ">"));
-	}
-
-	public static String cleanDouble(Double number) {
-		String process = number+" ";
-		String result = process.replace(".0 ", "").replace(" ", "");
-		if(result.contains("E")) {
-			double power = Math.pow(10D, Double.parseDouble(result.substring(result.indexOf("E")+1)));
-			double withoutPower = Double.parseDouble(result.substring(0, result.indexOf("E")));
-			long total = (long) (withoutPower * power);
-			result = ""+total;
-		}
-		return result;
 	}
 	
 	public static String getNowDate() {
@@ -111,7 +99,7 @@ public class MessageUtils {
 			values.set(5, values.get(5)+1);
 			seconds -= 60;
 		}
-		values.set(6, values.get(6)+Integer.parseInt(cleanDouble(seconds)));
+		values.set(6, values.get(6)+ (int) Math.round(seconds));
 		
 		return values;
 	}
@@ -119,28 +107,28 @@ public class MessageUtils {
 	public static String convertToSentence(double seconds) {
 		List<Integer> values = getValues(seconds);
 		
-		String sentence = "";
+		StringBuilder sentence = new StringBuilder();
 		for(int valueNumber = 0; valueNumber <= 6; valueNumber++) {
 			switch(values.get(valueNumber)) {
 				case 0: break;
-				case 1: sentence += "1 "+Message.valueOf(UNITS.get(valueNumber)).get()+" "; break;
-				default: sentence += values.get(valueNumber)+" "+Message.valueOf(UNITS.get(valueNumber)+"S").get()+" "; break;
+				case 1: sentence.append("1").append(" ").append(Message.valueOf(UNITS.get(valueNumber)).get()).append(" "); break;
+				default: sentence.append(values.get(valueNumber)).append(" ").append(Message.valueOf(UNITS.get(valueNumber)+"S").get()).append(" "); break;
 			}
 		}
-		if(sentence.endsWith(" ")) sentence = sentence.substring(0, sentence.length()-1);
-		return sentence;
+		if(sentence.toString().endsWith(" ")) sentence = new StringBuilder(sentence.substring(0, sentence.length()-1));
+		return sentence.toString();
 	}
 	
 	public static String convertToDate(double seconds) {
 		List<Integer> values = getValues(seconds);
 		values = Arrays.asList(values.get(2)*7+values.get(3), values.get(1), values.get(0), values.get(4), values.get(5), values.get(6));
-		String date = "";
+		StringBuilder date = new StringBuilder();
 		for(int valueNumber = 0; valueNumber <= 5; valueNumber++) {
 			String value = ""+values.get(valueNumber);
 			if(value.length() < 2) value = "0"+value;
-			date += (valueNumber == 0 ? "" : valueNumber <= 2 ? "/" : valueNumber == 3 ? " " : "-")+value;
+			date.append((valueNumber == 0 ? "" : valueNumber <= 2 ? "/" : valueNumber == 3 ? " " : "-")).append(value);
 		}
-		return date;
+		return date.toString();
 	}
 	
 	public static ChatColor getLastColor(String text, String lastWord) {
@@ -154,30 +142,30 @@ public class MessageUtils {
 	
 	public static String getMenuSentence(String text, Message message, String lastWord, boolean wordSeparation) {
 		if(text == null || text.isEmpty()) return Message.NOT_FOUND_MALE.get();
-		String sentence = "";
+		StringBuilder sentence = new StringBuilder();
 		int maxLength = 22;
 		String lineBreak = ConfigUtils.getLineBreakSymbol();
 		ChatColor lastColor = getLastColor(message.get(), lastWord);
 		if(wordSeparation) {
 			for(String word : text.split(" ")) {
 				if(word.length() >= 25) {
-					sentence += word.substring(0, word.length()/2)+lineBreak+lastColor+word.substring(word.length()/2, word.length())+" ";
+					sentence.append(word.substring(0, word.length()/2)).append(lineBreak).append(lastColor).append(word.substring(word.length()/2, word.length())).append(" ");
 					maxLength += 35;
-				} else if(sentence.replace(lineBreak, "").replace(lastColor.toString(), "").length() >= maxLength) {
-					sentence += lineBreak+lastColor+word+" ";
+				} else if(sentence.toString().replace(lineBreak, "").replace(lastColor.toString(), "").length() >= maxLength) {
+					sentence.append(lineBreak).append(lastColor).append(word).append(" ");
 					maxLength += 35;
-				} else sentence += word+" ";
+				} else sentence.append(word).append(" ");
 			}
 			return sentence.substring(0, sentence.length()-1);
 		} else {
 			for(char c : text.toCharArray()) {
-				if(sentence.length() <= maxLength) sentence += c;
+				if(sentence.length() <= maxLength) sentence.append(c);
 				else {
-					sentence += lineBreak+lastColor+c;
+					sentence.append(lineBreak).append(lastColor).append(c);
 					maxLength += 35;
 				}
 			}
-			return sentence;
+			return sentence.toString();
 		}
 	}
 	
@@ -208,12 +196,12 @@ public class MessageUtils {
 	}
 	
 	public static String formatConfigLocation(Location loc) {
-		String configLoc = TigerReports.getBungeeManager().getServerName()+"/"+loc.getWorld().getName();
+		StringBuilder configLoc = new StringBuilder(TigerReports.getBungeeManager().getServerName()+"/"+loc.getWorld().getName());
 		for(String coords : new String[]{""+loc.getX(), ""+loc.getY(), ""+loc.getZ(), ""+loc.getYaw(), ""+loc.getPitch()}) {
 			int end = (end = coords.indexOf('.')+3) < coords.length() ? end : coords.length();
-			configLoc += "/"+coords.substring(0, end);
+			configLoc.append("/").append(coords.substring(0, end));
 		}
-		return configLoc;
+		return configLoc.toString();
 	}
 	
 	public static String getConfigServerLocation(String configLoc) {
@@ -227,8 +215,8 @@ public class MessageUtils {
 	}
 	
 	public static String formatConfigEffects(Collection<PotionEffect> effects) {
-		String configEffects = "";
-		for(PotionEffect effect : effects) configEffects += effect.getType().getName()+":"+effect.getAmplifier()+"/"+effect.getDuration()+",";
+		StringBuilder configEffects = new StringBuilder();
+		for(PotionEffect effect : effects) configEffects.append(effect.getType().getName()).append(":").append(effect.getAmplifier()).append("/").append(effect.getDuration()).append(",");
 		return configEffects.length() > 1 ? configEffects.substring(0, configEffects.length()-1) : null;
 	}
 	

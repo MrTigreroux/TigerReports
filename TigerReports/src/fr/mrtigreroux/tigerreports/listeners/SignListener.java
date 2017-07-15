@@ -32,10 +32,9 @@ public class SignListener implements Listener {
 		for(String line : e.getLines()) if(line != null && !line.equals("")) message += message.equals("") ? line : " "+line;
 		if(!message.equals("")) {
 			Comment c = u.getModifiedComment();
-			r.checkComments();
 			if(c == null) {
 				String date = MessageUtils.getNowDate();
-				int commentId = TigerReports.getDb().insert("INSERT INTO report"+r.getId()+"_comments (status,date,author,message) VALUES (?,?,?,?);", Arrays.asList("Private", date, p.getDisplayName(), message));
+				int commentId = TigerReports.getDb().insert("INSERT INTO comments (report_id,status,date,author,message) VALUES (?,?,?,?,?);", Arrays.asList(r.getId(), "Private", date, p.getDisplayName(), message));
 				new Comment(r, commentId, "Private", date, p.getDisplayName(), message).save();
 			} else c.addMessage(message);
 		}

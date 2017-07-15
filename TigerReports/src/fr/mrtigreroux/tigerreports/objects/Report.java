@@ -1,6 +1,7 @@
 package fr.mrtigreroux.tigerreports.objects;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,14 +22,11 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 public class Report {
 
-	final int reportId;
-	String status, appreciation;
-	final String date, reportedUniqueId, signalmanUniqueId, reason;
-	Map<String, String> advancedData = null;
+	private final int reportId;
+	private String status, appreciation;
+	private final String date, reportedUniqueId, signalmanUniqueId, reason;
+	private Map<String, String> advancedData = null;
 	Map<Integer, Comment> comments = null;
-	
-	String reportedName = null;
-	String signalmanName = null;
 	
 	public Report(int reportId, String status, String appreciation, String date, String reportedUniqueId, String signalmanUniqueId, String reason) {
 		this.reportId = reportId;
@@ -56,15 +54,9 @@ public class Report {
 		return signalmanUniqueId;
 	}
 	
-	public String getPlayerName(String type, boolean suffix) {
-		boolean signalman = type.equals("Signalman");
-		String name = signalman ? signalmanName : reportedName;
-		if(name == null) name = UserUtils.getName(signalman ? signalmanUniqueId : reportedUniqueId);
-		if(name != null) {
-			if(signalman) signalmanName = name;
-			else reportedName = name;
-		}
-		return name != null ? suffix ? name += Message.valueOf((UserUtils.isOnline(name) ? "ONLINE" : "OFFLINE")+"_SUFFIX").get() : name : Message.NOT_FOUND_MALE.get();
+	public String getPlayerName(String type, boolean suffix, boolean color) {
+		String name = UserUtils.getName(type.equals("Signalman") ? signalmanUniqueId : reportedUniqueId);
+		return name != null ? (color ? Message.valueOf(type.toUpperCase()+"_NAME").get().replace("_Player_", name) : name)+(suffix ? Message.valueOf((UserUtils.isOnline(name) ? "ONLINE" : "OFFLINE")+"_SUFFIX").get() : "") : Message.NOT_FOUND_MALE.get();
 	}
 	
 	public String getDate() {
@@ -91,7 +83,7 @@ public class Report {
 	public String implementDetails(String message) {
 		Status status = getStatus();
 		return message.replace("_Status_", status.equals(Status.DONE) ? status.getWord(getProcessor())+Message.APPRECIATION_SUFFIX.get().replace("_Appreciation_", getAppreciation()) : status.getWord(null))
-				.replace("_Date_", getDate()).replace("_Signalman_", getPlayerName("Signalman", true)).replace("_Reported_", getPlayerName("Reported", true)).replace("_Reason_", getReason());
+				.replace("_Date_", getDate()).replace("_Signalman_", getPlayerName("Signalman", true, true)).replace("_Reported_", getPlayerName("Reported", true, true)).replace("_Reason_", getReason());
 	}
 	
 	public void setAdvancedData(Map<String, String> advancedData) {
@@ -103,24 +95,24 @@ public class Report {
 		String defaultData;
 		String reportedAdvancedData = "";
 		try {
-			String effects = "";
+			StringBuilder effects = new StringBuilder();
 			String effectsList = advancedData.get("reported_effects");
 			if(effectsList != null && effectsList.contains(":") && effectsList.contains("/")) {
 				for(String effect : effectsList.split(",")) {
 					String type = effect.split(":")[0].replace("_", " ");
 					String duration = effect.split("/")[1];
-					effects += Message.EFFECT.get().replace("_Type_", type.substring(0, 1)+type.substring(1).toLowerCase()).replace("_Amplifier_", effect.split(":")[1].replace("/"+duration, "")).replace("_Duration_", ""+Long.parseLong(duration)/20);
+					effects.append(Message.EFFECT.get().replace("_Type_", type.substring(0, 1)+type.substring(1).toLowerCase()).replace("_Amplifier_", effect.split(":")[1].replace("/"+duration, "")).replace("_Duration_", ""+Long.parseLong(duration)/20));
 				}
-			} else effects = Message.NONE_MALE.get();
+			} else effects = new StringBuilder(Message.NONE_MALE.get());
 			defaultData = Message.DEFAULT_DATA.get()
 					.replace("_Gamemode_", MessageUtils.getGamemodeWord(advancedData.get("reported_gamemode"))).replace("_OnGround_", (advancedData.get("reported_on_ground").equals("true") ? Message.YES : Message.NO).get())
 					.replace("_Sneak_", (advancedData.get("reported_sneak").equals("true") ? Message.YES : Message.NO).get()).replace("_Sprint_", (advancedData.get("reported_sprint").equals("true") ? Message.YES : Message.NO).get())
-					.replace("_Health_", advancedData.get("reported_health")).replace("_Food_", advancedData.get("reported_food")).replace("_Effects_", effects);
-			reportedAdvancedData = advanced == false ? "" : Message.ADVANCED_DATA_REPORTED.get().replace("_UUID_", MessageUtils.getMenuSentence(reportedUniqueId, Message.ADVANCED_DATA_REPORTED, "_UUID_", false)).replace("_IP_", advancedData.get("reported_ip"));
+					.replace("_Health_", advancedData.get("reported_health")).replace("_Food_", advancedData.get("reported_food")).replace("_Effects_", effects.toString());
+			reportedAdvancedData = !advanced ? "" : Message.ADVANCED_DATA_REPORTED.get().replace("_UUID_", MessageUtils.getMenuSentence(reportedUniqueId, Message.ADVANCED_DATA_REPORTED, "_UUID_", false)).replace("_IP_", advancedData.get("reported_ip"));
 		} catch (Exception dataNotFound) {
 			defaultData = Message.PLAYER_WAS_OFFLINE.get();
 		}
-		return message.replace("_Reported_", getPlayerName("Reported", true)).replace("_DefaultData_", defaultData).replace("_AdvancedData_", advanced == false ? "" : reportedAdvancedData+Message.ADVANCED_DATA_SIGNALMAN.get().replace("_Player_", getPlayerName("Signalman", true))
+		return message.replace("_Reported_", getPlayerName("Reported", true, true)).replace("_DefaultData_", defaultData).replace("_AdvancedData_", !advanced ? "" : reportedAdvancedData+Message.ADVANCED_DATA_SIGNALMAN.get().replace("_Player_", getPlayerName("Signalman", true, true))
 				.replace("_UUID_", MessageUtils.getMenuSentence(signalmanUniqueId, Message.ADVANCED_DATA_SIGNALMAN, "_UUID_", false))
 				.replace("_IP_", advancedData.get("signalman_ip") != null ? advancedData.get("signalman_ip") : Message.NOT_FOUND_FEMALE.get()));
 	}
@@ -130,10 +122,9 @@ public class Report {
 		return advancedData.get(type.toLowerCase()+"_location");
 	}
 	
-	public String getMessagesHistory(String type) {
-		String messagesHistory = advancedData.get(type.toLowerCase()+"_messages");
-		if(messagesHistory == null || messagesHistory.isEmpty()) return Message.NONE_MALE.get();
-		else return "§7- §r"+messagesHistory.replace("#next#", ConfigUtils.getLineBreakSymbol()+"§7- §r");
+	public String[] getMessagesHistory(String type) {
+		String messages = advancedData.get(type.toLowerCase()+"_messages");
+		return messages != null ? messages.split("#next#") : new String[]{};
 	}
 	
 	public ItemStack getItem(String actions) {
@@ -173,15 +164,10 @@ public class Report {
 		}
 	}
 	
-	public void checkComments() {
-		if(comments == null || comments.isEmpty()) TigerReports.getDb().createCommentsTable(reportId);
-	}
-	
 	public Map<Integer, Comment> getComments() {
 		if(comments != null) return comments;
-		comments = new HashMap<Integer, Comment>(); ;
-		if(!TigerReports.getDb().existsTable("report"+reportId+"_comments")) return comments;
-		for(Map<String, Object> rows : TigerReports.getDb().query("SELECT * FROM report"+reportId+"_comments", null).getResultList()) {
+		comments = new HashMap<>();
+		for(Map<String, Object> rows : TigerReports.getDb().query("SELECT * FROM comments WHERE report_id = ?", Collections.singletonList(reportId)).getResultList()) {
 			int commentId = (int) rows.get("comment_id");
 			comments.put(commentId, new Comment(this, commentId, (String) rows.get("status"), (String) rows.get("date"), (String) rows.get("author"), (String) rows.get("message")));
 		}
@@ -194,7 +180,7 @@ public class Report {
 		if(player != null) MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage(Message.STAFF_REMOVE.get().replace("_Player_", player), "_Report_", getName(), getText(), null), ConfigSound.STAFF.get());
 		if(!bungee) {
 			TigerReports.getBungeeManager().sendPluginNotification(player+" remove "+reportId);
-			TigerReports.getDb().updateAsynchronously("DELETE FROM reports WHERE report_id = ?", Arrays.asList(reportId));
+			TigerReports.getDb().updateAsynchronously("DELETE FROM reports WHERE report_id = ?", Collections.singletonList(reportId));
 		}
 	}
 	
@@ -230,7 +216,7 @@ public class Report {
 		MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage(Message.STAFF_REMOVE_ARCHIVE.get().replace("_Player_", player), "_Report_", getName(), getText(), null), ConfigSound.STAFF.get());
 		if(!bungee) {
 			TigerReports.getBungeeManager().sendPluginNotification(player+" remove_archive "+reportId);
-			TigerReports.getDb().updateAsynchronously("DELETE FROM archived_reports WHERE report_id = ?", Arrays.asList(reportId));
+			TigerReports.getDb().updateAsynchronously("DELETE FROM archived_reports WHERE report_id = ?", Collections.singletonList(reportId));
 		}
 	}
 	

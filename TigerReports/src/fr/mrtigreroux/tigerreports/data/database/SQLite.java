@@ -44,9 +44,11 @@ public class SQLite extends Database {
 		Bukkit.getScheduler().runTaskAsynchronously(TigerReports.getInstance(), new Runnable() {
 			@Override
 			public void run() {
-				update("CREATE TABLE IF NOT EXISTS reports ('report_id' INTEGER PRIMARY KEY, 'status' varchar(50) NOT NULL,'appreciation' varchar(10),'date' varchar(20),'reported_uuid' char(36),'signalman_uuid' char(36),'reason' varchar(150),'reported_ip' varchar(22),'reported_location' varchar(50),'reported_messages' varchar(255),'reported_gamemode' char(10),'reported_on_ground' char(5),'reported_sneak' varchar(5),'reported_sprint' varchar(5),'reported_health' varchar(10),'reported_food' varchar(10),'reported_effects' varchar(100),'signalman_ip' varchar(22) NOT NULL,'signalman_location' varchar(50) NOT NULL,'signalman_messages' varchar(255));", null);
-				update("CREATE TABLE IF NOT EXISTS users ('uuid' char(36) NOT NULL,'name' varchar(20),'cooldown' varchar(20),'immunity' varchar(20),'notifications' varchar(255),'true_appreciations' int(5) DEFAULT '0','uncertain_appreciations' int(5) DEFAULT '0','false_appreciations' int(5) DEFAULT '0','reports' int(5) DEFAULT '0','reported_times' int(5) DEFAULT '0','processed_reports' int(5) DEFAULT '0');", null);
-				update("CREATE TABLE IF NOT EXISTS archived_reports ('report_id' INTEGER PRIMARY KEY, 'status' varchar(50) NOT NULL,'appreciation' varchar(10),'date' varchar(20),'reported_uuid' char(36),'signalman_uuid' char(36),'reason' varchar(150),'reported_ip' varchar(22),'reported_location' varchar(50),'reported_messages' varchar(255),'reported_gamemode' char(10),'reported_on_ground' char(5),'reported_sneak' varchar(5),'reported_sprint' varchar(5),'reported_health' varchar(10),'reported_food' varchar(10),'reported_effects' varchar(100),'signalman_ip' varchar(22) NOT NULL,'signalman_location' varchar(50) NOT NULL,'signalman_messages' varchar(255));", null);
+				String reportColumns = " 'appreciation' varchar(10), 'date' varchar(20), 'reported_uuid' char(36), 'signalman_uuid' char(36), 'reason' varchar(150), 'reported_ip' varchar(22), 'reported_location' varchar(50), 'reported_messages' varchar(255), 'reported_gamemode' char(10), 'reported_on_ground' char(5), 'reported_sneak' varchar(5), 'reported_sprint' varchar(5), 'reported_health' varchar(10), 'reported_food' varchar(10), 'reported_effects' varchar(100), 'signalman_ip' varchar(22) NOT NULL, 'signalman_location' varchar(50) NOT NULL, 'signalman_messages' varchar(255));";
+				update("CREATE TABLE IF NOT EXISTS users ('uuid' char(36) NOT NULL, 'name' varchar(20), 'cooldown' varchar(20), 'immunity' varchar(20), 'notifications' varchar(255), 'true_appreciations' int(5) DEFAULT '0', 'uncertain_appreciations' int(5) DEFAULT '0', 'false_appreciations' int(5) DEFAULT '0', 'reports' int(5) DEFAULT '0', 'reported_times' int(5) DEFAULT '0', 'processed_reports' int(5) DEFAULT '0');", null);
+				update("CREATE TABLE IF NOT EXISTS reports ('report_id' INTEGER PRIMARY KEY, 'status' varchar(50) NOT NULL,"+reportColumns, null);
+				update("CREATE TABLE IF NOT EXISTS comments ('report_id' INTEGER NOT NULL, 'comment_id' INTEGER PRIMARY KEY,'status' varchar(7), 'date' varchar(20), 'author' varchar(32), 'message' varchar(255));", null);			
+				update("CREATE TABLE IF NOT EXISTS archived_reports ('report_id' INTEGER PRIMARY KEY, 'status' varchar(50) NOT NULL,"+reportColumns, null);
 			}
 		});
 	}
@@ -54,16 +56,6 @@ public class SQLite extends Database {
 	@Override
 	public boolean isValid() throws SQLException {
 		return !connection.isClosed();
-	}
-	
-	@Override
-	public boolean existsTable(String tableName) {
-		return query("SELECT name FROM sqlite_master WHERE type='table' AND name='"+tableName+"';", null).getResultList().size() >= 1;
-	}
-    
-	@Override
-	public void createCommentsTable(int reportId) {
-		update("CREATE TABLE IF NOT EXISTS report"+reportId+"_comments ('comment_id' INTEGER PRIMARY KEY,'status' varchar(7),'date' varchar(20),'author' varchar(32), 'message' varchar(255));", null);
 	}
 	
 }
