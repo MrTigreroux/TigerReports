@@ -2,6 +2,7 @@ package fr.mrtigreroux.tigerreports.listeners;
 
 import java.util.Arrays;
 
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -30,31 +31,32 @@ public class InventoryListener implements Listener {
 		return false;
 	}
 	
-	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onInventoryDrag(InventoryDragEvent e) {
-		if(!(e.getWhoClicked() instanceof Player)) return;
-		OnlineUser u = UserUtils.getOnlineUser((Player) e.getWhoClicked());
-		Inventory inv = e.getInventory();
-		if(inv != null && inv.getType() == InventoryType.CHEST && u.getOpenedMenu() != null && isReportMenu(inv)) e.setCancelled(true);
+		if(checkMenuAction(e.getWhoClicked(), e.getInventory()) != null) e.setCancelled(true);
 	}
 	
-	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onInventoryClick(InventoryClickEvent e) {
-		if(!(e.getWhoClicked() instanceof Player)) return;
-		OnlineUser u = UserUtils.getOnlineUser((Player) e.getWhoClicked());
-		Inventory inv = e.getClickedInventory();
-		if(inv != null && inv.getType() == InventoryType.CHEST && u.getOpenedMenu() != null && isReportMenu(inv)) {
+		OnlineUser u = checkMenuAction(e.getWhoClicked(), e.getInventory());
+		if(u != null) {
 			e.setCancelled(true);
 			u.getOpenedMenu().click(e.getCurrentItem(), e.getSlot(), e.getClick());
 		}
 	}
 	
-	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onInventoryClose(InventoryCloseEvent e) {
 		UserUtils.getOnlineUser((Player) e.getPlayer()).setOpenedMenu(null);
 		try {
 			TigerReports.getDb().startClosing();
 		} catch (Exception ignored) {}
+	}
+	
+	private OnlineUser checkMenuAction(HumanEntity whoClicked, Inventory inv) {
+		if(!(whoClicked instanceof Player) || inv == null || inv.getType() != InventoryType.CHEST || !isReportMenu(inv)) return null;
+		OnlineUser u = UserUtils.getOnlineUser((Player) whoClicked);
+		return u.getOpenedMenu() != null ? u : null;
 	}
 	
 }

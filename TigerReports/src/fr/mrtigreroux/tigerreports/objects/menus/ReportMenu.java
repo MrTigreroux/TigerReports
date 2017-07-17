@@ -112,10 +112,10 @@ public class ReportMenu extends Menu implements ReportManagement {
 						}
 					}
 				}
-				String messages = "";
-				for(String message : sortedMessages.values()) messages += message;
+				StringBuilder messages = new StringBuilder();
+				for(String message : sortedMessages.values()) messages.append(message);
 				
-				u.printInChat(r, Message.REPORT_MESSAGES_HISTORY.get().replace("_Report_", r.getName()).replace("_Messages_", !messages.isEmpty() ? messages : Message.NONE_MALE.get()).split(ConfigUtils.getLineBreakSymbol()));
+				u.printInChat(r, Message.REPORT_MESSAGES_HISTORY.get().replace("_Report_", r.getName()).replace("_Messages_", !messages.toString().isEmpty() ? messages.toString() : Message.NONE_MALE.get()).split(ConfigUtils.getLineBreakSymbol()));
 			}
 		} else if(slot == MenuItem.REMOVE.getPosition()) u.openConfirmationMenu(r, "REMOVE");
 		else if(slot == MenuItem.COMMENTS.getPosition()) u.openCommentsMenu(1, r);
@@ -154,19 +154,15 @@ public class ReportMenu extends Menu implements ReportManagement {
 				bungeeManager.sendPluginMessage("ConnectOther", p.getName(), serverName);
 				bungeeManager.sendServerPluginNotification(serverName, p.getName()+" teleport "+configLoc);
 			}
-		} else if(Permission.ARCHIVE.check(u) && (r.getStatus() == Status.DONE || !ReportUtils.onlyDoneArchives())) {
+		} else {
+			if((slot == 32 || slot == 33) && !(Permission.ARCHIVE.check(u) && (r.getStatus() == Status.DONE || !ReportUtils.onlyDoneArchives()))) slot--;
 			if(slot >= 29 && slot <= 31) {
 				r.setStatus(Arrays.asList(Status.values()).get(slot-29), false);
-				if(!Permission.ADVANCED.check(u) && slot == 31) u.openReportsMenu(1, true);
+				if(slot == 31 && !Permission.ADVANCED.check(u)) u.openReportsMenu(1, true);
 				else open(true);
 			} else if(slot == 32) u.openAppreciationMenu(r);
 			else if(slot == 33) u.openConfirmationMenu(r, "ARCHIVE");
-		} else if(slot == 29 || slot == 30 || slot == 32) {
-			if(slot == 32) slot = 31;
-			r.setStatus(Arrays.asList(Status.values()).get(slot-29), false);
-			if(!Permission.ADVANCED.check(u) && slot == 31) u.openReportsMenu(1, true);
-			else open(true);
-		} else if(slot == 33) u.openAppreciationMenu(r);
+		}
 	}
 	
 }

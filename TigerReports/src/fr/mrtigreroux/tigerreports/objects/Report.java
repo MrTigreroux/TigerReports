@@ -141,7 +141,7 @@ public class Report {
 		this.status = Status.DONE.getConfigWord()+" by "+uuid;
 		this.appreciation = appreciation;
 		save();
-		if(player != null) MessageUtils.sendStaffMessage(Message.STAFF_PROCESS.get().replace("_Player_", player).replace("_Report_", getName()).replace("_Appreciation_", Message.valueOf(appreciation.toUpperCase()).get()), ConfigSound.STAFF.get());
+		if(player != null) MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage(Message.STAFF_PROCESS.get().replace("_Player_", player).replace("_Appreciation_", Message.valueOf(appreciation.toUpperCase()).get()), "_Report_", getName(), getText(), null), ConfigSound.STAFF.get());
 		if(!bungee) {
 			TigerReports.getBungeeManager().sendPluginNotification(uuid+"/"+player+" process "+reportId+" "+appreciation);
 			TigerReports.getDb().update("UPDATE reports SET status = ?,appreciation = ? WHERE report_id = ?", Arrays.asList(status, appreciation, reportId));

@@ -47,25 +47,23 @@ public class PlayerListener implements Listener {
 		u.updateImmunity(Permission.EXEMPT.check(u) ? "always" : null, false);
 	}
 	
-	@EventHandler
+	@EventHandler(ignoreCancelled = true)
 	public void onPlayerQuit(PlayerQuitEvent e) {
 		String uuid = e.getPlayer().getUniqueId().toString();
-		try {
-			if(TigerReports.Users.get(uuid).getLastMessages() == null) TigerReports.Users.remove(uuid);
-		} catch (Exception userNotSaved) {}
+		if(TigerReports.Users.containsKey(uuid) && TigerReports.Users.get(uuid).getLastMessages() == null) TigerReports.Users.remove(uuid);
 	}
 	
-	@EventHandler
+	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onPlayerChat(PlayerChatEvent e) {
 		UserUtils.getOnlineUser(e.getPlayer()).updateLastMessages(e.getMessage());
 	}
 	
-	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent e) {
 		if(checkHelpCommand(e.getMessage(), e.getPlayer())) e.setCancelled(true);
 	}
 
-	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onServerCommandPreprocess(ServerCommandEvent e) {
 		checkHelpCommand("/"+e.getCommand(), e.getSender());
 	}

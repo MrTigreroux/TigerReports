@@ -9,7 +9,7 @@
   Punished: "&7[&6Reports&7] &eVous venez d'être &csanctionn\xe9 &epour votre signalement jug\xe9 abusif. Vous ne pouvez plus signaler de joueur pendant &6_Time_&e."
   Staff-stop-cooldown: "&7[&6Reports&7] &a_Player_ &evient de &cretirer &el'attente du joueur &6_Target_ &eavant son prochain signalement."
   Cooldown-stopped: "&7[&6Reports&7] &eLe temps d'attente avant votre prochain signalement vient d'être retir\xe9, vous pouvez maintenant utiliser la commande &b/report&e."
-  Staff-process: "&7[&6Reports&7] &a_Player_ &evient de &btraiter &ele _Report_ &eavec l'appr\xe9ciation: _Appreciation_&e."
+  Staff-process: "&7[&6Reports&7] &a_Player_ &evient de &btraiter &ele _Report_ &ecomme &e_Appreciation_&e."
   Staff-archive: "&7[&6Reports&7] &a_Player_ &evient d'&8archiver &ele _Report_&e."
   Staff-archiveall: "&7[&6Reports&7] &a_Player_ &evient d'&8archiver &etous les signalements trait\xe9s."
   Staff-remove-archive: "&7[&6Reports&7] &a_Player_ &evient de &csupprimer &el'archive de _Report_&e."
