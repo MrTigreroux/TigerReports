@@ -3,6 +3,7 @@ package fr.mrtigreroux.tigerreports.data.config;
 import java.util.Arrays;
 
 import org.bukkit.Sound;
+import org.bukkit.entity.Player;
 
 /**
  * @author MrTigreroux
@@ -37,6 +38,10 @@ public enum ConfigSound {
 			} catch (Exception invalidSound) {}
 		}
 		return null;
+	}
+	
+	public void play(Player p) {
+		p.playSound(p.getLocation(), get(), 1, 1);
 	}
 	
 }

@@ -8,8 +8,8 @@ Config:
   # Character used for colors in messages.yml / Caractère utilisé pour les couleurs dans messages.yml
   LineBreakSymbol: "//"
   # Symbol used to separate lines in messages.yml / Symbole utilisé pour séparer les lignes dans messages.yml
-  HelpLanguage: French
-  # Language used in help message of /tigerreports command / Langue utilisée pour le message d'aide de la commande /tigerreports
+  InfoLanguage: French
+  # Language used in info messages of plugin like warnings and /tigerreports help command / Langue utilisée pour les messages d'information comme les avertissements et la commande d'aide /tigerreports
   # Only 2 languages : French and English / Seulement 2 langues : French et English
   PermissionRequired: no
   # Permission needed to use /report command / Permission requise pour utiliser la commande /report
@@ -35,6 +35,8 @@ Config:
   # MinutesInterval:    Show each x minutes / Afficher toutes les x minutes
   OnlyDoneArchives: no
   # Prevent archive of unprocessed reports / Empêcher l'archivage de signalements non traités
+  MenuUpdatesInterval: 10
+  # Update opened menus each x seconds / Actualiser les menus ouverts toutes les x secondes
   MenuSound: ENTITY_ITEM_PICKUP
   ErrorSound: ENTITY_ITEM_BREAK
   ReportSound: ENTITY_BAT_DEATH

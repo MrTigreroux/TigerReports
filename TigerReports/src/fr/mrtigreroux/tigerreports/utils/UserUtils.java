@@ -11,9 +11,7 @@ import org.bukkit.entity.Player;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.Message;
-import fr.mrtigreroux.tigerreports.objects.users.OfflineUser;
-import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
-import fr.mrtigreroux.tigerreports.objects.users.User;
+import fr.mrtigreroux.tigerreports.objects.users.*;
 
 /**
  * @author MrTigreroux

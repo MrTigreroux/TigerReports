@@ -2,7 +2,7 @@ package fr.mrtigreroux.tigerreports.commands;
 
 import org.bukkit.command.CommandSender;
 
-import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
+import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 
 /**
  * @author MrTigreroux
@@ -11,8 +11,7 @@ import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 public class HelpCommand {
 	
 	public static void onCommand(CommandSender s) {
-		String language = ConfigFile.CONFIG.get().getString("Config.HelpLanguage");
-		if(language != null && language.equalsIgnoreCase("English")) {
+		if(ConfigUtils.getInfoLanguage().equalsIgnoreCase("English")) {
 			s.sendMessage("§7§m---------------------------------------------------");
 			s.sendMessage("§r                         §6TigerReports §7> §eHelp");
 			s.sendMessage("§7§m---------------------------------------------------");

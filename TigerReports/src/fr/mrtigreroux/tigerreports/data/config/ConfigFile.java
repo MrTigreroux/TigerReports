@@ -11,6 +11,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
+import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 
 /**
  * @author MrTigreroux
@@ -54,7 +55,7 @@ public enum ConfigFile {
 	public void reset() {
 		TigerReports.getInstance().saveResource(file.getName(), false);
 		Bukkit.getLogger().log(Level.WARNING, "------------------------------------------------------");
-		Bukkit.getLogger().log(Level.WARNING, "[TigerReports] File "+file.getName()+" has been reset.");
+		Bukkit.getLogger().log(Level.WARNING, this != CONFIG && ConfigUtils.getInfoLanguage().equalsIgnoreCase("English") ? "[TigerReports] File "+file.getName()+" has been reset." : "[TigerReports] Le fichier "+file.getName()+" a ete reinitialise.");
 		Bukkit.getLogger().log(Level.WARNING, "------------------------------------------------------");
 	}
 	

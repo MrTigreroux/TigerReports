@@ -50,7 +50,7 @@ public abstract class User {
 	}
 	
 	public String getImmunity() {
-		if(this instanceof OnlineUser) immunity = Permission.EXEMPT.check((OnlineUser) this) ? "always" : null;
+		if(this instanceof OnlineUser) immunity = Permission.EXEMPT.isOwned((OnlineUser) this) ? "always" : null;
 		if(immunity == null) {
 			immunity = (String) TigerReports.getDb().query("SELECT immunity FROM users WHERE uuid = ?", Collections.singletonList(uuid)).getResult(0, "immunity");
 			if(immunity == null) {
@@ -70,7 +70,7 @@ public abstract class User {
 	}
 	
 	public void updateCooldown(String cooldown, boolean bungee) {
-		this.cooldown = cooldown;
+		this.cooldown = cooldown == null ? "|"+System.currentTimeMillis() : cooldown;
 		save();
 		if(!bungee) {
 			TigerReports.getBungeeManager().sendPluginNotification((cooldown != null ? cooldown.replace(" ", "_") : "null")+" new_cooldown user "+uuid);
@@ -91,18 +91,18 @@ public abstract class User {
 	}
 	
 	public String getCooldown() {
-		if(cooldown == null || (cooldown.startsWith("|") && System.currentTimeMillis()-Long.parseLong(cooldown.replace("|", "")) > 300000)) {
-			cooldown = (String) TigerReports.getDb().query("SELECT cooldown FROM users WHERE uuid = ?", Collections.singletonList(uuid)).getResult(0, "cooldown");
-			save();
-		}
+		if(cooldown == null || (cooldown.startsWith("|") && System.currentTimeMillis()-Long.parseLong(cooldown.replace("|", "")) > 300000)) cooldown = (String) TigerReports.getDb().query("SELECT cooldown FROM users WHERE uuid = ?", Collections.singletonList(uuid)).getResult(0, "cooldown");
 		
-		if(cooldown == null) {
-			cooldown = "|"+System.currentTimeMillis();
-			save();
-			return null;
-		} else if(cooldown.startsWith("|")) return null;
-		double seconds = MessageUtils.getSeconds(cooldown)-MessageUtils.getSeconds(MessageUtils.getNowDate());
-		return seconds > 0 ? MessageUtils.convertToSentence(seconds) : "None";
+		if(cooldown == null) cooldown = "|"+System.currentTimeMillis();
+		else if(!cooldown.startsWith("|")) {
+			double seconds = MessageUtils.getSeconds(cooldown)-MessageUtils.getSeconds(MessageUtils.getNowDate());
+			if(seconds > 0) {
+				save();
+				return MessageUtils.convertToSentence(seconds);
+			} else cooldown = "|"+System.currentTimeMillis();
+		}
+		save();
+		return null;
 	}
 	
 	public void stopCooldown(String player, boolean bungee) {

@@ -18,7 +18,7 @@ public enum Permission {
 		return "tigerreports."+toString().toLowerCase();
 	}
 	
-	public boolean check(OnlineUser u) {
+	public boolean isOwned(OnlineUser u) {
 		return u.getPlayer().hasPermission(get());
 	}
 	

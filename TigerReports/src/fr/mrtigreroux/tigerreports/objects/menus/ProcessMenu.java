@@ -25,11 +25,11 @@ public class ProcessMenu extends Menu implements ReportManagement {
 	}
 	
 	@Override
-	public void onOpen() {
+	public Inventory onOpen() {
 		Inventory inv = getInventory(Message.PROCESS_TITLE.get().replace("_Report_", r.getName()), false);
 		
 		ItemStack gui = new CustomItem().type(Material.STAINED_GLASS_PANE).damage((byte) 7).name("").create();
-		for(int position : Arrays.asList(1, 2, 3, 4, 5, 6, 7, 10, 16, 19, 20, 21, 22, 23, 24, 25)) inv.setItem(position, gui);
+		for(int position : new Integer[]{1, 2, 3, 4, 5, 6, 7, 10, 16, 19, 20, 21, 22, 23, 24, 25}) inv.setItem(position, gui);
 		
 		inv.setItem(0, r.getItem(null));
 		
@@ -42,7 +42,7 @@ public class ProcessMenu extends Menu implements ReportManagement {
 		
 		inv.setItem(18, MenuItem.CANCEL_APPRECIATION.get());
 		
-		p.openInventory(inv);
+		return inv;
 	}
 
 	@Override

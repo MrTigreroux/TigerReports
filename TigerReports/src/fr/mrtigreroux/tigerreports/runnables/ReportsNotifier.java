@@ -49,14 +49,14 @@ public class ReportsNotifier implements Runnable {
 	public static void start() {
 		stop();
 		int interval = ConfigUtils.getReportsNotificationsInterval();
-		if(interval == 0) return;
-		taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(TigerReports.getInstance(), new ReportsNotifier(), interval, interval);
+		if(interval > 0) taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(TigerReports.getInstance(), new ReportsNotifier(), interval, interval);
 	}
 	
 	public static void stop() {
-		if(taskId == -1) return;
-		Bukkit.getScheduler().cancelTask(taskId);
-		taskId = -1;
+		if(taskId != -1) {
+			Bukkit.getScheduler().cancelTask(taskId);
+			taskId = -1;
+		}
 	}
 
 }

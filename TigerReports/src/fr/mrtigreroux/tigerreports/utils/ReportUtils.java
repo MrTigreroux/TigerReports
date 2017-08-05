@@ -2,6 +2,10 @@ package fr.mrtigreroux.tigerreports.utils;
 
 import java.util.*;
 
+import org.bukkit.Material;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -12,6 +16,7 @@ import com.google.common.primitives.Ints;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.*;
+import fr.mrtigreroux.tigerreports.data.constants.MenuItem;
 import fr.mrtigreroux.tigerreports.objects.Report;
 
 /**
@@ -39,20 +44,10 @@ public class ReportUtils {
 		return formatReport(TigerReports.getDb().query("SELECT * FROM reports LIMIT 1 OFFSET ?", Collections.singletonList(reportIndex-1)).getResult(0), true);
 	}
 	
-	public static List<Report> getReports(int min, int max) {
-		List<Report> reports = new ArrayList<>();
-		for(Map<String, Object> result : TigerReports.getDb().query("SELECT report_id,status,appreciation,date,reported_uuid,signalman_uuid,reason FROM reports LIMIT ? OFFSET ?", Arrays.asList(max-min+1, min-1)).getResultList())
-			if(result != null) reports.add(formatReport(result, false));
-		return reports;
-	}
-	
 	public static Report formatReport(Map<String, Object> result, boolean containsAdvancedData) {
 		if(result == null) return null;
 		Report r = new Report((int) result.get("report_id"), (String) result.get("status"), (String) result.get("appreciation"), (String) result.get("date"), (String) result.get("reported_uuid"), (String) result.get("signalman_uuid"), (String) result.get("reason"));
-		if(!containsAdvancedData) {
-			r.save();
-			return r;
-		}
+		if(!containsAdvancedData) return r;
 		
 		Map<String, String> advancedData = new HashMap<>();
 		Set<String> advancedKeys = new HashSet<>(result.keySet());
@@ -61,6 +56,34 @@ public class ReportUtils {
 		r.setAdvancedData(advancedData);
 		r.save();
 		return r;
+	}
+	
+	public static void addReports(String table, Inventory inv, int page, String actions) {
+		int size = inv.getSize();
+		int firstReport = 1;
+		if(page >= 2) {
+			inv.setItem(size-7, MenuItem.PAGE_SWITCH_PREVIOUS.get());
+			firstReport += (page-1)*27;
+		}
+		
+		List<Map<String, Object>> results = TigerReports.getDb().query("SELECT report_id,status,appreciation,date,reported_uuid,signalman_uuid,reason FROM "+table+" LIMIT 28 OFFSET ?", Collections.singletonList(firstReport-1)).getResultList();
+		int index = 0;
+		ItemStack empty = new ItemStack(Material.AIR);
+		for(int position = 18; position < 45; position++) {
+			if(index == -1) inv.setItem(position, empty);
+			else {
+				Report r = ReportUtils.formatReport(index < results.size() ? results.get(index) : null, false);
+				if(r == null) {
+					inv.setItem(position, empty);
+					index = -1;
+				} else {
+					inv.setItem(position, r.getItem(actions));
+					index++;
+				}
+			}
+		}
+		
+		if(results.size() == 28) inv.setItem(size-3, MenuItem.PAGE_SWITCH_NEXT.get());
 	}
 	
 	public static int getTotalReports() {

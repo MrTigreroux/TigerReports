@@ -21,20 +21,20 @@ public class SQLite extends Database {
 	public void openConnection() {
 		File dataFolder = new File(TigerReports.getInstance().getDataFolder(), "tigerreports.db");
 		if(!dataFolder.exists()) {
-		    try {
-		        dataFolder.createNewFile();
-		    } catch (IOException ex) {
-		        logError("Failed creation of tigerreports.db file.", ex);
-		    }
+			try {
+				dataFolder.createNewFile();
+			} catch (IOException ex) {
+				logError("Failed creation of tigerreports.db file.", ex);
+			}
 		}
 		
 		try {
 			Class.forName("org.sqlite.JDBC");
 			connection = DriverManager.getConnection("jdbc:sqlite:"+dataFolder);
+		} catch (ClassNotFoundException missing) {
+			logError("SQLite is missing.", null);
 		} catch (SQLException ex) {
 			logError("Error on connection to database:", ex);
-		} catch (ClassNotFoundException ex) {
-			logError("SQLite is missing.", null);
 		}
 		return;
     }

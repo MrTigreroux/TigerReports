@@ -28,6 +28,10 @@ public class ConfigUtils {
 	public static String getLineBreakSymbol() {
 		return ConfigFile.CONFIG.get().getString("Config.LineBreakSymbol", "//");
 	}
+
+	public static String getInfoLanguage() {
+		return ConfigFile.CONFIG.get().getString("Config.InfoLanguage", "French");
+	}
 	
 	public static boolean exist(ConfigurationSection config, String path) {
 		return config.get(path) != null;
@@ -62,6 +66,10 @@ public class ConfigUtils {
 	
 	public static int getReportsNotificationsInterval() {
 		return ConfigFile.CONFIG.get().getInt("Config.ReportsNotifications.MinutesInterval", 0)*1200;
+	}
+
+	public static int getMenuUpdatesInterval() {
+		return ConfigFile.CONFIG.get().getInt("Config.MenuUpdatesInterval", 10)*20;
 	}
 	
 }

@@ -3,6 +3,7 @@ package fr.mrtigreroux.tigerreports.objects.menus;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bukkit.Material;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -20,36 +21,51 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
  * @author MrTigreroux
  */
 
-public class CommentsMenu extends Menu implements ReportManagement {
+public class CommentsMenu extends Menu implements ReportManagement, UpdatedMenu {
 	
 	public CommentsMenu(OnlineUser u, int page, int reportId) {
 		super(u, 54, page, Permission.STAFF, reportId, null, null);
 	}
 	
 	@Override
-	public void onOpen() {
+	public Inventory onOpen() {
 		Inventory inv = getInventory(Message.COMMENTS_TITLE.get().replace("_Report_", r.getName()), true);
 		
 		inv.setItem(0, r.getItem(Message.REPORT_SHOW_ACTION.get()));
 		inv.setItem(4, MenuItem.COMMENTS.get());
 		inv.setItem(8, MenuItem.WRITE_COMMENT.get());
 		
-		int firstComment = 1;
+		return inv;
+	}
+	
+	@Override
+	public void onUpdate(Inventory inv) {
+		if(!check()) return;
+		
+		int index = 0;
 		if(page >= 2) {
 			inv.setItem(size-7, MenuItem.PAGE_SWITCH_PREVIOUS.get());
-			firstComment += (page-1)*27;
+			index += (page-1)*27;
 		}
 		
 		List<Comment> comments = new ArrayList<>(r.getComments().values());
-		int position = 18;
-		for(Comment c : comments) {
-			inv.setItem(position, c.getItem(Permission.REMOVE.check(u)));
-			if(position >= 46) break;
-			else position++;
+		boolean remove = Permission.REMOVE.isOwned(u);
+		ItemStack empty = new ItemStack(Material.AIR);
+		for(int position = 18; position < 45; position++) {
+			if(index == -1) inv.setItem(position, empty);
+			else {
+				Comment c = index < comments.size() ? comments.get(index) : null;
+				if(c == null) {
+					inv.setItem(position, empty);
+					index = -1;
+				} else {
+					inv.setItem(position, c.getItem(remove));
+					index++;
+				}
+			}
 		}
-		
-		if(firstComment+26 < comments.size()) inv.setItem(size-3, MenuItem.PAGE_SWITCH_NEXT.get());
-		p.openInventory(inv);
+
+		if(comments.size() == 28) inv.setItem(size-3, MenuItem.PAGE_SWITCH_NEXT.get());
 	}
 
 	@Override
@@ -61,7 +77,7 @@ public class CommentsMenu extends Menu implements ReportManagement {
 			if(c != null) {
 				if(click.toString().contains("LEFT")) {
 					if(!c.getAuthor().equalsIgnoreCase(p.getDisplayName())) {
-						u.playSound(ConfigSound.ERROR);
+						ConfigSound.ERROR.play(p);
 						return;
 					}
 					u.setModifiedComment(c);
@@ -86,7 +102,10 @@ public class CommentsMenu extends Menu implements ReportManagement {
 						notifications.remove(comment);
 					}
 					su.setNotifications(notifications);
-				} else if(click.equals(ClickType.DROP) && Permission.REMOVE.check(u)) c.remove();
+				} else if(click.equals(ClickType.DROP)) {
+					if(Permission.REMOVE.isOwned(u)) c.remove();
+					else return;
+				}
 			}
 			open(true);
 		}

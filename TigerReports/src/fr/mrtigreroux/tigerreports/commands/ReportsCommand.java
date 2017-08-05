@@ -13,6 +13,7 @@ import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.objects.users.User;
+import fr.mrtigreroux.tigerreports.runnables.MenuUpdater;
 import fr.mrtigreroux.tigerreports.runnables.ReportsNotifier;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 import fr.mrtigreroux.tigerreports.utils.ReportUtils;
@@ -33,14 +34,14 @@ public class ReportsCommand implements CommandExecutor {
 				TigerReports.loadFiles();
 				TigerReports.initializeDatabase();
 				ReportsNotifier.start();
+				MenuUpdater.stop(true);
 				if(!(s instanceof Player)) MessageUtils.sendConsoleMessage(Message.RELOAD.get());
 				else s.sendMessage(Message.RELOAD.get());
 			}
 			return true;
 		}
 		
-		if(!UserUtils.checkPlayer(s)) return true;
-		if(!Permission.STAFF.check(s)) return true;
+		if(!UserUtils.checkPlayer(s) || !Permission.STAFF.check(s)) return true;
 		Player p = (Player) s;
 		OnlineUser u = UserUtils.getOnlineUser(p);
 		

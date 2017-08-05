@@ -32,16 +32,16 @@ public class MySQL extends Database {
 	
 	@Override
 	public void openConnection() {
-        try {
-        	Class.forName("com.mysql.jdbc.Driver");
-        	connection = DriverManager.getConnection("jdbc:mysql://"+host+":"+port+"/"+database+"?useUnicode=true&characterEncoding=UTF-8", username, password);
-        } catch (SQLException ex) {
-        	logError("Error on connection to database:", ex);
-        } catch (ClassNotFoundException ex) {
-        	logError("MySQL is missing.", null);
-        }
-        return;
-    }
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+			connection = DriverManager.getConnection("jdbc:mysql://"+host+":"+port+"/"+database+"?useUnicode=true&characterEncoding=UTF-8", username, password);
+		} catch (ClassNotFoundException missing) {
+			logError("MySQL is missing.", null);
+		} catch (SQLException ex) {
+			logError("Error on connection to database:", ex);
+		}
+		return;
+	}
 	
 	@Override
 	public void initialize() {

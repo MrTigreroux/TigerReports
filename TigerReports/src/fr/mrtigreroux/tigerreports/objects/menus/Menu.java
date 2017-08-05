@@ -16,6 +16,7 @@ import fr.mrtigreroux.tigerreports.objects.CustomItem;
 import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.objects.users.User;
+import fr.mrtigreroux.tigerreports.runnables.MenuUpdater;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 import fr.mrtigreroux.tigerreports.utils.ReportUtils;
 
@@ -44,13 +45,12 @@ public abstract class Menu {
 		this.tu = tu;
 	}
 	
-	private boolean checkPermission() {
-		if(permission != null && !permission.check(u)) {
-			p.closeInventory();
-			MessageUtils.sendErrorMessage(p, Message.PERMISSION_COMMAND.get());
-			return false;
-		}
-		return true;
+	protected boolean check() {
+		if(permission != null && !permission.isOwned(u)) MessageUtils.sendErrorMessage(p, Message.PERMISSION_COMMAND.get());
+		else if(this instanceof ReportManagement && (r == null || !TigerReports.Reports.containsKey(r.getId()))) MessageUtils.sendErrorMessage(p, Message.INVALID_REPORT.get());
+		else return true;
+		p.closeInventory();
+		return false;
 	}
 	
 	protected Inventory getInventory(String title, boolean borders) {
@@ -66,32 +66,34 @@ public abstract class Menu {
 		return inv;
 	}
 	
-	private boolean checkReport() {
-		if(this instanceof ReportManagement && (r == null || !TigerReports.Reports.containsKey(r.getId()))) {
-			p.closeInventory();
-			MessageUtils.sendErrorMessage(p, Message.INVALID_REPORT.get());
-			return false;
-		}
-		return true;
-	}
-	
 	public void open(boolean sound) {
-		checkPermission();
-		checkReport();
-		onOpen();
-		if(sound) u.playSound(ConfigSound.MENU);
+		if(!check()) return;
+		
+		Inventory inv = onOpen();
+		if(inv == null) {
+			p.closeInventory();
+			return;
+		}
+		
+		boolean updated = this instanceof UpdatedMenu;
+		if(updated) ((UpdatedMenu) this).onUpdate(inv);
+		
+		p.openInventory(inv);
 		u.setOpenedMenu(this);
+		if(updated) MenuUpdater.addUser(u);
+		if(sound) ConfigSound.MENU.play(p);
 	}
 	
 	public void click(ItemStack item, int slot, ClickType click) {
-		checkPermission();
-		checkReport();
 		if(slot == -1 || item == null || item.getType() == Material.AIR || (item.getType() == Material.STAINED_GLASS_PANE && ((slot >= size-9 && slot < size) || (slot >= 9 && slot <= 17)))) return;
+		if(!check()) return;
+		
 		if(slot == size-5) {
 			p.closeInventory();
-			u.playSound(ConfigSound.MENU);
+			ConfigSound.MENU.play(p);
 			return;
 		}
+		
 		if(page != 0) {
 			int newPage = page-(slot == size-7 ? 1 : slot == size-3 ? -1 : page);
 			if(newPage != 0) {
@@ -100,6 +102,7 @@ public abstract class Menu {
 				return;
 			}
 		}
+		
 		onClick(item, slot, click);
 	}
 	
@@ -107,7 +110,7 @@ public abstract class Menu {
 		return slot-17+((page-1)*27);
 	}
 	
-	public abstract void onOpen();
-	public abstract void onClick(ItemStack item, int slot, ClickType click);
+	protected abstract Inventory onOpen();
+	protected abstract void onClick(ItemStack item, int slot, ClickType click);
 	
 }

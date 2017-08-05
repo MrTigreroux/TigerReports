@@ -87,7 +87,7 @@ public abstract class Database {
 			return new QueryResult(resultList);
 		} catch (SQLException ex) {
 			logError("Error occurred with database:", ex);
-			return null;
+			return new QueryResult(new ArrayList<>());
 		}
 	}
     

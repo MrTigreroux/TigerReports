@@ -37,7 +37,7 @@ public class ReportCommand implements CommandExecutor {
 		String uuid = p.getUniqueId().toString();
 		
 		String cooldown = u.getCooldown();
-		if(cooldown != null && !cooldown.equals("None")) {
+		if(cooldown != null) {
 			MessageUtils.sendErrorMessage(p, Message.COOLDOWN.get().replace("_Time_", cooldown));
 			return true;
 		}

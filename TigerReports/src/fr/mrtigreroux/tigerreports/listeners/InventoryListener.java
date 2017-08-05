@@ -2,6 +2,7 @@ package fr.mrtigreroux.tigerreports.listeners;
 
 import java.util.Arrays;
 
+import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -16,6 +17,7 @@ import org.bukkit.inventory.Inventory;
 import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
+import fr.mrtigreroux.tigerreports.runnables.MenuUpdater;
 import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 /**
@@ -38,16 +40,18 @@ public class InventoryListener implements Listener {
 	
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onInventoryClick(InventoryClickEvent e) {
-		OnlineUser u = checkMenuAction(e.getWhoClicked(), e.getInventory());
+		OnlineUser u = checkMenuAction(e.getWhoClicked(), e.getClickedInventory());
 		if(u != null) {
 			e.setCancelled(true);
-			u.getOpenedMenu().click(e.getCurrentItem(), e.getSlot(), e.getClick());
+			if(e.getCursor().getType() == Material.AIR) u.getOpenedMenu().click(e.getCurrentItem(), e.getSlot(), e.getClick());
 		}
 	}
 	
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onInventoryClose(InventoryCloseEvent e) {
-		UserUtils.getOnlineUser((Player) e.getPlayer()).setOpenedMenu(null);
+		OnlineUser u = UserUtils.getOnlineUser((Player) e.getPlayer());
+		MenuUpdater.removeUser(u);
+		u.setOpenedMenu(null);
 		try {
 			TigerReports.getDb().startClosing();
 		} catch (Exception ignored) {}

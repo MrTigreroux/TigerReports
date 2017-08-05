@@ -45,10 +45,6 @@ public class OnlineUser extends User {
 		return p;
 	}
 
-	public void playSound(ConfigSound sound) {
-		if(sound != null) p.playSound(p.getLocation(), sound.get(), 1, 1);
-	}
-
 	public void openReasonMenu(int page, User tu) {
 		new ReasonMenu(this, page, tu).open(true);
 	}
@@ -113,7 +109,7 @@ public class OnlineUser extends User {
 	public void printInChat(Report r, String[] lines) {
 		String reportName = r.getName();
 		for(String line : lines) sendMessage(MessageUtils.getAdvancedMessage(line, "_ReportButton_", Message.REPORT_BUTTON.get().replace("_Report_", reportName), Message.ALERT_DETAILS.get().replace("_Report_", reportName), "/reports #"+r.getId()));
-		playSound(ConfigSound.MENU);
+		ConfigSound.MENU.play(p);
 		p.closeInventory();
 	}
 	
@@ -130,7 +126,7 @@ public class OnlineUser extends User {
 		try {
 			String[] parts = comment.split(":");
 			Report r = ReportUtils.getReportById(Integer.parseInt(parts[0].replace("Report", "")));
-			Comment c = r.getComments().get(Integer.parseInt(parts[1].replace("Comment", "")));
+			Comment c = r.getComment(Integer.parseInt(parts[1].replace("Comment", "")));
 			if(!direct && !c.getStatus(true).equals("Sent")) return;
 			p.sendMessage(Message.COMMENT_NOTIFICATION.get().replace("_Player_", c.getAuthor())
 					.replace("_Reported_", r.getPlayerName("Reported", false, true)).replace("_Time_", MessageUtils.convertToSentence(MessageUtils.getSeconds(MessageUtils.getNowDate())-MessageUtils.getSeconds(r.getDate())))

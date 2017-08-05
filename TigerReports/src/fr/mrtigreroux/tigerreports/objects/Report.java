@@ -167,12 +167,24 @@ public class Report {
 	public Map<Integer, Comment> getComments() {
 		if(comments != null) return comments;
 		comments = new HashMap<>();
-		for(Map<String, Object> rows : TigerReports.getDb().query("SELECT * FROM comments WHERE report_id = ?", Collections.singletonList(reportId)).getResultList()) {
-			int commentId = (int) rows.get("comment_id");
-			comments.put(commentId, new Comment(this, commentId, (String) rows.get("status"), (String) rows.get("date"), (String) rows.get("author"), (String) rows.get("message")));
-		}
+		for(Map<String, Object> results : TigerReports.getDb().query("SELECT * FROM comments WHERE report_id = ?", Collections.singletonList(reportId)).getResultList()) saveComment(results);
 		save();
 		return comments;
+	}
+	
+	public Comment getComment(int commentId) {
+		if(comments != null) {
+			Comment c = comments.get(commentId);
+			if(c != null) return c;
+		}
+		return saveComment(TigerReports.getDb().query("SELECT * FROM comments WHERE report_id = ? AND comment_id = ?", Arrays.asList(reportId, commentId)).getResult(0));
+	}
+	
+	private Comment saveComment(Map<String, Object> result) {
+		int commentId = (int) result.get("comment_id");
+		Comment c = new Comment(this, commentId, (String) result.get("status"), (String) result.get("date"), (String) result.get("author"), (String) result.get("message"));
+		comments.put(commentId, c);
+		return c;
 	}
 	
 	public void remove(String player, boolean bungee) {

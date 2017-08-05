@@ -25,7 +25,7 @@ public class ReasonMenu extends Menu {
 	}
 	
 	@Override
-	public void onOpen() {
+	public Inventory onOpen() {
 		Inventory inv = getInventory(Message.REASON_TITLE.get().replace("_Target_", tu.getName()), true);
 		
 		inv.setItem(4, MenuItem.REASONS.get());
@@ -44,13 +44,14 @@ public class ReasonMenu extends Menu {
 		}
 		
 		if(ConfigUtils.exist(ConfigFile.CONFIG.get(), "Config.DefaultReasons.Reason"+(firstReason+27))) inv.setItem(size-3, MenuItem.PAGE_SWITCH_NEXT.get());
-		p.openInventory(inv);
+		
+		return inv;
 	}
 
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
 		if(slot >= 18 && slot <= size-9) {
-			u.playSound(ConfigSound.MENU);
+			ConfigSound.MENU.play(p);
 			p.chat("/report "+tu.getName()+" "+ConfigFile.CONFIG.get().getString("Config.DefaultReasons.Reason"+(getIndex(slot))+".Name"));
 			p.closeInventory();
 		}
