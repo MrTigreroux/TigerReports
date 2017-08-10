@@ -76,14 +76,14 @@ public class Report {
 		return Status.getFrom(status);
 	}
 	
-	public String getReason() {
-		return reason != null ? MessageUtils.getMenuSentence(reason, Message.REPORT_DETAILS, "_Reason_", true) : Message.NOT_FOUND_FEMALE.get();
+	public String getReason(boolean menu) {
+		return reason != null ? menu ? MessageUtils.getMenuSentence(reason, Message.REPORT_DETAILS, "_Reason_", true) : reason : Message.NOT_FOUND_FEMALE.get();
 	}
 
-	public String implementDetails(String message) {
+	public String implementDetails(String message, boolean menu) {
 		Status status = getStatus();
 		return message.replace("_Status_", status.equals(Status.DONE) ? status.getWord(getProcessor())+Message.APPRECIATION_SUFFIX.get().replace("_Appreciation_", getAppreciation()) : status.getWord(null))
-				.replace("_Date_", getDate()).replace("_Signalman_", getPlayerName("Signalman", true, true)).replace("_Reported_", getPlayerName("Reported", true, true)).replace("_Reason_", getReason());
+				.replace("_Date_", getDate()).replace("_Signalman_", getPlayerName("Signalman", true, true)).replace("_Reported_", getPlayerName("Reported", true, true)).replace("_Reason_", getReason(menu));
 	}
 	
 	public void setAdvancedData(Map<String, String> advancedData) {
@@ -130,11 +130,11 @@ public class Report {
 	public ItemStack getItem(String actions) {
 		Status status = getStatus();
 		return new CustomItem().type(status.getMaterial()).hideFlags(true).glow(status.equals(Status.WAITING)).name(Message.REPORT.get().replace("_Report_", getName()))
-				.lore(implementDetails(Message.REPORT_DETAILS.get()).replace("_Actions_", actions != null ? actions : "").split(ConfigUtils.getLineBreakSymbol())).create();
+				.lore(implementDetails(Message.REPORT_DETAILS.get(), true).replace("_Actions_", actions != null ? actions : "").split(ConfigUtils.getLineBreakSymbol())).create();
 	}
 	
 	public String getText() {
-		return Message.REPORT.get().replace("_Report_", getName())+"\n"+implementDetails(Message.REPORT_DETAILS.get()).replace("_Actions_", "");
+		return Message.REPORT.get().replace("_Report_", getName())+"\n"+implementDetails(Message.REPORT_DETAILS.get(), false).replace("_Actions_", "");
 	}
 	
 	public void process(String uuid, String player, String appreciation, boolean bungee) {

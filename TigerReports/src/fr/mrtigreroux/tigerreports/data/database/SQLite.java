@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import org.bukkit.Bukkit;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
+import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 
 /**
  * @author MrTigreroux
@@ -24,7 +25,7 @@ public class SQLite extends Database {
 			try {
 				dataFolder.createNewFile();
 			} catch (IOException ex) {
-				logError("Failed creation of tigerreports.db file.", ex);
+				logError(ConfigUtils.getInfoLanguage().equalsIgnoreCase("English") ? "Failed creation of tigerreports.db file." : "La creation du fichier tigerreports.db a echoue.", ex);
 			}
 		}
 		
@@ -32,9 +33,9 @@ public class SQLite extends Database {
 			Class.forName("org.sqlite.JDBC");
 			connection = DriverManager.getConnection("jdbc:sqlite:"+dataFolder);
 		} catch (ClassNotFoundException missing) {
-			logError("SQLite is missing.", null);
+			logError(ConfigUtils.getInfoLanguage().equalsIgnoreCase("English") ? "SQLite is missing." : "SQLite n'est pas installe.", null);
 		} catch (SQLException ex) {
-			logError("Error on connection to database:", ex);
+			logError(ConfigUtils.getInfoLanguage().equalsIgnoreCase("English") ? "Error on connection to SQLite database:" : "Une erreur s'est produite lors de la connexion a la base de donnees SQLite:", ex);
 		}
 		return;
     }

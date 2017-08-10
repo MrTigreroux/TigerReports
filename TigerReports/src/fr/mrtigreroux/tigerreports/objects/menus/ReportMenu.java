@@ -93,7 +93,7 @@ public class ReportMenu extends Menu implements ReportManagement {
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
 		if(slot == 0) u.openReportsMenu(1, true);
-		else if(slot == 18) u.printInChat(r, r.implementDetails(Message.REPORT_CHAT_DETAILS.get()).replace("_Report_", r.getName()).split(ConfigUtils.getLineBreakSymbol()));
+		else if(slot == 18) u.printInChat(r, r.implementDetails(Message.REPORT_CHAT_DETAILS.get(), false).replace("_Report_", r.getName()).split(ConfigUtils.getLineBreakSymbol()));
 		else if(slot == MenuItem.PUNISH_ABUSE.getPosition()) {
 			long seconds = ReportUtils.getPunishSeconds();
 			UserUtils.getUser(r.getSignalmanUniqueId()).punish(seconds, p.getName(), false);

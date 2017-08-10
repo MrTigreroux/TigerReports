@@ -25,9 +25,9 @@ import fr.mrtigreroux.tigerreports.objects.Report;
 
 public class ReportUtils {
 	
-	public static void sendReport(Report r) {
+	public static void sendReport(Report r, String server) {
 		int reportId = r.getId();
-		TextComponent alert = new TextComponent(Message.ALERT.get().replace("_Signalman_", r.getPlayerName("Signalman", false, true)).replace("_Reported_", r.getPlayerName("Reported", !ReportUtils.onlinePlayerRequired(), true)).replace("_Reason_", r.getReason()));
+		TextComponent alert = new TextComponent(Message.ALERT.get().replace("_Server_", server).replace("_Signalman_", r.getPlayerName("Signalman", false, true)).replace("_Reported_", r.getPlayerName("Reported", !ReportUtils.onlinePlayerRequired(), true)).replace("_Reason_", r.getReason(false)));
 		alert.setColor(ChatColor.valueOf(MessageUtils.getLastColor(Message.ALERT.get(), "_Reason_").name()));
 		if(reportId != -1) {
 			alert.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/reports #"+reportId));

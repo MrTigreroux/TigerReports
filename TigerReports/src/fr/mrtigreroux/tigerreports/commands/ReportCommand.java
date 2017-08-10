@@ -107,9 +107,10 @@ public class ReportCommand implements CommandExecutor {
 		}
 		
 		Report r = new Report(reportId, Status.WAITING.getConfigWord(), "None", MessageUtils.getNowDate(), ruuid, uuid, reason);
-		ReportUtils.sendReport(r);
+		String server = TigerReports.getBungeeManager().getServerName();
+		ReportUtils.sendReport(r, server);
 		s.sendMessage(Message.REPORT_SENT.get().replace("_Player_", r.getPlayerName("Reported", false, false)).replace("_Reason_", reason));
-		TigerReports.getBungeeManager().sendPluginNotification(reportId+" new_report "+MessageUtils.getNowDate().replace(" ", "_")+" "+ruuid+" "+uuid+" "+reason.replace(" ", "_"));
+		TigerReports.getBungeeManager().sendPluginNotification(reportId+" new_report "+MessageUtils.getNowDate().replace(" ", "_")+" "+ruuid+" "+uuid+" "+reason.replace(" ", "_")+" "+server);
 		
 		u.startCooldown(ReportUtils.getCooldown(), false);
 		ru.startImmunity(false);

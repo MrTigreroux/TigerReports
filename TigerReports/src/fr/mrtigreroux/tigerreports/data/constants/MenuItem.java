@@ -14,7 +14,7 @@ import fr.mrtigreroux.tigerreports.utils.ReflectionUtils;
 
 public enum MenuItem {
 
-	CLOSE(0, ReflectionUtils.getVersion() < 1.8 ? Material.REDSTONE_BLOCK : Material.BARRIER, Message.CLOSE),
+	CLOSE(0, ReflectionUtils.isOldVersion() ? Material.REDSTONE_BLOCK : Material.BARRIER, Message.CLOSE),
 	PAGE_SWITCH_PREVIOUS(0, Material.FEATHER, Message.PAGE_SWITCH_PREVIOUS),
 	PAGE_SWITCH_NEXT(0, Material.FEATHER, Message.PAGE_SWITCH_NEXT),
 

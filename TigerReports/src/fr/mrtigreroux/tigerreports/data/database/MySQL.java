@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import org.bukkit.Bukkit;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
+import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 
 /**
  * @author MrTigreroux
@@ -34,11 +35,11 @@ public class MySQL extends Database {
 	public void openConnection() {
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
-			connection = DriverManager.getConnection("jdbc:mysql://"+host+":"+port+"/"+database+"?useUnicode=true&characterEncoding=UTF-8", username, password);
+			connection = DriverManager.getConnection("jdbc:mysql://"+host+":"+port+"/"+database+"?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&useSSL=false", username, password);
 		} catch (ClassNotFoundException missing) {
-			logError("MySQL is missing.", null);
+			logError(ConfigUtils.getInfoLanguage().equalsIgnoreCase("English") ? "MySQL is missing." : "MySQL n'est pas installe.", null);
 		} catch (SQLException ex) {
-			logError("Error on connection to database:", ex);
+			logError(ConfigUtils.getInfoLanguage().equalsIgnoreCase("English") ? "Error on connection to MySQL database:" : "Une erreur s'est produite lors de la connexion a la base de donnees MySQL:", ex);
 		}
 		return;
 	}
