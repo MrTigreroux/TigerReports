@@ -20,8 +20,11 @@ import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 
 public class ReasonMenu extends Menu {
 	
+	User tu;
+	
 	public ReasonMenu(OnlineUser u, int page, User tu) {
-		super(u, 54, page, null, -1, null, tu);
+		super(u, 54, page, null);
+		this.tu = tu;
 	}
 	
 	@Override

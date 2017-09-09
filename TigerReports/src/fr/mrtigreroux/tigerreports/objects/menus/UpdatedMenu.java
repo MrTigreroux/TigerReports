@@ -8,6 +8,6 @@ import org.bukkit.inventory.Inventory;
 
 public interface UpdatedMenu {
 
-	public void onUpdate(Inventory inv);
+	void onUpdate(Inventory inv);
 	
 }

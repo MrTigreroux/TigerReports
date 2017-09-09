@@ -21,8 +21,11 @@ import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 
 public class UserMenu extends Menu implements UpdatedMenu {
 	
+	private User tu;
+	
 	public UserMenu(OnlineUser u, User tu) {
-		super(u, 54, 0, Permission.STAFF, -1, null, tu);
+		super(u, 54, 0, Permission.STAFF);
+		this.tu  = tu;
 	}
 	
 	@Override
@@ -37,8 +40,6 @@ public class UserMenu extends Menu implements UpdatedMenu {
 
 	@Override
 	public void onUpdate(Inventory inv) {
-		if(!check()) return;
-		
 		String cooldown = tu.getCooldown();
 		inv.setItem(8, new CustomItem().type(Material.GOLD_AXE).hideFlags(true).name(Message.COOLDOWN_STATUS.get().replace("_Time_", cooldown != null ? cooldown : Message.NONE_FEMALE.get()))
 				.lore(cooldown != null ? Message.COOLDOWN_STATUS_DETAILS.get().replace("_Player_", tu.getName()).split(ConfigUtils.getLineBreakSymbol()) : null).create());
@@ -56,13 +57,13 @@ public class UserMenu extends Menu implements UpdatedMenu {
 		if(slot == 8) {
 			if(tu.getCooldown() != null) {
 				tu.stopCooldown(p.getName(), false);
-				open(false);
+				update(false);
 			}
 		} else if(slot != 4 && Permission.ADVANCED.isOwned(u)) {
 			String stat = "";
 			for(Statistic statistics : Statistic.values()) if(statistics.getPosition() == slot) stat = statistics.getConfigName();
 			tu.changeStatistic(stat, click.toString().contains("RIGHT") ? -1 : 1, false);
-			open(true);
+			update(true);
 		}
 	}
 	

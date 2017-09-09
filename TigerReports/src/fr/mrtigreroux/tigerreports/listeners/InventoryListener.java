@@ -1,6 +1,7 @@
 package fr.mrtigreroux.tigerreports.listeners;
 
-import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
@@ -15,7 +16,6 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
-import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.runnables.MenuUpdater;
 import fr.mrtigreroux.tigerreports.utils.UserUtils;
@@ -26,10 +26,11 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 public class InventoryListener implements Listener {
 
+	public static Set<String> menuTitles = new HashSet<>();
+	
 	private boolean isReportMenu(Inventory inv) {
 		String title = inv.getTitle();
-		for(Message message : Arrays.asList(Message.REASON_TITLE, Message.REPORTS_TITLE, Message.REPORT_TITLE, Message.COMMENTS_TITLE, Message.CONFIRM_ARCHIVE_TITLE, Message.CONFIRM_REMOVE_TITLE, Message.PROCESS_TITLE, Message.USER_TITLE, Message.ARCHIVED_REPORTS_TITLE))
-			if(title.startsWith(message.get().replace("_Page_", "").replace("_Report_", "").replace("_Target_", ""))) return true;
+		for(String menuTitle : menuTitles) if(title.startsWith(menuTitle)) return true;
 		return false;
 	}
 	

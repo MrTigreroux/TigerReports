@@ -21,10 +21,10 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
  * @author MrTigreroux
  */
 
-public class CommentsMenu extends Menu implements ReportManagement, UpdatedMenu {
+public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu {
 	
 	public CommentsMenu(OnlineUser u, int page, int reportId) {
-		super(u, 54, page, Permission.STAFF, reportId, null, null);
+		super(u, 54, page, Permission.STAFF, reportId);
 	}
 	
 	@Override
@@ -40,8 +40,6 @@ public class CommentsMenu extends Menu implements ReportManagement, UpdatedMenu 
 	
 	@Override
 	public void onUpdate(Inventory inv) {
-		if(!check()) return;
-		
 		int index = 0;
 		if(page >= 2) {
 			inv.setItem(size-7, MenuItem.PAGE_SWITCH_PREVIOUS.get());
@@ -89,7 +87,7 @@ public class CommentsMenu extends Menu implements ReportManagement, UpdatedMenu 
 					boolean isPrivate = c.getStatus(true).equals("Private");
 					if(isPrivate && su instanceof OnlineUser) {
 						((OnlineUser) su).sendNotification(comment, true);
-						open(true);
+						update(true);
 						return;
 					}
 					
@@ -107,7 +105,7 @@ public class CommentsMenu extends Menu implements ReportManagement, UpdatedMenu 
 					else return;
 				}
 			}
-			open(true);
+			update(true);
 		}
 	}
 	

@@ -18,10 +18,10 @@ import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
  * @author MrTigreroux
  */
 
-public class ProcessMenu extends Menu implements ReportManagement {
+public class ProcessMenu extends ReportManagerMenu {
 	
 	public ProcessMenu(OnlineUser u, int reportId) {
-		super(u, 27, 0, Permission.STAFF, reportId, null, null);
+		super(u, 27, 0, Permission.STAFF, reportId);
 	}
 	
 	@Override

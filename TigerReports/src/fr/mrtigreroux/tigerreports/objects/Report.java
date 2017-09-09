@@ -218,7 +218,7 @@ public class Report {
 							Arrays.asList(reportId, status, appreciation, date, reportedUniqueId, signalmanUniqueId, reason, (String) advancedData.get("reported_ip"), 
 							(String) advancedData.get("reported_location"), (String) advancedData.get("reported_messages"), (String) advancedData.get("reported_gamemode"), (String) advancedData.get("reported_on_ground"), (String) advancedData.get("reported_sneak"), (String) advancedData.get("reported_sprint"), (String) advancedData.get("reported_health"), (String) advancedData.get("reported_food"),
 							(String) advancedData.get("reported_effects"), (String) advancedData.get("signalman_ip"), (String) advancedData.get("signalman_location"), (String) advancedData.get("signalman_messages")));
-					TigerReports.getDb().update("DELETE FROM archived_reports WHERE report_id = ?", Arrays.asList(reportId));
+					TigerReports.getDb().update("DELETE FROM archived_reports WHERE report_id = ?", Collections.singletonList(reportId));
 				}
 			});
 		}

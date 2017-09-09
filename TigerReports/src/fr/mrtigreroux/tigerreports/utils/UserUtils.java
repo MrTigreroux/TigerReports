@@ -29,7 +29,7 @@ public class UserUtils {
 				if(uuid != null) TigerReports.LastUniqueIdFound.put(name, uuid);
 				return uuid;
 			} catch (Exception invalidPlayer) {
-				Bukkit.getLogger().log(Level.WARNING, "[TigerReports] UUID of pseudo <"+name+"> not found.");
+				Bukkit.getLogger().log(Level.WARNING, ConfigUtils.getInfoMessage("UUID of pseudo <"+name+"> not found.", "L'UUID du pseudo <"+name+"> n'a pas ete trouve."));
 				return null;
 			}
 		}
@@ -52,7 +52,7 @@ public class UserUtils {
 					return name;
 				}
 			}
-			Bukkit.getLogger().log(Level.WARNING, "[TigerReports] Pseudo of UUID <"+uuid+"> not found.");
+			Bukkit.getLogger().log(Level.WARNING, ConfigUtils.getInfoMessage("Pseudo of UUID <"+uuid+"> not found.", "Le pseudo de l'UUID <"+uuid+"> n'a pas ete trouve."));
 			return null;
 		}
 	}

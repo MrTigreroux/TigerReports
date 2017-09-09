@@ -17,10 +17,13 @@ import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
  * @author MrTigreroux
  */
 
-public class ConfirmationMenu extends Menu implements ReportManagement {
+public class ConfirmationMenu extends ReportManagerMenu {
+	
+	private String action;
 	
 	public ConfirmationMenu(OnlineUser u, int reportId, String action) {
-		super(u, 27, 0, Permission.STAFF, reportId, action, null);
+		super(u, 27, 0, Permission.STAFF, reportId);
+		this.action = action;
 	}
 	
 	@Override
@@ -48,15 +51,9 @@ public class ConfirmationMenu extends Menu implements ReportManagement {
 			}
 			
 			switch(action) {
-				case "REMOVE":
-					r.remove(p.getName(), false);
-					break;
-				case "REMOVE_ARCHIVE":
-					r.removeFromArchives(p.getName(), false);
-					break;
-				default:
-					r.archive(p.getName(), false);
-					break;
+				case "REMOVE": r.remove(p.getName(), false); break;
+				case "REMOVE_ARCHIVE": r.removeFromArchives(p.getName(), false); break;
+				default: r.archive(p.getName(), false); break;
 			}
 			p.closeInventory();
 		} else if(slot == 15) {

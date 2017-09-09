@@ -33,6 +33,10 @@ public class ConfigUtils {
 		return ConfigFile.CONFIG.get().getString("Config.InfoLanguage", "French");
 	}
 	
+	public static String getInfoMessage(String english, String french) {
+		return "[TigerReports] "+(getInfoLanguage().equalsIgnoreCase("English") ? english : french);
+	}
+	
 	public static boolean exist(ConfigurationSection config, String path) {
 		return config.get(path) != null;
 	}

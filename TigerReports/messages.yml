@@ -1,7 +1,7 @@
 ﻿Messages: # French messages by MrTigreroux. If you are in Minecraft 1.8 or less, encode in ANSI, else encode in UTF-8.
   Reload: "&7[&6TigerReports&7] &eLe plugin a \xe9t\xe9 recharg\xe9."
   Report-sent: "&7[&6Report&7] &eVous avez signal\xe9 le joueur &6_Player_ &epour: &7_Reason_&e."
-  Alert: "&7[&cReport&7] &a_Signalman_ &7» &c_Reported_&7: &6_Reason_&7."
+  Alert: "&7[&cReport &7- &8_Server_&7] &a_Signalman_ &7» &c_Reported_&7: &6_Reason_&7."
   Alert-details: "&6Clic gauche &7pour afficher les d\xe9tails du &c_Report_&7."
   Teleport-to-current-location: "&7[&6Report&7] &eVous avez \xe9t\xe9 t\xe9l\xe9port\xe9 au joueur _Player_&e."
   Teleport-to-old-location: "&7[&6Report&7] &eVous avez \xe9t\xe9 t\xe9l\xe9port\xe9 au joueur _Player_ &elors du signalement _Report_&e."
@@ -56,7 +56,7 @@ Menus:
   Report-chat-action: "// //&6Clic gauche &7pour afficher dans//&7le chat."
   Signalman: "&7Signaleur: &a_Player_"
   Reported: "&7Signal\xe9: &c_Player_"
-  Player-details: "//&7Signalements effectu\xe9s: &b_Reports_//&7Signalements re\u00E7us: &b_Reportedtimes_//_Teleportation_"
+  Player-details: "//&7Signalements effectu\xe9s: &b_Reports_//&7Signalements re\u00E7us: &b_Reportedtimes_// //&7Serveur lors du signalement: &a_Server_//_Teleportation_"
   Teleport-to-current-position: "//&6Clic gauche &7pour vous t\xe9l\xe9porter \u00E0 la//&7position actuelle du joueur &e_Player_&7."
   Can-not-teleport-to-current-position: "//&6&mClic gauche &7&mpour vous t\xe9l\xe9porter \u00E0 la//&7&mposition actuelle du joueur &e&m_Player_&7&m."
   Teleport-to-old-position: "//&6Clic droit &7pour vous t\xe9l\xe9porter \u00E0 l'ancienne//&7position du joueur &e_Player_&7."

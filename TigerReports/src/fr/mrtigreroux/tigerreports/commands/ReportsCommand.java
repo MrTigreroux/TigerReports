@@ -14,7 +14,6 @@ import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.objects.users.User;
 import fr.mrtigreroux.tigerreports.runnables.MenuUpdater;
-import fr.mrtigreroux.tigerreports.runnables.ReportsNotifier;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 import fr.mrtigreroux.tigerreports.utils.ReportUtils;
 import fr.mrtigreroux.tigerreports.utils.UserUtils;
@@ -29,12 +28,12 @@ public class ReportsCommand implements CommandExecutor {
 	public boolean onCommand(CommandSender s, Command cmd, String label, String[] args) {
 		if(args.length == 1 && args[0].equalsIgnoreCase("reload")) {
 			if(Permission.MANAGE.check(s)) {
+				MenuUpdater.stop(true);
 				TigerReports.Reports.clear();
 				TigerReports.Users.clear();
-				TigerReports.loadFiles();
+				TigerReports.unload();
+				TigerReports.load();
 				TigerReports.initializeDatabase();
-				ReportsNotifier.start();
-				MenuUpdater.stop(true);
 				if(!(s instanceof Player)) MessageUtils.sendConsoleMessage(Message.RELOAD.get());
 				else s.sendMessage(Message.RELOAD.get());
 			}

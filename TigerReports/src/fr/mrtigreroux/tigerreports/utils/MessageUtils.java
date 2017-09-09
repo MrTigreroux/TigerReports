@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -107,16 +108,17 @@ public class MessageUtils {
 	public static String convertToSentence(double seconds) {
 		List<Integer> values = getValues(seconds);
 		
-		StringBuilder sentence = new StringBuilder();
+		StringBuilder sentenceBuilder = new StringBuilder();
 		for(int valueNumber = 0; valueNumber <= 6; valueNumber++) {
 			switch(values.get(valueNumber)) {
 				case 0: break;
-				case 1: sentence.append("1").append(" ").append(Message.valueOf(UNITS.get(valueNumber)).get()).append(" "); break;
-				default: sentence.append(values.get(valueNumber)).append(" ").append(Message.valueOf(UNITS.get(valueNumber)+"S").get()).append(" "); break;
+				case 1: sentenceBuilder.append("1").append(" ").append(Message.valueOf(UNITS.get(valueNumber)).get()).append(" "); break;
+				default: sentenceBuilder.append(values.get(valueNumber)).append(" ").append(Message.valueOf(UNITS.get(valueNumber)+"S").get()).append(" "); break;
 			}
 		}
-		if(sentence.toString().endsWith(" ")) sentence = new StringBuilder(sentence.substring(0, sentence.length()-1));
-		return sentence.toString();
+		
+		String sentence = sentenceBuilder.toString();
+		return sentence.endsWith(" ") ? sentence.substring(0, sentence.length()-1) : sentence;
 	}
 	
 	public static String convertToDate(double seconds) {
@@ -172,11 +174,11 @@ public class MessageUtils {
 	public static Object getAdvancedMessage(String line, String placeHolder, String replacement, String hover, String command) {
 		if(!line.contains(placeHolder)) return line;
 		else {
-			TextComponent advancedLine = new TextComponent("");
+			BaseComponent advancedLine = new TextComponent("");
 			for(String part : line.replace(placeHolder, "¤µ¤"+placeHolder+"¤µ¤").split("¤µ¤")) {
 				if(!part.equals(placeHolder)) advancedLine.addExtra(part);
 				else {
-					TextComponent advancedText = new TextComponent(replacement);
+					BaseComponent advancedText = new TextComponent(replacement);
 					advancedText.setColor(ChatColor.valueOf(MessageUtils.getLastColor(replacement, null).name()));
 					advancedText.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(hover.replace(ConfigUtils.getLineBreakSymbol(), "\n")).create()));
 					if(command != null) advancedText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command));

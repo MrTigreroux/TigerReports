@@ -31,22 +31,16 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
  * @author MrTigreroux
  */
 
-public class ReportMenu extends Menu implements ReportManagement {
+public class ReportMenu extends ReportManagerMenu {
 	
 	private QueryResult statisticsQuery = null;
 	
 	public ReportMenu(OnlineUser u, int reportId) {
-		super(u, 54, 0, Permission.STAFF, reportId, null, null);
+		super(u, 54, 0, Permission.STAFF, reportId);
 	}
 	
 	@Override
 	public Inventory onOpen() {
-		Status reportStatus = r.getStatus();
-		if((reportStatus == Status.IMPORTANT || reportStatus == Status.DONE) && !Permission.ADVANCED.isOwned(u)) {
-			MessageUtils.sendErrorMessage(p, Message.PERMISSION_ACCESS_DETAILS.get().replace("_Report_", r.getName()));
-			return null;
-		}
-		
 		Inventory inv = getInventory(Message.REPORT_TITLE.get().replace("_Report_", r.getName()), true);
 		inv.setItem(0, MenuItem.REPORTS.getWithDetails(Message.REPORTS_DETAILS.get()));
 		inv.setItem(4, r.getItem(null));
@@ -69,8 +63,9 @@ public class ReportMenu extends Menu implements ReportManagement {
 				}
 				details = details.replace("_"+statName.substring(0, 1).toUpperCase()+statName.substring(1).replace("_", "")+"_", value);
 			}
+			String server = (server = MessageUtils.getConfigServerLocation(r.getOldLocation(type))) != null ? server : Message.NOT_FOUND_MALE.get();
 			inv.setItem(type.equals("Signalman") ? 21 : 23, new CustomItem().skullOwner(name).name(Message.valueOf(type.toUpperCase()).get().replace("_Player_", r.getPlayerName(type, true, true)))
-					.lore(details.replace("_Teleportation_", Permission.TELEPORT.isOwned(u) ? ((UserUtils.isOnline(name) ? Message.TELEPORT_TO_CURRENT_POSITION.get() : Message.CAN_NOT_TELEPORT_TO_CURRENT_POSITION.get()).replace("_Player_", name)+(r.getOldLocation(type) != null ? Message.TELEPORT_TO_OLD_POSITION.get() : Message.CAN_NOT_TELEPORT_TO_OLD_POSITION.get()).replace("_Player_", name)) : "").split(ConfigUtils.getLineBreakSymbol())).create());
+					.lore(details.replace("_Server_", server).replace("_Teleportation_", Permission.TELEPORT.isOwned(u) ? ((UserUtils.isOnline(name) ? Message.TELEPORT_TO_CURRENT_POSITION.get() : Message.CAN_NOT_TELEPORT_TO_CURRENT_POSITION.get()).replace("_Player_", name)+(r.getOldLocation(type) != null ? Message.TELEPORT_TO_OLD_POSITION.get() : Message.CAN_NOT_TELEPORT_TO_OLD_POSITION.get()).replace("_Player_", name)) : "").split(ConfigUtils.getLineBreakSymbol())).create());
 		}
 		
 		inv.setItem(MenuItem.DATA.getPosition(), MenuItem.DATA.getWithDetails(r.implementData(Message.DATA_DETAILS.get(), Permission.ADVANCED.isOwned(u))));
@@ -113,7 +108,6 @@ public class ReportMenu extends Menu implements ReportManagement {
 				}
 				StringBuilder messages = new StringBuilder();
 				for(String message : sortedMessages.values()) messages.append(message);
-				
 				u.printInChat(r, Message.REPORT_MESSAGES_HISTORY.get().replace("_Report_", r.getName()).replace("_Messages_", !messages.toString().isEmpty() ? messages.toString() : Message.NONE_MALE.get()).split(ConfigUtils.getLineBreakSymbol()));
 			}
 		} else if(slot == MenuItem.REMOVE.getPosition()) u.openConfirmationMenu(r, "REMOVE");
@@ -137,12 +131,12 @@ public class ReportMenu extends Menu implements ReportManagement {
 				locType = "CURRENT";
 			} else if(click.toString().contains("RIGHT")) {
 				configLoc = r.getOldLocation(type);
-				serverName = MessageUtils.getConfigServerLocation(configLoc);
 				loc = MessageUtils.getConfigLocation(configLoc);
 				if(loc == null) {
 					MessageUtils.sendErrorMessage(p, Message.LOCATION_UNKNOWN.get().replace("_Player_", name));
 					return;
 				}
+				serverName = MessageUtils.getConfigServerLocation(configLoc);
 				locType = "OLD";
 			} else return;
 			p.sendMessage(Message.valueOf("TELEPORT_"+locType+"_LOCATION").get().replace("_Player_", Message.valueOf(type.toUpperCase()+"_NAME").get().replace("_Player_", name)).replace("_Report_", r.getName()));

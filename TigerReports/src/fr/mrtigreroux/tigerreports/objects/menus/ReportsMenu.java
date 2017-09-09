@@ -18,7 +18,7 @@ import fr.mrtigreroux.tigerreports.utils.ReportUtils;
 public class ReportsMenu extends Menu implements UpdatedMenu {
 	
 	public ReportsMenu(OnlineUser u, int page) {
-		super(u, 54, page, Permission.STAFF, -1, null, null);
+		super(u, 54, page, Permission.STAFF);
 	}
 	
 	@Override
@@ -33,7 +33,6 @@ public class ReportsMenu extends Menu implements UpdatedMenu {
 	
 	@Override
 	public void onUpdate(Inventory inv) {
-		if(!check()) return;
 		ReportUtils.addReports("reports", inv, page, Message.REPORT_SHOW_ACTION.get()+(Permission.REMOVE.isOwned(u) ? Message.REPORT_REMOVE_ACTION.get() : ""));
 	}
 

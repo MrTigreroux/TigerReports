@@ -4,12 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Bukkit;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryView;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.objects.menus.Menu;
-import fr.mrtigreroux.tigerreports.objects.menus.UpdatedMenu;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 
@@ -28,17 +25,8 @@ public class MenuUpdater implements Runnable {
 		else {
 			for(OnlineUser u : users) {
 				Menu menu = u.getOpenedMenu();
-				if(menu != null) {
-					InventoryView invView = u.getPlayer().getOpenInventory();
-					if(menu instanceof UpdatedMenu && invView != null) {
-						Inventory inv = invView.getTopInventory();
-						if(inv != null) {
-							((UpdatedMenu) menu).onUpdate(inv);
-							return;
-						}
-					}
-				}
-				removeUser(u);
+				if(menu != null) menu.update(false);
+				else removeUser(u);
 			}
 		}
 	}

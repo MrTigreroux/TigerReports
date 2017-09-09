@@ -21,7 +21,7 @@ import fr.mrtigreroux.tigerreports.utils.ReportUtils;
 public class ArchivedReportsMenu extends Menu implements UpdatedMenu {
 	
 	public ArchivedReportsMenu(OnlineUser u, int page) {
-		super(u, 54, page, Permission.ARCHIVE, -1, null, null);
+		super(u, 54, page, Permission.ARCHIVE);
 	}
 	
 	@Override
@@ -36,7 +36,6 @@ public class ArchivedReportsMenu extends Menu implements UpdatedMenu {
 	
 	@Override
 	public void onUpdate(Inventory inv) {
-		if(!check()) return;
 		ReportUtils.addReports("archived_reports", inv, page, Message.REPORT_RESTORE_ACTION.get()+(Permission.REMOVE.isOwned(u) ? Message.REPORT_REMOVE_ACTION.get() : ""));
 	}
 
@@ -45,11 +44,8 @@ public class ArchivedReportsMenu extends Menu implements UpdatedMenu {
 		if(slot == 0) u.openReportsMenu(1, true);
 		else if(slot >= 18 && slot <= size-9) {
 			Report r = ReportUtils.formatReport(TigerReports.getDb().query("SELECT * FROM archived_reports LIMIT 1 OFFSET ?", Collections.singletonList(getIndex(slot)-1)).getResult(0), true);
-			if(r == null) {
-				open(true);
-				return;
-			}
-			if(click.equals(ClickType.DROP) && Permission.REMOVE.isOwned(u)) u.openConfirmationMenu(r, "REMOVE_ARCHIVE");
+			if(r == null) update(true);
+			else if(click.equals(ClickType.DROP) && Permission.REMOVE.isOwned(u)) u.openConfirmationMenu(r, "REMOVE_ARCHIVE");
 			else {
 				r.unarchive(p.getName(), false);
 				p.closeInventory();

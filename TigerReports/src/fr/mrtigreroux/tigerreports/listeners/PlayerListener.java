@@ -5,11 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.*;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -37,7 +33,7 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 public class PlayerListener implements Listener {
 
-	private final static Set<String> helpCommands = new HashSet<>(Arrays.asList("/tigerreports", "/helptigerreports", "/helptigerreport", "/tigerreport", "/tigerreporthelp", "/tigerreportshelp"));
+	private final static Set<String> helpCommands = new HashSet<>(Arrays.asList("tigerreport", "helptigerreport", "reportshelp", "report?", "reports?"));
 	
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent e) {
@@ -82,16 +78,20 @@ public class PlayerListener implements Listener {
 	
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent e) {
-		if(checkHelpCommand(e.getMessage(), e.getPlayer())) e.setCancelled(true);
+		if(checkHelpCommand(e.getMessage().substring(1), e.getPlayer())) e.setCancelled(true);
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onServerCommandPreprocess(ServerCommandEvent e) {
-		checkHelpCommand("/"+e.getCommand(), e.getSender());
+		if(checkHelpCommand(e.getCommand(), e.getSender())) e.setCommand("tigerreports");
 	}
 	
 	private boolean checkHelpCommand(String command, CommandSender s) {
-		command = command.replace(" ", "");
+		if(command.equalsIgnoreCase("report help")) {
+			HelpCommand.onCommand(s);
+			return true;
+		}
+		command = command.toLowerCase().replace(" ", "");
 		for(String helpCommand : helpCommands) {
 			if(command.startsWith(helpCommand)) {
 				HelpCommand.onCommand(s);

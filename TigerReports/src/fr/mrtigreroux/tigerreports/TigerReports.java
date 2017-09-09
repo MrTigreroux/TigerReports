@@ -4,9 +4,11 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
@@ -15,6 +17,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import fr.mrtigreroux.tigerreports.commands.ReportCommand;
 import fr.mrtigreroux.tigerreports.commands.ReportsCommand;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
+import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.database.Database;
 import fr.mrtigreroux.tigerreports.data.database.MySQL;
 import fr.mrtigreroux.tigerreports.data.database.SQLite;
@@ -34,8 +37,9 @@ import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 public class TigerReports extends JavaPlugin {
 
 	private static TigerReports instance;
-	private static Database database;
 	private static BungeeManager bungeeManager;
+	private static Database database;
+	
 	private static String newVersion = null;
 
 	public static Map<String, User> Users = new HashMap<>();
@@ -43,11 +47,21 @@ public class TigerReports extends JavaPlugin {
 	public static Map<String, String> LastUniqueIdFound = new HashMap<>();
 
 	public static Map<Integer, Report> Reports = new HashMap<>();
+
+	public static void load() {
+		for(ConfigFile configFiles : ConfigFile.values()) configFiles.load();
+		
+		InventoryListener.menuTitles.clear();
+		for(Message message : Arrays.asList(Message.REASON_TITLE, Message.REPORTS_TITLE, Message.REPORT_TITLE, Message.COMMENTS_TITLE, Message.CONFIRM_ARCHIVE_TITLE, Message.CONFIRM_REMOVE_TITLE, Message.PROCESS_TITLE, Message.USER_TITLE, Message.ARCHIVED_REPORTS_TITLE))
+			InventoryListener.menuTitles.add(message.get().replace("_Page_", "").replace("_Report_", "").replace("_Target_", ""));
+
+		ReportsNotifier.start();
+	}
 	
 	@Override
 	public void onEnable() {
 		instance = this;
-		loadFiles();
+		load();
 		
 		PluginManager pm = Bukkit.getServer().getPluginManager();
 		pm.registerEvents(new InventoryListener(), this);
@@ -57,7 +71,7 @@ public class TigerReports extends JavaPlugin {
 		getCommand("report").setExecutor(new ReportCommand());
 		getCommand("reports").setExecutor(new ReportsCommand());
 		
-		ReportsNotifier.start();
+		Logger logger = Bukkit.getLogger();
 		
 		try {
 			HttpURLConnection connection = (HttpURLConnection) new URL("http://www.spigotmc.org/api/general.php").openConnection();
@@ -67,40 +81,39 @@ public class TigerReports extends JavaPlugin {
 			newVersion = new BufferedReader(new InputStreamReader(connection.getInputStream())).readLine();
 			if(getDescription().getVersion().equals(newVersion)) newVersion = null;
 			else {
-        		Bukkit.getLogger().log(Level.WARNING, "------------------------------------------------------");
+        		logger.log(Level.WARNING, "------------------------------------------------------");
         		if(ConfigUtils.getInfoLanguage().equalsIgnoreCase("English")) {
-	        		Bukkit.getLogger().log(Level.WARNING, "[TigerReports] The plugin has been updated.");
-	        		Bukkit.getLogger().log(Level.WARNING, "New version "+newVersion+" is available on:");
+	        		logger.log(Level.WARNING, "[TigerReports] The plugin has been updated.");
+	        		logger.log(Level.WARNING, "New version "+newVersion+" is available on:");
         		} else {
-	        		Bukkit.getLogger().log(Level.WARNING, "[TigerReports] Le plugin a ete mis a jour.");
-	        		Bukkit.getLogger().log(Level.WARNING, "Le nouvelle version "+newVersion+" est disponible ici:");
+	        		logger.log(Level.WARNING, "[TigerReports] Le plugin a ete mis a jour.");
+	        		logger.log(Level.WARNING, "Le nouvelle version "+newVersion+" est disponible ici:");
         		}
-        		Bukkit.getLogger().log(Level.WARNING, "https://www.spigotmc.org/resources/tigerreports.25773/");
-        		Bukkit.getLogger().log(Level.WARNING, "------------------------------------------------------");
+        		logger.log(Level.WARNING, "https://www.spigotmc.org/resources/tigerreports.25773/");
+        		logger.log(Level.WARNING, "------------------------------------------------------");
 			}
 		} catch (Exception noUpdate) {}
 		
 		if(getDescription().getAuthors().size() > 1 || !getDescription().getAuthors().contains("MrTigreroux")) {
-    		Bukkit.getLogger().log(Level.SEVERE, "------------------------------------------------------");
+    		logger.log(Level.SEVERE, "------------------------------------------------------");
     		if(ConfigUtils.getInfoLanguage().equalsIgnoreCase("English")) {
-	    		Bukkit.getLogger().log(Level.SEVERE, "[TigerReports] An user tried to appropriate");
-	    		Bukkit.getLogger().log(Level.SEVERE, "the plugin TigerReports as his plugin.");
+	    		logger.log(Level.SEVERE, "[TigerReports] An user tried to appropriate");
+	    		logger.log(Level.SEVERE, "the plugin TigerReports as his plugin.");
     		} else {
-    			Bukkit.getLogger().log(Level.SEVERE, "[TigerReports] Un utilisateur a tente de s'approprier");
-        		Bukkit.getLogger().log(Level.SEVERE, "le plugin TigerReports comme le sien.");
+    			logger.log(Level.SEVERE, "[TigerReports] Un utilisateur a tente de s'approprier");
+        		logger.log(Level.SEVERE, "le plugin TigerReports.");
     		}
-    		Bukkit.getLogger().log(Level.SEVERE, "------------------------------------------------------");
+    		logger.log(Level.SEVERE, "------------------------------------------------------");
 			Bukkit.shutdown();
 		}
 
 		bungeeManager = new BungeeManager(this);
 		bungeeManager.initialize();
-		
+
 		initializeDatabase();
 	}
 	
-	@Override
-	public void onDisable() {
+	public static void unload() {
 		database.closeConnection();
 		for(User u : Users.values()) {
 			if(u instanceof OnlineUser) {
@@ -108,6 +121,11 @@ public class TigerReports extends JavaPlugin {
 				if(ou.getOpenedMenu() != null) ou.getPlayer().closeInventory();
 			}
 		}
+	}
+	
+	@Override
+	public void onDisable() {
+		unload();
 	}
 	
 	public static TigerReports getInstance() {
@@ -122,10 +140,6 @@ public class TigerReports extends JavaPlugin {
 		return bungeeManager;
 	}
 	
-	public static void loadFiles() {
-		for(ConfigFile configFiles : ConfigFile.values()) configFiles.load();
-	}
-	
 	public static String getNewVersion() {
 		return newVersion;
 	}
@@ -134,14 +148,15 @@ public class TigerReports extends JavaPlugin {
 		Bukkit.getScheduler().runTaskAsynchronously(instance, new Runnable() {
 			@Override
 			public void run() {
+				Logger logger = Bukkit.getLogger();
 				try {
 					MySQL mysql = new MySQL(ConfigFile.CONFIG.get().getString("MySQL.Host"), ConfigFile.CONFIG.get().getInt("MySQL.Port"), ConfigFile.CONFIG.get().getString("MySQL.Database"), ConfigFile.CONFIG.get().getString("MySQL.Username"), ConfigFile.CONFIG.get().getString("MySQL.Password"));
 					mysql.check();
 					database = mysql;
-		    		Bukkit.getLogger().log(Level.INFO, ConfigUtils.getInfoLanguage().equalsIgnoreCase("English") ? "[TigerReports] Plugin is using MySQL database." : "[TigerReports] Le plugin utilise une base de donnees MySQL.");
+					logger.log(Level.INFO, ConfigUtils.getInfoMessage("Plugin is using MySQL database.", "Le plugin utilise une base de donnees MySQL."));
 				} catch (Exception invalidMySQL) {
 					database = new SQLite();
-		    		Bukkit.getLogger().log(Level.INFO, ConfigUtils.getInfoLanguage().equalsIgnoreCase("English") ? "[TigerReports] Plugin is using SQLite (default) database." : "[TigerReports] Le plugin utilise une base de donnees SQLite (par defaut).");
+					logger.log(Level.INFO, ConfigUtils.getInfoMessage("Plugin is using SQLite (default) database.", "Le plugin utilise une base de donnees SQLite (par defaut)."));
 				}
 				database.initialize();
 			}
