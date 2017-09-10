@@ -14,42 +14,40 @@ import fr.mrtigreroux.tigerreports.utils.ReflectionUtils;
 
 public enum MenuItem {
 
-	CLOSE(0, ReflectionUtils.isOldVersion() ? Material.REDSTONE_BLOCK : Material.BARRIER, Message.CLOSE),
-	PAGE_SWITCH_PREVIOUS(0, Material.FEATHER, Message.PAGE_SWITCH_PREVIOUS),
-	PAGE_SWITCH_NEXT(0, Material.FEATHER, Message.PAGE_SWITCH_NEXT),
+	CLOSE(ReflectionUtils.isOldVersion() ? Material.REDSTONE_BLOCK : Material.BARRIER, Message.CLOSE),
+	PAGE_SWITCH_PREVIOUS(Material.FEATHER, Message.PAGE_SWITCH_PREVIOUS),
+	PAGE_SWITCH_NEXT(Material.FEATHER, Message.PAGE_SWITCH_NEXT),
 
-	REASONS(0, Material.BOOK, Message.REASONS),
-	REPORTS(0, Material.BOOKSHELF, Message.REPORTS),
-	ARCHIVED_REPORTS(8, Material.BOOKSHELF, Message.ARCHIVED_REPORTS),
-	PUNISH_ABUSE(22, Material.GOLD_AXE, Message.PUNISH_ABUSE, true),
-	DATA(26, Material.ENCHANTED_BOOK, Message.DATA),
-	ARCHIVE(33, Material.STAINED_CLAY, (short) 9, Message.ARCHIVE, Message.ARCHIVE_DETAILS.get(), false),
-	REMOVE(36, Material.FLINT_AND_STEEL, Message.REMOVE, Message.REMOVE_DETAILS.get(), false),
-	COMMENTS(44, Material.WRITTEN_BOOK, Message.COMMENTS, true),
-	CANCEL_APPRECIATION(18, Material.FEATHER, Message.CANCEL_PROCESS, Message.CANCEL_PROCESS_DETAILS.get(), false),
-	WRITE_COMMENT(44, Material.BOOK_AND_QUILL, Message.WRITE_COMMENT, Message.WRITE_COMMENT_DETAILS.get(), false);
+	REASONS(Material.BOOK, Message.REASONS),
+	REPORTS(Material.BOOKSHELF, Message.REPORTS),
+	ARCHIVED_REPORTS(Material.BOOKSHELF, Message.ARCHIVED_REPORTS),
+	PUNISH_ABUSE(Material.GOLD_AXE, Message.PUNISH_ABUSE, true),
+	DATA(Material.ENCHANTED_BOOK, Message.DATA),
+	ARCHIVE(Material.STAINED_CLAY, (short)9, Message.ARCHIVE, Message.ARCHIVE_DETAILS.get(), false),
+	REMOVE(Material.FLINT_AND_STEEL, Message.REMOVE, Message.REMOVE_DETAILS.get(), false),
+	COMMENTS(Material.WRITTEN_BOOK, Message.COMMENTS, true),
+	CANCEL_APPRECIATION(Material.FEATHER, Message.CANCEL_PROCESS, Message.CANCEL_PROCESS_DETAILS.get(), false),
+	WRITE_COMMENT(Material.BOOK_AND_QUILL, Message.WRITE_COMMENT, Message.WRITE_COMMENT_DETAILS.get(), false);
 	
-	private final int position;
 	private final Material material;
-	private Short durability = 0;
+	private final short durability;
 	private final Message name;
-	private String details = null;
+	private String details;
 	private final boolean hideFlags;
 	
-	MenuItem(int position, Material material, Message name) {
-		this(position, material, name, null, false);
+	MenuItem(Material material, Message name) {
+		this(material, name, null, false);
 	}
 
-	MenuItem(int position, Material material, Message name, boolean hideFlags) {
-		this(position, material, name, null, hideFlags);
+	MenuItem(Material material, Message name, boolean hideFlags) {
+		this(material, name, null, hideFlags);
 	}
 	
-	MenuItem(int position, Material material, Message name, String details, boolean hideFlags) {
-		this(position, material, (short) 0, name, details, hideFlags);
+	MenuItem(Material material, Message name, String details, boolean hideFlags) {
+		this(material, (short) 0, name, details, hideFlags);
 	}
 
-	MenuItem(int position, Material material, Short durability, Message name, String details, boolean hideFlags) {
-		this.position = position;
+	MenuItem(Material material, short durability, Message name, String details, boolean hideFlags) {
 		this.material = material;
 		this.durability = durability;
 		this.name = name;
@@ -62,18 +60,15 @@ public enum MenuItem {
 	}
 
 	public ItemStack getWithDetails(String details) {
+		String defaultDetails = this.details;
 		this.details = details;
 		ItemStack item = getCustomItem().create();
-		this.details = null;
+		this.details = defaultDetails;
 		return item;
 	}
 	
 	public ItemStack get() {
 		return getCustomItem().create();
-	}
-	
-	public int getPosition() {
-		return position;
 	}
 	
 }

@@ -1,13 +1,17 @@
 package fr.mrtigreroux.tigerreports.utils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
+
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
 
 import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.Message;
@@ -101,6 +105,15 @@ public class UserUtils {
 			u.save();
 		}
 		return (OnlineUser) u;
+	}
+	
+	public static List<String> getOnlinePlayers(String ignored) {
+		List<String> players = new ArrayList<>();
+		for(Player p : Bukkit.getOnlinePlayers()) {
+			String name = p.getName();
+			if(!name.equals(ignored)) players.add(name);
+		}
+		return players;
 	}
 	
 }

@@ -5,9 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import net.md_5.bungee.api.ChatColor;
@@ -36,7 +34,7 @@ import fr.mrtigreroux.tigerreports.data.constants.Permission;
 public class MessageUtils {
 
 	private static final List<String> UNITS = Arrays.asList("YEAR", "MONTH", "WEEK", "DAY", "HOUR", "MINUTE", "SECOND");
-	private static final Set<String> COLOR_CODES = new HashSet<>(Arrays.asList("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"));
+	private static final List<String> COLOR_CODES = Arrays.asList("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f");
 	
 	public static void sendErrorMessage(CommandSender s, String message) {
 		s.sendMessage(message);

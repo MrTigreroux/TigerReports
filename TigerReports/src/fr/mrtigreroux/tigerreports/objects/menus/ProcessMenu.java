@@ -47,11 +47,15 @@ public class ProcessMenu extends ReportManagerMenu {
 
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
-		if(slot == 11 || slot == 13 || slot == 15) {
-			String appreciation = slot == 11 ? "True" : slot == 13 ? "Uncertain" : "False";
-			r.process(p.getUniqueId().toString(), p.getName(), appreciation, false);
-			u.openReportsMenu(1, false);
-		} else if(slot == MenuItem.CANCEL_APPRECIATION.getPosition()) u.openReportMenu(r);
+		switch(slot) {
+			case 11: case 13: case 15:
+				String appreciation = slot == 11 ? "True" : slot == 13 ? "Uncertain" : "False";
+				r.process(p.getUniqueId().toString(), p.getName(), appreciation, false);
+				u.openReportsMenu(1, false);
+				break;
+			case 18: u.openReportMenu(r); break;
+			default: break;
+		}
 	}
 	
 }
