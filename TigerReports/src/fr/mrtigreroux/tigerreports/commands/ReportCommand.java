@@ -69,7 +69,7 @@ public class ReportCommand implements TabExecutor {
 		
 		User ru = UserUtils.getUser(ruuid);
 		String reportedImmunity = ru.getImmunity();
-		if(reportedImmunity != null) {
+		if(reportedImmunity != null && !reportedName.equalsIgnoreCase(p.getName())) {
 			if(reportedImmunity.equals("always")) MessageUtils.sendErrorMessage(p, Message.PERMISSION_REPORT.get().replace("_Player_", reportedName));
 			else MessageUtils.sendErrorMessage(p, Message.PLAYER_ALREADY_REPORTED.get().replace("_Player_", reportedName).replace("_Time_", reportedImmunity));
 			return true;

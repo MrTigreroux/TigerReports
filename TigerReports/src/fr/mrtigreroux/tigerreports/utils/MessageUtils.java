@@ -51,8 +51,7 @@ public class MessageUtils {
 			else p.sendMessage((String) message);
 			if(sound != null) p.playSound(p.getLocation(), sound, 1, 1);
 		}
-		if(isTextComponent) sendConsoleMessage(((TextComponent) message).toLegacyText());
-		else sendConsoleMessage((String) message);
+		sendConsoleMessage(isTextComponent ? ((TextComponent) message).toLegacyText() : (String) message);
 	}
 
 	public static void sendConsoleMessage(String message) {

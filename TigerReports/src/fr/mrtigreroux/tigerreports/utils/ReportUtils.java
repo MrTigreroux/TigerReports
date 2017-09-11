@@ -27,13 +27,17 @@ public class ReportUtils {
 	
 	public static void sendReport(Report r, String server) {
 		int reportId = r.getId();
-		TextComponent alert = new TextComponent(Message.ALERT.get().replace("_Server_", server).replace("_Signalman_", r.getPlayerName("Signalman", false, true)).replace("_Reported_", r.getPlayerName("Reported", !ReportUtils.onlinePlayerRequired(), true)).replace("_Reason_", r.getReason(false)));
+		TextComponent alert = new TextComponent();
 		alert.setColor(ChatColor.valueOf(MessageUtils.getLastColor(Message.ALERT.get(), "_Reason_").name()));
-		if(reportId != -1) {
+		if(reportId == -1) MessageUtils.sendStaffMessage(Message.STAFF_MAX_REPORTS_REACHED.get().replace("_Amount_", ""+getMaxReports()), ConfigSound.STAFF.get());
+		else {
 			alert.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/reports #"+reportId));
 			alert.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(Message.ALERT_DETAILS.get().replace("_Report_", r.getName())).create()));
-		} else MessageUtils.sendStaffMessage(Message.STAFF_MAX_REPORTS_REACHED.get().replace("_Amount_", ""+getMaxReports()), ConfigSound.STAFF.get());
-		MessageUtils.sendStaffMessage(alert, ConfigSound.REPORT.get());
+		}
+		for(String line : Message.ALERT.get().replace("_Server_", server).replace("_Signalman_", r.getPlayerName("Signalman", false, true)).replace("_Reported_", r.getPlayerName("Reported", !ReportUtils.onlinePlayerRequired(), true)).replace("_Reason_", r.getReason(false)).split(ConfigUtils.getLineBreakSymbol())) {
+			alert.setText(line);
+			MessageUtils.sendStaffMessage(alert.duplicate(), ConfigSound.REPORT.get());
+		}
 	}
 	
 	public static Report getReportById(int reportId) {
