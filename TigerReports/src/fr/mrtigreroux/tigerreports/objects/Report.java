@@ -137,14 +137,15 @@ public class Report {
 		return Message.REPORT.get().replace("_Report_", getName())+"\n"+implementDetails(Message.REPORT_DETAILS.get(), false).replace("_Actions_", "");
 	}
 	
-	public void process(String uuid, String player, String appreciation, boolean bungee) {
+	public void process(String uuid, String player, String appreciation, boolean bungee, boolean auto) {
 		this.status = Status.DONE.getConfigWord()+" by "+uuid;
 		this.appreciation = appreciation;
 		save();
 		if(player != null) MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage(Message.STAFF_PROCESS.get().replace("_Player_", player).replace("_Appreciation_", Message.valueOf(appreciation.toUpperCase()).get()), "_Report_", getName(), getText(), null), ConfigSound.STAFF.get());
 		if(!bungee) {
 			TigerReports.getBungeeManager().sendPluginNotification(uuid+"/"+player+" process "+reportId+" "+appreciation);
-			TigerReports.getDb().update("UPDATE reports SET status = ?,appreciation = ? WHERE report_id = ?", Arrays.asList(status, appreciation, reportId));
+			if(auto) archive(player, false);
+			else TigerReports.getDb().update("UPDATE reports SET status = ?,appreciation = ? WHERE report_id = ?", Arrays.asList(status, appreciation, reportId));
 			UserUtils.getUser(uuid).changeStatistic("processed_reports", 1, false);
 			UserUtils.getUser(signalmanUniqueId).changeStatistic(appreciation.toLowerCase()+"_appreciations", 1, false);
 		}

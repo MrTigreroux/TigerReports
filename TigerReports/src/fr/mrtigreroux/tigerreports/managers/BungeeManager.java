@@ -102,7 +102,7 @@ public class BungeeManager implements PluginMessageListener {
 				switch(parts[1]) {
 					case "new_report": ReportUtils.sendReport(new Report(Integer.parseInt(parts[0]), Status.WAITING.getConfigWord(), "None", parts[2].replace("_", " "), parts[3], parts[4], parts[5].replace("_", " ")), parts[6]); break;
 					case "new_status": r.setStatus(Status.valueOf(parts[0]), true); break;
-					case "process": r.process(parts[0].split("/")[0], parts[0].split("/")[1], parts[3], true); break;
+					case "process": r.process(parts[0].split("/")[0], parts[0].split("/")[1], parts[3], true, false); break;
 					case "remove": r.remove(parts[0], true); break;
 					case "archive": r.archive(parts[0], true); break;
 					case "unarchive": r.unarchive(parts[0], true); break;

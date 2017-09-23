@@ -50,7 +50,7 @@ public class ProcessMenu extends ReportManagerMenu {
 		switch(slot) {
 			case 11: case 13: case 15:
 				String appreciation = slot == 11 ? "True" : slot == 13 ? "Uncertain" : "False";
-				r.process(p.getUniqueId().toString(), p.getName(), appreciation, false);
+				r.process(p.getUniqueId().toString(), p.getName(), appreciation, false, Permission.STAFF_ARCHIVE_AUTO.isOwned(u));
 				u.openReportsMenu(1, false);
 				break;
 			case 18: u.openReportMenu(r); break;

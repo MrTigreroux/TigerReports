@@ -51,14 +51,14 @@ public class ReportUtils {
 	public static Report formatReport(Map<String, Object> result, boolean containsAdvancedData) {
 		if(result == null) return null;
 		Report r = new Report((int) result.get("report_id"), (String) result.get("status"), (String) result.get("appreciation"), (String) result.get("date"), (String) result.get("reported_uuid"), (String) result.get("signalman_uuid"), (String) result.get("reason"));
-		if(!containsAdvancedData) return r;
-		
-		Map<String, String> advancedData = new HashMap<>();
-		Set<String> advancedKeys = new HashSet<>(result.keySet());
-		advancedKeys.removeAll(Arrays.asList("report_id", "status", "appreciation", "date", "reported_uuid", "signalman_uuid", "reason"));
-		for(String key : advancedKeys) advancedData.put(key, (String) result.get(key));
-		r.setAdvancedData(advancedData);
-		r.save();
+		if(containsAdvancedData) {
+			Map<String, String> advancedData = new HashMap<>();
+			Set<String> advancedKeys = new HashSet<>(result.keySet());
+			advancedKeys.removeAll(Arrays.asList("report_id", "status", "appreciation", "date", "reported_uuid", "signalman_uuid", "reason"));
+			for(String key : advancedKeys) advancedData.put(key, (String) result.get(key));
+			r.setAdvancedData(advancedData);
+			r.save();
+		}
 		return r;
 	}
 	

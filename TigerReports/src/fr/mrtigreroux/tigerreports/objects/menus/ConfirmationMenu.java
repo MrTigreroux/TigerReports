@@ -45,7 +45,7 @@ public class ConfirmationMenu extends ReportManagerMenu {
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
 		if(slot == 11) {
-			if(!Permission.valueOf(action.equals("REMOVE_ARCHIVE") ? "REMOVE" : action).isOwned(u)) {
+			if(!Permission.valueOf("STAFF_"+(action.equals("REMOVE_ARCHIVE") ? "REMOVE" : action)).isOwned(u)) {
 				u.openReportMenu(r);
 				return;
 			}

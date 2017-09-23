@@ -47,7 +47,7 @@ public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu {
 		}
 		
 		List<Comment> comments = new ArrayList<>(r.getComments().values());
-		boolean remove = Permission.REMOVE.isOwned(u);
+		boolean remove = Permission.STAFF_REMOVE.isOwned(u);
 		ItemStack empty = new ItemStack(Material.AIR);
 		for(int position = 18; position < 45; position++) {
 			if(index == -1) inv.setItem(position, empty);
@@ -101,7 +101,7 @@ public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu {
 					}
 					su.setNotifications(notifications);
 				} else if(click.equals(ClickType.DROP)) {
-					if(Permission.REMOVE.isOwned(u)) c.remove();
+					if(Permission.STAFF_REMOVE.isOwned(u)) c.remove();
 					else return;
 				}
 			}

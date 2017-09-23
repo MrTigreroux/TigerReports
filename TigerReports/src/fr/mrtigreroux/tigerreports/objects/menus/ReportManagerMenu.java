@@ -25,7 +25,7 @@ public abstract class ReportManagerMenu extends Menu {
 		if(r == null || !TigerReports.Reports.containsKey(r.getId())) return Message.INVALID_REPORT.get();
 		
 		Status reportStatus = r.getStatus();
-		return (reportStatus == Status.IMPORTANT || reportStatus == Status.DONE) && !Permission.ADVANCED.isOwned(u) ? Message.PERMISSION_ACCESS_DETAILS.get().replace("_Report_", r.getName()) : null;
+		return (reportStatus == Status.IMPORTANT || reportStatus == Status.DONE) && !Permission.STAFF_ADVANCED.isOwned(u) ? Message.PERMISSION_ACCESS_DETAILS.get().replace("_Report_", r.getName()) : null;
 	}
 	
 }

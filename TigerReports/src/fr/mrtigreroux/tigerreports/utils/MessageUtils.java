@@ -97,7 +97,7 @@ public class MessageUtils {
 			values.set(5, values.get(5)+1);
 			seconds -= 60;
 		}
-		values.set(6, values.get(6)+ (int) Math.round(seconds));
+		values.set(6, values.get(6)+(int) Math.round(seconds));
 		
 		return values;
 	}
@@ -133,7 +133,7 @@ public class MessageUtils {
 	public static ChatColor getLastColor(String text, String lastWord) {
 		String color = null;
 		int index = lastWord != null ? text.indexOf(lastWord) : text.length();
-		if(index == 0) return ChatColor.WHITE;
+		if(index == -1) return ChatColor.WHITE;
 		for(String code : org.bukkit.ChatColor.getLastColors(text.substring(0, index)).split("§")) if(COLOR_CODES.contains(code)) color = code;
 		if(color == null) color = "f";
 		return ChatColor.getByChar(color.charAt(0));

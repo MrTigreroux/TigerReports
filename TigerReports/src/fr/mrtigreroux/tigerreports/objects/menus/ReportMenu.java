@@ -65,13 +65,13 @@ public class ReportMenu extends ReportManagerMenu {
 			}
 			String server = (server = MessageUtils.getConfigServerLocation(r.getOldLocation(type))) != null ? server : Message.NOT_FOUND_MALE.get();
 			inv.setItem(type.equals("Signalman") ? 21 : 23, new CustomItem().skullOwner(name).name(Message.valueOf(type.toUpperCase()).get().replace("_Player_", r.getPlayerName(type, true, true)))
-					.lore(details.replace("_Server_", server).replace("_Teleportation_", Permission.TELEPORT.isOwned(u) ? ((UserUtils.isOnline(name) ? Message.TELEPORT_TO_CURRENT_POSITION.get() : Message.CAN_NOT_TELEPORT_TO_CURRENT_POSITION.get()).replace("_Player_", name)+(r.getOldLocation(type) != null ? Message.TELEPORT_TO_OLD_POSITION.get() : Message.CAN_NOT_TELEPORT_TO_OLD_POSITION.get()).replace("_Player_", name)) : "").split(ConfigUtils.getLineBreakSymbol())).create());
+					.lore(details.replace("_Server_", server).replace("_Teleportation_", Permission.STAFF_TELEPORT.isOwned(u) ? ((UserUtils.isOnline(name) ? Message.TELEPORT_TO_CURRENT_POSITION.get() : Message.CAN_NOT_TELEPORT_TO_CURRENT_POSITION.get()).replace("_Player_", name)+(r.getOldLocation(type) != null ? Message.TELEPORT_TO_OLD_POSITION.get() : Message.CAN_NOT_TELEPORT_TO_OLD_POSITION.get()).replace("_Player_", name)) : "").split(ConfigUtils.getLineBreakSymbol())).create());
 		}
 		
-		inv.setItem(26, MenuItem.DATA.getWithDetails(r.implementData(Message.DATA_DETAILS.get(), Permission.ADVANCED.isOwned(u))));
+		inv.setItem(26, MenuItem.DATA.getWithDetails(r.implementData(Message.DATA_DETAILS.get(), Permission.STAFF_ADVANCED.isOwned(u))));
 		
 		int statusPosition = 29;
-		boolean archive = Permission.ARCHIVE.isOwned(u) && (r.getStatus() == Status.DONE || !ReportUtils.onlyDoneArchives());
+		boolean archive = Permission.STAFF_ARCHIVE.isOwned(u) && (r.getStatus() == Status.DONE || !ReportUtils.onlyDoneArchives());
 		for(Status status : Status.values()) {
 			inv.setItem(statusPosition, new CustomItem().type(Material.STAINED_CLAY).damage(status.getColor()).glow(status.equals(r.getStatus())).name(status == Status.DONE ? Message.PROCESS_STATUS.get() : Message.CHANGE_STATUS.get().replace("_Status_", status.getWord(null)))
 					.lore((status == Status.DONE ? Message.PROCESS_STATUS_DETAILS.get() : Message.CHANGE_STATUS_DETAILS.get()).replace("_Status_", status.getWord(null)).split(ConfigUtils.getLineBreakSymbol())).create());
@@ -79,7 +79,7 @@ public class ReportMenu extends ReportManagerMenu {
 		}
 		if(archive) inv.setItem(33, MenuItem.ARCHIVE.get());
 		
-		if(Permission.REMOVE.isOwned(u)) inv.setItem(36, MenuItem.REMOVE.get());
+		if(Permission.STAFF_REMOVE.isOwned(u)) inv.setItem(36, MenuItem.REMOVE.get());
 		inv.setItem(44, MenuItem.COMMENTS.getWithDetails(Message.COMMENTS_DETAILS.get()));
 		
 		return inv;
@@ -91,7 +91,7 @@ public class ReportMenu extends ReportManagerMenu {
 			case 0: u.openReportsMenu(1, true); break;
 			case 18: u.printInChat(r, r.implementDetails(Message.REPORT_CHAT_DETAILS.get(), false).replace("_Report_", r.getName()).split(ConfigUtils.getLineBreakSymbol())); break;
 			case 21: case 23:
-				if(!Permission.TELEPORT.isOwned(u)) return;
+				if(!Permission.STAFF_TELEPORT.isOwned(u)) return;
 				String targetType = slot == 21 ? "Signalman" : "Reported";
 				String name = r.getPlayerName(targetType, false, false);
 				Player t = UserUtils.getPlayer(name);
@@ -129,11 +129,11 @@ public class ReportMenu extends ReportManagerMenu {
 			case 22:
 				long seconds = ReportUtils.getPunishSeconds();
 				UserUtils.getUser(r.getSignalmanUniqueId()).punish(seconds, p.getName(), false);
-				r.process(p.getUniqueId().toString(), null, "False", false);
+				r.process(p.getUniqueId().toString(), null, "False", false, false);
 				u.openReportsMenu(1, false);
 				break;
 			case 26:
-				if(click == ClickType.LEFT) u.printInChat(r, r.implementData(Message.REPORT_CHAT_DATA.get(), Permission.ADVANCED.isOwned(u)).replace("_Report_", r.getName()).split(ConfigUtils.getLineBreakSymbol()));
+				if(click == ClickType.LEFT) u.printInChat(r, r.implementData(Message.REPORT_CHAT_DATA.get(), Permission.STAFF_ADVANCED.isOwned(u)).replace("_Report_", r.getName()).split(ConfigUtils.getLineBreakSymbol()));
 				else if(click == ClickType.RIGHT) {
 					Map<Double, String> sortedMessages = new TreeMap<>();
 					for(String type : new String[] {"Reported", "Signalman"}) {
@@ -152,11 +152,11 @@ public class ReportMenu extends ReportManagerMenu {
 			case 36: u.openConfirmationMenu(r, "REMOVE"); break;
 			case 44: u.openCommentsMenu(1, r); break;
 			default:
-				if((slot == 32 || slot == 33) && !(Permission.ARCHIVE.isOwned(u) && (r.getStatus() == Status.DONE || !ReportUtils.onlyDoneArchives()))) slot--;
+				if((slot == 32 || slot == 33) && !(Permission.STAFF_ARCHIVE.isOwned(u) && (r.getStatus() == Status.DONE || !ReportUtils.onlyDoneArchives()))) slot--;
 				switch(slot) {
 					case 29: case 30: case 31:
 						r.setStatus(Arrays.asList(Status.values()).get(slot-29), false);
-						if(slot == 31 && !Permission.ADVANCED.isOwned(u)) u.openReportsMenu(1, true);
+						if(slot == 31 && !Permission.STAFF_ADVANCED.isOwned(u)) u.openReportsMenu(1, true);
 						else open(true);
 						break;
 					case 32: u.openAppreciationMenu(r); break;

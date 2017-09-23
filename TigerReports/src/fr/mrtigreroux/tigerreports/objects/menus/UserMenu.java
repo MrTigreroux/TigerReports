@@ -48,7 +48,7 @@ public class UserMenu extends Menu implements UpdatedMenu {
 		for(Statistic stat : Statistic.values()) {
 			int value = statistics.get(stat.getConfigName());
 			inv.setItem(stat.getPosition(), stat.getCustomItem().amount(value).name(Message.USER_STATISTIC.get().replace("_Statistic_", stat.getName()).replace("_Amount_", ""+value))
-					.lore(Permission.ADVANCED.isOwned(u) ? Message.USER_STATISTIC_DETAILS.get().split(ConfigUtils.getLineBreakSymbol()) : null).create());
+					.lore(Permission.STAFF_ADVANCED.isOwned(u) ? Message.USER_STATISTIC_DETAILS.get().split(ConfigUtils.getLineBreakSymbol()) : null).create());
 		}
 	}
 	
@@ -59,7 +59,7 @@ public class UserMenu extends Menu implements UpdatedMenu {
 				tu.stopCooldown(p.getName(), false);
 				update(false);
 			}
-		} else if(slot != 4 && Permission.ADVANCED.isOwned(u)) {
+		} else if(slot != 4 && Permission.STAFF_ADVANCED.isOwned(u)) {
 			String stat = "";
 			for(Statistic statistics : Statistic.values()) if(statistics.getPosition() == slot) stat = statistics.getConfigName();
 			tu.changeStatistic(stat, click.toString().contains("RIGHT") ? -1 : 1, false);

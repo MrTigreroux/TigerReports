@@ -50,7 +50,7 @@ public abstract class User {
 	}
 	
 	public String getImmunity() {
-		if(this instanceof OnlineUser) immunity = Permission.EXEMPT.isOwned((OnlineUser) this) ? "always" : null;
+		if(this instanceof OnlineUser) immunity = Permission.REPORT_EXEMPT.isOwned((OnlineUser) this) ? "always" : null;
 		if(immunity == null) {
 			immunity = (String) TigerReports.getDb().query("SELECT immunity FROM users WHERE uuid = ?", Collections.singletonList(uuid)).getResult(0, "immunity");
 			if(immunity == null) {

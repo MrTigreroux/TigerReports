@@ -1,9 +1,5 @@
 package fr.mrtigreroux.tigerreports;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,7 +18,7 @@ import fr.mrtigreroux.tigerreports.data.database.Database;
 import fr.mrtigreroux.tigerreports.data.database.MySQL;
 import fr.mrtigreroux.tigerreports.data.database.SQLite;
 import fr.mrtigreroux.tigerreports.listeners.*;
-import fr.mrtigreroux.tigerreports.managers.BungeeManager;
+import fr.mrtigreroux.tigerreports.managers.*;
 import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.objects.users.User;
@@ -38,14 +34,12 @@ public class TigerReports extends JavaPlugin {
 
 	private static TigerReports instance;
 	private static BungeeManager bungeeManager;
+	private static WebManager webManager;
 	private static Database database;
-	
-	private static String newVersion = null;
 
 	public static Map<String, User> Users = new HashMap<>();
 	public static Map<String, String> LastNameFound = new HashMap<>();
 	public static Map<String, String> LastUniqueIdFound = new HashMap<>();
-
 	public static Map<Integer, Report> Reports = new HashMap<>();
 
 	public static void load() {
@@ -71,30 +65,12 @@ public class TigerReports extends JavaPlugin {
 		getCommand("report").setExecutor(new ReportCommand());
 		getCommand("reports").setExecutor(new ReportsCommand());
 		
-		Logger logger = Bukkit.getLogger();
-		
-		try {
-			HttpURLConnection connection = (HttpURLConnection) new URL("http://www.spigotmc.org/api/general.php").openConnection();
-			connection.setDoOutput(true);
-			connection.setRequestMethod("POST");
-			connection.getOutputStream().write(("key=98BE0FE67F88AB82B4C197FAF1DC3B69206EFDCC4D3B80FC83A00037510B99B4&resource=25773").getBytes("UTF-8"));
-			newVersion = new BufferedReader(new InputStreamReader(connection.getInputStream())).readLine();
-			if(getDescription().getVersion().equals(newVersion)) newVersion = null;
-			else {
-        		logger.log(Level.WARNING, "------------------------------------------------------");
-        		if(ConfigUtils.getInfoLanguage().equalsIgnoreCase("English")) {
-	        		logger.log(Level.WARNING, "[TigerReports] The plugin has been updated.");
-	        		logger.log(Level.WARNING, "New version "+newVersion+" is available on:");
-        		} else {
-	        		logger.log(Level.WARNING, "[TigerReports] Le plugin a ete mis a jour.");
-	        		logger.log(Level.WARNING, "Le nouvelle version "+newVersion+" est disponible ici:");
-        		}
-        		logger.log(Level.WARNING, "https://www.spigotmc.org/resources/tigerreports.25773/");
-        		logger.log(Level.WARNING, "------------------------------------------------------");
-			}
-		} catch (Exception noUpdate) {}
+		webManager = new WebManager(this);
+		webManager.checkUpdate();
+		webManager.saveStatistics();
 		
 		if(getDescription().getAuthors().size() > 1 || !getDescription().getAuthors().contains("MrTigreroux")) {
+			Logger logger = Bukkit.getLogger();
     		logger.log(Level.SEVERE, "------------------------------------------------------");
     		if(ConfigUtils.getInfoLanguage().equalsIgnoreCase("English")) {
 	    		logger.log(Level.SEVERE, "[TigerReports] An user tried to appropriate");
@@ -140,8 +116,8 @@ public class TigerReports extends JavaPlugin {
 		return bungeeManager;
 	}
 	
-	public static String getNewVersion() {
-		return newVersion;
+	public static WebManager getWebManager() {
+		return webManager;
 	}
 	
 	public static void initializeDatabase() {

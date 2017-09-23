@@ -61,7 +61,7 @@ public class ReportsCommand implements TabExecutor {
 						p.sendMessage(Message.STAFF_NOTIFICATIONS.get().replace("_State_", (newState ? Message.ACTIVATED : Message.DISABLED).get()));
 						break;
 					case "archiveall":
-						if(Permission.ARCHIVE.check(s)) {
+						if(Permission.STAFF_ARCHIVE.check(s)) {
 							for(Map<String, Object> result : TigerReports.getDb().query("SELECT * FROM reports", null).getResultList()) {
 								String status = (String) result.get("status");
 								if(status != null && status.startsWith("Done")) ReportUtils.formatReport(result, true).archive(null, false);
@@ -69,7 +69,7 @@ public class ReportsCommand implements TabExecutor {
 							MessageUtils.sendStaffMessage(Message.STAFF_ARCHIVEALL.get().replace("_Player_", p.getName()), ConfigSound.STAFF.get());
 						}
 						break;
-					case "archives": if(Permission.ARCHIVE.check(s)) u.openArchivedReportsMenu(1, true); break;
+					case "archives": if(Permission.STAFF_ARCHIVE.check(s)) u.openArchivedReportsMenu(1, true); break;
 					default:
 						try {
 							u.openReportMenu(ReportUtils.getReportById(Integer.parseInt(args[0].replace("#", ""))));

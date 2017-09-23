@@ -1,16 +1,14 @@
 package fr.mrtigreroux.tigerreports.commands;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import org.bukkit.util.StringUtil;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
@@ -29,7 +27,7 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
  * @author MrTigreroux
  */
 
-public class ReportCommand implements TabExecutor {
+public class ReportCommand implements CommandExecutor {
 
 	@Override
 	public boolean onCommand(CommandSender s, Command cmd, String label, String[] args) {
@@ -103,7 +101,7 @@ public class ReportCommand implements TabExecutor {
 		
 		if(reportId != -1) {
 			List<Object> parameters;
-			if(rp != null) parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", MessageUtils.getNowDate(), ruuid, uuid, reason, rp.getAddress().toString(), MessageUtils.formatConfigLocation(rp.getLocation()), ru.getLastMessages(), rp.getGameMode().toString().toLowerCase(), rp.getLocation().getBlock().getRelative(BlockFace.DOWN).getType() != Material.AIR, rp.isSneaking(), rp.isSprinting(), (int) Math.round(rp.getHealth())+"/"+(int) Math.round(rp.getMaxHealth()), rp.getFoodLevel(), MessageUtils.formatConfigEffects(rp.getActivePotionEffects()), p.getAddress().toString(), MessageUtils.formatConfigLocation(p.getLocation()), u.getLastMessages());
+			if(rp != null) parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", MessageUtils.getNowDate(), ruuid, uuid, reason, rp.getAddress().getAddress().toString(), MessageUtils.formatConfigLocation(rp.getLocation()), ru.getLastMessages(), rp.getGameMode().toString().toLowerCase(), rp.getLocation().getBlock().getRelative(BlockFace.DOWN).getType() != Material.AIR, rp.isSneaking(), rp.isSprinting(), (int) Math.round(rp.getHealth())+"/"+(int) Math.round(rp.getMaxHealth()), rp.getFoodLevel(), MessageUtils.formatConfigEffects(rp.getActivePotionEffects()), p.getAddress().getAddress().toString(), MessageUtils.formatConfigLocation(p.getLocation()), u.getLastMessages());
 			else parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", MessageUtils.getNowDate(), ruuid, uuid, reason, null, null, ru.getLastMessages(), null, null, null, null, null, null, null, p.getAddress().toString(), MessageUtils.formatConfigLocation(p.getLocation()), u.getLastMessages());
 			reportId = TigerReports.getDb().insert("INSERT INTO reports (status,appreciation,date,reported_uuid,signalman_uuid,reason,reported_ip,reported_location,reported_messages,reported_gamemode,reported_on_ground,reported_sneak,reported_sprint,reported_health,reported_food,reported_effects,signalman_ip,signalman_location,signalman_messages) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);", parameters);
 		}
@@ -119,11 +117,6 @@ public class ReportCommand implements TabExecutor {
 		u.changeStatistic("reports", 1, false);
 		ru.changeStatistic("reported_times", 1, false);
 		return true;
-	}
-	
-	@Override
-	public List<String> onTabComplete(CommandSender s, Command cmd, String label, String[] args) {
-		return StringUtil.copyPartialMatches(args[args.length-1], UserUtils.getOnlinePlayers(s.getName()), new ArrayList<>());
 	}
 
 }
