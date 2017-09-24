@@ -60,6 +60,7 @@ public enum Message {
 	REPORT("Menus.Report"),
 	REPORT_DETAILS("Menus.Report-details"),
 	REPORT_SHOW_ACTION("Menus.Report-show-action"),
+	REPORT_ARCHIVE_ACTION("Menus.Report-archive-action"),
 	REPORT_REMOVE_ACTION("Menus.Report-remove-action"),
 	REPORTS_TITLE("Menus.Reports-title"),
 	REPORTS("Menus.Reports"),

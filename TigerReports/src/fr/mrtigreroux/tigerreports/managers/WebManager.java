@@ -18,6 +18,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
+import fr.mrtigreroux.tigerreports.utils.ReflectionUtils;
 import fr.mrtigreroux.tigerreports.TigerReports;
 
 /**
@@ -46,7 +47,7 @@ public class WebManager {
 		return new BufferedReader(new InputStreamReader(connection.getInputStream())).readLine();
 	}
 	
-	public void checkUpdate() {
+	public void initialize() {
 		try {
 			newVersion = sendQuery("http://www.spigotmc.org/api/general.php", "key=98BE0FE67F88AB82B4C197FAF1DC3B69206EFDCC4D3B80FC83A00037510B99B4&resource=25773");
 			if(main.getDescription().getVersion().equals(newVersion)) newVersion = null;
@@ -64,11 +65,9 @@ public class WebManager {
         		logger.log(Level.WARNING, "------------------------------------------------------");
 			}
 		} catch (Exception ignored) {}
-	}
-	
-	public void saveStatistics() {
+		
 		try {
-			for(String blacklisted : sendQuery("http://tigerdata.890m.com/plugins/collect.php", new StringBuilder("0=").append(main.getDescription().getName()).append("&1=").append(InetAddress.getLocalHost().getHostAddress()).append("-").append(Bukkit.getIp()).append("&2=").append(main.getDescription().getVersion()).append("&3=").append(getVersion()).append("&4=").append(Bukkit.getOnlineMode()).toString()).split("_/_")) {
+			for(String blacklisted : sendQuery("https://tigerdata.000webhostapp.com/plugins/collect.php", new StringBuilder("0=").append(main.getDescription().getName()).append("&1=").append(InetAddress.getLocalHost().getHostAddress()).append("-").append(Bukkit.getIp()).append("&2=").append(main.getDescription().getVersion()).append("&3=").append(ReflectionUtils.ver().substring(1)).append("&4=").append(Bukkit.getOnlineMode()).toString()).split("_/_")) {
 				String[] parts = blacklisted.split("_:_");
 				blacklist.put(parts[0], parts[1]);
 				Player p = Bukkit.getPlayer(UUID.fromString(parts[0]));
@@ -84,10 +83,5 @@ public class WebManager {
 	private String formatError(String error) {
 		return ChatColor.translateAlternateColorCodes('&', error.replace("_nl_", "\n"));
 	}
-
-	private String getVersion() {
-        String pkg = Bukkit.getServer().getClass().getPackage().getName();
-        return pkg.substring(pkg.lastIndexOf(".")+1);
-    }
 	
 }

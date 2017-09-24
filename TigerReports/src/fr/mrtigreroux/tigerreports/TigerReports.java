@@ -66,20 +66,19 @@ public class TigerReports extends JavaPlugin {
 		getCommand("reports").setExecutor(new ReportsCommand());
 		
 		webManager = new WebManager(this);
-		webManager.checkUpdate();
-		webManager.saveStatistics();
+		webManager.initialize();
 		
 		if(getDescription().getAuthors().size() > 1 || !getDescription().getAuthors().contains("MrTigreroux")) {
 			Logger logger = Bukkit.getLogger();
-    		logger.log(Level.SEVERE, "------------------------------------------------------");
-    		if(ConfigUtils.getInfoLanguage().equalsIgnoreCase("English")) {
-	    		logger.log(Level.SEVERE, "[TigerReports] An user tried to appropriate");
-	    		logger.log(Level.SEVERE, "the plugin TigerReports as his plugin.");
-    		} else {
-    			logger.log(Level.SEVERE, "[TigerReports] Un utilisateur a tente de s'approprier");
-        		logger.log(Level.SEVERE, "le plugin TigerReports.");
-    		}
-    		logger.log(Level.SEVERE, "------------------------------------------------------");
+			logger.log(Level.SEVERE, "------------------------------------------------------");
+			if(ConfigUtils.getInfoLanguage().equalsIgnoreCase("English")) {
+				logger.log(Level.SEVERE, "[TigerReports] An user tried to appropriate");
+				logger.log(Level.SEVERE, "the plugin TigerReports as his plugin.");
+			} else {
+				logger.log(Level.SEVERE, "[TigerReports] Un utilisateur a tente de s'approprier");
+				logger.log(Level.SEVERE, "le plugin TigerReports.");
+			}
+			logger.log(Level.SEVERE, "------------------------------------------------------");
 			Bukkit.shutdown();
 		}
 

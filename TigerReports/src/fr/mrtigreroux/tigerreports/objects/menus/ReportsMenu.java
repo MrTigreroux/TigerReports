@@ -33,7 +33,7 @@ public class ReportsMenu extends Menu implements UpdatedMenu {
 	
 	@Override
 	public void onUpdate(Inventory inv) {
-		ReportUtils.addReports("reports", inv, page, Message.REPORT_SHOW_ACTION.get()+(Permission.STAFF_REMOVE.isOwned(u) ? Message.REPORT_REMOVE_ACTION.get() : ""));
+		ReportUtils.addReports("reports", inv, page, Message.REPORT_SHOW_ACTION.get()+(Permission.STAFF_ARCHIVE.isOwned(u) ? Message.REPORT_ARCHIVE_ACTION.get() : "")+(Permission.STAFF_REMOVE.isOwned(u) ? Message.REPORT_REMOVE_ACTION.get() : ""));
 	}
 
 	@Override
@@ -43,7 +43,8 @@ public class ReportsMenu extends Menu implements UpdatedMenu {
 			Report r = ReportUtils.getReport(getIndex(slot));
 			if(r == null) update(false);
 			else {
-				if(click.equals(ClickType.DROP) && Permission.STAFF_REMOVE.isOwned(u)) u.openConfirmationMenu(r, "REMOVE");
+				if(click.equals(ClickType.MIDDLE) && Permission.STAFF_ARCHIVE.isOwned(u)) u.openConfirmationMenu(r, "ARCHIVE");
+				else if(click.equals(ClickType.DROP) && Permission.STAFF_REMOVE.isOwned(u)) u.openConfirmationMenu(r, "REMOVE");
 				else u.openReportMenu(r);
 			}
 		}

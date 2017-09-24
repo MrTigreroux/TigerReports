@@ -48,6 +48,7 @@ Menus:
   Report: "_Report_"
   Report-details: "//&7Statut: _Status_//&7Date: &e_Date_// //&7Signaleur: &a_Signalman_//&7Signal\xe9: &c_Reported_//&7Raison: &6_Reason_ &r_Actions_"
   Report-show-action: "// //&6Clic &7pour afficher les d\xe9tails."
+  Report-archive-action: "//&6Clic molette &7pour archiver."
   Report-remove-action: "//&6Touche de jet &7pour supprimer."
   Reports-title: "&6Reports &7> &ePage _Page_"
   Reports: "&eSignalements"
