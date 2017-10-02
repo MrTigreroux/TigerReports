@@ -26,11 +26,13 @@ public enum Status {
 	}
 
 	public String getConfigWord() {
-		return toString().substring(0, 1).toUpperCase()+toString().substring(1).toLowerCase().replace("_", " ");
+		String name = toString();
+		return name.charAt(0)+name.substring(1).toLowerCase();
 	}
 	
 	public String getWord(String processor) {
-		return processor != null ? word.get().replace("_Name_", processor) : word.get();
+		String w = word.get();
+		return processor != null ? w.replace("_Name_", processor) : w;
 	}
 	
 	public Material getMaterial() {

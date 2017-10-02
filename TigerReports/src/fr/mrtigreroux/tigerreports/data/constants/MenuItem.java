@@ -23,7 +23,7 @@ public enum MenuItem {
 	ARCHIVED_REPORTS(Material.BOOKSHELF, Message.ARCHIVED_REPORTS),
 	PUNISH_ABUSE(Material.GOLD_AXE, Message.PUNISH_ABUSE, true),
 	DATA(Material.ENCHANTED_BOOK, Message.DATA),
-	ARCHIVE(Material.STAINED_CLAY, (short)9, Message.ARCHIVE, Message.ARCHIVE_DETAILS.get(), false),
+	ARCHIVE(Material.STAINED_CLAY, (short) 9, Message.ARCHIVE, Message.ARCHIVE_DETAILS.get(), false),
 	REMOVE(Material.FLINT_AND_STEEL, Message.REMOVE, Message.REMOVE_DETAILS.get(), false),
 	COMMENTS(Material.WRITTEN_BOOK, Message.COMMENTS, true),
 	CANCEL_APPRECIATION(Material.FEATHER, Message.CANCEL_PROCESS, Message.CANCEL_PROCESS_DETAILS.get(), false),
@@ -32,7 +32,7 @@ public enum MenuItem {
 	private final Material material;
 	private final short durability;
 	private final Message name;
-	private String details;
+	private final String details;
 	private final boolean hideFlags;
 	
 	MenuItem(Material material, Message name) {
@@ -54,21 +54,13 @@ public enum MenuItem {
 		this.details = details;
 		this.hideFlags = hideFlags;
 	}
-
-	private CustomItem getCustomItem() {
-		return new CustomItem().type(material).damage(durability).name(name.get()).lore(details != null ? details.split(ConfigUtils.getLineBreakSymbol()) : null).hideFlags(hideFlags);
-	}
-
-	public ItemStack getWithDetails(String details) {
-		String defaultDetails = this.details;
-		this.details = details;
-		ItemStack item = getCustomItem().create();
-		this.details = defaultDetails;
-		return item;
-	}
 	
+	public ItemStack getWithDetails(String details) {
+		return new CustomItem().type(material).damage(durability).name(name.get()).lore(details != null ? details.split(ConfigUtils.getLineBreakSymbol()) : null).hideFlags(hideFlags).create();
+	}
+
 	public ItemStack get() {
-		return getCustomItem().create();
+		return getWithDetails(details);
 	}
 	
 }

@@ -7,6 +7,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
+import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -59,8 +60,8 @@ public class TigerReports extends JavaPlugin {
 		
 		PluginManager pm = Bukkit.getServer().getPluginManager();
 		pm.registerEvents(new InventoryListener(), this);
-		pm.registerEvents(new SignListener(), this);
 		pm.registerEvents(new PlayerListener(), this);
+		pm.registerEvents(new SignListener(), this);
 		
 		getCommand("report").setExecutor(new ReportCommand());
 		getCommand("reports").setExecutor(new ReportsCommand());
@@ -68,15 +69,16 @@ public class TigerReports extends JavaPlugin {
 		webManager = new WebManager(this);
 		webManager.initialize();
 		
-		if(getDescription().getAuthors().size() > 1 || !getDescription().getAuthors().contains("MrTigreroux")) {
+		PluginDescriptionFile desc = getDescription();
+		if(!desc.getName().equals("TigerReports") || desc.getAuthors().size() > 1 || !desc.getAuthors().contains("MrTigreroux")) {
 			Logger logger = Bukkit.getLogger();
 			logger.log(Level.SEVERE, "------------------------------------------------------");
 			if(ConfigUtils.getInfoLanguage().equalsIgnoreCase("English")) {
-				logger.log(Level.SEVERE, "[TigerReports] An user tried to appropriate");
-				logger.log(Level.SEVERE, "the plugin TigerReports as his plugin.");
+				logger.log(Level.SEVERE, "[TigerReports] File plugin.yml has been edited");
+				logger.log(Level.SEVERE, "without authorization.");
 			} else {
-				logger.log(Level.SEVERE, "[TigerReports] Un utilisateur a tente de s'approprier");
-				logger.log(Level.SEVERE, "le plugin TigerReports.");
+				logger.log(Level.SEVERE, "[TigerReports] Le fichier plugin.yml a ete modifie");
+				logger.log(Level.SEVERE, "sans autorisation.");
 			}
 			logger.log(Level.SEVERE, "------------------------------------------------------");
 			Bukkit.shutdown();

@@ -99,10 +99,12 @@ public class PlayerListener implements Listener {
 			return true;
 		}
 		command = command.toLowerCase().replace(" ", "");
-		for(String helpCommand : helpCommands) {
-			if(command.startsWith(helpCommand)) {
-				HelpCommand.onCommand(s);
-				return true;
+		if(!command.startsWith("tigerreports:report")) {
+			for(String helpCommand : helpCommands) {
+				if(command.startsWith(helpCommand)) {
+					HelpCommand.onCommand(s);
+					return true;
+				}
 			}
 		}
 		return false;

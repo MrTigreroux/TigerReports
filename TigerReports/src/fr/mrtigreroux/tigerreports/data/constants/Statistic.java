@@ -11,9 +11,9 @@ import fr.mrtigreroux.tigerreports.objects.CustomItem;
 
 public enum Statistic {
 
-	TRUE_APPRECIATIONS(20, Message.APPRECIATION, Message.TRUE, Material.STAINED_CLAY, (short)5),
-	UNCERTAIN_APPRECIATIONS(22, Message.APPRECIATION, Message.UNCERTAIN, Material.STAINED_CLAY, (short)4),
-	FALSE_APPRECIATIONS(24, Message.APPRECIATION, Message.FALSE, Material.STAINED_CLAY, (short)14),
+	TRUE_APPRECIATIONS(20, Message.APPRECIATION, Message.TRUE, Material.STAINED_CLAY, (short) 5),
+	UNCERTAIN_APPRECIATIONS(22, Message.APPRECIATION, Message.UNCERTAIN, Material.STAINED_CLAY, (short) 4),
+	FALSE_APPRECIATIONS(24, Message.APPRECIATION, Message.FALSE, Material.STAINED_CLAY, (short) 14),
 	REPORTS(38, Message.REPORTS_STATISTIC, Material.PAPER),
 	REPORTED_TIMES(40, Message.REPORTED_TIMES_STATISTIC, Material.BOW),
 	PROCESSED_REPORTS(42, Message.PROCESSED_REPORTS_STATISTIC, Material.BOOK);
@@ -44,7 +44,8 @@ public enum Statistic {
 	}
 	
 	public String getName() {
-		return appreciation != null ? name.get().replace("_Appreciation_", appreciation.get()) : name.get();
+		String n = name.get();
+		return appreciation != null ? n.replace("_Appreciation_", appreciation.get()) : n;
 	}
 	
 	public CustomItem getCustomItem() {

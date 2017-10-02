@@ -43,6 +43,7 @@ Config:
   TeleportSound: ENTITY_ENDERMEN_TELEPORT
   StaffSound: ENTITY_ITEM_PICKUP
   # Bukkit sounds used on specific actions / Sons bukkit utilisés pour certaines actions
+  # Put 'none' to disable sound / Mettre 'none' pour désactiver le son
   CustomReasons: yes
   # Allow custom reasons / Autoriser les raisons personnalisées
   DefaultReasons:

@@ -38,9 +38,10 @@ public class MessageUtils {
 	
 	public static void sendErrorMessage(CommandSender s, String message) {
 		s.sendMessage(message);
-		if(!(s instanceof Player)) return;
-		Player p = (Player) s;
-		p.playSound(p.getLocation(), ConfigSound.ERROR.get(), 1, 1);
+		if(s instanceof Player) {
+			Player p = (Player) s;
+			ConfigSound.ERROR.play(p);
+		}
 	}
 
 	public static void sendStaffMessage(Object message, Sound sound) {

@@ -26,16 +26,18 @@ public enum ConfigSound {
 	}
 	
 	public String getConfigName() {
-		return name().substring(0, 1)+name().substring(1).toLowerCase()+"Sound";
+		return name().charAt(0)+name().substring(1).toLowerCase()+"Sound";
 	}
 	
 	public Sound get() {
 		String path = "Config."+getConfigName();
-		String configSound = (configSound = ConfigFile.CONFIG.get().getString(path)) != null ? configSound.toUpperCase() : "";
-		for(String sound : Arrays.asList(configSound, oldSound, newSound)) {
-			try {
-				return Sound.valueOf(sound);
-			} catch (Exception invalidSound) {}
+		String configSound = ConfigFile.CONFIG.get().getString(path);
+		if(configSound != null && !configSound.equalsIgnoreCase("none")) {
+			for(String sound : Arrays.asList(configSound.toUpperCase(), oldSound, newSound)) {
+				try {
+					return Sound.valueOf(sound);
+				} catch (Exception invalidSound) {}
+			}
 		}
 		return null;
 	}
