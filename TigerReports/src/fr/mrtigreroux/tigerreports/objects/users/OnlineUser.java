@@ -137,7 +137,7 @@ public class OnlineUser extends User {
 			c.setStatus("Read");
 		} catch (Exception invalidNotification) {}
 	}
-
+	
 	@SuppressWarnings("deprecation")
 	public void comment(Report r) {
 		try {
@@ -159,7 +159,7 @@ public class OnlineUser extends User {
 			
 			setCommentingReport(r);
 			save();
-			Object tileEntity = ReflectionUtils.getDeclaredField(s,  "sign");
+			Object tileEntity = ReflectionUtils.isRecentVersion() ? ReflectionUtils.callSuperMethod(s, "getTileEntity") : ReflectionUtils.getDeclaredField(s,  "sign");
 			ReflectionUtils.setDeclaredField(tileEntity, "isEditable", true);
 			ReflectionUtils.setDeclaredField(tileEntity, "h", ReflectionUtils.getHandle(p));
 			ReflectionUtils.sendPacket(p,  ReflectionUtils.getPacket("PacketPlayOutOpenSignEditor", ReflectionUtils.callDeclaredConstructor(ReflectionUtils.getNMSClass("BlockPosition"), s.getX(), s.getY(), s.getZ())));
