@@ -194,6 +194,7 @@ public class Report {
 		if(!bungee) {
 			TigerReports.getBungeeManager().sendPluginNotification(player+" remove "+reportId);
 			TigerReports.getDb().updateAsynchronously("DELETE FROM reports WHERE report_id = ?", Collections.singletonList(reportId));
+			TigerReports.getDb().updateAsynchronously("DELETE FROM comments WHERE report_id = ?", Collections.singletonList(reportId));
 		}
 	}
 	

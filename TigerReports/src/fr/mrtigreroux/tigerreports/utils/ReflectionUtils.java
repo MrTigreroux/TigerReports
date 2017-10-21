@@ -4,13 +4,14 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 public class ReflectionUtils {
 	
-	private static int version = 0;
+	private static double version = 0;
 	
 	public static String cbVer() {
         return "org.bukkit.craftbukkit."+ver()+".";
@@ -25,22 +26,23 @@ public class ReflectionUtils {
         return pkg.substring(pkg.lastIndexOf(".")+1);
     }
 	
-	private static int getVersion() {
+	private static double getVersion() {
 		if(version == 0) {
 			String ver = Bukkit.getVersion();
+			ver = ver.substring(ver.indexOf('(')+5, ver.length()-1).replaceFirst("\\.", "");
 			try {
-				version = Integer.parseInt(ver.substring(ver.indexOf('(')+5, ver.length()-1).replace(".", ""));
+				version = Double.parseDouble(ver+(StringUtils.countMatches(ver, ".") == 0 ? ".0" : ""));
 			} catch (Exception ignored) {}
 		}
 		return version;
 	}
 	
 	public static boolean isOldVersion() {
-		return getVersion() < 180;
+		return getVersion() < 18;
 	}
 	
 	public static boolean isRecentVersion() {
-		return getVersion() > 1121;
+		return getVersion() > 112.1;
 	}
 	
 	public static Class<?> wrapperToPrimitive(Class<?> clazz) {
