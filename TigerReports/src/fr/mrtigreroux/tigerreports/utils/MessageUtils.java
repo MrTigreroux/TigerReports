@@ -124,7 +124,7 @@ public class MessageUtils {
 		values = Arrays.asList(values.get(2)*7+values.get(3), values.get(1), values.get(0), values.get(4), values.get(5), values.get(6));
 		StringBuilder date = new StringBuilder();
 		for(int valueNumber = 0; valueNumber <= 5; valueNumber++) {
-			String value = ""+values.get(valueNumber);
+			String value = Integer.toString(values.get(valueNumber));
 			if(value.length() < 2) value = "0"+value;
 			date.append((valueNumber == 0 ? "" : valueNumber <= 2 ? "/" : valueNumber == 3 ? " " : "-")).append(value);
 		}
@@ -197,9 +197,10 @@ public class MessageUtils {
 	
 	public static String formatConfigLocation(Location loc) {
 		StringBuilder configLoc = new StringBuilder(TigerReports.getBungeeManager().getServerName()+"/"+loc.getWorld().getName());
-		for(String coords : new String[]{""+loc.getX(), ""+loc.getY(), ""+loc.getZ(), ""+loc.getYaw(), ""+loc.getPitch()}) {
-			int end = (end = coords.indexOf('.')+3) < coords.length() ? end : coords.length();
-			configLoc.append("/").append(coords.substring(0, end));
+		for(Object coords : new Object[]{loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch()}) {
+			String coord = String.valueOf(coords);
+			int end = (end = coord.indexOf('.')+3) < coord.length() ? end : coord.length();
+			configLoc.append("/").append(coord.substring(0, end));
 		}
 		return configLoc.toString();
 	}

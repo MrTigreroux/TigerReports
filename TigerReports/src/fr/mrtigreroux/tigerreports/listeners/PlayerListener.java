@@ -85,7 +85,9 @@ public class PlayerListener implements Listener {
 	
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent e) {
-		if(checkHelpCommand(e.getMessage().substring(1), e.getPlayer())) e.setCancelled(true);
+		String command = e.getMessage();
+		if(checkHelpCommand(command.substring(1), e.getPlayer())) e.setCancelled(true);
+		else if(ConfigFile.CONFIG.get().getStringList("Config.CommandsHistory").contains(command.split(" ")[0])) UserUtils.getOnlineUser(e.getPlayer()).updateLastMessages(command);
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)

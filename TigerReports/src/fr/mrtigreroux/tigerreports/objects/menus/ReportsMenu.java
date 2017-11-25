@@ -23,7 +23,7 @@ public class ReportsMenu extends Menu implements UpdatedMenu {
 	
 	@Override
 	public Inventory onOpen() {
-		Inventory inv = getInventory(Message.REPORTS_TITLE.get().replace("_Page_", ""+page), true);
+		Inventory inv = getInventory(Message.REPORTS_TITLE.get().replace("_Page_", Integer.toString(page)), true);
 		
 		inv.setItem(4, MenuItem.REPORTS.get());
 		if(Permission.STAFF_ARCHIVE.isOwned(u)) inv.setItem(8, MenuItem.ARCHIVED_REPORTS.getWithDetails(Message.ARCHIVED_REPORTS_DETAILS.get()));

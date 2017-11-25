@@ -47,7 +47,7 @@ public class UserMenu extends Menu implements UpdatedMenu {
 		Map<String, Integer> statistics = tu.getStatistics();
 		for(Statistic stat : Statistic.values()) {
 			int value = statistics.get(stat.getConfigName());
-			inv.setItem(stat.getPosition(), stat.getCustomItem().amount(value).name(Message.USER_STATISTIC.get().replace("_Statistic_", stat.getName()).replace("_Amount_", ""+value))
+			inv.setItem(stat.getPosition(), stat.getCustomItem().amount(value).name(Message.USER_STATISTIC.get().replace("_Statistic_", stat.getName()).replace("_Amount_", Integer.toString(value)))
 					.lore(Permission.STAFF_ADVANCED.isOwned(u) ? Message.USER_STATISTIC_DETAILS.get().split(ConfigUtils.getLineBreakSymbol()) : null).create());
 		}
 	}

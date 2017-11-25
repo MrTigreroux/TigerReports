@@ -27,6 +27,8 @@ Config:
   # Cooldown inflicted on abusive report / Temps d'attente infligé pour un signalement abusif
   MessagesHistory: 5
   # Saved messages amount / Nombre de messages sauvegardés
+  CommandsHistory: none
+  # List of saved commands in messages history, put "none" to don't save any / Liste des commandes sauvegardées dans l'historique des messages, mettre "none" pour aucune
   ReportsNotifications:
     Connection: yes
     MinutesInterval: 0

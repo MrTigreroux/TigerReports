@@ -57,7 +57,7 @@ public class ReportMenu extends ReportManagerMenu {
 				String statName = stat.getConfigName();
 				String value;
 				try {
-					value = ""+statistics.get(statName);
+					value = String.valueOf(statistics.get(statName));
 				} catch (Exception notFound) {
 					value = Message.NOT_FOUND_MALE.get();
 				}

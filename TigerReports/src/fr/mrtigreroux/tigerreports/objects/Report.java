@@ -43,7 +43,7 @@ public class Report {
 	}
 
 	public String getName() {
-		return Message.REPORT_NAME.get().replace("_Id_", ""+reportId);
+		return Message.REPORT_NAME.get().replace("_Id_", Integer.toString(reportId));
 	}
 	
 	public String getReportedUniqueId() {
@@ -101,7 +101,7 @@ public class Report {
 				for(String effect : effectsList.split(",")) {
 					String type = effect.split(":")[0].replace("_", " ");
 					String duration = effect.split("/")[1];
-					effects.append(Message.EFFECT.get().replace("_Type_", type.substring(0, 1)+type.substring(1).toLowerCase()).replace("_Amplifier_", effect.split(":")[1].replace("/"+duration, "")).replace("_Duration_", ""+Long.parseLong(duration)/20));
+					effects.append(Message.EFFECT.get().replace("_Type_", type.charAt(0)+type.substring(1).toLowerCase()).replace("_Amplifier_", effect.split(":")[1].replace("/"+duration, "")).replace("_Duration_", Long.toString(Long.parseLong(duration)/20)));
 				}
 			} else effects = new StringBuilder(Message.NONE_MALE.get());
 			defaultData = Message.DEFAULT_DATA.get()
@@ -124,7 +124,7 @@ public class Report {
 	
 	public String[] getMessagesHistory(String type) {
 		String messages = advancedData.get(type.toLowerCase()+"_messages");
-		return messages != null ? messages.split("#next#") : new String[]{};
+		return messages != null ? messages.split("#next#") : new String[0];
 	}
 	
 	public ItemStack getItem(String actions) {
