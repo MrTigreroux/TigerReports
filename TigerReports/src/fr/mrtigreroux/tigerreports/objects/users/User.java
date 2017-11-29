@@ -22,7 +22,7 @@ public abstract class User {
 	private String immunity = null;
 	protected String cooldown = null;
 	private Map<String, Integer> statistics = null;
-	protected List<String> lastMessages = new ArrayList<>();
+	public List<String> lastMessages = new ArrayList<>();
 	
 	public User(String uuid) {
 		this.uuid = uuid;

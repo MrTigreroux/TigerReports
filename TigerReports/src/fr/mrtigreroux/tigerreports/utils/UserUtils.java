@@ -100,8 +100,13 @@ public class UserUtils {
 	
 	public static OnlineUser getOnlineUser(Player p) {
 		User u = TigerReports.Users.get(p.getUniqueId().toString());
-		if(u == null || !(u instanceof OnlineUser)) {
+		if(u == null) {
 			u = new OnlineUser(p);
+			u.save();
+		} else if(!(u instanceof OnlineUser)) {
+			List<String> lastMessages = u.lastMessages;
+			u = new OnlineUser(p);
+			u.lastMessages = lastMessages;
 			u.save();
 		}
 		return (OnlineUser) u;

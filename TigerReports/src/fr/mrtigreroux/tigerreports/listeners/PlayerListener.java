@@ -23,6 +23,7 @@ import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.commands.HelpCommand;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
+import fr.mrtigreroux.tigerreports.objects.users.OfflineUser;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.runnables.ReportsNotifier;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
@@ -69,7 +70,15 @@ public class PlayerListener implements Listener {
 	@EventHandler(ignoreCancelled = true)
 	public void onPlayerQuit(PlayerQuitEvent e) {
 		String uuid = e.getPlayer().getUniqueId().toString();
-		if(TigerReports.Users.containsKey(uuid) && TigerReports.Users.get(uuid).getLastMessages() == null) TigerReports.Users.remove(uuid);
+		if(TigerReports.Users.containsKey(uuid)) {
+			List<String> lastMessages = TigerReports.Users.get(uuid).lastMessages;
+			TigerReports.Users.remove(uuid);
+			if(!lastMessages.isEmpty()) {
+				OfflineUser ou = new OfflineUser(uuid);
+				ou.lastMessages = lastMessages;
+				ou.save();
+			}
+		}
 	}
 	
 	@EventHandler(priority = EventPriority.HIGHEST)
