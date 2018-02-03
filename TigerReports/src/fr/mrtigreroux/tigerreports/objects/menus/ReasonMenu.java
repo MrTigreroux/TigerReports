@@ -55,7 +55,7 @@ public class ReasonMenu extends Menu {
 	public void onClick(ItemStack item, int slot, ClickType click) {
 		if(slot >= 18 && slot <= size-9) {
 			ConfigSound.MENU.play(p);
-			p.chat("/report "+tu.getName()+" "+ConfigFile.CONFIG.get().getString("Config.DefaultReasons.Reason"+(getIndex(slot))+".Name"));
+			p.chat("/tigerreports:report "+tu.getName()+" "+ConfigFile.CONFIG.get().getString("Config.DefaultReasons.Reason"+(getIndex(slot))+".Name"));
 			p.closeInventory();
 		}
 	}

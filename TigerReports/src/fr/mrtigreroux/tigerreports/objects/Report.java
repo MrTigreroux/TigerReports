@@ -105,8 +105,8 @@ public class Report {
 				}
 			} else effects = new StringBuilder(Message.NONE_MALE.get());
 			defaultData = Message.DEFAULT_DATA.get()
-					.replace("_Gamemode_", MessageUtils.getGamemodeWord(advancedData.get("reported_gamemode"))).replace("_OnGround_", (advancedData.get("reported_on_ground").equals("true") ? Message.YES : Message.NO).get())
-					.replace("_Sneak_", (advancedData.get("reported_sneak").equals("true") ? Message.YES : Message.NO).get()).replace("_Sprint_", (advancedData.get("reported_sprint").equals("true") ? Message.YES : Message.NO).get())
+					.replace("_Gamemode_", MessageUtils.getGamemodeWord(advancedData.get("reported_gamemode"))).replace("_OnGround_", (advancedData.get("reported_on_ground").equals("1") ? Message.YES : Message.NO).get())
+					.replace("_Sneak_", (advancedData.get("reported_sneak").equals("1") ? Message.YES : Message.NO).get()).replace("_Sprint_", (advancedData.get("reported_sprint").equals("1") ? Message.YES : Message.NO).get())
 					.replace("_Health_", advancedData.get("reported_health")).replace("_Food_", advancedData.get("reported_food")).replace("_Effects_", effects.toString());
 			reportedAdvancedData = !advanced ? "" : Message.ADVANCED_DATA_REPORTED.get().replace("_UUID_", MessageUtils.getMenuSentence(reportedUniqueId, Message.ADVANCED_DATA_REPORTED, "_UUID_", false)).replace("_IP_", advancedData.get("reported_ip"));
 		} catch (Exception dataNotFound) {

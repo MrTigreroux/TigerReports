@@ -108,7 +108,7 @@ public class OnlineUser extends User {
 	
 	public void printInChat(Report r, String[] lines) {
 		String reportName = r.getName();
-		for(String line : lines) sendMessage(MessageUtils.getAdvancedMessage(line, "_ReportButton_", Message.REPORT_BUTTON.get().replace("_Report_", reportName), Message.ALERT_DETAILS.get().replace("_Report_", reportName), "/reports #"+r.getId()));
+		for(String line : lines) sendMessage(MessageUtils.getAdvancedMessage(line, "_ReportButton_", Message.REPORT_BUTTON.get().replace("_Report_", reportName), Message.ALERT_DETAILS.get().replace("_Report_", reportName), "/tigerreports:reports #"+r.getId()));
 		ConfigSound.MENU.play(p);
 		p.closeInventory();
 	}
