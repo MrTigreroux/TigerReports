@@ -3,6 +3,7 @@ package fr.mrtigreroux.tigerreports.commands;
 import java.util.Arrays;
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
@@ -97,25 +98,28 @@ public class ReportCommand implements CommandExecutor {
 			}
 		}
 		
+		String date = MessageUtils.getNowDate();
 		int reportId = (reportId = ReportUtils.getTotalReports()+1) <= ReportUtils.getMaxReports() ? reportId : -1;
-
+		
 		if(reportId != -1) {
 			List<Object> parameters;
-			if(rp != null) parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", MessageUtils.getNowDate(), ruuid, uuid, reason, rp.getAddress().getAddress().toString(), MessageUtils.formatConfigLocation(rp.getLocation()), ru.getLastMessages(), rp.getGameMode().toString().toLowerCase(), !rp.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().equals(Material.AIR), rp.isSneaking(), rp.isSprinting(), (int) Math.round(rp.getHealth())+"/"+(int) Math.round(rp.getMaxHealth()), rp.getFoodLevel(), MessageUtils.formatConfigEffects(rp.getActivePotionEffects()), p.getAddress().getAddress().toString(), MessageUtils.formatConfigLocation(p.getLocation()), u.getLastMessages());
-			else parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", MessageUtils.getNowDate(), ruuid, uuid, reason, null, null, ru.getLastMessages(), null, null, null, null, null, null, null, p.getAddress().toString(), MessageUtils.formatConfigLocation(p.getLocation()), u.getLastMessages());
+			if(rp != null) parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", date, ruuid, uuid, reason, rp.getAddress().getAddress().toString(), MessageUtils.formatConfigLocation(rp.getLocation()), ru.getLastMessages(), rp.getGameMode().toString().toLowerCase(), !rp.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().equals(Material.AIR), rp.isSneaking(), rp.isSprinting(), (int) Math.round(rp.getHealth())+"/"+(int) Math.round(rp.getMaxHealth()), rp.getFoodLevel(), MessageUtils.formatConfigEffects(rp.getActivePotionEffects()), p.getAddress().getAddress().toString(), MessageUtils.formatConfigLocation(p.getLocation()), u.getLastMessages());
+			else parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", date, ruuid, uuid, reason, null, null, ru.getLastMessages(), null, null, null, null, null, null, null, p.getAddress().toString(), MessageUtils.formatConfigLocation(p.getLocation()), u.getLastMessages());
 			reportId = TigerReports.getDb().insert("INSERT INTO reports (status,appreciation,date,reported_uuid,signalman_uuid,reason,reported_ip,reported_location,reported_messages,reported_gamemode,reported_on_ground,reported_sneak,reported_sprint,reported_health,reported_food,reported_effects,signalman_ip,signalman_location,signalman_messages) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);", parameters);
 		}
 		
-		Report r = new Report(reportId, Status.WAITING.getConfigWord(), "None", MessageUtils.getNowDate(), ruuid, uuid, reason);
+		Report r = new Report(reportId, Status.WAITING.getConfigWord(), "None", date, ruuid, uuid, reason);
 		String server = TigerReports.getBungeeManager().getServerName();
 		ReportUtils.sendReport(r, server);
 		s.sendMessage(Message.REPORT_SENT.get().replace("_Player_", r.getPlayerName("Reported", false, false)).replace("_Reason_", reason));
-		TigerReports.getBungeeManager().sendPluginNotification(reportId+" new_report "+MessageUtils.getNowDate().replace(" ", "_")+" "+ruuid+" "+uuid+" "+reason.replace(" ", "_")+" "+server);
+		TigerReports.getBungeeManager().sendPluginNotification(reportId+" new_report "+date.replace(" ", "_")+" "+ruuid+" "+uuid+" "+reason.replace(" ", "_")+" "+server);
 		
 		u.startCooldown(ReportUtils.getCooldown(), false);
 		ru.startImmunity(false);
 		u.changeStatistic("reports", 1, false);
 		ru.changeStatistic("reported_times", 1, false);
+		
+		for(String command : ConfigFile.CONFIG.get().getStringList("Config.AutoCommands")) Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("_Server_", server).replace("_Date_", date).replace("_Signalman_", r.getPlayerName("Signalman", false, false)).replace("_Reported_", r.getPlayerName("Reported", false, false)).replace("_Reason_", reason));
 		return true;
 	}
 

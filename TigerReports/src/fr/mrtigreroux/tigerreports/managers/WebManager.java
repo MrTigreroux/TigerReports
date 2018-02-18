@@ -41,15 +41,17 @@ public class WebManager {
 	
 	private String sendQuery(String url, String data) throws UnsupportedEncodingException, IOException {
 		HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-		connection.setDoOutput(true);
-		connection.setRequestMethod("POST");
-		connection.getOutputStream().write(data.getBytes("UTF-8"));
+		if(data != null) {
+			connection.setDoOutput(true);
+			connection.setRequestMethod("POST");
+			connection.getOutputStream().write(data.getBytes("UTF-8"));
+		}
 		return new BufferedReader(new InputStreamReader(connection.getInputStream())).readLine();
 	}
 	
 	public void initialize() {
 		try {
-			newVersion = sendQuery("http://www.spigotmc.org/api/general.php", "key=98BE0FE67F88AB82B4C197FAF1DC3B69206EFDCC4D3B80FC83A00037510B99B4&resource=25773");
+			newVersion = sendQuery("https://api.spigotmc.org/legacy/update.php?resource=25773", null);
 			if(main.getDescription().getVersion().equals(newVersion)) newVersion = null;
 			else {
 				Logger logger = Bukkit.getLogger();

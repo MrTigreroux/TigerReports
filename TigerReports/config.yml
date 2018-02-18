@@ -23,6 +23,9 @@ Config:
   # Cooldown between each report in seconds / Temps d'attente entre chaque signalement en secondes
   ReportedImmunity: 120
   # Time in seconds during reported player can not be reported again / Temps en secondes durant lequel un joueur signalé ne peut être à nouveau signalé.
+  AutoCommands: none
+  # List of executed commands after a report, put "none" to don't execute any / Liste des commandes exécutées après chaque signalement, mettre "none" pour aucune
+  # Usable tags:    _Server_, _Date_, _Signalman_, _Reported_ and _Reason_
   PunishSeconds: 3600
   # Cooldown inflicted on abusive report / Temps d'attente infligé pour un signalement abusif
   MessagesHistory: 5

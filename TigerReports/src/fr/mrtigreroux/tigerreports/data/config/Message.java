@@ -24,6 +24,7 @@ public enum Message {
 	STAFF_PROCESS("Messages.Staff-process"),
 	STAFF_ARCHIVE("Messages.Staff-archive"),
 	STAFF_ARCHIVEALL("Messages.Staff-archiveall"),
+	STAFF_REMOVEALL("Messages.Staff-removeall"),
 	STAFF_RESTORE("Messages.Staff-restore"),
 	STAFF_REMOVE_ARCHIVE("Messages.Staff-remove-archive"),
 	STAFF_REMOVE("Messages.Staff-remove"),

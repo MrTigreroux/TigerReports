@@ -12,6 +12,7 @@
   Staff-process: "&7[&6Reports&7] &a_Player_ &evient de &btraiter &ele _Report_ &ecomme &e_Appreciation_&e."
   Staff-archive: "&7[&6Reports&7] &a_Player_ &evient d'&8archiver &ele _Report_&e."
   Staff-archiveall: "&7[&6Reports&7] &a_Player_ &evient d'&8archiver &etous les signalements trait\xe9s."
+  Staff-removeall: "&7[&6Reports&7] &a_Player_ &evient de &csupprimer &etous les signalements archiv\xe9s."
   Staff-remove-archive: "&7[&6Reports&7] &a_Player_ &evient de &csupprimer &el'archive de _Report_&e."
   Staff-remove: "&7[&6Reports&7] &a_Player_ &evient de &csupprimer &ele _Report_&e."
   Staff-restore: "&7[&6Reports&7] &a_Player_ &evient de &arestaurer &ele _Report_&e."
@@ -168,4 +169,4 @@ Words:
   Report-type: "&6_Amount_ &esignalement _Type_"
   Reports-type: "&6_Amount_ &esignalements _Type_"
   Report-syntax: "<joueur> (raison)"
-  Reports-syntax: "(reload / notify / archiveall / archives / #<identifiant du signalement> / user / stopcooldown) (joueur)"
+  Reports-syntax: "(reload / notify / archiveall / archives / removeall / #<identifiant du signalement> / user / stopcooldown) (joueur)"
