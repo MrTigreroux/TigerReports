@@ -35,12 +35,12 @@ public class InventoryListener implements Listener {
 	}
 	
 	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onInventoryDrag(InventoryDragEvent e) {
+	private void onInventoryDrag(InventoryDragEvent e) {
 		if(checkMenuAction(e.getWhoClicked(), e.getInventory()) != null) e.setCancelled(true);
 	}
 	
 	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onInventoryClick(InventoryClickEvent e) {
+	private void onInventoryClick(InventoryClickEvent e) {
 		OnlineUser u = checkMenuAction(e.getWhoClicked(), e.getClickedInventory());
 		if(u != null) {
 			e.setCancelled(true);
@@ -49,7 +49,7 @@ public class InventoryListener implements Listener {
 	}
 	
 	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onInventoryClose(InventoryCloseEvent e) {
+	private void onInventoryClose(InventoryCloseEvent e) {
 		OnlineUser u = UserUtils.getOnlineUser((Player) e.getPlayer());
 		MenuUpdater.removeUser(u);
 		u.setOpenedMenu(null);

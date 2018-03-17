@@ -68,7 +68,7 @@ public class Report {
 		save();
 		if(!bungee) {
 			TigerReports.getBungeeManager().sendPluginNotification(status+" new_status "+reportId);
-			TigerReports.getDb().updateAsynchronously("UPDATE reports SET status = ? WHERE report_id = ?", Arrays.asList(status.getConfigWord(), reportId));
+			TigerReports.getDb().updateAsynchronously("UPDATE tigerreports_reports SET status = ? WHERE report_id = ?", Arrays.asList(status.getConfigWord(), reportId));
 		}
 	}
 	
@@ -145,7 +145,7 @@ public class Report {
 		if(!bungee) {
 			TigerReports.getBungeeManager().sendPluginNotification(uuid+"/"+player+" process "+reportId+" "+appreciation);
 			if(auto) archive(player, false);
-			else TigerReports.getDb().update("UPDATE reports SET status = ?,appreciation = ? WHERE report_id = ?", Arrays.asList(status, appreciation, reportId));
+			else TigerReports.getDb().update("UPDATE tigerreports_reports SET status = ?,appreciation = ? WHERE report_id = ?", Arrays.asList(status, appreciation, reportId));
 			UserUtils.getUser(uuid).changeStatistic("processed_reports", 1, false);
 			UserUtils.getUser(signalmanUniqueId).changeStatistic(appreciation.toLowerCase()+"_appreciations", 1, false);
 		}
@@ -168,7 +168,7 @@ public class Report {
 	public Map<Integer, Comment> getComments() {
 		if(comments != null) return comments;
 		comments = new HashMap<>();
-		for(Map<String, Object> results : TigerReports.getDb().query("SELECT * FROM comments WHERE report_id = ?", Collections.singletonList(reportId)).getResultList()) saveComment(results);
+		for(Map<String, Object> results : TigerReports.getDb().query("SELECT * FROM tigerreports_comments WHERE report_id = ?", Collections.singletonList(reportId)).getResultList()) saveComment(results);
 		save();
 		return comments;
 	}
@@ -178,7 +178,7 @@ public class Report {
 			Comment c = comments.get(commentId);
 			if(c != null) return c;
 		}
-		return saveComment(TigerReports.getDb().query("SELECT * FROM comments WHERE report_id = ? AND comment_id = ?", Arrays.asList(reportId, commentId)).getResult(0));
+		return saveComment(TigerReports.getDb().query("SELECT * FROM tigerreports_comments WHERE report_id = ? AND comment_id = ?", Arrays.asList(reportId, commentId)).getResult(0));
 	}
 	
 	private Comment saveComment(Map<String, Object> result) {
@@ -193,8 +193,8 @@ public class Report {
 		if(player != null) MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage(Message.STAFF_REMOVE.get().replace("_Player_", player), "_Report_", getName(), getText(), null), ConfigSound.STAFF.get());
 		if(!bungee) {
 			TigerReports.getBungeeManager().sendPluginNotification(player+" remove "+reportId);
-			TigerReports.getDb().updateAsynchronously("DELETE FROM reports WHERE report_id = ?", Collections.singletonList(reportId));
-			TigerReports.getDb().updateAsynchronously("DELETE FROM comments WHERE report_id = ?", Collections.singletonList(reportId));
+			TigerReports.getDb().updateAsynchronously("DELETE FROM tigerreports_reports WHERE report_id = ?", Collections.singletonList(reportId));
+			TigerReports.getDb().updateAsynchronously("DELETE FROM tigerreports_comments WHERE report_id = ?", Collections.singletonList(reportId));
 		}
 	}
 	
@@ -202,7 +202,7 @@ public class Report {
 		if(player != null) MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage(Message.STAFF_ARCHIVE.get().replace("_Player_", player), "_Report_", getName(), getText(), null), ConfigSound.STAFF.get());
 		if(!bungee) {
 			TigerReports.getBungeeManager().sendPluginNotification(player+" archive "+reportId);
-			TigerReports.getDb().updateAsynchronously("REPLACE INTO archived_reports (report_id,status,appreciation,date,reported_uuid,signalman_uuid,reason,reported_ip,reported_location,reported_messages,reported_gamemode,reported_on_ground,reported_sneak,reported_sprint,reported_health,reported_food,reported_effects,signalman_ip,signalman_location,signalman_messages) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);",
+			TigerReports.getDb().updateAsynchronously("REPLACE INTO tigerreports_archived_reports (report_id,status,appreciation,date,reported_uuid,signalman_uuid,reason,reported_ip,reported_location,reported_messages,reported_gamemode,reported_on_ground,reported_sneak,reported_sprint,reported_health,reported_food,reported_effects,signalman_ip,signalman_location,signalman_messages) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);",
 					Arrays.asList(reportId, status, appreciation, date, reportedUniqueId, signalmanUniqueId, reason, advancedData.get("reported_ip"), advancedData.get("reported_location"), advancedData.get("reported_messages"), advancedData.get("reported_gamemode"), advancedData.get("reported_on_ground"), advancedData.get("reported_sneak"), advancedData.get("reported_sprint"), advancedData.get("reported_health"), advancedData.get("reported_food"), advancedData.get("reported_effects"), advancedData.get("signalman_ip"), advancedData.get("signalman_location"), advancedData.get("signalman_messages")));
 		}
 		remove(null, bungee);
@@ -216,11 +216,11 @@ public class Report {
 			Bukkit.getScheduler().runTaskAsynchronously(TigerReports.getInstance(), new Runnable() {
 				@Override
 				public void run() {
-					TigerReports.getDb().update("REPLACE INTO reports (report_id,status,appreciation,date,reported_uuid,signalman_uuid,reason,reported_ip,reported_location,reported_messages,reported_gamemode,reported_on_ground,reported_sneak,reported_sprint,reported_health,reported_food,reported_effects,signalman_ip,signalman_location,signalman_messages) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);",
+					TigerReports.getDb().update("REPLACE INTO tigerreports_reports (report_id,status,appreciation,date,reported_uuid,signalman_uuid,reason,reported_ip,reported_location,reported_messages,reported_gamemode,reported_on_ground,reported_sneak,reported_sprint,reported_health,reported_food,reported_effects,signalman_ip,signalman_location,signalman_messages) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);",
 							Arrays.asList(reportId, status, appreciation, date, reportedUniqueId, signalmanUniqueId, reason, (String) advancedData.get("reported_ip"), 
 							(String) advancedData.get("reported_location"), (String) advancedData.get("reported_messages"), (String) advancedData.get("reported_gamemode"), (String) advancedData.get("reported_on_ground"), (String) advancedData.get("reported_sneak"), (String) advancedData.get("reported_sprint"), (String) advancedData.get("reported_health"), (String) advancedData.get("reported_food"),
 							(String) advancedData.get("reported_effects"), (String) advancedData.get("signalman_ip"), (String) advancedData.get("signalman_location"), (String) advancedData.get("signalman_messages")));
-					TigerReports.getDb().update("DELETE FROM archived_reports WHERE report_id = ?", Collections.singletonList(reportId));
+					TigerReports.getDb().update("DELETE FROM tigerreports_archived_reports WHERE report_id = ?", Collections.singletonList(reportId));
 				}
 			});
 		}
@@ -230,7 +230,7 @@ public class Report {
 		MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage(Message.STAFF_REMOVE_ARCHIVE.get().replace("_Player_", player), "_Report_", getName(), getText(), null), ConfigSound.STAFF.get());
 		if(!bungee) {
 			TigerReports.getBungeeManager().sendPluginNotification(player+" remove_archive "+reportId);
-			TigerReports.getDb().updateAsynchronously("DELETE FROM archived_reports WHERE report_id = ?", Collections.singletonList(reportId));
+			TigerReports.getDb().updateAsynchronously("DELETE FROM tigerreports_archived_reports WHERE report_id = ?", Collections.singletonList(reportId));
 		}
 	}
 	

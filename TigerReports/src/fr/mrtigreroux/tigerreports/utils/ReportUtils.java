@@ -2,6 +2,7 @@ package fr.mrtigreroux.tigerreports.utils;
 
 import java.util.*;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -17,6 +18,7 @@ import com.google.common.primitives.Ints;
 import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.*;
 import fr.mrtigreroux.tigerreports.data.constants.MenuItem;
+import fr.mrtigreroux.tigerreports.events.NewReportEvent;
 import fr.mrtigreroux.tigerreports.objects.Report;
 
 /**
@@ -27,6 +29,7 @@ public class ReportUtils {
 	
 	public static void sendReport(Report r, String server) {
 		int reportId = r.getId();
+		
 		TextComponent alert = new TextComponent();
 		alert.setColor(ChatColor.valueOf(MessageUtils.getLastColor(Message.ALERT.get(), "_Reason_").name()));
 		if(reportId == -1) MessageUtils.sendStaffMessage(Message.STAFF_MAX_REPORTS_REACHED.get().replace("_Amount_", Integer.toString(getMaxReports())), ConfigSound.STAFF.get());
@@ -34,18 +37,21 @@ public class ReportUtils {
 			alert.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/reports #"+reportId));
 			alert.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(Message.ALERT_DETAILS.get().replace("_Report_", r.getName())).create()));
 		}
+		
 		for(String line : Message.ALERT.get().replace("_Server_", server).replace("_Signalman_", r.getPlayerName("Signalman", false, true)).replace("_Reported_", r.getPlayerName("Reported", !ReportUtils.onlinePlayerRequired(), true)).replace("_Reason_", r.getReason(false)).split(ConfigUtils.getLineBreakSymbol())) {
 			alert.setText(line);
 			MessageUtils.sendStaffMessage(alert.duplicate(), ConfigSound.REPORT.get());
 		}
+		
+		Bukkit.getServer().getPluginManager().callEvent(new NewReportEvent(server, r));
 	}
 	
 	public static Report getReportById(int reportId) {
-		return reportId <= 0 ? null : TigerReports.Reports.containsKey(reportId) ? TigerReports.Reports.get(reportId) : formatReport(TigerReports.getDb().query("SELECT * FROM reports WHERE report_id = ?", Collections.singletonList(reportId)).getResult(0), true);
+		return reportId <= 0 ? null : TigerReports.Reports.containsKey(reportId) ? TigerReports.Reports.get(reportId) : formatReport(TigerReports.getDb().query("SELECT * FROM tigerreports_reports WHERE report_id = ?", Collections.singletonList(reportId)).getResult(0), true);
 	}
 	
 	public static Report getReport(int reportIndex) {
-		return formatReport(TigerReports.getDb().query("SELECT * FROM reports LIMIT 1 OFFSET ?", Collections.singletonList(reportIndex-1)).getResult(0), true);
+		return formatReport(TigerReports.getDb().query("SELECT * FROM tigerreports_reports LIMIT 1 OFFSET ?", Collections.singletonList(reportIndex-1)).getResult(0), true);
 	}
 	
 	public static Report formatReport(Map<String, Object> result, boolean containsAdvancedData) {
@@ -70,7 +76,7 @@ public class ReportUtils {
 			firstReport += (page-1)*27;
 		}
 		
-		List<Map<String, Object>> results = TigerReports.getDb().query("SELECT report_id,status,appreciation,date,reported_uuid,signalman_uuid,reason FROM "+table+" LIMIT 28 OFFSET ?", Collections.singletonList(firstReport-1)).getResultList();
+		List<Map<String, Object>> results = TigerReports.getDb().query("SELECT report_id,status,appreciation,date,reported_uuid,signalman_uuid,reason FROM tigerreports_"+table+" LIMIT 28 OFFSET ?", Collections.singletonList(firstReport-1)).getResultList();
 		int index = 0;
 		ItemStack empty = new ItemStack(Material.AIR);
 		for(int position = 18; position < 45; position++) {
@@ -91,7 +97,7 @@ public class ReportUtils {
 	}
 	
 	public static int getTotalReports() {
-		Object o = TigerReports.getDb().query("SELECT COUNT(report_id) AS Total FROM reports", null).getResult(0, "Total");
+		Object o = TigerReports.getDb().query("SELECT COUNT(report_id) AS Total FROM tigerreports_reports", null).getResult(0, "Total");
 		return o instanceof Integer ? (int) o : Ints.checkedCast((long) o);
 	}
 	

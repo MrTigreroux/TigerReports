@@ -22,7 +22,7 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
 public class SignListener implements Listener {
 
 	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onSignChange(SignChangeEvent e) {
+	private void onSignChange(SignChangeEvent e) {
 		Player p = e.getPlayer();
 		OnlineUser u = UserUtils.getOnlineUser(p);
 		Report r = u.getCommentingReport();
@@ -34,7 +34,7 @@ public class SignListener implements Listener {
 			Comment c = u.getModifiedComment();
 			if(c == null) {
 				String date = MessageUtils.getNowDate();
-				int commentId = TigerReports.getDb().insert("INSERT INTO comments (report_id,status,date,author,message) VALUES (?,?,?,?,?);", Arrays.asList(r.getId(), "Private", date, p.getDisplayName(), message));
+				int commentId = TigerReports.getDb().insert("INSERT INTO tigerreports_comments (report_id,status,date,author,message) VALUES (?,?,?,?,?);", Arrays.asList(r.getId(), "Private", date, p.getDisplayName(), message));
 				new Comment(r, commentId, "Private", date, p.getDisplayName(), message).save();
 			} else c.addMessage(message);
 		}

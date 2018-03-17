@@ -38,7 +38,7 @@ public class PlayerListener implements Listener {
 	private final static List<String> helpCommands = Arrays.asList("tigerreport", "helptigerreport", "reportshelp", "report?", "reports?");
 	
 	@EventHandler
-	public void onPlayerJoin(PlayerJoinEvent e) {
+	private void onPlayerJoin(PlayerJoinEvent e) {
 		Player p = e.getPlayer();
 		OnlineUser u = UserUtils.getOnlineUser(p);
 		for(String notification : u.getNotifications()) u.sendNotification(notification, false);
@@ -47,7 +47,7 @@ public class PlayerListener implements Listener {
 			if(reportsNotifications != null) p.sendMessage(reportsNotifications);
 		}
 		
-		TigerReports.getDb().updateAsynchronously("REPLACE INTO users (uuid,name) VALUES (?,?);", Arrays.asList(p.getUniqueId().toString(), p.getName()));
+		TigerReports.getDb().updateAsynchronously("REPLACE INTO tigerreports_users (uuid,name) VALUES (?,?);", Arrays.asList(p.getUniqueId().toString(), p.getName()));
 		u.updateImmunity(Permission.REPORT_EXEMPT.isOwned(u) ? "always" : null, false);
 		
 		if(Permission.MANAGE.isOwned(u)) {
@@ -65,10 +65,12 @@ public class PlayerListener implements Listener {
 				p.spigot().sendMessage(updateMessage);
 			}
 		}
+		
+		TigerReports.getBungeeManager().collectServerName();
 	}
 	
 	@EventHandler(ignoreCancelled = true)
-	public void onPlayerQuit(PlayerQuitEvent e) {
+	private void onPlayerQuit(PlayerQuitEvent e) {
 		String uuid = e.getPlayer().getUniqueId().toString();
 		if(TigerReports.Users.containsKey(uuid)) {
 			List<String> lastMessages = TigerReports.Users.get(uuid).lastMessages;
@@ -82,25 +84,25 @@ public class PlayerListener implements Listener {
 	}
 	
 	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onPlayerLogin(PlayerLoginEvent e) {
+	private void onPlayerLogin(PlayerLoginEvent e) {
 		String error = TigerReports.getWebManager().check(e.getPlayer().getUniqueId().toString());
 		if(error != null) e.disallow(Result.KICK_OTHER, error);
 	}
 	
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-	public void onPlayerChat(AsyncPlayerChatEvent e) {
+	private void onPlayerChat(AsyncPlayerChatEvent e) {
 		UserUtils.getOnlineUser(e.getPlayer()).updateLastMessages(e.getMessage());
 	}
 	
 	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent e) {
+	private void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent e) {
 		String command = e.getMessage();
 		if(checkHelpCommand(command.substring(1), e.getPlayer())) e.setCancelled(true);
 		else if(ConfigFile.CONFIG.get().getStringList("Config.CommandsHistory").contains(command.split(" ")[0])) UserUtils.getOnlineUser(e.getPlayer()).updateLastMessages(command);
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onServerCommandPreprocess(ServerCommandEvent e) {
+	private void onServerCommandPreprocess(ServerCommandEvent e) {
 		if(checkHelpCommand(e.getCommand(), e.getSender())) e.setCommand("tigerreports");
 	}
 	

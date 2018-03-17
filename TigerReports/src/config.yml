@@ -1,8 +1,7 @@
 TigerReports:
   Version: 1.7+ spigot
-  Creator: MrTigreroux
-  Description: Plugin to manage reports / Plugin de gestion de signalements.
-  Finished on: 30/06/2016
+  Author: MrTigreroux
+  Description: Management of reports / Gestion de signalements.
 Config:
   ColorCharacter: '&'
   # Character used for colors in messages.yml / Caractère utilisé pour les couleurs dans messages.yml
@@ -83,6 +82,8 @@ Config:
   # Name:    Reason of report / Raison du signalement
   # Item:    Material-<item_type>(:damage) or/ou Skull-<pseudo>
   # Examples:    Material-Stone = Stone / Pierre    Material-Wool:2 = Magenta Wool / Laine magenta    Skull-MrTigreroux = Skull of player MrTigreroux / Tête du joueur MrTigreroux
+BungeeCord: yes
+# Send and receive BungeeCord notifications / Envoyer et recevoir des notifications BungeeCord
 MySQL:
   Host: ""
   Port: 0

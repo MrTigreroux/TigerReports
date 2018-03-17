@@ -60,7 +60,7 @@ public class Comment {
 	public void addMessage(String message) {
 		this.message += " "+message;
 		save();
-		TigerReports.getDb().updateAsynchronously("UPDATE comments SET message = ? WHERE report_id = ? AND comment_id = ?", Arrays.asList(this.message, r.getId(), commentId));
+		TigerReports.getDb().updateAsynchronously("UPDATE tigerreports_comments SET message = ? WHERE report_id = ? AND comment_id = ?", Arrays.asList(this.message, r.getId(), commentId));
 	}
 	
 	public ItemStack getItem(boolean removePermission) {
@@ -71,7 +71,7 @@ public class Comment {
 	
 	public void remove() {
 		r.comments.remove(commentId);
-		TigerReports.getDb().updateAsynchronously("DELETE FROM comments WHERE report_id = ? AND comment_id = ?", Arrays.asList(r.getId(), commentId));
+		TigerReports.getDb().updateAsynchronously("DELETE FROM tigerreports_comments WHERE report_id = ? AND comment_id = ?", Arrays.asList(r.getId(), commentId));
 	}
 	
 	public void save() {

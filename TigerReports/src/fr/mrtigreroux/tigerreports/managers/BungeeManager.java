@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -17,9 +18,11 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
+import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.constants.Status;
 import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.objects.users.User;
+import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 import fr.mrtigreroux.tigerreports.utils.ReportUtils;
 import fr.mrtigreroux.tigerreports.utils.UserUtils;
@@ -31,6 +34,7 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
 public class BungeeManager implements PluginMessageListener {
 	
 	private TigerReports main;
+	private boolean initialized = false;
 	private String serverName = null;
 	
 	public BungeeManager(TigerReports main) {
@@ -38,10 +42,25 @@ public class BungeeManager implements PluginMessageListener {
 	}
 	
 	public void initialize() {
-		Messenger messenger = main.getServer().getMessenger();
-		messenger.registerOutgoingPluginChannel(main, "BungeeCord");
-	    messenger.registerIncomingPluginChannel(main, "BungeeCord", this);
-	    sendPluginMessage("GetServer");
+		if(ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "BungeeCord")) {
+			Messenger messenger = main.getServer().getMessenger();
+			messenger.registerOutgoingPluginChannel(main, "BungeeCord");
+			messenger.registerIncomingPluginChannel(main, "BungeeCord", this);
+			initialized = true;
+			Bukkit.getLogger().log(Level.INFO, ConfigUtils.getInfoMessage("The plugin is using BungeeCord.", "Le plugin utilise BungeeCord."));
+		}
+	}
+	
+	public void collectServerName() {
+		if(serverName != null) return;
+		Bukkit.getScheduler().scheduleSyncDelayedTask(TigerReports.getInstance(), new Runnable() {
+
+			@Override
+			public void run() {
+				sendPluginMessage("GetServer");
+			}
+			
+		}, 5);
 	}
 	
 	public String getServerName() {
@@ -50,6 +69,8 @@ public class BungeeManager implements PluginMessageListener {
 	}
 	
 	public void sendServerPluginNotification(String serverName, String message) {
+		if(!initialized) return;
+		
 		Player p = getRandomPlayer();
 		if(p == null) return;
 		try {
@@ -75,8 +96,13 @@ public class BungeeManager implements PluginMessageListener {
 	}
 	
 	public void sendPluginMessage(String... message) {
+		if(!initialized) return;
+		
 		Player p = getRandomPlayer();
-		if(p == null) return;
+		if(p == null) {
+			Bukkit.broadcastMessage("Player null");
+			return;
+		}
 		ByteArrayDataOutput out = ByteStreams.newDataOutput();
 		for(String part : message) out.writeUTF(part);
 		p.sendPluginMessage(main, "BungeeCord", out.toByteArray());

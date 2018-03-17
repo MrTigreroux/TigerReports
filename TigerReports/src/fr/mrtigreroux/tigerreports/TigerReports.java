@@ -34,9 +34,9 @@ import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 public class TigerReports extends JavaPlugin {
 
 	private static TigerReports instance;
-	private static BungeeManager bungeeManager;
 	private static WebManager webManager;
 	private static Database database;
+	private static BungeeManager bungeeManager;
 
 	public static Map<String, User> Users = new HashMap<>();
 	public static Map<String, String> LastNameFound = new HashMap<>();
@@ -113,12 +113,12 @@ public class TigerReports extends JavaPlugin {
 		return database;
 	}
 	
-	public static BungeeManager getBungeeManager() {
-		return bungeeManager;
-	}
-	
 	public static WebManager getWebManager() {
 		return webManager;
+	}
+	
+	public static BungeeManager getBungeeManager() {
+		return bungeeManager;
 	}
 	
 	public static void initializeDatabase() {
@@ -130,10 +130,10 @@ public class TigerReports extends JavaPlugin {
 					MySQL mysql = new MySQL(ConfigFile.CONFIG.get().getString("MySQL.Host"), ConfigFile.CONFIG.get().getInt("MySQL.Port"), ConfigFile.CONFIG.get().getString("MySQL.Database"), ConfigFile.CONFIG.get().getString("MySQL.Username"), ConfigFile.CONFIG.get().getString("MySQL.Password"));
 					mysql.check();
 					database = mysql;
-					logger.log(Level.INFO, ConfigUtils.getInfoMessage("Plugin is using MySQL database.", "Le plugin utilise une base de donnees MySQL."));
+					logger.log(Level.INFO, ConfigUtils.getInfoMessage("The plugin is using MySQL database.", "Le plugin utilise une base de donnees MySQL."));
 				} catch (Exception invalidMySQL) {
 					database = new SQLite();
-					logger.log(Level.INFO, ConfigUtils.getInfoMessage("Plugin is using SQLite (default) database.", "Le plugin utilise une base de donnees SQLite (par defaut)."));
+					logger.log(Level.INFO, ConfigUtils.getInfoMessage("The plugin is using SQLite (default) database.", "Le plugin utilise une base de donnees SQLite (par defaut)."));
 				}
 				database.initialize();
 			}

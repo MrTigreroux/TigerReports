@@ -62,7 +62,7 @@ public class ReportsCommand implements TabExecutor {
 						break;
 					case "archiveall":
 						if(Permission.STAFF_ARCHIVE.check(s)) {
-							for(Map<String, Object> result : TigerReports.getDb().query("SELECT * FROM reports", null).getResultList()) {
+							for(Map<String, Object> result : TigerReports.getDb().query("SELECT * FROM tigerreports_reports", null).getResultList()) {
 								String status = (String) result.get("status");
 								if(status != null && status.startsWith("Done")) ReportUtils.formatReport(result, true).archive(null, false);
 							}

@@ -55,7 +55,7 @@ public enum ConfigFile {
 	public void reset() {
 		TigerReports.getInstance().saveResource(file.getName(), false);
 		Bukkit.getLogger().log(Level.WARNING, "------------------------------------------------------");
-		Bukkit.getLogger().log(Level.WARNING, this != CONFIG && ConfigUtils.getInfoLanguage().equalsIgnoreCase("English") ? "[TigerReports] File "+file.getName()+" has been reset." : "[TigerReports] Le fichier "+file.getName()+" a ete reinitialise.");
+		Bukkit.getLogger().log(Level.WARNING, this != CONFIG && ConfigUtils.getInfoLanguage().equalsIgnoreCase("English") ? "[TigerReports] The file "+file.getName()+" has been reset." : "[TigerReports] Le fichier "+file.getName()+" a ete reinitialise.");
 		Bukkit.getLogger().log(Level.WARNING, "------------------------------------------------------");
 	}
 	

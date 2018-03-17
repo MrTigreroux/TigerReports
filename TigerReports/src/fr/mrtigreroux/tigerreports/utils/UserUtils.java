@@ -48,7 +48,7 @@ public class UserUtils {
 				String name = ((name = TigerReports.LastNameFound.get(uuid)) != null ? name : Bukkit.getOfflinePlayer(uniqueId).getName());
 				if(name == null) {
 					try {
-						name = (String) TigerReports.getDb().query("SELECT name FROM users WHERE uuid = ?", Arrays.asList(uuid)).getResult(0, "name");
+						name = (String) TigerReports.getDb().query("SELECT name FROM tigerreports_users WHERE uuid = ?", Arrays.asList(uuid)).getResult(0, "name");
 					} catch (Exception nameNotFound) {}
 				}
 				if(name != null) {
@@ -77,7 +77,7 @@ public class UserUtils {
 	}
 	
 	public static boolean isValid(String uuid) {
-		return TigerReports.getDb().query("SELECT uuid FROM users WHERE uuid = ?", Collections.singletonList(uuid)).getResult(0, "uuid") != null;
+		return TigerReports.getDb().query("SELECT uuid FROM tigerreports_users WHERE uuid = ?", Collections.singletonList(uuid)).getResult(0, "uuid") != null;
 	}
 	
 	public static boolean isOnline(String name) {

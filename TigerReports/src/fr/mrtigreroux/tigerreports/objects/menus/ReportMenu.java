@@ -48,7 +48,7 @@ public class ReportMenu extends ReportManagerMenu {
 		
 		inv.setItem(22, MenuItem.PUNISH_ABUSE.getWithDetails(Message.PUNISH_ABUSE_DETAILS.get().replace("_Player_", r.getPlayerName("Signalman", false, true)).replace("_Time_", MessageUtils.convertToSentence(ReportUtils.getPunishSeconds()))));
 		
-		if(statisticsQuery == null) statisticsQuery = TigerReports.getDb().query("SELECT true_appreciations,uncertain_appreciations,false_appreciations,reports,reported_times,processed_reports FROM users WHERE uuid IN (?,?)", Arrays.asList(r.getSignalmanUniqueId(), r.getReportedUniqueId()));
+		if(statisticsQuery == null) statisticsQuery = TigerReports.getDb().query("SELECT true_appreciations,uncertain_appreciations,false_appreciations,reports,reported_times,processed_reports FROM tigerreports_users WHERE uuid IN (?,?)", Arrays.asList(r.getSignalmanUniqueId(), r.getReportedUniqueId()));
 		for(String type : new String[]{"Signalman", "Reported"}) {
 			String name = r.getPlayerName(type, false, false);
 			String details = Message.PLAYER_DETAILS.get();

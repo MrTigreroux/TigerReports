@@ -143,7 +143,7 @@ public abstract class Database {
 	}
 	
 	private void logDatabaseError(Exception ex) {
-		logError(ConfigUtils.getInfoMessage("Error occurred with database:", "Une erreur est survenue avec la base de donnees:"), ex);
+		logError(ConfigUtils.getInfoMessage("An error has occurred with database:", "Une erreur est survenue avec la base de donnees:"), ex);
 	}
 	
 	void logError(String message, Exception ex) {
