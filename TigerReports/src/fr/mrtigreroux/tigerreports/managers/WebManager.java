@@ -58,10 +58,10 @@ public class WebManager {
         		logger.log(Level.WARNING, "------------------------------------------------------");
         		if(ConfigUtils.getInfoLanguage().equalsIgnoreCase("English")) {
 	        		logger.log(Level.WARNING, "[TigerReports] The plugin has been updated.");
-	        		logger.log(Level.WARNING, "New version "+newVersion+" is available on:");
+	        		logger.log(Level.WARNING, "The new version "+newVersion+" is available on:");
         		} else {
 	        		logger.log(Level.WARNING, "[TigerReports] Le plugin a ete mis a jour.");
-	        		logger.log(Level.WARNING, "Le nouvelle version "+newVersion+" est disponible ici:");
+	        		logger.log(Level.WARNING, "La nouvelle version "+newVersion+" est disponible ici:");
         		}
         		logger.log(Level.WARNING, "https://www.spigotmc.org/resources/tigerreports.25773/");
         		logger.log(Level.WARNING, "------------------------------------------------------");

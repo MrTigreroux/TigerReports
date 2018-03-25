@@ -46,7 +46,7 @@ public class Comment {
 	public void setStatus(String status) {
 		this.status = status;
 		save();
-		TigerReports.getDb().updateAsynchronously("UPDATE comments SET status = ? WHERE report_id = ? AND comment_id = ?", Arrays.asList(this.status, r.getId(), commentId));
+		TigerReports.getDb().updateAsynchronously("UPDATE tigerreports_comments SET status = ? WHERE report_id = ? AND comment_id = ?", Arrays.asList(this.status, r.getId(), commentId));
 	}
 	
 	public String getAuthor() {

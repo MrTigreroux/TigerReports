@@ -54,12 +54,12 @@ public class PlayerListener implements Listener {
 			String newVersion = TigerReports.getWebManager().getNewVersion();
 			if(newVersion != null) {
 				boolean english = ConfigUtils.getInfoLanguage().equalsIgnoreCase("English");
-				p.sendMessage(english ? "§7[§6TigerReports§7] §eThe plugin §6TigerReports §ehas been updated." : "§7[§6TigerReports§7] §eLe plugin §6TigerReports §ea été mis à jour.");
+				p.sendMessage("§7[§6TigerReports§7] "+(english ? "§eThe plugin §6TigerReports §ehas been updated." : "§eLe plugin §6TigerReports §ea été mis à jour."));
 				BaseComponent updateMessage = new TextComponent(english ? "New version §7"+newVersion+" §eis available on: " : "La nouvelle version §7"+newVersion+" §eest disponible ici: ");
 				updateMessage.setColor(ChatColor.YELLOW);
 				BaseComponent button = new TextComponent(english ? "§7[§aOpen page§7]" : "§7[§aOuvrir la page§7]");
 				button.setColor(ChatColor.GREEN);
-				button.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(english ? "§6Left click §7to open plugin page\n§7of §eTigerReports§7." : "§6Clic gauche §7pour ouvrir la page\n§7du plugin §eTigerReports§7.").create()));
+				button.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder((english ? "§6Left click §7to open plugin page\n§7of" : "§6Clic gauche §7pour ouvrir la page\n§7du plugin")+" §eTigerReports§7.").create()));
 				button.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://www.spigotmc.org/resources/tigerreports.25773/"));
 				updateMessage.addExtra(button);
 				p.spigot().sendMessage(updateMessage);
@@ -69,7 +69,7 @@ public class PlayerListener implements Listener {
 		TigerReports.getBungeeManager().collectServerName();
 	}
 	
-	@EventHandler(ignoreCancelled = true)
+	@EventHandler
 	private void onPlayerQuit(PlayerQuitEvent e) {
 		String uuid = e.getPlayer().getUniqueId().toString();
 		if(TigerReports.Users.containsKey(uuid)) {
@@ -83,25 +83,25 @@ public class PlayerListener implements Listener {
 		}
 	}
 	
-	@EventHandler(priority = EventPriority.HIGHEST)
+	@EventHandler(priority = EventPriority.MONITOR)
 	private void onPlayerLogin(PlayerLoginEvent e) {
 		String error = TigerReports.getWebManager().check(e.getPlayer().getUniqueId().toString());
 		if(error != null) e.disallow(Result.KICK_OTHER, error);
 	}
 	
-	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	private void onPlayerChat(AsyncPlayerChatEvent e) {
 		UserUtils.getOnlineUser(e.getPlayer()).updateLastMessages(e.getMessage());
 	}
 	
-	@EventHandler(priority = EventPriority.HIGHEST)
+	@EventHandler(priority = EventPriority.LOWEST)
 	private void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent e) {
 		String command = e.getMessage();
 		if(checkHelpCommand(command.substring(1), e.getPlayer())) e.setCancelled(true);
 		else if(ConfigFile.CONFIG.get().getStringList("Config.CommandsHistory").contains(command.split(" ")[0])) UserUtils.getOnlineUser(e.getPlayer()).updateLastMessages(command);
 	}
 
-	@EventHandler(priority = EventPriority.HIGHEST)
+	@EventHandler(priority = EventPriority.LOWEST)
 	private void onServerCommandPreprocess(ServerCommandEvent e) {
 		if(checkHelpCommand(e.getCommand(), e.getSender())) e.setCommand("tigerreports");
 	}

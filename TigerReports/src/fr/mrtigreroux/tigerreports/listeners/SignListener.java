@@ -21,7 +21,7 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 public class SignListener implements Listener {
 
-	@EventHandler(priority = EventPriority.HIGHEST)
+	@EventHandler(priority = EventPriority.LOWEST)
 	private void onSignChange(SignChangeEvent e) {
 		Player p = e.getPlayer();
 		OnlineUser u = UserUtils.getOnlineUser(p);

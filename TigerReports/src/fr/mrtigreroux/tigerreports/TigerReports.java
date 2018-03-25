@@ -74,7 +74,7 @@ public class TigerReports extends JavaPlugin {
 			Logger logger = Bukkit.getLogger();
 			logger.log(Level.SEVERE, "------------------------------------------------------");
 			if(ConfigUtils.getInfoLanguage().equalsIgnoreCase("English")) {
-				logger.log(Level.SEVERE, "[TigerReports] File plugin.yml has been edited");
+				logger.log(Level.SEVERE, "[TigerReports] The file plugin.yml has been edited");
 				logger.log(Level.SEVERE, "without authorization.");
 			} else {
 				logger.log(Level.SEVERE, "[TigerReports] Le fichier plugin.yml a ete modifie");
