@@ -38,7 +38,7 @@ public class ReportUtils {
 			alert.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(Message.ALERT_DETAILS.get().replace("_Report_", r.getName())).create()));
 		}
 		
-		for(String line : Message.ALERT.get().replace("_Server_", server).replace("_Signalman_", r.getPlayerName("Signalman", false, true)).replace("_Reported_", r.getPlayerName("Reported", !ReportUtils.onlinePlayerRequired(), true)).replace("_Reason_", r.getReason(false)).split(ConfigUtils.getLineBreakSymbol())) {
+		for(String line : Message.ALERT.get().replace("_Server_", server).replace("_Reporter_", r.getPlayerName("Reporter", false, true)).replace("_Reported_", r.getPlayerName("Reported", !ReportUtils.onlinePlayerRequired(), true)).replace("_Reason_", r.getReason(false)).split(ConfigUtils.getLineBreakSymbol())) {
 			alert.setText(line);
 			MessageUtils.sendStaffMessage(alert.duplicate(), ConfigSound.REPORT.get());
 		}
@@ -56,11 +56,11 @@ public class ReportUtils {
 	
 	public static Report formatReport(Map<String, Object> result, boolean containsAdvancedData) {
 		if(result == null) return null;
-		Report r = new Report((int) result.get("report_id"), (String) result.get("status"), (String) result.get("appreciation"), (String) result.get("date"), (String) result.get("reported_uuid"), (String) result.get("signalman_uuid"), (String) result.get("reason"));
+		Report r = new Report((int) result.get("report_id"), (String) result.get("status"), (String) result.get("appreciation"), (String) result.get("date"), (String) result.get("reported_uuid"), (String) result.get("reporter_uuid"), (String) result.get("reason"));
 		if(containsAdvancedData) {
 			Map<String, String> advancedData = new HashMap<>();
 			Set<String> advancedKeys = new HashSet<>(result.keySet());
-			advancedKeys.removeAll(Arrays.asList("report_id", "status", "appreciation", "date", "reported_uuid", "signalman_uuid", "reason"));
+			advancedKeys.removeAll(Arrays.asList("report_id", "status", "appreciation", "date", "reported_uuid", "reporter_uuid", "reason"));
 			for(String key : advancedKeys) advancedData.put(key, (String) result.get(key));
 			r.setAdvancedData(advancedData);
 			r.save();
@@ -76,7 +76,7 @@ public class ReportUtils {
 			firstReport += (page-1)*27;
 		}
 		
-		List<Map<String, Object>> results = TigerReports.getDb().query("SELECT report_id,status,appreciation,date,reported_uuid,signalman_uuid,reason FROM tigerreports_"+table+" LIMIT 28 OFFSET ?", Collections.singletonList(firstReport-1)).getResultList();
+		List<Map<String, Object>> results = TigerReports.getDb().query("SELECT report_id,status,appreciation,date,reported_uuid,reporter_uuid,reason FROM tigerreports_"+table+" LIMIT 28 OFFSET ?", Collections.singletonList(firstReport-1)).getResultList();
 		int index = 0;
 		ItemStack empty = new ItemStack(Material.AIR);
 		for(int position = 18; position < 45; position++) {

@@ -105,7 +105,7 @@ public class ReportCommand implements CommandExecutor {
 			List<Object> parameters;
 			if(rp != null) parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", date, ruuid, uuid, reason, rp.getAddress().getAddress().toString(), MessageUtils.formatConfigLocation(rp.getLocation()), ru.getLastMessages(), rp.getGameMode().toString().toLowerCase(), !rp.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().equals(Material.AIR), rp.isSneaking(), rp.isSprinting(), (int) Math.round(rp.getHealth())+"/"+(int) Math.round(rp.getMaxHealth()), rp.getFoodLevel(), MessageUtils.formatConfigEffects(rp.getActivePotionEffects()), p.getAddress().getAddress().toString(), MessageUtils.formatConfigLocation(p.getLocation()), u.getLastMessages());
 			else parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", date, ruuid, uuid, reason, null, null, ru.getLastMessages(), null, null, null, null, null, null, null, p.getAddress().toString(), MessageUtils.formatConfigLocation(p.getLocation()), u.getLastMessages());
-			reportId = TigerReports.getDb().insert("INSERT INTO tigerreports_reports (status,appreciation,date,reported_uuid,signalman_uuid,reason,reported_ip,reported_location,reported_messages,reported_gamemode,reported_on_ground,reported_sneak,reported_sprint,reported_health,reported_food,reported_effects,signalman_ip,signalman_location,signalman_messages) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);", parameters);
+			reportId = TigerReports.getDb().insert("INSERT INTO tigerreports_reports (status,appreciation,date,reported_uuid,reporter_uuid,reason,reported_ip,reported_location,reported_messages,reported_gamemode,reported_on_ground,reported_sneak,reported_sprint,reported_health,reported_food,reported_effects,reporter_ip,reporter_location,reporter_messages) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);", parameters);
 		}
 		
 		Report r = new Report(reportId, Status.WAITING.getConfigWord(), "None", date, ruuid, uuid, reason);
@@ -119,7 +119,7 @@ public class ReportCommand implements CommandExecutor {
 		u.changeStatistic("reports", 1, false);
 		ru.changeStatistic("reported_times", 1, false);
 		
-		for(String command : ConfigFile.CONFIG.get().getStringList("Config.AutoCommands")) Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("_Server_", server).replace("_Date_", date).replace("_Signalman_", r.getPlayerName("Signalman", false, false)).replace("_Reported_", r.getPlayerName("Reported", false, false)).replace("_Reason_", reason));
+		for(String command : ConfigFile.CONFIG.get().getStringList("Config.AutoCommands")) Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("_Server_", server).replace("_Date_", date).replace("_Reporter_", r.getPlayerName("Reporter", false, false)).replace("_Reported_", r.getPlayerName("Reported", false, false)).replace("_Reason_", reason));
 		return true;
 	}
 

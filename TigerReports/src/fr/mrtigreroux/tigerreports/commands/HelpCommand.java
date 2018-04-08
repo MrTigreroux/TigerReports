@@ -25,7 +25,7 @@ public class HelpCommand {
 			s.sendMessage("§7- §b/reports notify §7: §eEnables or disables reports notifications.");
 			s.sendMessage("§7- §b/reports archiveall §7: §eArchives all done reports.");
 			s.sendMessage("§7- §b/reports archives §7: §eDisplays all archived reports.");
-			s.sendMessage("§7- §b/reports removeall §7: §eRemoves all archived reports.");
+			s.sendMessage("§7- §b/reports deleteall §7: §eDeletes all archived reports.");
 			s.sendMessage("§7Plugin §6TigerReports §7installed on this server has been created by §a@MrTigreroux§7.");
 			s.sendMessage("§7§m---------------------------------------------------");
 		} else {
@@ -42,7 +42,7 @@ public class HelpCommand {
 			s.sendMessage("§7- §b/reports notify §7: §eActive ou désactive les notifications de signalements.");
 			s.sendMessage("§7- §b/reports archiveall §7: §eArchive tous les signalements traités.");
 			s.sendMessage("§7- §b/reports archives §7: §eAffiche tous les signalements archivés.");
-			s.sendMessage("§7- §b/reports removeall §7: §eSupprime tous les signalements archivés.");
+			s.sendMessage("§7- §b/reports deleteall §7: §eSupprime tous les signalements archivés.");
 			s.sendMessage("§7Le plugin §6TigerReports §7installé sur ce serveur a été réalisé par §a@MrTigreroux§7.");
 			s.sendMessage("§7§m---------------------------------------------------");
 		}

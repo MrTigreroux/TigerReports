@@ -1,5 +1,5 @@
 name: TigerReports
-version: 4.0.1
+version: 4.1
 description: Management of reports / Gestion de signalements.
 author: MrTigreroux
 main: fr.mrtigreroux.tigerreports.TigerReports
@@ -22,14 +22,14 @@ permissions:
   tigerreports.staff.*:
     children:
         tigerreports.staff.advanced: true
-        tigerreports.staff.remove: true
+        tigerreports.staff.delete: true
         tigerreports.staff.archive: true
         tigerreports.staff.teleport: true
         tigerreports.staff: true
   tigerreports.staff.advanced:
     children:
        tigerreports.staff: true
-  tigerreports.staff.remove:
+  tigerreports.staff.delete:
     children:
        tigerreports.staff: true
   tigerreports.staff.archive.auto:

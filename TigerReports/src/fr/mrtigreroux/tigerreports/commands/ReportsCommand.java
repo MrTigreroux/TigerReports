@@ -28,7 +28,7 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 public class ReportsCommand implements TabExecutor {
 	
-	private final List<String> Actions = Arrays.asList("reload", "notify", "archiveall", "archives", "removeall", "user", "stopcooldown", "#1");
+	private final List<String> Actions = Arrays.asList("reload", "notify", "archiveall", "archives", "deleteall", "user", "stopcooldown", "#1");
 	private final List<String> UserActions = Arrays.asList("user", "u", "stopcooldown", "sc");
 	
 	@Override
@@ -70,10 +70,10 @@ public class ReportsCommand implements TabExecutor {
 						}
 						break;
 					case "archives": if(Permission.STAFF_ARCHIVE.check(s)) u.openArchivedReportsMenu(1, true); break;
-					case "removeall":
-						if(Permission.STAFF_REMOVE.check(s)) {
+					case "deleteall":
+						if(Permission.STAFF_DELETE.check(s)) {
 							TigerReports.getDb().update("DELETE FROM archived_reports;", null);
-							MessageUtils.sendStaffMessage(Message.STAFF_REMOVEALL.get().replace("_Player_", p.getName()), ConfigSound.STAFF.get());
+							MessageUtils.sendStaffMessage(Message.STAFF_DELETEALL.get().replace("_Player_", p.getName()), ConfigSound.STAFF.get());
 						}
 						break;
 					default:

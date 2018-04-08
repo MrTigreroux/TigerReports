@@ -29,7 +29,7 @@ public class ConfirmationMenu extends ReportManagerMenu {
 	@Override
 	public Inventory onOpen() {
 		String report = r.getName();
-		String actionDisplayed = action.equals("REMOVE_ARCHIVE") ? "REMOVE" : action;
+		String actionDisplayed = action.equals("DELETE_ARCHIVE") ? "DELETE" : action;
 		Inventory inv = getInventory(Message.valueOf("CONFIRM_"+actionDisplayed+"_TITLE").get().replace("_Report_", report), false);
 		
 		ItemStack gui = new CustomItem().type(Material.STAINED_GLASS_PANE).damage((byte) 7).name("").create();
@@ -45,19 +45,19 @@ public class ConfirmationMenu extends ReportManagerMenu {
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
 		if(slot == 11) {
-			if(!Permission.valueOf("STAFF_"+(action.equals("REMOVE_ARCHIVE") ? "REMOVE" : action)).isOwned(u)) {
+			if(!Permission.valueOf("STAFF_"+(action.equals("DELETE_ARCHIVE") ? "DELETE" : action)).isOwned(u)) {
 				u.openReportMenu(r);
 				return;
 			}
 			
 			switch(action) {
-				case "REMOVE": r.remove(p.getName(), false); break;
-				case "REMOVE_ARCHIVE": r.removeFromArchives(p.getName(), false); break;
+				case "DELETE": r.delete(p.getName(), false); break;
+				case "DELETE_ARCHIVE": r.deleteFromArchives(p.getName(), false); break;
 				default: r.archive(p.getName(), false); break;
 			}
 			p.closeInventory();
 		} else if(slot == 15) {
-			if(action.equals("REMOVE_ARCHIVE")) u.openArchivedReportsMenu(1, true);
+			if(action.equals("DELETE_ARCHIVE")) u.openArchivedReportsMenu(1, true);
 			else u.openReportMenu(r);
 		}
 	}

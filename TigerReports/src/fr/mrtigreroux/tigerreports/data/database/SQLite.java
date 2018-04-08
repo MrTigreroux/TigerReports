@@ -35,7 +35,7 @@ public class SQLite extends Database {
 		} catch (ClassNotFoundException missing) {
 			logError(ConfigUtils.getInfoMessage("SQLite is missing.", "SQLite n'est pas installe."), null);
 		} catch (SQLException ex) {
-			logError(ConfigUtils.getInfoMessage("Error on connection to SQLite database:", "Une erreur s'est produite lors de la connexion a la base de donnees SQLite:"), ex);
+			logError(ConfigUtils.getInfoMessage("An error has occurred during the connection to the SQLite database:", "Une erreur s'est produite lors de la connexion a la base de donnees SQLite:"), ex);
 		}
 		return;
     }
@@ -45,7 +45,7 @@ public class SQLite extends Database {
 		Bukkit.getScheduler().runTaskAsynchronously(TigerReports.getInstance(), new Runnable() {
 			@Override
 			public void run() {
-				String reportColumns = "('report_id' INTEGER PRIMARY KEY, 'status' varchar(50) NOT NULL DEFAULT 'Waiting', 'appreciation' varchar(10), 'date' varchar(20), 'reported_uuid' char(36), 'signalman_uuid' char(36), 'reason' varchar(150), 'reported_ip' varchar(22), 'reported_location' varchar(50), 'reported_messages' varchar(255), 'reported_gamemode' char(10), 'reported_on_ground' char(1), 'reported_sneak' varchar(1), 'reported_sprint' varchar(1), 'reported_health' varchar(10), 'reported_food' varchar(10), 'reported_effects' varchar(100), 'signalman_ip' varchar(22) NOT NULL, 'signalman_location' varchar(50) NOT NULL, 'signalman_messages' varchar(255));";
+				String reportColumns = "('report_id' INTEGER PRIMARY KEY, 'status' varchar(50) NOT NULL DEFAULT 'Waiting', 'appreciation' varchar(10), 'date' varchar(20), 'reported_uuid' char(36), 'reporter_uuid' char(36), 'reason' varchar(150), 'reported_ip' varchar(22), 'reported_location' varchar(50), 'reported_messages' varchar(255), 'reported_gamemode' char(10), 'reported_on_ground' char(1), 'reported_sneak' varchar(1), 'reported_sprint' varchar(1), 'reported_health' varchar(10), 'reported_food' varchar(10), 'reported_effects' varchar(100), 'reporter_ip' varchar(22) NOT NULL, 'reporter_location' varchar(50) NOT NULL, 'reporter_messages' varchar(255));";
 				update("CREATE TABLE IF NOT EXISTS tigerreports_users ('uuid' char(36) NOT NULL, 'name' varchar(20), 'cooldown' varchar(20), 'immunity' varchar(20), 'notifications' varchar(255), 'true_appreciations' int(5) DEFAULT '0', 'uncertain_appreciations' int(5) DEFAULT '0', 'false_appreciations' int(5) DEFAULT '0', 'reports' int(5) DEFAULT '0', 'reported_times' int(5) DEFAULT '0', 'processed_reports' int(5) DEFAULT '0');", null);
 				update("CREATE TABLE IF NOT EXISTS tigerreports_reports "+reportColumns, null);
 				update("CREATE TABLE IF NOT EXISTS tigerreports_comments ('report_id' INTEGER NOT NULL, 'comment_id' INTEGER PRIMARY KEY,'status' varchar(7), 'date' varchar(20), 'author' varchar(32), 'message' varchar(255));", null);			

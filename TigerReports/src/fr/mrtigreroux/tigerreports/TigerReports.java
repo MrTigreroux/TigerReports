@@ -47,7 +47,7 @@ public class TigerReports extends JavaPlugin {
 		for(ConfigFile configFiles : ConfigFile.values()) configFiles.load();
 		
 		InventoryListener.menuTitles.clear();
-		for(Message message : Arrays.asList(Message.REASON_TITLE, Message.REPORTS_TITLE, Message.REPORT_TITLE, Message.COMMENTS_TITLE, Message.CONFIRM_ARCHIVE_TITLE, Message.CONFIRM_REMOVE_TITLE, Message.PROCESS_TITLE, Message.USER_TITLE, Message.ARCHIVED_REPORTS_TITLE))
+		for(Message message : Arrays.asList(Message.REASON_TITLE, Message.REPORTS_TITLE, Message.REPORT_TITLE, Message.COMMENTS_TITLE, Message.CONFIRM_ARCHIVE_TITLE, Message.CONFIRM_DELETE_TITLE, Message.PROCESS_TITLE, Message.USER_TITLE, Message.ARCHIVED_REPORTS_TITLE))
 			InventoryListener.menuTitles.add(message.get().replace("_Page_", "").replace("_Report_", "").replace("_Target_", ""));
 
 		ReportsNotifier.start();
@@ -130,10 +130,10 @@ public class TigerReports extends JavaPlugin {
 					MySQL mysql = new MySQL(ConfigFile.CONFIG.get().getString("MySQL.Host"), ConfigFile.CONFIG.get().getInt("MySQL.Port"), ConfigFile.CONFIG.get().getString("MySQL.Database"), ConfigFile.CONFIG.get().getString("MySQL.Username"), ConfigFile.CONFIG.get().getString("MySQL.Password"));
 					mysql.check();
 					database = mysql;
-					logger.log(Level.INFO, ConfigUtils.getInfoMessage("The plugin is using MySQL database.", "Le plugin utilise une base de donnees MySQL."));
+					logger.log(Level.INFO, ConfigUtils.getInfoMessage("The plugin is using a MySQL database.", "Le plugin utilise une base de donnees MySQL."));
 				} catch (Exception invalidMySQL) {
 					database = new SQLite();
-					logger.log(Level.INFO, ConfigUtils.getInfoMessage("The plugin is using SQLite (default) database.", "Le plugin utilise une base de donnees SQLite (par defaut)."));
+					logger.log(Level.INFO, ConfigUtils.getInfoMessage("The plugin is using the SQLite (default) database.", "Le plugin utilise une base de donnees SQLite (par defaut)."));
 				}
 				database.initialize();
 			}

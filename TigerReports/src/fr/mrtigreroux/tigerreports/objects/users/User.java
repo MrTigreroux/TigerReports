@@ -84,7 +84,7 @@ public abstract class User {
 	
 	public void punish(double seconds, String player, boolean bungee) {
 		String time = MessageUtils.convertToSentence(seconds);
-		MessageUtils.sendStaffMessage(Message.STAFF_PUNISH.get().replace("_Player_", player).replace("_Signalman_", getName()).replace("_Time_", time), ConfigSound.STAFF.get());
+		MessageUtils.sendStaffMessage(Message.STAFF_PUNISH.get().replace("_Player_", player).replace("_Reporter_", getName()).replace("_Time_", time), ConfigSound.STAFF.get());
 		sendMessage(Message.PUNISHED.get().replace("_Time_", time));
 		if(!bungee) TigerReports.getBungeeManager().sendPluginNotification(player+" punish user "+uuid+" "+seconds);
 		startCooldown(seconds, bungee);

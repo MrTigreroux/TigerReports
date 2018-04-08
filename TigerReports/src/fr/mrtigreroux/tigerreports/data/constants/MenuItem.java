@@ -24,7 +24,7 @@ public enum MenuItem {
 	PUNISH_ABUSE(Material.GOLD_AXE, Message.PUNISH_ABUSE, true),
 	DATA(Material.ENCHANTED_BOOK, Message.DATA),
 	ARCHIVE(Material.STAINED_CLAY, (short) 9, Message.ARCHIVE, Message.ARCHIVE_DETAILS.get(), false),
-	REMOVE(Material.FLINT_AND_STEEL, Message.REMOVE, Message.REMOVE_DETAILS.get(), false),
+	DELETE(Material.FLINT_AND_STEEL, Message.DELETE, Message.DELETE_DETAILS.get(), false),
 	COMMENTS(Material.WRITTEN_BOOK, Message.COMMENTS, true),
 	CANCEL_APPRECIATION(Material.FEATHER, Message.CANCEL_PROCESS, Message.CANCEL_PROCESS_DETAILS.get(), false),
 	WRITE_COMMENT(Material.BOOK_AND_QUILL, Message.WRITE_COMMENT, Message.WRITE_COMMENT_DETAILS.get(), false);

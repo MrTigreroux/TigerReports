@@ -36,7 +36,7 @@ public class ArchivedReportsMenu extends Menu implements UpdatedMenu {
 	
 	@Override
 	public void onUpdate(Inventory inv) {
-		ReportUtils.addReports("archived_reports", inv, page, Message.REPORT_RESTORE_ACTION.get()+(Permission.STAFF_REMOVE.isOwned(u) ? Message.REPORT_REMOVE_ACTION.get() : ""));
+		ReportUtils.addReports("archived_reports", inv, page, Message.REPORT_RESTORE_ACTION.get()+(Permission.STAFF_DELETE.isOwned(u) ? Message.REPORT_DELETE_ACTION.get() : ""));
 	}
 
 	@Override
@@ -45,7 +45,7 @@ public class ArchivedReportsMenu extends Menu implements UpdatedMenu {
 		else if(slot >= 18 && slot <= size-9) {
 			Report r = ReportUtils.formatReport(TigerReports.getDb().query("SELECT * FROM tigerreports_archived_reports LIMIT 1 OFFSET ?", Collections.singletonList(getIndex(slot)-1)).getResult(0), true);
 			if(r == null) update(true);
-			else if(click.equals(ClickType.DROP) && Permission.STAFF_REMOVE.isOwned(u)) u.openConfirmationMenu(r, "REMOVE_ARCHIVE");
+			else if(click.equals(ClickType.DROP) && Permission.STAFF_DELETE.isOwned(u)) u.openConfirmationMenu(r, "DELETE_ARCHIVE");
 			else {
 				r.unarchive(p.getName(), false);
 				p.closeInventory();

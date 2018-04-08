@@ -47,7 +47,7 @@ public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu {
 		}
 		
 		List<Comment> comments = new ArrayList<>(r.getComments().values());
-		boolean remove = Permission.STAFF_REMOVE.isOwned(u);
+		boolean delete = Permission.STAFF_DELETE.isOwned(u);
 		ItemStack empty = new ItemStack(Material.AIR);
 		for(int position = 18; position < 45; position++) {
 			if(index == -1) inv.setItem(position, empty);
@@ -57,7 +57,7 @@ public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu {
 					inv.setItem(position, empty);
 					index = -1;
 				} else {
-					inv.setItem(position, c.getItem(remove));
+					inv.setItem(position, c.getItem(delete));
 					index++;
 				}
 			}
@@ -83,7 +83,7 @@ public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu {
 					return;
 				} else if(click.toString().contains("RIGHT")) {
 					String comment = "Report"+r.getId()+":Comment"+c.getId();
-					User su = UserUtils.getUser(r.getSignalmanUniqueId());
+					User su = UserUtils.getUser(r.getReporterUniqueId());
 					boolean isPrivate = c.getStatus(true).equals("Private");
 					if(isPrivate && su instanceof OnlineUser) {
 						((OnlineUser) su).sendNotification(comment, true);
@@ -101,7 +101,7 @@ public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu {
 					}
 					su.setNotifications(notifications);
 				} else if(click.equals(ClickType.DROP)) {
-					if(Permission.STAFF_REMOVE.isOwned(u)) c.remove();
+					if(Permission.STAFF_DELETE.isOwned(u)) c.delete();
 					else return;
 				}
 			}

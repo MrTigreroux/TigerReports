@@ -46,13 +46,13 @@ public class ReportMenu extends ReportManagerMenu {
 		inv.setItem(4, r.getItem(null));
 		inv.setItem(18, r.getItem(Message.REPORT_CHAT_ACTION.get()));
 		
-		inv.setItem(22, MenuItem.PUNISH_ABUSE.getWithDetails(Message.PUNISH_ABUSE_DETAILS.get().replace("_Player_", r.getPlayerName("Signalman", false, true)).replace("_Time_", MessageUtils.convertToSentence(ReportUtils.getPunishSeconds()))));
+		inv.setItem(22, MenuItem.PUNISH_ABUSE.getWithDetails(Message.PUNISH_ABUSE_DETAILS.get().replace("_Player_", r.getPlayerName("Reporter", false, true)).replace("_Time_", MessageUtils.convertToSentence(ReportUtils.getPunishSeconds()))));
 		
-		if(statisticsQuery == null) statisticsQuery = TigerReports.getDb().query("SELECT true_appreciations,uncertain_appreciations,false_appreciations,reports,reported_times,processed_reports FROM tigerreports_users WHERE uuid IN (?,?)", Arrays.asList(r.getSignalmanUniqueId(), r.getReportedUniqueId()));
-		for(String type : new String[]{"Signalman", "Reported"}) {
+		if(statisticsQuery == null) statisticsQuery = TigerReports.getDb().query("SELECT true_appreciations,uncertain_appreciations,false_appreciations,reports,reported_times,processed_reports FROM tigerreports_users WHERE uuid IN (?,?)", Arrays.asList(r.getReporterUniqueId(), r.getReportedUniqueId()));
+		for(String type : new String[]{"Reporter", "Reported"}) {
 			String name = r.getPlayerName(type, false, false);
 			String details = Message.PLAYER_DETAILS.get();
-			Map<String, Object> statistics = statisticsQuery.getResult(type.equals("Signalman") ? 0 : 1);
+			Map<String, Object> statistics = statisticsQuery.getResult(type.equals("Reporter") ? 0 : 1);
 			for(Statistic stat : Statistic.values()) {
 				String statName = stat.getConfigName();
 				String value;
@@ -64,7 +64,7 @@ public class ReportMenu extends ReportManagerMenu {
 				details = details.replace("_"+statName.substring(0, 1).toUpperCase()+statName.substring(1).replace("_", "")+"_", value);
 			}
 			String server = (server = MessageUtils.getConfigServerLocation(r.getOldLocation(type))) != null ? server : Message.NOT_FOUND_MALE.get();
-			inv.setItem(type.equals("Signalman") ? 21 : 23, new CustomItem().skullOwner(name).name(Message.valueOf(type.toUpperCase()).get().replace("_Player_", r.getPlayerName(type, true, true)))
+			inv.setItem(type.equals("Reporter") ? 21 : 23, new CustomItem().skullOwner(name).name(Message.valueOf(type.toUpperCase()).get().replace("_Player_", r.getPlayerName(type, true, true)))
 					.lore(details.replace("_Server_", server).replace("_Teleportation_", Permission.STAFF_TELEPORT.isOwned(u) ? ((UserUtils.isOnline(name) ? Message.TELEPORT_TO_CURRENT_POSITION.get() : Message.CAN_NOT_TELEPORT_TO_CURRENT_POSITION.get()).replace("_Player_", name)+(r.getOldLocation(type) != null ? Message.TELEPORT_TO_OLD_POSITION.get() : Message.CAN_NOT_TELEPORT_TO_OLD_POSITION.get()).replace("_Player_", name)) : "").split(ConfigUtils.getLineBreakSymbol())).create());
 		}
 		
@@ -79,7 +79,7 @@ public class ReportMenu extends ReportManagerMenu {
 		}
 		if(archive) inv.setItem(33, MenuItem.ARCHIVE.get());
 		
-		if(Permission.STAFF_REMOVE.isOwned(u)) inv.setItem(36, MenuItem.REMOVE.get());
+		if(Permission.STAFF_DELETE.isOwned(u)) inv.setItem(36, MenuItem.DELETE.get());
 		inv.setItem(44, MenuItem.COMMENTS.getWithDetails(Message.COMMENTS_DETAILS.get()));
 		
 		return inv;
@@ -92,7 +92,7 @@ public class ReportMenu extends ReportManagerMenu {
 			case 18: u.printInChat(r, r.implementDetails(Message.REPORT_CHAT_DETAILS.get(), false).replace("_Report_", r.getName()).split(ConfigUtils.getLineBreakSymbol())); break;
 			case 21: case 23:
 				if(!Permission.STAFF_TELEPORT.isOwned(u)) return;
-				String targetType = slot == 21 ? "Signalman" : "Reported";
+				String targetType = slot == 21 ? "Reporter" : "Reported";
 				String name = r.getPlayerName(targetType, false, false);
 				Player t = UserUtils.getPlayer(name);
 				String locType;
@@ -128,7 +128,7 @@ public class ReportMenu extends ReportManagerMenu {
 				break;
 			case 22:
 				long seconds = ReportUtils.getPunishSeconds();
-				UserUtils.getUser(r.getSignalmanUniqueId()).punish(seconds, p.getName(), false);
+				UserUtils.getUser(r.getReporterUniqueId()).punish(seconds, p.getName(), false);
 				r.process(p.getUniqueId().toString(), null, "False", false, false);
 				u.openReportsMenu(1, false);
 				break;
@@ -136,7 +136,7 @@ public class ReportMenu extends ReportManagerMenu {
 				if(click == ClickType.LEFT) u.printInChat(r, r.implementData(Message.REPORT_CHAT_DATA.get(), Permission.STAFF_ADVANCED.isOwned(u)).replace("_Report_", r.getName()).split(ConfigUtils.getLineBreakSymbol()));
 				else if(click == ClickType.RIGHT) {
 					Map<Double, String> sortedMessages = new TreeMap<>();
-					for(String type : new String[] {"Reported", "Signalman"}) {
+					for(String type : new String[] {"Reported", "Reporter"}) {
 						for(String message : r.getMessagesHistory(type)) {
 							if(message != null && message.length() >= 20) {
 								String date = message.substring(0, 19);
@@ -149,7 +149,7 @@ public class ReportMenu extends ReportManagerMenu {
 					u.printInChat(r, Message.REPORT_MESSAGES_HISTORY.get().replace("_Report_", r.getName()).replace("_Messages_", !messages.toString().isEmpty() ? messages.toString() : Message.NONE_MALE.get()).split(ConfigUtils.getLineBreakSymbol()));
 				}
 				break;
-			case 36: u.openConfirmationMenu(r, "REMOVE"); break;
+			case 36: u.openConfirmationMenu(r, "DELETE"); break;
 			case 44: u.openCommentsMenu(1, r); break;
 			default:
 				if((slot == 32 || slot == 33) && !(Permission.STAFF_ARCHIVE.isOwned(u) && (r.getStatus() == Status.DONE || !ReportUtils.onlyDoneArchives()))) slot--;

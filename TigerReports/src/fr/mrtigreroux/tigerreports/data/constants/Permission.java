@@ -12,7 +12,7 @@ import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 
 public enum Permission {
 
-	REPORT, REPORT_EXEMPT, STAFF, STAFF_TELEPORT, STAFF_ARCHIVE, STAFF_ARCHIVE_AUTO, STAFF_REMOVE, STAFF_ADVANCED, MANAGE;
+	REPORT, REPORT_EXEMPT, STAFF, STAFF_TELEPORT, STAFF_ARCHIVE, STAFF_ARCHIVE_AUTO, STAFF_DELETE, STAFF_ADVANCED, MANAGE;
 	
 	public String get() {
 		return "tigerreports."+toString().toLowerCase().replace("_", ".");

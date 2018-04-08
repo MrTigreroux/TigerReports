@@ -55,11 +55,11 @@ public class PlayerListener implements Listener {
 			if(newVersion != null) {
 				boolean english = ConfigUtils.getInfoLanguage().equalsIgnoreCase("English");
 				p.sendMessage("§7[§6TigerReports§7] "+(english ? "§eThe plugin §6TigerReports §ehas been updated." : "§eLe plugin §6TigerReports §ea été mis à jour."));
-				BaseComponent updateMessage = new TextComponent(english ? "New version §7"+newVersion+" §eis available on: " : "La nouvelle version §7"+newVersion+" §eest disponible ici: ");
+				BaseComponent updateMessage = new TextComponent(english ? "The new version §7"+newVersion+" §eis available on: " : "La nouvelle version §7"+newVersion+" §eest disponible ici: ");
 				updateMessage.setColor(ChatColor.YELLOW);
 				BaseComponent button = new TextComponent(english ? "§7[§aOpen page§7]" : "§7[§aOuvrir la page§7]");
 				button.setColor(ChatColor.GREEN);
-				button.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder((english ? "§6Left click §7to open plugin page\n§7of" : "§6Clic gauche §7pour ouvrir la page\n§7du plugin")+" §eTigerReports§7.").create()));
+				button.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder((english ? "§6Left click §7to open the plugin page\n§7of" : "§6Clic gauche §7pour ouvrir la page\n§7du plugin")+" §eTigerReports§7.").create()));
 				button.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://www.spigotmc.org/resources/tigerreports.25773/"));
 				updateMessage.addExtra(button);
 				p.spigot().sendMessage(updateMessage);
