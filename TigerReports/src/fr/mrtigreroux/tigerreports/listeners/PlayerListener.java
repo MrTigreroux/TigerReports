@@ -89,7 +89,7 @@ public class PlayerListener implements Listener {
 		if(error != null) e.disallow(Result.KICK_OTHER, error);
 	}
 	
-	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	private void onPlayerChat(AsyncPlayerChatEvent e) {
 		UserUtils.getOnlineUser(e.getPlayer()).updateLastMessages(e.getMessage());
 	}
