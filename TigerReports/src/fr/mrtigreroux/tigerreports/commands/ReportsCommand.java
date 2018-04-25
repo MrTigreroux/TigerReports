@@ -72,7 +72,7 @@ public class ReportsCommand implements TabExecutor {
 					case "archives": if(Permission.STAFF_ARCHIVE.check(s)) u.openArchivedReportsMenu(1, true); break;
 					case "deleteall":
 						if(Permission.STAFF_DELETE.check(s)) {
-							TigerReports.getDb().update("DELETE FROM archived_reports;", null);
+							TigerReports.getDb().update("DELETE FROM tigerreports_archived_reports;", null);
 							MessageUtils.sendStaffMessage(Message.STAFF_DELETEALL.get().replace("_Player_", p.getName()), ConfigSound.STAFF.get());
 						}
 						break;

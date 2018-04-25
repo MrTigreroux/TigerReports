@@ -92,17 +92,15 @@ public class BungeeManager implements PluginMessageListener {
 	}
 
 	public void sendPluginNotification(String message) {
-		sendServerPluginNotification("ALL", message);
+		sendServerPluginNotification("ALL", System.currentTimeMillis()+" "+message);
 	}
 	
 	public void sendPluginMessage(String... message) {
 		if(!initialized) return;
 		
 		Player p = getRandomPlayer();
-		if(p == null) {
-			Bukkit.broadcastMessage("Player null");
-			return;
-		}
+		if(p == null) return;
+		
 		ByteArrayDataOutput out = ByteStreams.newDataOutput();
 		for(String part : message) out.writeUTF(part);
 		p.sendPluginMessage(main, "BungeeCord", out.toByteArray());
@@ -121,23 +119,28 @@ public class BungeeManager implements PluginMessageListener {
 			DataInputStream messageStream = new DataInputStream(new ByteArrayInputStream(messageBytes));
 			try {
 				String message = messageStream.readUTF();
+				int index = message.indexOf(' ');
+				long sendTime = Long.parseLong(message.substring(0, index));
+				boolean notify = System.currentTimeMillis()-sendTime < 20000;
+				
+				message = message.substring(index+1);
 				String[] parts = message.split(" ");
 				Report r = parts.length == 3 ? ReportUtils.getReportById(Integer.parseInt(parts[2])) : null;
 				User u = parts.length == 4 || parts.length == 5 ? UserUtils.getUser(parts[3]) : null;
 				
 				switch(parts[1]) {
-					case "new_report": ReportUtils.sendReport(new Report(Integer.parseInt(parts[0]), Status.WAITING.getConfigWord(), "None", parts[2].replace("_", " "), parts[3], parts[4], parts[5].replace("_", " ")), parts[6]); break;
+					case "new_report": ReportUtils.sendReport(new Report(Integer.parseInt(parts[0]), Status.WAITING.getConfigWord(), "None", parts[2].replace("_", " "), parts[3], parts[4], parts[5].replace("_", " ")), parts[6], notify); break;
 					case "new_status": r.setStatus(Status.valueOf(parts[0]), true); break;
-					case "process": r.process(parts[0].split("/")[0], parts[0].split("/")[1], parts[3], true, false); break;
-					case "delete": r.delete(parts[0], true); break;
-					case "archive": r.archive(parts[0], true); break;
-					case "unarchive": r.unarchive(parts[0], true); break;
-					case "delete_archive": r.deleteFromArchives(parts[0], true); break;
+					case "process": r.process(parts[0].split("/")[0], notify ? parts[0].split("/")[1] : null, parts[3], true, false); break;
+					case "delete": r.delete(notify ? parts[0] : null, true); break;
+					case "archive": r.archive(notify ? parts[0] : null, true); break;
+					case "unarchive": r.unarchive(notify ? parts[0] : null, true); break;
+					case "delete_archive": r.deleteFromArchives(notify ? parts[0] : null, true); break;
 					
 					case "new_immunity": u.updateImmunity(parts[0].equals("null") ? null : parts[0].replace("_", " "), true); break;
 					case "new_cooldown": u.updateCooldown(parts[0].equals("null") ? null : parts[0].replace("_", " "), true); break;
-					case "punish": u.punish(Double.parseDouble(parts[4]), parts[0], true); break;
-					case "stop_cooldown": u.stopCooldown(parts[0], true); break;
+					case "punish": u.punish(Double.parseDouble(parts[4]), notify ? parts[0] : null, true); break;
+					case "stop_cooldown": u.stopCooldown(notify ? parts[0] : null, true); break;
 					case "change_statistic": u.changeStatistic(parts[2], Integer.parseInt(parts[0]), true); break;
 					case "teleport": UserUtils.getPlayer(parts[0]).teleport(MessageUtils.getConfigLocation(parts[2])); break;
 					default: break;

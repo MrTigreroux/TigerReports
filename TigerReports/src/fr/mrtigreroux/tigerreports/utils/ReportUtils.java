@@ -27,7 +27,10 @@ import fr.mrtigreroux.tigerreports.objects.Report;
 
 public class ReportUtils {
 	
-	public static void sendReport(Report r, String server) {
+	public static void sendReport(Report r, String server, boolean notify) {
+		Bukkit.getServer().getPluginManager().callEvent(new NewReportEvent(server, r));
+		if(!notify) return;
+		
 		int reportId = r.getId();
 		
 		TextComponent alert = new TextComponent();
@@ -42,8 +45,6 @@ public class ReportUtils {
 			alert.setText(line);
 			MessageUtils.sendStaffMessage(alert.duplicate(), ConfigSound.REPORT.get());
 		}
-		
-		Bukkit.getServer().getPluginManager().callEvent(new NewReportEvent(server, r));
 	}
 	
 	public static Report getReportById(int reportId) {

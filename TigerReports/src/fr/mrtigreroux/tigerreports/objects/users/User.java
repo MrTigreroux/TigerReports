@@ -82,11 +82,13 @@ public abstract class User {
 		updateCooldown(MessageUtils.convertToDate(MessageUtils.getSeconds(MessageUtils.getNowDate())+seconds), bungee);
 	}
 	
-	public void punish(double seconds, String player, boolean bungee) {
+	public void punish(double seconds, String staff, boolean bungee) {
 		String time = MessageUtils.convertToSentence(seconds);
-		MessageUtils.sendStaffMessage(Message.STAFF_PUNISH.get().replace("_Player_", player).replace("_Reporter_", getName()).replace("_Time_", time), ConfigSound.STAFF.get());
-		sendMessage(Message.PUNISHED.get().replace("_Time_", time));
-		if(!bungee) TigerReports.getBungeeManager().sendPluginNotification(player+" punish user "+uuid+" "+seconds);
+		if(staff != null) {
+			MessageUtils.sendStaffMessage(Message.STAFF_PUNISH.get().replace("_Player_", staff).replace("_Reporter_", getName()).replace("_Time_", time), ConfigSound.STAFF.get());
+			sendMessage(Message.PUNISHED.get().replace("_Time_", time));
+		}
+		if(!bungee) TigerReports.getBungeeManager().sendPluginNotification(staff+" punish user "+uuid+" "+seconds);
 		startCooldown(seconds, bungee);
 	}
 	
@@ -105,11 +107,13 @@ public abstract class User {
 		return null;
 	}
 	
-	public void stopCooldown(String player, boolean bungee) {
-		MessageUtils.sendStaffMessage(Message.STAFF_STOPCOOLDOWN.get().replace("_Player_", player).replace("_Target_", getName()), ConfigSound.STAFF.get());
-		sendMessage(Message.COOLDOWN_STOPPED.get());
+	public void stopCooldown(String staff, boolean bungee) {
+		if(staff != null) {
+			MessageUtils.sendStaffMessage(Message.STAFF_STOPCOOLDOWN.get().replace("_Player_", staff).replace("_Target_", getName()), ConfigSound.STAFF.get());
+			sendMessage(Message.COOLDOWN_STOPPED.get());
+		}
 		if(!bungee) {
-			TigerReports.getBungeeManager().sendPluginNotification(player+" stop_cooldown user "+uuid);
+			TigerReports.getBungeeManager().sendPluginNotification(staff+" stop_cooldown user "+uuid);
 			updateCooldown(null, false);
 		}
 	}

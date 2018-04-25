@@ -137,14 +137,14 @@ public class Report {
 		return Message.REPORT.get().replace("_Report_", getName())+"\n"+implementDetails(Message.REPORT_DETAILS.get(), false).replace("_Actions_", "");
 	}
 	
-	public void process(String uuid, String player, String appreciation, boolean bungee, boolean auto) {
+	public void process(String uuid, String staff, String appreciation, boolean bungee, boolean auto) {
 		this.status = Status.DONE.getConfigWord()+" by "+uuid;
 		this.appreciation = appreciation;
 		save();
-		if(player != null) MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage(Message.STAFF_PROCESS.get().replace("_Player_", player).replace("_Appreciation_", Message.valueOf(appreciation.toUpperCase()).get()), "_Report_", getName(), getText(), null), ConfigSound.STAFF.get());
+		if(staff != null) MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage(Message.STAFF_PROCESS.get().replace("_Player_", staff).replace("_Appreciation_", Message.valueOf(appreciation.toUpperCase()).get()), "_Report_", getName(), getText(), null), ConfigSound.STAFF.get());
 		if(!bungee) {
-			TigerReports.getBungeeManager().sendPluginNotification(uuid+"/"+player+" process "+reportId+" "+appreciation);
-			if(auto) archive(player, false);
+			TigerReports.getBungeeManager().sendPluginNotification(uuid+"/"+staff+" process "+reportId+" "+appreciation);
+			if(auto) archive(staff, false);
 			else TigerReports.getDb().update("UPDATE tigerreports_reports SET status = ?,appreciation = ? WHERE report_id = ?", Arrays.asList(status, appreciation, reportId));
 			UserUtils.getUser(uuid).changeStatistic("processed_reports", 1, false);
 			UserUtils.getUser(reporterUniqueId).changeStatistic(appreciation.toLowerCase()+"_appreciations", 1, false);
@@ -188,31 +188,31 @@ public class Report {
 		return c;
 	}
 	
-	public void delete(String player, boolean bungee) {
+	public void delete(String staff, boolean bungee) {
 		TigerReports.Reports.remove(reportId);
-		if(player != null) MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage(Message.STAFF_DELETE.get().replace("_Player_", player), "_Report_", getName(), getText(), null), ConfigSound.STAFF.get());
+		if(staff != null) MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage(Message.STAFF_DELETE.get().replace("_Player_", staff), "_Report_", getName(), getText(), null), ConfigSound.STAFF.get());
 		if(!bungee) {
-			TigerReports.getBungeeManager().sendPluginNotification(player+" delete "+reportId);
+			TigerReports.getBungeeManager().sendPluginNotification(staff+" delete "+reportId);
 			TigerReports.getDb().updateAsynchronously("DELETE FROM tigerreports_reports WHERE report_id = ?", Collections.singletonList(reportId));
 			TigerReports.getDb().updateAsynchronously("DELETE FROM tigerreports_comments WHERE report_id = ?", Collections.singletonList(reportId));
 		}
 	}
 	
-	public void archive(String player, boolean bungee) {
-		if(player != null) MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage(Message.STAFF_ARCHIVE.get().replace("_Player_", player), "_Report_", getName(), getText(), null), ConfigSound.STAFF.get());
+	public void archive(String staff, boolean bungee) {
+		if(staff != null) MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage(Message.STAFF_ARCHIVE.get().replace("_Player_", staff), "_Report_", getName(), getText(), null), ConfigSound.STAFF.get());
 		if(!bungee) {
-			TigerReports.getBungeeManager().sendPluginNotification(player+" archive "+reportId);
+			TigerReports.getBungeeManager().sendPluginNotification(staff+" archive "+reportId);
 			TigerReports.getDb().updateAsynchronously("REPLACE INTO tigerreports_archived_reports (report_id,status,appreciation,date,reported_uuid,reporter_uuid,reason,reported_ip,reported_location,reported_messages,reported_gamemode,reported_on_ground,reported_sneak,reported_sprint,reported_health,reported_food,reported_effects,reporter_ip,reporter_location,reporter_messages) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);",
 					Arrays.asList(reportId, status, appreciation, date, reportedUniqueId, reporterUniqueId, reason, advancedData.get("reported_ip"), advancedData.get("reported_location"), advancedData.get("reported_messages"), advancedData.get("reported_gamemode"), advancedData.get("reported_on_ground"), advancedData.get("reported_sneak"), advancedData.get("reported_sprint"), advancedData.get("reported_health"), advancedData.get("reported_food"), advancedData.get("reported_effects"), advancedData.get("reporter_ip"), advancedData.get("reporter_location"), advancedData.get("reporter_messages")));
 		}
 		delete(null, bungee);
 	}
 	
-	public void unarchive(String player, boolean bungee) {
-		MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage(Message.STAFF_RESTORE.get().replace("_Player_", player), "_Report_", getName(), getText(), null), ConfigSound.STAFF.get());
+	public void unarchive(String staff, boolean bungee) {
+		if(staff != null) MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage(Message.STAFF_RESTORE.get().replace("_Player_", staff), "_Report_", getName(), getText(), null), ConfigSound.STAFF.get());
 		save();
 		if(!bungee) {
-			TigerReports.getBungeeManager().sendPluginNotification(player+" unarchive "+reportId);
+			TigerReports.getBungeeManager().sendPluginNotification(staff+" unarchive "+reportId);
 			Bukkit.getScheduler().runTaskAsynchronously(TigerReports.getInstance(), new Runnable() {
 				@Override
 				public void run() {
@@ -226,10 +226,10 @@ public class Report {
 		}
 	}
 	
-	public void deleteFromArchives(String player, boolean bungee) {
-		MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage(Message.STAFF_DELETE_ARCHIVE.get().replace("_Player_", player), "_Report_", getName(), getText(), null), ConfigSound.STAFF.get());
+	public void deleteFromArchives(String staff, boolean bungee) {
+		if(staff != null) MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage(Message.STAFF_DELETE_ARCHIVE.get().replace("_Player_", staff), "_Report_", getName(), getText(), null), ConfigSound.STAFF.get());
 		if(!bungee) {
-			TigerReports.getBungeeManager().sendPluginNotification(player+" delete_archive "+reportId);
+			TigerReports.getBungeeManager().sendPluginNotification(staff+" delete_archive "+reportId);
 			TigerReports.getDb().updateAsynchronously("DELETE FROM tigerreports_archived_reports WHERE report_id = ?", Collections.singletonList(reportId));
 		}
 	}
