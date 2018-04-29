@@ -8,35 +8,37 @@ Config:
   LineBreakSymbol: "//"
   # Symbol used to separate lines in messages.yml / Symbole utilisé pour séparer les lignes dans messages.yml
   InfoLanguage: French
-  # Language used in info messages of plugin like warnings and /tigerreports help command / Langue utilisée pour les messages d'information comme les avertissements et la commande d'aide /tigerreports
+  # Language used in info messages of the plugin like warnings and /tigerreports help command / Langue utilisée pour les messages d'information comme les avertissements et la commande d'aide /tigerreports
   # Only 2 languages : French and English / Seulement 2 langues : French et English
   PermissionRequired: no
   # Permission needed to use /report command / Permission requise pour utiliser la commande /report
   ReportOnline: no
   # Report only online players / Signaler uniquement des joueurs connectés
   MaxReports: 100
-  # Maximum amount of saved reports, others are just displayed in chat / Nombre maximum de signalements sauvegardés, les autres sont simplement affichés dans le chat
+  # Maximum amount of saved reports, others are just displayed in the chat / Nombre maximum de signalements sauvegardés, les autres sont simplement affichés dans le chat
   MinCharacters: 3
-  # Minimum of characters in reason of a report / Caractères minimum pour la raison d'un signalement
+  # Minimum amount of characters in the reason of a report / Nombre minimum de caractères pour la raison d'un signalement
   ReportCooldown: 300
-  # Cooldown between each report in seconds / Temps d'attente entre chaque signalement en secondes
+  # Cooldown in seconds between each report / Temps en secondes d'attente entre chaque signalement
   ReportedImmunity: 120
-  # Time in seconds during reported player can not be reported again / Temps en secondes durant lequel un joueur signalé ne peut être à nouveau signalé.
+  # Time in seconds during the reported player cannot be reported again / Temps en secondes durant lequel un joueur signalé ne peut être à nouveau signalé
   AutoCommands: none
   # List of executed commands after a report, put "none" to don't execute any / Liste des commandes exécutées après chaque signalement, mettre "none" pour aucune
-  # Usable tags:    _Server_, _Date_, _Signalman_, _Reported_ and _Reason_
+  # Usable tags:    _Server_, _Date_, _Reporter_, _Reported_ and _Reason_
   PunishSeconds: 3600
-  # Cooldown inflicted on abusive report / Temps d'attente infligé pour un signalement abusif
+  # Cooldown inflicted for an abusive report / Temps d'attente infligé pour un signalement abusif
   MessagesHistory: 5
-  # Saved messages amount / Nombre de messages sauvegardés
+  # Amount of saved messages / Nombre de messages sauvegardés
   CommandsHistory: none
+#   - msg
+#   - tell
   # List of saved commands in messages history, put "none" to don't save any / Liste des commandes sauvegardées dans l'historique des messages, mettre "none" pour aucune
   ReportsNotifications:
     Connection: yes
     MinutesInterval: 0
-  # Notifications of reports to process / Notifications à propos des signalements à traiter
-  # Connection:    Show at staff connection / Afficher à la connexion d'un membre de l'équipe
-  # MinutesInterval:    Show each x minutes / Afficher toutes les x minutes
+  # Notifications about reports to process / Notifications à propos des signalements à traiter
+  # Connection:    Display at staff connection / Afficher à la connexion d'un membre de l'équipe
+  # MinutesInterval:    Display each x minutes / Afficher toutes les x minutes
   OnlyDoneArchives: no
   # Prevent archive of unprocessed reports / Empêcher l'archivage de signalements non traités
   MenuUpdatesInterval: 10
@@ -47,7 +49,7 @@ Config:
   TeleportSound: ENTITY_ENDERMEN_TELEPORT
   StaffSound: ENTITY_ITEM_PICKUP
   # Bukkit sounds used on specific actions / Sons bukkit utilisés pour certaines actions
-  # Put 'none' to disable sound / Mettre 'none' pour désactiver le son
+  # Put 'none' to disable the sound / Mettre 'none' pour désactiver le son
   CustomReasons: yes
   # Allow custom reasons / Autoriser les raisons personnalisées
   DefaultReasons:
@@ -78,8 +80,8 @@ Config:
     Reason9:
       Name: "Insultes"
       Item: Material-Sign
-  # Default reasons shown in a menu / Raisons par défaut affichées dans un menu
-  # Name:    Reason of report / Raison du signalement
+  # Default reasons displayed in a menu / Raisons par défaut affichées dans un menu
+  # Name:    Reason of the report / Raison du signalement
   # Item:    Material-<item_type>(:damage) or/ou Skull-<pseudo>
   # Examples:    Material-Stone = Stone / Pierre    Material-Wool:2 = Magenta Wool / Laine magenta    Skull-MrTigreroux = Skull of player MrTigreroux / Tête du joueur MrTigreroux
 BungeeCord: yes
@@ -90,4 +92,4 @@ MySQL:
   Database: ""
   Username: ""
   Password: ""
-  # Login IDs of connection to MySQL database / Identifiants de connexion à une base de données MySQL
+# Login IDs of connection to a MySQL database / Identifiants de connexion à une base de données MySQL

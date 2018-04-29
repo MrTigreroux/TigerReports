@@ -26,7 +26,7 @@ public class MySQL extends Database {
 	}
 	
 	public void check() throws SQLException {
-		if(host == null || host.isEmpty() || database == null || database.isEmpty() || username == null || username.isEmpty() || password == null || password.isEmpty()) throw new SQLException();
+		if(host == null || host.isEmpty() || database == null || database.isEmpty() || username == null || username.isEmpty()) throw new SQLException();
 		openConnection();
 		connection.createStatement();
 	}
