@@ -6,9 +6,9 @@ import java.util.List;
 import org.bukkit.Bukkit;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
+import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.objects.menus.Menu;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
-import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 
 /**
  * @author MrTigreroux
@@ -43,7 +43,7 @@ public class MenuUpdater implements Runnable {
 	
 	public static void start() {
 		stop(false);
-		int interval = ConfigUtils.getMenuUpdatesInterval();
+		int interval = ConfigFile.CONFIG.get().getInt("Config.MenuUpdatesInterval", 10)*20;
 		if(interval > 0) taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(TigerReports.getInstance(), new MenuUpdater(), interval, interval);
 	}
 	

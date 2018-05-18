@@ -135,7 +135,7 @@ public class MessageUtils {
 		String color = null;
 		int index = lastWord != null ? text.indexOf(lastWord) : text.length();
 		if(index == -1) return ChatColor.WHITE;
-		for(String code : org.bukkit.ChatColor.getLastColors(text.substring(0, index)).split("§")) if(COLOR_CODES.contains(code)) color = code;
+		for(String code : org.bukkit.ChatColor.getLastColors(text.substring(0, index)).split("\u00A7")) if(COLOR_CODES.contains(code)) color = code;
 		if(color == null) color = "f";
 		return ChatColor.getByChar(color.charAt(0));
 	}

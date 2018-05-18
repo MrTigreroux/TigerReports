@@ -6,10 +6,10 @@ import java.util.Map;
 import org.bukkit.Bukkit;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
+import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Status;
-import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 
 /**
@@ -39,16 +39,16 @@ public class ReportsNotifier implements Runnable {
 			String statusPlaceHolder = "_"+status.getConfigWord()+"_";
 			if(!reportsNotification.contains(statusPlaceHolder)) break;
 			int amount = (statusTypes.get(status) != null ? statusTypes.get(status) : 0);
-			reportsNotification = reportsNotification.replace(statusPlaceHolder, (amount <= 1 ? Message.REPORT_TYPE : Message.REPORTS_TYPE).get().replace("_Amount_", amount+"").replace("_Type_", status.getWord(null).toLowerCase()));
+			reportsNotification = reportsNotification.replace(statusPlaceHolder, (amount <= 1 ? Message.REPORT_TYPE : Message.REPORTS_TYPE).get().replace("_Amount_", Integer.toString(amount)).replace("_Type_", status.getWord(null).toLowerCase()));
 			totalAmount += amount;
 		}
-		if(totalAmount == 0) return null;
-		return reportsNotification;
+		
+		return totalAmount == 0 ? null : reportsNotification;
 	}
 
 	public static void start() {
 		stop();
-		int interval = ConfigUtils.getReportsNotificationsInterval();
+		int interval = ConfigFile.CONFIG.get().getInt("Config.ReportsNotifications.MinutesInterval", 0)*1200;
 		if(interval > 0) taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(TigerReports.getInstance(), new ReportsNotifier(), interval, interval);
 	}
 	

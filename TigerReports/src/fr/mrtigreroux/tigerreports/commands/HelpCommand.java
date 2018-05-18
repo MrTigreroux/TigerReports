@@ -12,39 +12,39 @@ public class HelpCommand {
 	
 	public static void onCommand(CommandSender s) {
 		if(ConfigUtils.getInfoLanguage().equalsIgnoreCase("English")) {
-			s.sendMessage("§7§m---------------------------------------------------");
-			s.sendMessage("§r                         §6TigerReports §7> §eHelp");
-			s.sendMessage("§7§m---------------------------------------------------");
-			s.sendMessage("§7Commands:");
-			s.sendMessage("§7- §b/report <player> <reason> §7: §eReports a player.");
-			s.sendMessage("§7- §b/reports reload §7: §eReloads the plugin.");
-			s.sendMessage("§7- §b/reports §7: §eDisplays all reports.");
-			s.sendMessage("§7- §b/reports #<report id> §7: §eDisplays specific report.");
-			s.sendMessage("§7- §b/reports user <player> §7: §eManages data of an user.");
-			s.sendMessage("§7- §b/reports stopcooldown <player> §7: §eRemoves cooldown of a player.");
-			s.sendMessage("§7- §b/reports notify §7: §eEnables or disables reports notifications.");
-			s.sendMessage("§7- §b/reports archiveall §7: §eArchives all done reports.");
-			s.sendMessage("§7- §b/reports archives §7: §eDisplays all archived reports.");
-			s.sendMessage("§7- §b/reports deleteall §7: §eDeletes all archived reports.");
-			s.sendMessage("§7Plugin §6TigerReports §7installed on this server has been created by §a@MrTigreroux§7.");
-			s.sendMessage("§7§m---------------------------------------------------");
+			s.sendMessage("\u00A77\u00A7m---------------------------------------------------");
+			s.sendMessage("\u00A7r                         \u00A76TigerReports \u00A77> \u00A7eHelp");
+			s.sendMessage("\u00A77\u00A7m---------------------------------------------------");
+			s.sendMessage("\u00A77Commands:");
+			s.sendMessage("\u00A77- \u00A7b/report <player> <reason> \u00A77: \u00A7eReports a player.");
+			s.sendMessage("\u00A77- \u00A7b/reports reload \u00A77: \u00A7eReloads the plugin.");
+			s.sendMessage("\u00A77- \u00A7b/reports \u00A77: \u00A7eDisplays all reports.");
+			s.sendMessage("\u00A77- \u00A7b/reports #<report id> \u00A77: \u00A7eDisplays specific report.");
+			s.sendMessage("\u00A77- \u00A7b/reports user <player> \u00A77: \u00A7eManages data of an user.");
+			s.sendMessage("\u00A77- \u00A7b/reports stopcooldown <player> \u00A77: \u00A7eRemoves cooldown of a player.");
+			s.sendMessage("\u00A77- \u00A7b/reports notify \u00A77: \u00A7eEnables or disables reports notifications.");
+			s.sendMessage("\u00A77- \u00A7b/reports archiveall \u00A77: \u00A7eArchives all done reports.");
+			s.sendMessage("\u00A77- \u00A7b/reports archives \u00A77: \u00A7eDisplays all archived reports.");
+			s.sendMessage("\u00A77- \u00A7b/reports deleteall \u00A77: \u00A7eDeletes all archived reports.");
+			s.sendMessage("\u00A77Plugin \u00A76TigerReports \u00A77installed on this server has been created by \u00A7a@MrTigreroux\u00A77.");
+			s.sendMessage("\u00A77\u00A7m---------------------------------------------------");
 		} else {
-			s.sendMessage("§7§m---------------------------------------------------");
-			s.sendMessage("§r                         §6TigerReports §7> §eAide");
-			s.sendMessage("§7§m---------------------------------------------------");
-			s.sendMessage("§7Commandes:");
-			s.sendMessage("§7- §b/report <joueur> <raison> §7: §eSignale un joueur.");
-			s.sendMessage("§7- §b/reports reload §7: §eRecharge le plugin.");
-			s.sendMessage("§7- §b/reports §7: §eAffiche l'ensemble des signalements.");
-			s.sendMessage("§7- §b/reports #<identifiant du signalement> §7: §eAffiche un signalement.");
-			s.sendMessage("§7- §b/reports user <joueur> §7: §eGère les données d'un joueur.");
-			s.sendMessage("§7- §b/reports stopcooldown <joueur> §7: §eAnnule l'attente d'un joueur.");
-			s.sendMessage("§7- §b/reports notify §7: §eActive ou désactive les notifications de signalements.");
-			s.sendMessage("§7- §b/reports archiveall §7: §eArchive tous les signalements traités.");
-			s.sendMessage("§7- §b/reports archives §7: §eAffiche tous les signalements archivés.");
-			s.sendMessage("§7- §b/reports deleteall §7: §eSupprime tous les signalements archivés.");
-			s.sendMessage("§7Le plugin §6TigerReports §7installé sur ce serveur a été réalisé par §a@MrTigreroux§7.");
-			s.sendMessage("§7§m---------------------------------------------------");
+			s.sendMessage("\u00A77\u00A7m---------------------------------------------------");
+			s.sendMessage("\u00A7r                         \u00A76TigerReports \u00A77> \u00A7eAide");
+			s.sendMessage("\u00A77\u00A7m---------------------------------------------------");
+			s.sendMessage("\u00A77Commandes:");
+			s.sendMessage("\u00A77- \u00A7b/report <joueur> <raison> \u00A77: \u00A7eSignale un joueur.");
+			s.sendMessage("\u00A77- \u00A7b/reports reload \u00A77: \u00A7eRecharge le plugin.");
+			s.sendMessage("\u00A77- \u00A7b/reports \u00A77: \u00A7eAffiche l'ensemble des signalements.");
+			s.sendMessage("\u00A77- \u00A7b/reports #<identifiant du signalement> \u00A77: \u00A7eAffiche un signalement.");
+			s.sendMessage("\u00A77- \u00A7b/reports user <joueur> \u00A77: \u00A7eG\u00E8re les donn\u00E9es d'un joueur.");
+			s.sendMessage("\u00A77- \u00A7b/reports stopcooldown <joueur> \u00A77: \u00A7eAnnule l'attente d'un joueur.");
+			s.sendMessage("\u00A77- \u00A7b/reports notify \u00A77: \u00A7eActive ou d\u00E9sactive les notifications de signalements.");
+			s.sendMessage("\u00A77- \u00A7b/reports archiveall \u00A77: \u00A7eArchive tous les signalements trait\u00E9s.");
+			s.sendMessage("\u00A77- \u00A7b/reports archives \u00A77: \u00A7eAffiche tous les signalements archiv\u00E9s.");
+			s.sendMessage("\u00A77- \u00A7b/reports deleteall \u00A77: \u00A7eSupprime tous les signalements archiv\u00E9s.");
+			s.sendMessage("\u00A77Le plugin \u00A76TigerReports \u00A77install\u00E9 sur ce serveur a \u00E9t\u00E9 r\u00E9alis\u00E9 par \u00A7a@MrTigreroux\u00A77.");
+			s.sendMessage("\u00A77\u00A7m---------------------------------------------------");
 		}
 	}
 

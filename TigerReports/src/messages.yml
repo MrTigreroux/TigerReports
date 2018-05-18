@@ -6,7 +6,7 @@
   Teleport-to-current-location: "&7[&6Report&7] &eVous avez \xe9t\xe9 t\xe9l\xe9port\xe9 au joueur _Player_&e."
   Teleport-to-old-location: "&7[&6Report&7] &eVous avez \xe9t\xe9 t\xe9l\xe9port\xe9 au joueur _Player_ &elors du signalement _Report_&e."
   Staff-punish: "&7[&6Reports&7] &a_Player_ &evient de &csanctionner &6_Reporter_ &ependant _Time_ et traiter son signalement comme &cfaux."
-  Punished: "&7[&6Reports&7] &eVous venez d'être &csanctionn\xe9 &epour votre signalement jug\xe9 abusif. Vous ne pouvez plus signaler de joueur pendant &6_Time_&e."
+  Punished: "&7[&6Reports&7] &eVous venez d'\u00EAtre &csanctionn\xe9 &epour votre signalement jug\xe9 abusif. Vous ne pouvez plus signaler de joueur pendant &6_Time_&e."
   Staff-stop-cooldown: "&7[&6Reports&7] &a_Player_ &evient de &cretirer &el'attente du joueur &6_Target_ &eavant son prochain signalement."
   Cooldown-stopped: "&7[&6Reports&7] &eLe temps d'attente avant votre prochain signalement vient d'être retir\xe9, vous pouvez maintenant utiliser la commande &b/report&e."
   Staff-process: "&7[&6Reports&7] &a_Player_ &evient de &btraiter &ele _Report_ &ecomme &e_Appreciation_&e."

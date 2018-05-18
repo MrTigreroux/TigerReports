@@ -3,11 +3,11 @@ package fr.mrtigreroux.tigerreports.objects.users;
 import java.util.*;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
+import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.data.constants.Statistic;
-import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
@@ -46,7 +46,7 @@ public abstract class User {
 	}
 	
 	public void startImmunity(boolean bungee) {
-		updateImmunity(MessageUtils.convertToDate(MessageUtils.getSeconds(MessageUtils.getNowDate())+ConfigUtils.getReportedImmunity()), bungee);
+		updateImmunity(MessageUtils.convertToDate(MessageUtils.getSeconds(MessageUtils.getNowDate())+(ConfigFile.CONFIG.get().getInt("Config.ReportedImmunity", 120))), bungee);
 	}
 	
 	public String getImmunity() {

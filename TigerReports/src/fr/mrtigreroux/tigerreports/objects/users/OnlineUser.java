@@ -12,12 +12,12 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 
+import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.objects.Comment;
 import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.objects.menus.*;
-import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 import fr.mrtigreroux.tigerreports.utils.ReflectionUtils;
 import fr.mrtigreroux.tigerreports.utils.ReportUtils;
@@ -92,7 +92,7 @@ public class OnlineUser extends User {
 	}
 	
 	public void updateLastMessages(String newMessage) {
-		int lastMessagesAmount = ConfigUtils.getMessagesHistory();
+		int lastMessagesAmount = ConfigFile.CONFIG.get().getInt("Config.MessagesHistory", 5);
 		if(lastMessagesAmount <= 0) return;
 		
 		if(lastMessages.size() >= lastMessagesAmount) lastMessages.remove(0);
@@ -151,10 +151,10 @@ public class OnlineUser extends User {
 			if(support.getType() == Material.AIR) support.setType(Material.BEDROCK);
 			b.setType(Material.SIGN_POST);
 			Sign s = (Sign) b.getState();
-			s.setLine(0, "§7[§6TigerReports§7]");
-			s.setLine(1, "§e"+p.getName());
-			s.setLine(2, "§8rédige un");
-			s.setLine(3, "§8commentaire");
+			s.setLine(0, "\u00A77[\u00A76TigerReports\u00A77]");
+			s.setLine(1, "\u00A7e"+p.getName());
+			s.setLine(2, "\u00A78r\u00E9dige un");
+			s.setLine(3, "\u00A78commentaire");
 			s.update();
 			
 			setCommentingReport(r);

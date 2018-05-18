@@ -58,21 +58,5 @@ public class ConfigUtils {
 		String icon = config.getString(path);
 		return icon != null && icon.startsWith("Skull-") ? icon.split("-")[1] : null;
 	}
-
-	public static int getMessagesHistory() {
-		return ConfigFile.CONFIG.get().getInt("Config.MessagesHistory", 5);
-	}
-
-	public static int getReportedImmunity() {
-		return ConfigFile.CONFIG.get().getInt("Config.ReportedImmunity", 120);
-	}
-	
-	public static int getReportsNotificationsInterval() {
-		return ConfigFile.CONFIG.get().getInt("Config.ReportsNotifications.MinutesInterval", 0)*1200;
-	}
-
-	public static int getMenuUpdatesInterval() {
-		return ConfigFile.CONFIG.get().getInt("Config.MenuUpdatesInterval", 10)*20;
-	}
 	
 }
