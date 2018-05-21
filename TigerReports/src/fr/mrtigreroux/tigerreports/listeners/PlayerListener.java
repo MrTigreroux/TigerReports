@@ -69,7 +69,7 @@ public class PlayerListener implements Listener {
 		TigerReports.getBungeeManager().collectServerName();
 	}
 	
-	@EventHandler
+	@EventHandler(priority = EventPriority.LOWEST)
 	private void onPlayerQuit(PlayerQuitEvent e) {
 		String uuid = e.getPlayer().getUniqueId().toString();
 		if(TigerReports.Users.containsKey(uuid)) {

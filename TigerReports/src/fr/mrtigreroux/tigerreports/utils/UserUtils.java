@@ -103,7 +103,7 @@ public class UserUtils {
 		if(u == null) {
 			u = new OnlineUser(p);
 			u.save();
-		} else if(!(u instanceof OnlineUser)) {
+		} else if(!(u instanceof OnlineUser) || !((OnlineUser) u).getPlayer().equals(p)) {
 			List<String> lastMessages = u.lastMessages;
 			u = new OnlineUser(p);
 			u.lastMessages = lastMessages;
