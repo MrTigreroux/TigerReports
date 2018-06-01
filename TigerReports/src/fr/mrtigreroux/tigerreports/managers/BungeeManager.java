@@ -54,12 +54,10 @@ public class BungeeManager implements PluginMessageListener {
 	public void collectServerName() {
 		if(serverName != null) return;
 		Bukkit.getScheduler().scheduleSyncDelayedTask(TigerReports.getInstance(), new Runnable() {
-
 			@Override
 			public void run() {
 				sendPluginMessage("GetServer");
 			}
-			
 		}, 5);
 	}
 	

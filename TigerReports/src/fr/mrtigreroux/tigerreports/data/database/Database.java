@@ -70,21 +70,21 @@ public abstract class Database {
 	
 	public QueryResult query(final String query, final List<Object> parameters) {
 		checkConnection();
-	    try (PreparedStatement ps = connection.prepareStatement(query)) {
-	    	prepare(ps, parameters);
-	    	ResultSet rs = ps.executeQuery();
+		try (PreparedStatement ps = connection.prepareStatement(query)) {
+			prepare(ps, parameters);
+			ResultSet rs = ps.executeQuery();
 			
 			List<Map<String, Object>> resultList = new ArrayList<>();
-		    Map<String, Object> row = null;
-		    ResultSetMetaData metaData = rs.getMetaData();
-		    int columnCount = metaData.getColumnCount();
-		    while(rs.next()) {
-		        row = new HashMap<>();
-		        for(int i = 1; i <= columnCount; i++) row.put(metaData.getColumnName(i), rs.getObject(i));
-		        resultList.add(row);
-		    }
-		    
-		    close(rs);
+			Map<String, Object> row = null;
+			ResultSetMetaData metaData = rs.getMetaData();
+			int columnCount = metaData.getColumnCount();
+			while(rs.next()) {
+				row = new HashMap<>();
+				for(int i = 1; i <= columnCount; i++) row.put(metaData.getColumnName(i), rs.getObject(i));
+				resultList.add(row);
+			}
+			
+			close(rs);
 			return new QueryResult(resultList);
 		} catch (SQLException ex) {
 			logDatabaseError(ex);

@@ -141,11 +141,11 @@ public abstract class User {
 	}
 
 	public List<String> getNotifications() {
-		List<String> notifications = null;
+		List<String> notifications = new ArrayList<>();
 		try {
 			notifications = Arrays.asList(((String) TigerReports.getDb().query("SELECT notifications FROM tigerreports_users WHERE uuid = ?", Collections.singletonList(uuid)).getResult(0, "notifications")).split("#next#"));
 		} catch (Exception noNotifications) {}
-		return notifications != null ? notifications : new ArrayList<>();
+		return notifications;
 	}
 	
 	public void setNotifications(List<String> notifications) {

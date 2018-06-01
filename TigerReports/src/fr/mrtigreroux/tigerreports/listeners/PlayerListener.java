@@ -6,6 +6,7 @@ import java.util.List;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.*;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -41,13 +42,19 @@ public class PlayerListener implements Listener {
 	private void onPlayerJoin(PlayerJoinEvent e) {
 		Player p = e.getPlayer();
 		OnlineUser u = UserUtils.getOnlineUser(p);
-		for(String notification : u.getNotifications()) u.sendNotification(notification, false);
-		if(Permission.STAFF.isOwned(u) && ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.ReportsNotifications.Connection")) {
-			String reportsNotifications = ReportsNotifier.getReportsNotification();
-			if(reportsNotifications != null) p.sendMessage(reportsNotifications);
-		}
 		
-		TigerReports.getDb().updateAsynchronously("REPLACE INTO tigerreports_users (uuid,name) VALUES (?,?);", Arrays.asList(p.getUniqueId().toString(), p.getName()));
+		Bukkit.getScheduler().runTaskAsynchronously(TigerReports.getInstance(), new Runnable() {
+			@Override
+			public void run() {
+				for(String notification : u.getNotifications()) u.sendNotification(notification, false);
+				if(Permission.STAFF.isOwned(u) && ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.ReportsNotifications.Connection")) {
+					String reportsNotifications = ReportsNotifier.getReportsNotification();
+					if(reportsNotifications != null) p.sendMessage(reportsNotifications);
+				}
+				TigerReports.getDb().update("REPLACE INTO tigerreports_users (uuid,name) VALUES (?,?);", Arrays.asList(p.getUniqueId().toString(), p.getName()));
+			}
+		});
+		
 		u.updateImmunity(Permission.REPORT_EXEMPT.isOwned(u) ? "always" : null, false);
 		
 		if(Permission.MANAGE.isOwned(u)) {
@@ -111,6 +118,7 @@ public class PlayerListener implements Listener {
 			HelpCommand.onCommand(s);
 			return true;
 		}
+		
 		command = command.toLowerCase().replace(" ", "");
 		if(!command.startsWith("tigerreports:report")) {
 			for(String helpCommand : helpCommands) {
