@@ -5,7 +5,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -42,23 +41,30 @@ public class BungeeManager implements PluginMessageListener {
 	}
 	
 	public void initialize() {
-		if(ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "BungeeCord")) {
+		if(ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "BungeeCord.Enabled")) {
 			Messenger messenger = main.getServer().getMessenger();
 			messenger.registerOutgoingPluginChannel(main, "BungeeCord");
 			messenger.registerIncomingPluginChannel(main, "BungeeCord", this);
 			initialized = true;
-			Bukkit.getLogger().log(Level.INFO, ConfigUtils.getInfoMessage("The plugin is using BungeeCord.", "Le plugin utilise BungeeCord."));
-		}
+			Bukkit.getLogger().info(ConfigUtils.getInfoMessage("The plugin is using BungeeCord.", "Le plugin utilise BungeeCord."));
+		} else Bukkit.getLogger().info(ConfigUtils.getInfoMessage("The plugin is not using BungeeCord.", "Le plugin n'utilise pas BungeeCord."));
 	}
 	
 	public void collectServerName() {
-		if(serverName != null) return;
-		Bukkit.getScheduler().scheduleSyncDelayedTask(TigerReports.getInstance(), new Runnable() {
-			@Override
-			public void run() {
-				sendPluginMessage("GetServer");
-			}
-		}, 5);
+		if(serverName == null) sendPluginMessage("GetServer");
+	}
+	
+	public void collectDelayedlyServerName() {
+		if(serverName == null) {
+			Bukkit.getScheduler().runTaskLater(TigerReports.getInstance(), new Runnable() {
+				
+				@Override
+				public void run() {
+					sendPluginMessage("GetServer");
+				}
+				
+			}, 5);
+		}
 	}
 	
 	public String getServerName() {

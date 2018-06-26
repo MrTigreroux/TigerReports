@@ -28,7 +28,7 @@ public class ProcessMenu extends ReportManagerMenu {
 	public Inventory onOpen() {
 		Inventory inv = getInventory(Message.PROCESS_TITLE.get().replace("_Report_", r.getName()), false);
 		
-		ItemStack gui = new CustomItem().type(Material.STAINED_GLASS_PANE).damage((byte) 7).name("").create();
+		ItemStack gui = new CustomItem().type(Material.STAINED_GLASS_PANE).damage((byte) 7).name(" ").create();
 		for(int position : new Integer[]{1, 2, 3, 4, 5, 6, 7, 10, 16, 19, 20, 21, 22, 23, 24, 25}) inv.setItem(position, gui);
 		
 		inv.setItem(0, r.getItem(null));
@@ -51,7 +51,7 @@ public class ProcessMenu extends ReportManagerMenu {
 			case 11: case 13: case 15:
 				String appreciation = slot == 11 ? "True" : slot == 13 ? "Uncertain" : "False";
 				r.process(p.getUniqueId().toString(), p.getName(), appreciation, false, Permission.STAFF_ARCHIVE_AUTO.isOwned(u));
-				u.openReportsMenu(1, false);
+				u.openDelayedlyReportsMenu();
 				break;
 			case 18: u.openReportMenu(r); break;
 			default: break;

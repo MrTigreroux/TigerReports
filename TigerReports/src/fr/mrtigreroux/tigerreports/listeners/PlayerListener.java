@@ -51,14 +51,14 @@ public class PlayerListener implements Listener {
 					String reportsNotifications = ReportsNotifier.getReportsNotification();
 					if(reportsNotifications != null) p.sendMessage(reportsNotifications);
 				}
-				TigerReports.getDb().update("REPLACE INTO tigerreports_users (uuid,name) VALUES (?,?);", Arrays.asList(p.getUniqueId().toString(), p.getName()));
+				TigerReports.getInstance().getDb().update("REPLACE INTO tigerreports_users (uuid,name) VALUES (?,?);", Arrays.asList(p.getUniqueId().toString(), p.getName()));
 			}
 		});
 		
 		u.updateImmunity(Permission.REPORT_EXEMPT.isOwned(u) ? "always" : null, false);
 		
 		if(Permission.MANAGE.isOwned(u)) {
-			String newVersion = TigerReports.getWebManager().getNewVersion();
+			String newVersion = TigerReports.getInstance().getWebManager().getNewVersion();
 			if(newVersion != null) {
 				boolean english = ConfigUtils.getInfoLanguage().equalsIgnoreCase("English");
 				p.sendMessage("\u00A77[\u00A76TigerReports\u00A77] "+(english ? "\u00A7eThe plugin \u00A76TigerReports \u00A7ehas been updated." : "\u00A7eLe plugin \u00A76TigerReports \u00A7ea \u00E9t\u00E9 mis à jour."));
@@ -73,15 +73,15 @@ public class PlayerListener implements Listener {
 			}
 		}
 		
-		TigerReports.getBungeeManager().collectServerName();
+		TigerReports.getInstance().getBungeeManager().collectDelayedlyServerName();
 	}
 	
 	@EventHandler(priority = EventPriority.LOWEST)
 	private void onPlayerQuit(PlayerQuitEvent e) {
 		String uuid = e.getPlayer().getUniqueId().toString();
-		if(TigerReports.Users.containsKey(uuid)) {
-			List<String> lastMessages = TigerReports.Users.get(uuid).lastMessages;
-			TigerReports.Users.remove(uuid);
+		if(TigerReports.getInstance().users.containsKey(uuid)) {
+			List<String> lastMessages = TigerReports.getInstance().users.get(uuid).lastMessages;
+			TigerReports.getInstance().users.remove(uuid);
 			if(!lastMessages.isEmpty()) {
 				OfflineUser ou = new OfflineUser(uuid);
 				ou.lastMessages = lastMessages;
@@ -92,7 +92,7 @@ public class PlayerListener implements Listener {
 	
 	@EventHandler(priority = EventPriority.MONITOR)
 	private void onPlayerLogin(PlayerLoginEvent e) {
-		String error = TigerReports.getWebManager().check(e.getPlayer().getUniqueId().toString());
+		String error = TigerReports.getInstance().getWebManager().check(e.getPlayer().getUniqueId().toString());
 		if(error != null) e.disallow(Result.KICK_OTHER, error);
 	}
 	

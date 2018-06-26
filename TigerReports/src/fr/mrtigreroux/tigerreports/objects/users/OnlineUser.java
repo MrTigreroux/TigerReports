@@ -4,6 +4,7 @@ import java.util.List;
 
 import net.md_5.bungee.api.chat.TextComponent;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -12,6 +13,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 
+import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
@@ -28,7 +30,7 @@ import fr.mrtigreroux.tigerreports.utils.ReportUtils;
 
 public class OnlineUser extends User {
 	
-	private Player p;
+	private final Player p;
 	private Menu openedMenu = null;
 	private Report commentingReport = null;
 	private Comment modifiedComment = null;
@@ -47,6 +49,18 @@ public class OnlineUser extends User {
 
 	public void openReasonMenu(int page, User tu) {
 		new ReasonMenu(this, page, tu).open(true);
+	}
+	
+	public void openDelayedlyReportsMenu() {
+		p.closeInventory();
+		Bukkit.getScheduler().runTaskLater(TigerReports.getInstance(), new Runnable() {
+
+			@Override
+			public void run() {
+				openReportsMenu(1, false);
+			}
+			
+		}, 10);
 	}
 
 	public void openReportsMenu(int page, boolean sound) {

@@ -84,8 +84,12 @@ Config:
   # Name:    Reason of the report / Raison du signalement
   # Item:    Material-<item_type>(:damage) or/ou Skull-<pseudo>
   # Examples:    Material-Stone = Stone / Pierre    Material-Wool:2 = Magenta Wool / Laine magenta    Skull-MrTigreroux = Skull of player MrTigreroux / Tête du joueur MrTigreroux
-BungeeCord: yes
-# Send and receive BungeeCord notifications / Envoyer et recevoir des notifications BungeeCord
+BungeeCord:
+  Enabled: yes
+  # Interact with the BungeeCord network / Intéragir avec le réseau BungeeCord
+  Servers:
+    server1: "Serveur 1"
+  # Custom display name of servers / Nom personnalisé des serveurs
 MySQL:
   Host: ""
   Port: 0

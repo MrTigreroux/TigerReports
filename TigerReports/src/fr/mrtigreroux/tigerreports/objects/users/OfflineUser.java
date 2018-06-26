@@ -1,6 +1,5 @@
 package fr.mrtigreroux.tigerreports.objects.users;
 
-
 /**
  * @author MrTigreroux
  */

@@ -36,11 +36,13 @@ public class ReportsCommand implements TabExecutor {
 		if(args.length == 1 && args[0].equalsIgnoreCase("reload")) {
 			if(Permission.MANAGE.check(s)) {
 				MenuUpdater.stop(true);
-				TigerReports.Reports.clear();
-				TigerReports.Users.clear();
-				TigerReports.unload();
-				TigerReports.load();
-				TigerReports.initializeDatabase();
+				TigerReports main = TigerReports.getInstance();
+				main.reports.clear();
+				main.users.clear();
+				main.unload();
+				main.load();
+				main.initializeDatabase();
+				main.getBungeeManager().collectServerName();
 				if(!(s instanceof Player)) MessageUtils.sendConsoleMessage(Message.RELOAD.get());
 				else s.sendMessage(Message.RELOAD.get());
 			}
@@ -62,7 +64,7 @@ public class ReportsCommand implements TabExecutor {
 						break;
 					case "archiveall":
 						if(Permission.STAFF_ARCHIVE.check(s)) {
-							for(Map<String, Object> result : TigerReports.getDb().query("SELECT * FROM tigerreports_reports", null).getResultList()) {
+							for(Map<String, Object> result : TigerReports.getInstance().getDb().query("SELECT * FROM tigerreports_reports", null).getResultList()) {
 								String status = (String) result.get("status");
 								if(status != null && status.startsWith("Done")) ReportUtils.formatReport(result, true).archive(null, false);
 							}
@@ -72,7 +74,7 @@ public class ReportsCommand implements TabExecutor {
 					case "archives": if(Permission.STAFF_ARCHIVE.check(s)) u.openArchivedReportsMenu(1, true); break;
 					case "deleteall":
 						if(Permission.STAFF_DELETE.check(s)) {
-							TigerReports.getDb().update("DELETE FROM tigerreports_archived_reports;", null);
+							TigerReports.getInstance().getDb().update("DELETE FROM tigerreports_archived_reports;", null);
 							MessageUtils.sendStaffMessage(Message.STAFF_DELETEALL.get().replace("_Player_", p.getName()), ConfigSound.STAFF.get());
 						}
 						break;

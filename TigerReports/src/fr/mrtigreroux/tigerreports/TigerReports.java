@@ -1,12 +1,11 @@
 package fr.mrtigreroux.tigerreports;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -14,7 +13,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import fr.mrtigreroux.tigerreports.commands.ReportCommand;
 import fr.mrtigreroux.tigerreports.commands.ReportsCommand;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
-import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.database.Database;
 import fr.mrtigreroux.tigerreports.data.database.MySQL;
 import fr.mrtigreroux.tigerreports.data.database.SQLite;
@@ -25,31 +23,31 @@ import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.objects.users.User;
 import fr.mrtigreroux.tigerreports.runnables.ReportsNotifier;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
+import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 
 /**
  * @author MrTigreroux
- * Finished on: 30/06/2016
+ * Published on: 30/06/2016
  */
 
 public class TigerReports extends JavaPlugin {
 
 	private static TigerReports instance;
-	private static WebManager webManager;
-	private static Database database;
-	private static BungeeManager bungeeManager;
+	
+	private WebManager webManager;
+	private Database database;
+	private BungeeManager bungeeManager;
 
-	public static Map<String, User> Users = new HashMap<>();
-	public static Map<String, String> LastNameFound = new HashMap<>();
-	public static Map<String, String> LastUniqueIdFound = new HashMap<>();
-	public static Map<Integer, Report> Reports = new HashMap<>();
+	public Map<String, User> users = new HashMap<>();
+	public Map<String, String> lastNameFound = new HashMap<>();
+	public Map<String, String> lastUniqueIdFound = new HashMap<>();
+	public Map<Integer, Report> reports = new HashMap<>();
+	
+	public TigerReports() {}
 
-	public static void load() {
+	public void load() {
 		for(ConfigFile configFiles : ConfigFile.values()) configFiles.load();
 		
-		InventoryListener.menuTitles.clear();
-		for(Message message : Arrays.asList(Message.REASON_TITLE, Message.REPORTS_TITLE, Message.REPORT_TITLE, Message.COMMENTS_TITLE, Message.CONFIRM_ARCHIVE_TITLE, Message.CONFIRM_DELETE_TITLE, Message.PROCESS_TITLE, Message.USER_TITLE, Message.ARCHIVED_REPORTS_TITLE))
-			InventoryListener.menuTitles.add(message.get().replace("_Page_", "").replace("_Report_", "").replace("_Target_", ""));
-
 		ReportsNotifier.start();
 	}
 	
@@ -71,28 +69,20 @@ public class TigerReports extends JavaPlugin {
 		
 		PluginDescriptionFile desc = getDescription();
 		if(!desc.getName().equals("TigerReports") || desc.getAuthors().size() > 1 || !desc.getAuthors().contains("MrTigreroux")) {
-			Logger logger = Bukkit.getLogger();
-			logger.log(Level.SEVERE, "------------------------------------------------------");
-			if(ConfigUtils.getInfoLanguage().equalsIgnoreCase("English")) {
-				logger.log(Level.SEVERE, "[TigerReports] The file plugin.yml has been edited");
-				logger.log(Level.SEVERE, "without authorization.");
-			} else {
-				logger.log(Level.SEVERE, "[TigerReports] Le fichier plugin.yml a ete modifie");
-				logger.log(Level.SEVERE, "sans autorisation.");
-			}
-			logger.log(Level.SEVERE, "------------------------------------------------------");
+			MessageUtils.logSevere(ConfigUtils.getInfoMessage("The file plugin.yml has been edited without authorization.", "Le fichier plugin.yml a ete modifie sans autorisation."));
 			Bukkit.shutdown();
 		}
 
 		bungeeManager = new BungeeManager(this);
 		bungeeManager.initialize();
+		bungeeManager.collectServerName();
 
 		initializeDatabase();
 	}
 	
-	public static void unload() {
+	public void unload() {
 		database.closeConnection();
-		for(User u : Users.values()) {
+		for(User u : users.values()) {
 			if(u instanceof OnlineUser) {
 				OnlineUser ou = (OnlineUser) u;
 				if(ou.getOpenedMenu() != null) ou.getPlayer().closeInventory();
@@ -109,34 +99,37 @@ public class TigerReports extends JavaPlugin {
 		return instance;
 	}
 	
-	public static Database getDb() {
+	public Database getDb() {
 		return database;
 	}
 	
-	public static WebManager getWebManager() {
+	public WebManager getWebManager() {
 		return webManager;
 	}
 	
-	public static BungeeManager getBungeeManager() {
+	public BungeeManager getBungeeManager() {
 		return bungeeManager;
 	}
 	
-	public static void initializeDatabase() {
+	public void initializeDatabase() {
 		Bukkit.getScheduler().runTaskAsynchronously(instance, new Runnable() {
+			
 			@Override
 			public void run() {
 				Logger logger = Bukkit.getLogger();
 				try {
-					MySQL mysql = new MySQL(ConfigFile.CONFIG.get().getString("MySQL.Host"), ConfigFile.CONFIG.get().getInt("MySQL.Port"), ConfigFile.CONFIG.get().getString("MySQL.Database"), ConfigFile.CONFIG.get().getString("MySQL.Username"), ConfigFile.CONFIG.get().getString("MySQL.Password"));
+					FileConfiguration config = ConfigFile.CONFIG.get();
+					MySQL mysql = new MySQL(config.getString("MySQL.Host"), config.getInt("MySQL.Port"), config.getString("MySQL.Database"), config.getString("MySQL.Username"), config.getString("MySQL.Password"));
 					mysql.check();
 					database = mysql;
-					logger.log(Level.INFO, ConfigUtils.getInfoMessage("The plugin is using a MySQL database.", "Le plugin utilise une base de donnees MySQL."));
+					logger.info(ConfigUtils.getInfoMessage("The plugin is using a MySQL database.", "Le plugin utilise une base de donnees MySQL."));
 				} catch (Exception invalidMySQL) {
 					database = new SQLite();
-					logger.log(Level.INFO, ConfigUtils.getInfoMessage("The plugin is using the SQLite (default) database.", "Le plugin utilise une base de donnees SQLite (par defaut)."));
+					logger.info(ConfigUtils.getInfoMessage("The plugin is using the SQLite (default) database.", "Le plugin utilise la base de donnees SQLite (par defaut)."));
 				}
 				database.initialize();
 			}
+			
 		});
 	}
 	

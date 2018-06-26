@@ -1,8 +1,5 @@
 package fr.mrtigreroux.tigerreports.listeners;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -25,14 +22,6 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
  */
 
 public class InventoryListener implements Listener {
-
-	public static Set<String> menuTitles = new HashSet<>();
-	
-	private boolean isReportMenu(Inventory inv) {
-		String title = inv.getTitle();
-		for(String menuTitle : menuTitles) if(title.startsWith(menuTitle)) return true;
-		return false;
-	}
 	
 	@EventHandler(priority = EventPriority.LOW)
 	private void onInventoryDrag(InventoryDragEvent e) {
@@ -54,12 +43,12 @@ public class InventoryListener implements Listener {
 		MenuUpdater.removeUser(u);
 		u.setOpenedMenu(null);
 		try {
-			TigerReports.getDb().startClosing();
+			TigerReports.getInstance().getDb().startClosing();
 		} catch (Exception ignored) {}
 	}
 	
 	private OnlineUser checkMenuAction(HumanEntity whoClicked, Inventory inv) {
-		if(!(whoClicked instanceof Player) || inv == null || inv.getType() != InventoryType.CHEST || !isReportMenu(inv)) return null;
+		if(!(whoClicked instanceof Player) || inv == null || inv.getType() != InventoryType.CHEST) return null;
 		OnlineUser u = UserUtils.getOnlineUser((Player) whoClicked);
 		return u.getOpenedMenu() != null ? u : null;
 	}

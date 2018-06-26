@@ -46,7 +46,7 @@ public class Comment {
 	public void setStatus(String status) {
 		this.status = status;
 		save();
-		TigerReports.getDb().updateAsynchronously("UPDATE tigerreports_comments SET status = ? WHERE report_id = ? AND comment_id = ?", Arrays.asList(this.status, r.getId(), commentId));
+		TigerReports.getInstance().getDb().updateAsynchronously("UPDATE tigerreports_comments SET status = ? WHERE report_id = ? AND comment_id = ?", Arrays.asList(this.status, r.getId(), commentId));
 	}
 	
 	public String getAuthor() {
@@ -60,7 +60,7 @@ public class Comment {
 	public void addMessage(String message) {
 		this.message += " "+message;
 		save();
-		TigerReports.getDb().updateAsynchronously("UPDATE tigerreports_comments SET message = ? WHERE report_id = ? AND comment_id = ?", Arrays.asList(this.message, r.getId(), commentId));
+		TigerReports.getInstance().getDb().updateAsynchronously("UPDATE tigerreports_comments SET message = ? WHERE report_id = ? AND comment_id = ?", Arrays.asList(this.message, r.getId(), commentId));
 	}
 	
 	public ItemStack getItem(boolean deletePermission) {
@@ -71,7 +71,7 @@ public class Comment {
 	
 	public void delete() {
 		r.comments.remove(commentId);
-		TigerReports.getDb().updateAsynchronously("DELETE FROM tigerreports_comments WHERE report_id = ? AND comment_id = ?", Arrays.asList(r.getId(), commentId));
+		TigerReports.getInstance().getDb().updateAsynchronously("DELETE FROM tigerreports_comments WHERE report_id = ? AND comment_id = ?", Arrays.asList(r.getId(), commentId));
 	}
 	
 	public void save() {

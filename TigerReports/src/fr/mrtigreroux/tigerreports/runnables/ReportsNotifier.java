@@ -30,7 +30,7 @@ public class ReportsNotifier implements Runnable {
 		String reportsNotification = Message.REPORTS_NOTIFICATION.get();
 		HashMap<Status, Integer> statusTypes = new HashMap<>();
 		int totalAmount = 0;
-		for(Map<String, Object> result : TigerReports.getDb().query("SELECT status FROM tigerreports_reports", null).getResultList()) {
+		for(Map<String, Object> result : TigerReports.getInstance().getDb().query("SELECT status FROM tigerreports_reports", null).getResultList()) {
 			Status status = Status.getFrom((String) result.get("status"));
 			statusTypes.put(status, (statusTypes.get(status) != null ? statusTypes.get(status) : 0)+1);
 		}

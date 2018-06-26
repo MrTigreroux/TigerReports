@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
-import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -12,6 +11,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
+import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 
 /**
  * @author MrTigreroux
@@ -54,9 +54,9 @@ public enum ConfigFile {
 	
 	public void reset() {
 		TigerReports.getInstance().saveResource(file.getName(), false);
-		Bukkit.getLogger().log(Level.WARNING, "------------------------------------------------------");
-		Bukkit.getLogger().log(Level.WARNING, this != CONFIG && ConfigUtils.getInfoLanguage().equalsIgnoreCase("English") ? "[TigerReports] The file "+file.getName()+" has been reset." : "[TigerReports] Le fichier "+file.getName()+" a ete reinitialise.");
-		Bukkit.getLogger().log(Level.WARNING, "------------------------------------------------------");
+		Bukkit.getLogger().warning(MessageUtils.LINE);
+		Bukkit.getLogger().warning(this != CONFIG && ConfigUtils.getInfoLanguage().equalsIgnoreCase("English") ? "[TigerReports] The file "+file.getName()+" has been reset." : "[TigerReports] Le fichier "+file.getName()+" a ete reinitialise.");
+		Bukkit.getLogger().warning(MessageUtils.LINE);
 	}
 	
 }

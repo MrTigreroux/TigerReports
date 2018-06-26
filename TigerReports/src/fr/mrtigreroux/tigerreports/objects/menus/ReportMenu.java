@@ -48,7 +48,7 @@ public class ReportMenu extends ReportManagerMenu {
 		
 		inv.setItem(22, MenuItem.PUNISH_ABUSE.getWithDetails(Message.PUNISH_ABUSE_DETAILS.get().replace("_Player_", r.getPlayerName("Reporter", false, true)).replace("_Time_", MessageUtils.convertToSentence(ReportUtils.getPunishSeconds()))));
 		
-		if(statisticsQuery == null) statisticsQuery = TigerReports.getDb().query("SELECT true_appreciations,uncertain_appreciations,false_appreciations,reports,reported_times,processed_reports FROM tigerreports_users WHERE uuid IN (?,?)", Arrays.asList(r.getReporterUniqueId(), r.getReportedUniqueId()));
+		if(statisticsQuery == null) statisticsQuery = TigerReports.getInstance().getDb().query("SELECT true_appreciations,uncertain_appreciations,false_appreciations,reports,reported_times,processed_reports FROM tigerreports_users WHERE uuid IN (?,?)", Arrays.asList(r.getReporterUniqueId(), r.getReportedUniqueId()));
 		for(String type : new String[]{"Reporter", "Reported"}) {
 			String name = r.getPlayerName(type, false, false);
 			String details = Message.PLAYER_DETAILS.get();
@@ -65,7 +65,7 @@ public class ReportMenu extends ReportManagerMenu {
 			}
 			String server = (server = MessageUtils.getConfigServerLocation(r.getOldLocation(type))) != null ? server : Message.NOT_FOUND_MALE.get();
 			inv.setItem(type.equals("Reporter") ? 21 : 23, new CustomItem().skullOwner(name).name(Message.valueOf(type.toUpperCase()).get().replace("_Player_", r.getPlayerName(type, true, true)))
-					.lore(details.replace("_Server_", server).replace("_Teleportation_", Permission.STAFF_TELEPORT.isOwned(u) ? ((UserUtils.isOnline(name) ? Message.TELEPORT_TO_CURRENT_POSITION.get() : Message.CAN_NOT_TELEPORT_TO_CURRENT_POSITION.get()).replace("_Player_", name)+(r.getOldLocation(type) != null ? Message.TELEPORT_TO_OLD_POSITION.get() : Message.CAN_NOT_TELEPORT_TO_OLD_POSITION.get()).replace("_Player_", name)) : "").split(ConfigUtils.getLineBreakSymbol())).create());
+					.lore(details.replace("_Server_", MessageUtils.getServerName(server)).replace("_Teleportation_", Permission.STAFF_TELEPORT.isOwned(u) ? ((UserUtils.isOnline(name) ? Message.TELEPORT_TO_CURRENT_POSITION.get() : Message.CAN_NOT_TELEPORT_TO_CURRENT_POSITION.get()).replace("_Player_", name)+(r.getOldLocation(type) != null ? Message.TELEPORT_TO_OLD_POSITION.get() : Message.CAN_NOT_TELEPORT_TO_OLD_POSITION.get()).replace("_Player_", name)) : "").split(ConfigUtils.getLineBreakSymbol())).create());
 		}
 		
 		inv.setItem(26, MenuItem.DATA.getWithDetails(r.implementData(Message.DATA_DETAILS.get(), Permission.STAFF_ADVANCED.isOwned(u))));
@@ -119,7 +119,7 @@ public class ReportMenu extends ReportManagerMenu {
 				} else return;
 				p.sendMessage(Message.valueOf("TELEPORT_"+locType+"_LOCATION").get().replace("_Player_", Message.valueOf(targetType.toUpperCase()+"_NAME").get().replace("_Player_", name)).replace("_Report_", r.getName()));
 				ConfigSound.TELEPORT.play(p);
-				BungeeManager bungeeManager = TigerReports.getBungeeManager();
+				BungeeManager bungeeManager = TigerReports.getInstance().getBungeeManager();
 				if(serverName.equals("localhost") || bungeeManager.getServerName().equals(serverName)) p.teleport(loc);
 				else {
 					bungeeManager.sendPluginMessage("ConnectOther", p.getName(), serverName);

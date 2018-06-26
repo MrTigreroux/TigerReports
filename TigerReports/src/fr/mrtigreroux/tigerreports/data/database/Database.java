@@ -118,6 +118,7 @@ public abstract class Database {
 	public void startClosing() {
 		if(closingTaskId != -1 || connection == null) return;
 		closingTaskId = Bukkit.getScheduler().scheduleSyncDelayedTask(TigerReports.getInstance(), new Runnable() {
+			
 			@Override
 			public void run() {
 				if(closingTaskId != -1) {
@@ -125,6 +126,7 @@ public abstract class Database {
 					closingTaskId = -1;
 				}
 			}
+			
 		}, 1200);
 	}
 	

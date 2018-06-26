@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import net.md_5.bungee.api.ChatColor;
@@ -23,6 +24,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
+import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
@@ -35,13 +37,11 @@ public class MessageUtils {
 
 	private static final List<String> UNITS = Arrays.asList("YEAR", "MONTH", "WEEK", "DAY", "HOUR", "MINUTE", "SECOND");
 	private static final List<String> COLOR_CODES = Arrays.asList("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f");
+	public static final String LINE = "------------------------------------------------------";
 	
 	public static void sendErrorMessage(CommandSender s, String message) {
 		s.sendMessage(message);
-		if(s instanceof Player) {
-			Player p = (Player) s;
-			ConfigSound.ERROR.play(p);
-		}
+		if(s instanceof Player) ConfigSound.ERROR.play((Player) s);
 	}
 
 	public static void sendStaffMessage(Object message, Sound sound) {
@@ -196,7 +196,7 @@ public class MessageUtils {
 	}
 	
 	public static String formatConfigLocation(Location loc) {
-		StringBuilder configLoc = new StringBuilder(TigerReports.getBungeeManager().getServerName()+"/"+loc.getWorld().getName());
+		StringBuilder configLoc = new StringBuilder(TigerReports.getInstance().getBungeeManager().getServerName()+"/"+loc.getWorld().getName());
 		for(Object coords : new Object[]{loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch()}) {
 			String coord = String.valueOf(coords);
 			int end = (end = coord.indexOf('.')+3) < coord.length() ? end : coord.length();
@@ -219,6 +219,18 @@ public class MessageUtils {
 		StringBuilder configEffects = new StringBuilder();
 		for(PotionEffect effect : effects) configEffects.append(effect.getType().getName()).append(":").append(effect.getAmplifier()).append("/").append(effect.getDuration()).append(",");
 		return configEffects.length() > 1 ? configEffects.substring(0, configEffects.length()-1) : null;
+	}
+	
+	public static String getServerName(String server) {
+		String name = ConfigFile.CONFIG.get().getString("BungeeCord.Servers."+server);
+		return name != null ? name : server;
+	}
+	
+	public static void logSevere(String error) {
+		Logger logger = Bukkit.getLogger();
+		logger.severe(LINE);
+		logger.severe(error);
+		logger.severe(LINE);
 	}
 	
 }

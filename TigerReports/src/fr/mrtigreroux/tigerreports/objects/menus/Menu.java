@@ -25,7 +25,8 @@ public abstract class Menu {
 
 	final OnlineUser u;
 	final Player p;
-	int size, page;
+	final int size;
+	int page;
 	private final Permission permission;
 	
 	public Menu(OnlineUser u, int size, int page, Permission permission) {
@@ -49,7 +50,7 @@ public abstract class Menu {
 		if(title.length() > 32) title = title.substring(0, 29)+"..";
 		Inventory inv = Bukkit.createInventory(null, size, title);
 		if(borders) {
-			ItemStack gui = new CustomItem().type(Material.STAINED_GLASS_PANE).damage((byte) 7).name("").create();
+			ItemStack gui = new CustomItem().type(Material.STAINED_GLASS_PANE).damage((byte) 7).name(" ").create();
 			int size = inv.getSize();
 			for(int position = 9; position < 18; position++) inv.setItem(position, gui);
 			for(int position = size-9; position < size; position++) inv.setItem(position, gui);

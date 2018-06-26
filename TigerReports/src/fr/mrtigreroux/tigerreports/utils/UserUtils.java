@@ -5,13 +5,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.logging.Level;
-
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
 
 import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.Message;
@@ -29,11 +26,11 @@ public class UserUtils {
 			return Bukkit.getPlayerExact(name).getUniqueId().toString();
 		} catch (Exception offlinePlayer) {
 			try {
-				String uuid = ((uuid = TigerReports.LastUniqueIdFound.get(name)) != null ? uuid : Bukkit.getOfflinePlayer(name).getUniqueId().toString());
-				if(uuid != null) TigerReports.LastUniqueIdFound.put(name, uuid);
+				String uuid = ((uuid = TigerReports.getInstance().lastUniqueIdFound.get(name)) != null ? uuid : Bukkit.getOfflinePlayer(name).getUniqueId().toString());
+				if(uuid != null) TigerReports.getInstance().lastUniqueIdFound.put(name, uuid);
 				return uuid;
 			} catch (Exception invalidPlayer) {
-				Bukkit.getLogger().log(Level.WARNING, ConfigUtils.getInfoMessage("UUID of pseudo <"+name+"> not found.", "L'UUID du pseudo <"+name+"> n'a pas ete trouve."));
+				Bukkit.getLogger().warning(ConfigUtils.getInfoMessage("The UUID of the name <"+name+"> was not found.", "L'UUID du pseudo <"+name+"> n'a pas ete trouve."));
 				return null;
 			}
 		}
@@ -45,18 +42,18 @@ public class UserUtils {
 			return Bukkit.getPlayer(uniqueId).getName();
 		} catch (Exception offlinePlayer) {
 			if(uniqueId != null) {
-				String name = ((name = TigerReports.LastNameFound.get(uuid)) != null ? name : Bukkit.getOfflinePlayer(uniqueId).getName());
+				String name = ((name = TigerReports.getInstance().lastNameFound.get(uuid)) != null ? name : Bukkit.getOfflinePlayer(uniqueId).getName());
 				if(name == null) {
 					try {
-						name = (String) TigerReports.getDb().query("SELECT name FROM tigerreports_users WHERE uuid = ?", Arrays.asList(uuid)).getResult(0, "name");
+						name = (String) TigerReports.getInstance().getDb().query("SELECT name FROM tigerreports_users WHERE uuid = ?", Arrays.asList(uuid)).getResult(0, "name");
 					} catch (Exception nameNotFound) {}
 				}
 				if(name != null) {
-					TigerReports.LastNameFound.put(uuid, name);
+					TigerReports.getInstance().lastNameFound.put(uuid, name);
 					return name;
 				}
 			}
-			Bukkit.getLogger().log(Level.WARNING, ConfigUtils.getInfoMessage("Pseudo of UUID <"+uuid+"> not found.", "Le pseudo de l'UUID <"+uuid+"> n'a pas ete trouve."));
+			Bukkit.getLogger().warning(ConfigUtils.getInfoMessage("The name of the UUID <"+uuid+"> was not found.", "Le pseudo de l'UUID <"+uuid+"> n'a pas ete trouve."));
 			return null;
 		}
 	}
@@ -77,7 +74,7 @@ public class UserUtils {
 	}
 	
 	public static boolean isValid(String uuid) {
-		return TigerReports.getDb().query("SELECT uuid FROM tigerreports_users WHERE uuid = ?", Collections.singletonList(uuid)).getResult(0, "uuid") != null;
+		return TigerReports.getInstance().getDb().query("SELECT uuid FROM tigerreports_users WHERE uuid = ?", Collections.singletonList(uuid)).getResult(0, "uuid") != null;
 	}
 	
 	public static boolean isOnline(String name) {
@@ -86,7 +83,7 @@ public class UserUtils {
 	
 	public static User getUser(String uuid) {
 		if(uuid == null) return null;
-		User u = TigerReports.Users.get(uuid);
+		User u = TigerReports.getInstance().users.get(uuid);
 		if(u == null) {
 			try {
 				u = new OnlineUser(Bukkit.getPlayer(UUID.fromString(uuid)));
@@ -99,7 +96,7 @@ public class UserUtils {
 	}
 	
 	public static OnlineUser getOnlineUser(Player p) {
-		User u = TigerReports.Users.get(p.getUniqueId().toString());
+		User u = TigerReports.getInstance().users.get(p.getUniqueId().toString());
 		if(u == null) {
 			u = new OnlineUser(p);
 			u.save();
