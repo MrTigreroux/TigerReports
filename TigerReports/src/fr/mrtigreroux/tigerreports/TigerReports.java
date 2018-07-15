@@ -46,7 +46,8 @@ public class TigerReports extends JavaPlugin {
 	public TigerReports() {}
 
 	public void load() {
-		for(ConfigFile configFiles : ConfigFile.values()) configFiles.load();
+		for(ConfigFile configFiles : ConfigFile.values())
+			configFiles.load();
 		
 		ReportsNotifier.start();
 	}
@@ -85,7 +86,8 @@ public class TigerReports extends JavaPlugin {
 		for(User u : users.values()) {
 			if(u instanceof OnlineUser) {
 				OnlineUser ou = (OnlineUser) u;
-				if(ou.getOpenedMenu() != null) ou.getPlayer().closeInventory();
+				if(ou.getOpenedMenu() != null)
+					ou.getPlayer().closeInventory();
 			}
 		}
 	}

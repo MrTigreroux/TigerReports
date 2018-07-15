@@ -41,11 +41,14 @@ public class ArchivedReportsMenu extends Menu implements UpdatedMenu {
 
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
-		if(slot == 0) u.openReportsMenu(1, true);
+		if(slot == 0)
+			u.openReportsMenu(1, true);
 		else if(slot >= 18 && slot <= size-9) {
 			Report r = ReportUtils.formatReport(TigerReports.getInstance().getDb().query("SELECT * FROM tigerreports_archived_reports LIMIT 1 OFFSET ?", Collections.singletonList(getIndex(slot)-1)).getResult(0), true);
-			if(r == null) update(true);
-			else if(click.equals(ClickType.DROP) && Permission.STAFF_DELETE.isOwned(u)) u.openConfirmationMenu(r, "DELETE_ARCHIVE");
+			if(r == null)
+				update(true);
+			else if(click.equals(ClickType.DROP) && Permission.STAFF_DELETE.isOwned(u))
+				u.openConfirmationMenu(r, "DELETE_ARCHIVE");
 			else {
 				r.unarchive(p.getName(), false);
 				u.openDelayedlyReportsMenu();

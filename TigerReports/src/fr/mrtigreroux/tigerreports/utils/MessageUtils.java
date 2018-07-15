@@ -41,16 +41,21 @@ public class MessageUtils {
 	
 	public static void sendErrorMessage(CommandSender s, String message) {
 		s.sendMessage(message);
-		if(s instanceof Player) ConfigSound.ERROR.play((Player) s);
+		if(s instanceof Player)
+			ConfigSound.ERROR.play((Player) s);
 	}
 
 	public static void sendStaffMessage(Object message, Sound sound) {
 		boolean isTextComponent = message instanceof TextComponent;
 		for(Player p : Bukkit.getOnlinePlayers()) {
-			if(!p.hasPermission(Permission.STAFF.get()) || !UserUtils.getOnlineUser(p).acceptsNotifications()) continue;
-			if(isTextComponent) p.spigot().sendMessage((TextComponent) message);
-			else p.sendMessage((String) message);
-			if(sound != null) p.playSound(p.getLocation(), sound, 1, 1);
+			if(!p.hasPermission(Permission.STAFF.get()) || !UserUtils.getOnlineUser(p).acceptsNotifications())
+				continue;
+			if(isTextComponent)
+				p.spigot().sendMessage((TextComponent) message);
+			else
+				p.sendMessage((String) message);
+			if(sound != null)
+				p.playSound(p.getLocation(), sound, 1, 1);
 		}
 		sendConsoleMessage(isTextComponent ? ((TextComponent) message).toLegacyText() : (String) message);
 	}
@@ -109,9 +114,12 @@ public class MessageUtils {
 		StringBuilder sentenceBuilder = new StringBuilder();
 		for(int valueNumber = 0; valueNumber <= 6; valueNumber++) {
 			switch(values.get(valueNumber)) {
-				case 0: break;
-				case 1: sentenceBuilder.append("1").append(" ").append(Message.valueOf(UNITS.get(valueNumber)).get()).append(" "); break;
-				default: sentenceBuilder.append(values.get(valueNumber)).append(" ").append(Message.valueOf(UNITS.get(valueNumber)+"S").get()).append(" "); break;
+				case 0:
+					break;
+				case 1:
+					sentenceBuilder.append("1").append(" ").append(Message.valueOf(UNITS.get(valueNumber)).get()).append(" "); break;
+				default:
+					sentenceBuilder.append(values.get(valueNumber)).append(" ").append(Message.valueOf(UNITS.get(valueNumber)+"S").get()).append(" "); break;
 			}
 		}
 		
@@ -125,7 +133,8 @@ public class MessageUtils {
 		StringBuilder date = new StringBuilder();
 		for(int valueNumber = 0; valueNumber <= 5; valueNumber++) {
 			String value = Integer.toString(values.get(valueNumber));
-			if(value.length() < 2) value = "0"+value;
+			if(value.length() < 2)
+				value = "0"+value;
 			date.append((valueNumber == 0 ? "" : valueNumber <= 2 ? "/" : valueNumber == 3 ? " " : "-")).append(value);
 		}
 		return date.toString();
@@ -134,14 +143,18 @@ public class MessageUtils {
 	public static ChatColor getLastColor(String text, String lastWord) {
 		String color = null;
 		int index = lastWord != null ? text.indexOf(lastWord) : text.length();
-		if(index == -1) return ChatColor.WHITE;
-		for(String code : org.bukkit.ChatColor.getLastColors(text.substring(0, index)).split("\u00A7")) if(COLOR_CODES.contains(code)) color = code;
-		if(color == null) color = "f";
+		if(index == -1)
+			return ChatColor.WHITE;
+		for(String code : org.bukkit.ChatColor.getLastColors(text.substring(0, index)).split("\u00A7"))
+			if(COLOR_CODES.contains(code)) color = code;
+		if(color == null)
+			color = "f";
 		return ChatColor.getByChar(color.charAt(0));
 	}
 	
 	public static String getMenuSentence(String text, Message message, String lastWord, boolean wordSeparation) {
-		if(text == null || text.isEmpty()) return Message.NOT_FOUND_MALE.get();
+		if(text == null || text.isEmpty())
+			return Message.NOT_FOUND_MALE.get();
 		StringBuilder sentence = new StringBuilder();
 		int maxLength = 22;
 		String lineBreak = ConfigUtils.getLineBreakSymbol();
@@ -154,12 +167,14 @@ public class MessageUtils {
 				} else if(sentence.toString().replace(lineBreak, "").replace(lastColor.toString(), "").length() >= maxLength) {
 					sentence.append(lineBreak).append(lastColor).append(word).append(" ");
 					maxLength += 35;
-				} else sentence.append(word).append(" ");
+				} else
+					sentence.append(word).append(" ");
 			}
 			return sentence.substring(0, sentence.length()-1);
 		} else {
 			for(char c : text.toCharArray()) {
-				if(sentence.length() <= maxLength) sentence.append(c);
+				if(sentence.length() <= maxLength)
+					sentence.append(c);
 				else {
 					sentence.append(lineBreak).append(lastColor).append(c);
 					maxLength += 35;
@@ -170,16 +185,19 @@ public class MessageUtils {
 	}
 	
 	public static Object getAdvancedMessage(String line, String placeHolder, String replacement, String hover, String command) {
-		if(!line.contains(placeHolder)) return line;
+		if(!line.contains(placeHolder))
+			return line;
 		else {
 			BaseComponent advancedLine = new TextComponent("");
 			for(String part : line.replace(placeHolder, "¤µ¤"+placeHolder+"¤µ¤").split("¤µ¤")) {
-				if(!part.equals(placeHolder)) advancedLine.addExtra(part);
+				if(!part.equals(placeHolder))
+					advancedLine.addExtra(part);
 				else {
 					BaseComponent advancedText = new TextComponent(replacement);
 					advancedText.setColor(ChatColor.valueOf(MessageUtils.getLastColor(replacement, null).name()));
 					advancedText.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(hover.replace(ConfigUtils.getLineBreakSymbol(), "\n")).create()));
-					if(command != null) advancedText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command));
+					if(command != null)
+						advancedText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command));
 					advancedLine.addExtra(advancedText);
 				} 
 			}
@@ -210,14 +228,16 @@ public class MessageUtils {
 	}
 	
 	public static Location getConfigLocation(String configLoc) {
-		if(configLoc == null) return null;
+		if(configLoc == null)
+			return null;
 		String[] coords = configLoc.split("/");
 		return new Location(Bukkit.getWorld(coords[1]), Double.parseDouble(coords[2]), Double.parseDouble(coords[3]), Double.parseDouble(coords[4]), Float.parseFloat(coords[5]), Float.parseFloat(coords[6]));
 	}
 	
 	public static String formatConfigEffects(Collection<PotionEffect> effects) {
 		StringBuilder configEffects = new StringBuilder();
-		for(PotionEffect effect : effects) configEffects.append(effect.getType().getName()).append(":").append(effect.getAmplifier()).append("/").append(effect.getDuration()).append(",");
+		for(PotionEffect effect : effects)
+			configEffects.append(effect.getType().getName()).append(":").append(effect.getAmplifier()).append("/").append(effect.getDuration()).append(",");
 		return configEffects.length() > 1 ? configEffects.substring(0, configEffects.length()-1) : null;
 	}
 	

@@ -54,7 +54,7 @@ public class OnlineUser extends User {
 	public void openDelayedlyReportsMenu() {
 		p.closeInventory();
 		Bukkit.getScheduler().runTaskLater(TigerReports.getInstance(), new Runnable() {
-
+			
 			@Override
 			public void run() {
 				openReportsMenu(1, false);
@@ -107,22 +107,27 @@ public class OnlineUser extends User {
 	
 	public void updateLastMessages(String newMessage) {
 		int lastMessagesAmount = ConfigFile.CONFIG.get().getInt("Config.MessagesHistory", 5);
-		if(lastMessagesAmount <= 0) return;
+		if(lastMessagesAmount <= 0)
+			return;
 		
-		if(lastMessages.size() >= lastMessagesAmount) lastMessages.remove(0);
+		if(lastMessages.size() >= lastMessagesAmount)
+			lastMessages.remove(0);
 		lastMessages.add(MessageUtils.getNowDate()+":"+newMessage);
 		save();
 	}
 	
 	@Override
 	public void sendMessage(Object message) {
-		if(message instanceof TextComponent) p.spigot().sendMessage((TextComponent) message);
-		else p.sendMessage((String) message);
+		if(message instanceof TextComponent)
+			p.spigot().sendMessage((TextComponent) message);
+		else
+			p.sendMessage((String) message);
 	}
 	
 	public void printInChat(Report r, String[] lines) {
 		String reportName = r.getName();
-		for(String line : lines) sendMessage(MessageUtils.getAdvancedMessage(line, "_ReportButton_", Message.REPORT_BUTTON.get().replace("_Report_", reportName), Message.ALERT_DETAILS.get().replace("_Report_", reportName), "/tigerreports:reports #"+r.getId()));
+		for(String line : lines)
+			sendMessage(MessageUtils.getAdvancedMessage(line, "_ReportButton_", Message.REPORT_BUTTON.get().replace("_Report_", reportName), Message.ALERT_DETAILS.get().replace("_Report_", reportName), "/tigerreports:reports #"+r.getId()));
 		ConfigSound.MENU.play(p);
 		p.closeInventory();
 	}
@@ -141,7 +146,8 @@ public class OnlineUser extends User {
 			String[] parts = comment.split(":");
 			Report r = ReportUtils.getReportById(Integer.parseInt(parts[0].replace("Report", "")));
 			Comment c = r.getComment(Integer.parseInt(parts[1].replace("Comment", "")));
-			if(!direct && !c.getStatus(true).equals("Sent")) return;
+			if(!direct && !c.getStatus(true).equals("Sent"))
+				return;
 			p.sendMessage(Message.COMMENT_NOTIFICATION.get().replace("_Player_", c.getAuthor())
 					.replace("_Reported_", r.getPlayerName("Reported", false, true)).replace("_Time_", MessageUtils.convertToSentence(MessageUtils.getSeconds(MessageUtils.getNowDate())-MessageUtils.getSeconds(r.getDate())))
 					.replace("_Message_", c.getMessage()));
@@ -162,7 +168,8 @@ public class OnlineUser extends User {
 			signData = b.getData();
 			
 			Block support = b.getRelative(BlockFace.DOWN);
-			if(support.getType() == Material.AIR) support.setType(Material.BEDROCK);
+			if(support.getType() == Material.AIR)
+				support.setType(Material.BEDROCK);
 			b.setType(Material.SIGN_POST);
 			Sign s = (Sign) b.getState();
 			s.setLine(0, "\u00A77[\u00A76TigerReports\u00A77]");
@@ -173,19 +180,21 @@ public class OnlineUser extends User {
 			
 			setCommentingReport(r);
 			save();
-			Object tileEntity = ReflectionUtils.isRecentVersion() ? ReflectionUtils.callSuperMethod(s, "getTileEntity") : ReflectionUtils.getDeclaredField(s,  "sign");
+			Object tileEntity = ReflectionUtils.isRecentVersion() ? ReflectionUtils.callSuperMethod(s, "getTileEntity") : ReflectionUtils.getDeclaredField(s, "sign");
 			ReflectionUtils.setDeclaredField(tileEntity, "isEditable", true);
 			ReflectionUtils.setDeclaredField(tileEntity, "h", ReflectionUtils.getHandle(p));
-			ReflectionUtils.sendPacket(p,  ReflectionUtils.getPacket("PacketPlayOutOpenSignEditor", ReflectionUtils.callDeclaredConstructor(ReflectionUtils.getNMSClass("BlockPosition"), s.getX(), s.getY(), s.getZ())));
-		} catch (Exception error) {}
+			ReflectionUtils.sendPacket(p, ReflectionUtils.getPacket("PacketPlayOutOpenSignEditor", ReflectionUtils.callDeclaredConstructor(ReflectionUtils.getNMSClass("BlockPosition"), s.getX(), s.getY(), s.getZ())));
+		} catch (Exception ignored) {}
 	}
 	
 	@SuppressWarnings("deprecation")
 	public void updateSignBlock(Block b) {
 		b.setType(signMaterial != null ? signMaterial : Material.AIR);
 		Block support = b.getRelative(BlockFace.DOWN);
-		if(support.getType() == Material.BEDROCK) support.setType(Material.AIR);
-		if(signData != null) b.setData(signData);
+		if(support.getType() == Material.BEDROCK)
+			support.setType(Material.AIR);
+		if(signData != null)
+			b.setData(signData);
 		signMaterial = null;
 		signData = null;
 		save();

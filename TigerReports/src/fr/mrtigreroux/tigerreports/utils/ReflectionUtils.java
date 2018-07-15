@@ -14,16 +14,16 @@ public class ReflectionUtils {
 	private static double version = 0;
 	
 	public static String cbVer() {
-        return "org.bukkit.craftbukkit."+ver()+".";
+		return "org.bukkit.craftbukkit."+ver()+".";
 	}
 	
 	public static String nmsVer() {
-        return "net.minecraft.server."+ver()+".";
+		return "net.minecraft.server."+ver()+".";
 	}
 	
 	public static String ver() {
-        String pkg = Bukkit.getServer().getClass().getPackage().getName();
-        return pkg.substring(pkg.lastIndexOf(".")+1);
+		String pkg = Bukkit.getServer().getClass().getPackage().getName();
+		return pkg.substring(pkg.lastIndexOf(".")+1);
     }
 	
 	private static double getVersion() {

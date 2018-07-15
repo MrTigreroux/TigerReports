@@ -32,7 +32,8 @@ public class ReportCommand implements CommandExecutor {
 
 	@Override
 	public boolean onCommand(CommandSender s, Command cmd, String label, String[] args) {
-		if(!UserUtils.checkPlayer(s) || (ReportUtils.permissionRequired() && !Permission.REPORT.check(s))) return true;
+		if(!UserUtils.checkPlayer(s) || (ReportUtils.permissionRequired() && !Permission.REPORT.check(s)))
+			return true;
 		Player p = (Player) s;
 		OnlineUser u = UserUtils.getOnlineUser(p);
 		String uuid = p.getUniqueId().toString();
@@ -69,8 +70,10 @@ public class ReportCommand implements CommandExecutor {
 		User ru = UserUtils.getUser(ruuid);
 		String reportedImmunity = ru.getImmunity();
 		if(reportedImmunity != null && !reportedName.equalsIgnoreCase(p.getName())) {
-			if(reportedImmunity.equals("always")) MessageUtils.sendErrorMessage(p, Message.PERMISSION_REPORT.get().replace("_Player_", reportedName));
-			else MessageUtils.sendErrorMessage(p, Message.PLAYER_ALREADY_REPORTED.get().replace("_Player_", reportedName).replace("_Time_", reportedImmunity));
+			if(reportedImmunity.equals("always"))
+				MessageUtils.sendErrorMessage(p, Message.PERMISSION_REPORT.get().replace("_Player_", reportedName));
+			else
+				MessageUtils.sendErrorMessage(p, Message.PLAYER_ALREADY_REPORTED.get().replace("_Player_", reportedName).replace("_Time_", reportedImmunity));
 			return true;
 		}
 		
@@ -80,13 +83,15 @@ public class ReportCommand implements CommandExecutor {
 		}
 		
 		StringBuilder sb = new StringBuilder();
-		for(int argNumber = 1; argNumber < args.length; argNumber++) sb.append(args[argNumber]).append(" ");
+		for(int argNumber = 1; argNumber < args.length; argNumber++)
+			sb.append(args[argNumber]).append(" ");
 		String reason = sb.toString().trim();
 		if(reason.length() < ReportUtils.getMinCharacters()) {
 			MessageUtils.sendErrorMessage(p, Message.TOO_SHORT_REASON.get().replace("_Reason_", reason));
 			return true;
 		}
-		if(ConfigUtils.getLineBreakSymbol().length() >= 1) reason = reason.replace(ConfigUtils.getLineBreakSymbol(), ConfigUtils.getLineBreakSymbol().substring(0, 1));
+		if(ConfigUtils.getLineBreakSymbol().length() >= 1)
+			reason = reason.replace(ConfigUtils.getLineBreakSymbol(), ConfigUtils.getLineBreakSymbol().substring(0, 1));
 		
 		 if(!ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.CustomReasons")) {
 			for(int reasonNumber = 1; reasonNumber <= 100; reasonNumber++) {
@@ -94,7 +99,8 @@ public class ReportCommand implements CommandExecutor {
 				if(defaultReason == null) {
 					u.openReasonMenu(1, ru);
 					return true;
-				} else if(reason.equals(defaultReason)) break;
+				} else if(reason.equals(defaultReason))
+					break;
 			}
 		}
 		
@@ -103,8 +109,10 @@ public class ReportCommand implements CommandExecutor {
 		
 		if(reportId != -1) {
 			List<Object> parameters;
-			if(rp != null) parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", date, ruuid, uuid, reason, rp.getAddress().getAddress().toString(), MessageUtils.formatConfigLocation(rp.getLocation()), ru.getLastMessages(), rp.getGameMode().toString().toLowerCase(), !rp.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().equals(Material.AIR), rp.isSneaking(), rp.isSprinting(), (int) Math.round(rp.getHealth())+"/"+(int) Math.round(rp.getMaxHealth()), rp.getFoodLevel(), MessageUtils.formatConfigEffects(rp.getActivePotionEffects()), p.getAddress().getAddress().toString(), MessageUtils.formatConfigLocation(p.getLocation()), u.getLastMessages());
-			else parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", date, ruuid, uuid, reason, null, null, ru.getLastMessages(), null, null, null, null, null, null, null, p.getAddress().toString(), MessageUtils.formatConfigLocation(p.getLocation()), u.getLastMessages());
+			if(rp != null)
+				parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", date, ruuid, uuid, reason, rp.getAddress().getAddress().toString(), MessageUtils.formatConfigLocation(rp.getLocation()), ru.getLastMessages(), rp.getGameMode().toString().toLowerCase(), !rp.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().equals(Material.AIR), rp.isSneaking(), rp.isSprinting(), (int) Math.round(rp.getHealth())+"/"+(int) Math.round(rp.getMaxHealth()), rp.getFoodLevel(), MessageUtils.formatConfigEffects(rp.getActivePotionEffects()), p.getAddress().getAddress().toString(), MessageUtils.formatConfigLocation(p.getLocation()), u.getLastMessages());
+			else
+				parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", date, ruuid, uuid, reason, null, null, ru.getLastMessages(), null, null, null, null, null, null, null, p.getAddress().toString(), MessageUtils.formatConfigLocation(p.getLocation()), u.getLastMessages());
 			reportId = TigerReports.getInstance().getDb().insert("INSERT INTO tigerreports_reports (status,appreciation,date,reported_uuid,reporter_uuid,reason,reported_ip,reported_location,reported_messages,reported_gamemode,reported_on_ground,reported_sneak,reported_sprint,reported_health,reported_food,reported_effects,reporter_ip,reporter_location,reporter_messages) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);", parameters);
 		}
 		
@@ -119,7 +127,8 @@ public class ReportCommand implements CommandExecutor {
 		u.changeStatistic("reports", 1, false);
 		ru.changeStatistic("reported_times", 1, false);
 		
-		for(String command : ConfigFile.CONFIG.get().getStringList("Config.AutoCommands")) Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("_Server_", server).replace("_Date_", date).replace("_Reporter_", r.getPlayerName("Reporter", false, false)).replace("_Reported_", r.getPlayerName("Reported", false, false)).replace("_Reason_", reason));
+		for(String command : ConfigFile.CONFIG.get().getStringList("Config.AutoCommands"))
+			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("_Server_", server).replace("_Date_", date).replace("_Reporter_", r.getPlayerName("Reporter", false, false)).replace("_Reported_", r.getPlayerName("Reported", false, false)).replace("_Reason_", reason));
 		return true;
 	}
 

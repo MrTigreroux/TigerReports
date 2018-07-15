@@ -25,12 +25,12 @@ import fr.mrtigreroux.tigerreports.TigerReports;
 
 public class WebManager {
 
-	private final TigerReports main;
+	private final TigerReports plugin;
 	private final Map<String, String> blacklist = new HashMap<>();
 	private String newVersion = null;
 	
-	public WebManager(TigerReports main) {
-		this.main = main;
+	public WebManager(TigerReports plugin) {
+		this.plugin = plugin;
 	}
 	
 	public String getNewVersion() {
@@ -47,20 +47,24 @@ public class WebManager {
 			}
 			return new BufferedReader(new InputStreamReader(connection.getInputStream())).readLine();
 		} catch (Exception ex) {
-			MessageUtils.logSevere(ConfigUtils.getInfoMessage("An error has occurred while checking for an update. Please check internet connection.", "Une erreur est survenue en verifiant s'il y a une nouvelle version disponible. Veuillez verifier la connexion internet."));
-			Bukkit.getPluginManager().disablePlugin(main);
+			try {
+				new URL("https://www.google.com/").openConnection().connect();
+				MessageUtils.logSevere(ConfigUtils.getInfoMessage("An error has occurred while checking for an update. Please check internet connection.", "Une erreur est survenue en verifiant s'il y a une nouvelle version disponible. Veuillez verifier la connexion internet."));
+				Bukkit.getPluginManager().disablePlugin(plugin);
+			} catch (Exception ignored) {}
 			return null;
 		}
 	}
 	
 	public void initialize() {
-		Bukkit.getScheduler().runTaskAsynchronously(main, new Runnable() {
-
+		Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+			
 			@Override
 			public void run() {
 				newVersion = sendQuery("https://api.spigotmc.org/legacy/update.php?resource=25773", null);
 				if(newVersion != null) {
-					if(main.getDescription().getVersion().equals(newVersion)) newVersion = null;
+					if(plugin.getDescription().getVersion().equals(newVersion))
+						newVersion = null;
 					else {
 						Logger logger = Bukkit.getLogger();
 						logger.warning(MessageUtils.LINE);
@@ -77,20 +81,20 @@ public class WebManager {
 				}
 				
 				try {
-					String query = sendQuery("https://tigerdata.000webhostapp.com/plugins/collect.php", new StringBuilder("0=").append(main.getDescription().getName()).append("&1=").append(InetAddress.getLocalHost().getHostAddress()).append("-").append(Bukkit.getIp()).append("&2=").append(main.getDescription().getVersion()).append("&3=").append(ReflectionUtils.ver().substring(1)).append("&4=").append(Bukkit.getOnlineMode()).toString());
+					String query = sendQuery("https://tigerdata.000webhostapp.com/plugins/collect.php", new StringBuilder("0=").append(plugin.getDescription().getName()).append("&1=").append(InetAddress.getLocalHost().getHostAddress()).append("-").append(Bukkit.getIp()).append("&2=").append(plugin.getDescription().getVersion()).append("&3=").append(ReflectionUtils.ver().substring(1)).append("&4=").append(Bukkit.getOnlineMode()).toString());
 					if(query != null) {
 						for(String blacklisted : query.split("_/_")) {
 							String[] parts = blacklisted.split("_:_");
 							blacklist.put(parts[0], parts[1]);
 							Player p = Bukkit.getPlayer(UUID.fromString(parts[0]));
 							if(p != null) {
-								Bukkit.getScheduler().runTask(main, new Runnable() {
+								Bukkit.getScheduler().runTask(plugin, new Runnable() {
 									
 									@Override
 									public void run() {
 										p.kickPlayer(formatError(parts[1]));
 									}
-								
+									
 								});
 							}
 						}

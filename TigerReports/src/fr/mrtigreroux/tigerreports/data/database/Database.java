@@ -34,7 +34,8 @@ public abstract class Database {
 	private void checkConnection() {
 		cancelClosing();
 		try {
-			if(connection != null && isValid()) return;
+			if(connection != null && isValid())
+				return;
 		} catch (Exception ignored) {}
 		openConnection();
 	}
@@ -61,10 +62,12 @@ public abstract class Database {
 	
 	public void updateAsynchronously(final String query, final List<Object> parameters) {
 		Bukkit.getScheduler().runTaskAsynchronously(TigerReports.getInstance(), new Runnable() {
+			
 			@Override
 			public void run() {
 				update(query, parameters);
 			}
+			
 		});
 	}
 	
@@ -99,8 +102,10 @@ public abstract class Database {
 			ps.executeUpdate();
 			
 			try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-				if(generatedKeys.next()) return generatedKeys.getInt(1);
-				else return -1;
+				if(generatedKeys.next())
+					return generatedKeys.getInt(1);
+				else
+					return -1;
 			}
 		} catch (SQLException ex) {
 			logDatabaseError(ex);
@@ -116,7 +121,8 @@ public abstract class Database {
 	}
 	
 	public void startClosing() {
-		if(closingTaskId != -1 || connection == null) return;
+		if(closingTaskId != -1 || connection == null)
+			return;
 		closingTaskId = Bukkit.getScheduler().scheduleSyncDelayedTask(TigerReports.getInstance(), new Runnable() {
 			
 			@Override
@@ -131,14 +137,16 @@ public abstract class Database {
 	}
 	
 	public void cancelClosing() {
-		if(closingTaskId == -1) return;
+		if(closingTaskId == -1)
+			return;
 		Bukkit.getScheduler().cancelTask(closingTaskId);
 		closingTaskId = -1;
 	}
 	
 	public void closeConnection() {
 		try {
-			if(connection == null || connection.isClosed()) return;
+			if(connection == null || connection.isClosed())
+				return;
 			connection.close();
 			connection = null;
 		} catch (SQLException ignored) {}

@@ -43,6 +43,7 @@ public class SQLite extends Database {
 	@Override
 	public void initialize() {
 		Bukkit.getScheduler().runTaskAsynchronously(TigerReports.getInstance(), new Runnable() {
+			
 			@Override
 			public void run() {
 				String reportColumns = "('report_id' INTEGER PRIMARY KEY, 'status' varchar(50) NOT NULL DEFAULT 'Waiting', 'appreciation' varchar(10), 'date' varchar(20), 'reported_uuid' char(36), 'reporter_uuid' char(36), 'reason' varchar(150), 'reported_ip' varchar(22), 'reported_location' varchar(50), 'reported_messages' text, 'reported_gamemode' char(10), 'reported_on_ground' char(1), 'reported_sneak' varchar(1), 'reported_sprint' varchar(1), 'reported_health' varchar(10), 'reported_food' varchar(10), 'reported_effects' text, 'reporter_ip' varchar(22) NOT NULL, 'reporter_location' varchar(50) NOT NULL, 'reporter_messages' text);";
@@ -51,6 +52,7 @@ public class SQLite extends Database {
 				update("CREATE TABLE IF NOT EXISTS tigerreports_comments ('report_id' INTEGER NOT NULL, 'comment_id' INTEGER PRIMARY KEY,'status' varchar(7), 'date' varchar(20), 'author' varchar(32), 'message' text);", null);			
 				update("CREATE TABLE IF NOT EXISTS tigerreports_archived_reports "+reportColumns, null);
 			}
+			
 		});
 	}
 	

@@ -32,26 +32,28 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 public class BungeeManager implements PluginMessageListener {
 	
-	private TigerReports main;
+	private TigerReports plugin;
 	private boolean initialized = false;
 	private String serverName = null;
 	
-	public BungeeManager(TigerReports main) {
-		this.main = main;
+	public BungeeManager(TigerReports plugin) {
+		this.plugin = plugin;
 	}
 	
 	public void initialize() {
 		if(ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "BungeeCord.Enabled")) {
-			Messenger messenger = main.getServer().getMessenger();
-			messenger.registerOutgoingPluginChannel(main, "BungeeCord");
-			messenger.registerIncomingPluginChannel(main, "BungeeCord", this);
+			Messenger messenger = plugin.getServer().getMessenger();
+			messenger.registerOutgoingPluginChannel(plugin, "BungeeCord");
+			messenger.registerIncomingPluginChannel(plugin, "BungeeCord", this);
 			initialized = true;
 			Bukkit.getLogger().info(ConfigUtils.getInfoMessage("The plugin is using BungeeCord.", "Le plugin utilise BungeeCord."));
-		} else Bukkit.getLogger().info(ConfigUtils.getInfoMessage("The plugin is not using BungeeCord.", "Le plugin n'utilise pas BungeeCord."));
+		} else
+			Bukkit.getLogger().info(ConfigUtils.getInfoMessage("The plugin is not using BungeeCord.", "Le plugin n'utilise pas BungeeCord."));
 	}
 	
 	public void collectServerName() {
-		if(serverName == null) sendPluginMessage("GetServer");
+		if(serverName == null)
+			sendPluginMessage("GetServer");
 	}
 	
 	public void collectDelayedlyServerName() {
@@ -68,15 +70,18 @@ public class BungeeManager implements PluginMessageListener {
 	}
 	
 	public String getServerName() {
-		if(serverName == null) sendPluginMessage("GetServer");
+		if(serverName == null)
+			sendPluginMessage("GetServer");
 		return serverName != null ? serverName : "localhost";
 	}
 	
 	public void sendServerPluginNotification(String serverName, String message) {
-		if(!initialized) return;
+		if(!initialized)
+			return;
 		
 		Player p = getRandomPlayer();
-		if(p == null) return;
+		if(p == null)
+			return;
 		try {
 			ByteArrayDataOutput out = ByteStreams.newDataOutput();
 			out.writeUTF("Forward");
@@ -91,7 +96,7 @@ public class BungeeManager implements PluginMessageListener {
 			out.writeShort(messageBytes.length);
 			out.write(messageBytes);
 			
-			p.sendPluginMessage(main, "BungeeCord", out.toByteArray());
+			p.sendPluginMessage(plugin, "BungeeCord", out.toByteArray());
 		} catch (IOException ignored) {}
 	}
 
@@ -100,19 +105,23 @@ public class BungeeManager implements PluginMessageListener {
 	}
 	
 	public void sendPluginMessage(String... message) {
-		if(!initialized) return;
+		if(!initialized)
+			return;
 		
 		Player p = getRandomPlayer();
-		if(p == null) return;
+		if(p == null)
+			return;
 		
 		ByteArrayDataOutput out = ByteStreams.newDataOutput();
-		for(String part : message) out.writeUTF(part);
-		p.sendPluginMessage(main, "BungeeCord", out.toByteArray());
+		for(String part : message)
+			out.writeUTF(part);
+		p.sendPluginMessage(plugin, "BungeeCord", out.toByteArray());
 	}
 	
 	@Override
 	public void onPluginMessageReceived(String channel, Player p, byte[] messageReceived) {
-		if(!channel.equals("BungeeCord")) return;
+		if(!channel.equals("BungeeCord"))
+			return;
 		
 		ByteArrayDataInput in = ByteStreams.newDataInput(messageReceived);
 		String subchannel = in.readUTF();
@@ -133,24 +142,39 @@ public class BungeeManager implements PluginMessageListener {
 				User u = parts.length == 4 || parts.length == 5 ? UserUtils.getUser(parts[3]) : null;
 				
 				switch(parts[1]) {
-					case "new_report": ReportUtils.sendReport(new Report(Integer.parseInt(parts[0]), Status.WAITING.getConfigWord(), "None", parts[2].replace("_", " "), parts[3], parts[4], parts[5].replace("_", " ")), parts[6], notify); break;
-					case "new_status": r.setStatus(Status.valueOf(parts[0]), true); break;
-					case "process": r.process(parts[0].split("/")[0], notify ? parts[0].split("/")[1] : null, parts[3], true, false); break;
-					case "delete": r.delete(notify ? parts[0] : null, true); break;
-					case "archive": r.archive(notify ? parts[0] : null, true); break;
-					case "unarchive": r.unarchive(notify ? parts[0] : null, true); break;
-					case "delete_archive": r.deleteFromArchives(notify ? parts[0] : null, true); break;
+					case "new_report":
+						ReportUtils.sendReport(new Report(Integer.parseInt(parts[0]), Status.WAITING.getConfigWord(), "None", parts[2].replace("_", " "), parts[3], parts[4], parts[5].replace("_", " ")), parts[6], notify); break;
+					case "new_status":
+						r.setStatus(Status.valueOf(parts[0]), true); break;
+					case "process":
+						r.process(parts[0].split("/")[0], notify ? parts[0].split("/")[1] : null, parts[3], true, false); break;
+					case "delete":
+						r.delete(notify ? parts[0] : null, true); break;
+					case "archive":
+						r.archive(notify ? parts[0] : null, true); break;
+					case "unarchive":
+						r.unarchive(notify ? parts[0] : null, true); break;
+					case "delete_archive":
+						r.deleteFromArchives(notify ? parts[0] : null, true); break;
 					
-					case "new_immunity": u.updateImmunity(parts[0].equals("null") ? null : parts[0].replace("_", " "), true); break;
-					case "new_cooldown": u.updateCooldown(parts[0].equals("null") ? null : parts[0].replace("_", " "), true); break;
-					case "punish": u.punish(Double.parseDouble(parts[4]), notify ? parts[0] : null, true); break;
-					case "stop_cooldown": u.stopCooldown(notify ? parts[0] : null, true); break;
-					case "change_statistic": u.changeStatistic(parts[2], Integer.parseInt(parts[0]), true); break;
-					case "teleport": UserUtils.getPlayer(parts[0]).teleport(MessageUtils.getConfigLocation(parts[2])); break;
-					default: break;
+					case "new_immunity":
+						u.updateImmunity(parts[0].equals("null") ? null : parts[0].replace("_", " "), true); break;
+					case "new_cooldown":
+						u.updateCooldown(parts[0].equals("null") ? null : parts[0].replace("_", " "), true); break;
+					case "punish":
+						u.punish(Double.parseDouble(parts[4]), notify ? parts[0] : null, true); break;
+					case "stop_cooldown":
+						u.stopCooldown(notify ? parts[0] : null, true); break;
+					case "change_statistic":
+						u.changeStatistic(parts[2], Integer.parseInt(parts[0]), true); break;
+					case "teleport":
+						UserUtils.getPlayer(parts[0]).teleport(MessageUtils.getConfigLocation(parts[2])); break;
+					default:
+						break;
 				}
 			} catch (Exception ignored) {}
-		} else if(subchannel.equals("GetServer")) serverName = in.readUTF();
+		} else if(subchannel.equals("GetServer"))
+			serverName = in.readUTF();
 	}
 	
 	private Player getRandomPlayer() {

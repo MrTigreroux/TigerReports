@@ -50,7 +50,8 @@ public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu {
 		boolean delete = Permission.STAFF_DELETE.isOwned(u);
 		ItemStack empty = new ItemStack(Material.AIR);
 		for(int position = 18; position < 45; position++) {
-			if(index == -1) inv.setItem(position, empty);
+			if(index == -1)
+				inv.setItem(position, empty);
 			else {
 				Comment c = index < comments.size() ? comments.get(index) : null;
 				if(c == null) {
@@ -63,13 +64,16 @@ public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu {
 			}
 		}
 
-		if(comments.size() == 28) inv.setItem(size-3, MenuItem.PAGE_SWITCH_NEXT.get());
+		if(comments.size() == 28)
+			inv.setItem(size-3, MenuItem.PAGE_SWITCH_NEXT.get());
 	}
 
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
-		if(slot == 0) u.openReportMenu(r);
-		else if(slot == 8) u.comment(r);
+		if(slot == 0)
+			u.openReportMenu(r);
+		else if(slot == 8)
+			u.comment(r);
 		else if(slot >= 18 && slot <= size-9) {
 			Comment c = new ArrayList<>(r.getComments().values()).get(getIndex(slot)-1);
 			if(c != null) {
@@ -101,8 +105,10 @@ public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu {
 					}
 					su.setNotifications(notifications);
 				} else if(click.equals(ClickType.DROP)) {
-					if(Permission.STAFF_DELETE.isOwned(u)) c.delete();
-					else return;
+					if(Permission.STAFF_DELETE.isOwned(u))
+						c.delete();
+					else
+						return;
 				}
 			}
 			update(true);

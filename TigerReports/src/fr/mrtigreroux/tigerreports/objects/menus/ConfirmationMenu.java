@@ -33,7 +33,8 @@ public class ConfirmationMenu extends ReportManagerMenu {
 		Inventory inv = getInventory(Message.valueOf("CONFIRM_"+actionDisplayed+"_TITLE").get().replace("_Report_", report), false);
 		
 		ItemStack gui = new CustomItem().type(Material.STAINED_GLASS_PANE).damage((byte) 7).name(" ").create();
-		for(int position : Arrays.asList(1, 2, 3, 5, 6, 7, 10, 12, 14, 16, 19, 20, 21, 23, 24, 25)) inv.setItem(position, gui);
+		for(int position : Arrays.asList(1, 2, 3, 5, 6, 7, 10, 12, 14, 16, 19, 20, 21, 23, 24, 25))
+			inv.setItem(position, gui);
 		
 		inv.setItem(11, new CustomItem().type(Material.STAINED_CLAY).damage((byte) 5).name(Message.valueOf("CONFIRM_"+actionDisplayed).get()).lore(Message.valueOf("CONFIRM_"+actionDisplayed+"_DETAILS").get().replace("_Report_", report).split(ConfigUtils.getLineBreakSymbol())).create());
 		inv.setItem(13, r.getItem(null));
@@ -51,14 +52,19 @@ public class ConfirmationMenu extends ReportManagerMenu {
 			}
 			
 			switch(action) {
-				case "DELETE": r.delete(p.getName(), false); break;
-				case "DELETE_ARCHIVE": r.deleteFromArchives(p.getName(), false); break;
-				default: r.archive(p.getName(), false); break;
+				case "DELETE":
+					r.delete(p.getName(), false); break;
+				case "DELETE_ARCHIVE":
+					r.deleteFromArchives(p.getName(), false); break;
+				default:
+					r.archive(p.getName(), false); break;
 			}
 			u.openDelayedlyReportsMenu();
 		} else if(slot == 15) {
-			if(action.equals("DELETE_ARCHIVE")) u.openArchivedReportsMenu(1, true);
-			else u.openReportMenu(r);
+			if(action.equals("DELETE_ARCHIVE"))
+				u.openArchivedReportsMenu(1, true);
+			else
+				u.openReportMenu(r);
 		}
 	}
 	

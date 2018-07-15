@@ -26,7 +26,8 @@ public class ReportsMenu extends Menu implements UpdatedMenu {
 		Inventory inv = getInventory(Message.REPORTS_TITLE.get().replace("_Page_", Integer.toString(page)), true);
 		
 		inv.setItem(4, MenuItem.REPORTS.get());
-		if(Permission.STAFF_ARCHIVE.isOwned(u)) inv.setItem(8, MenuItem.ARCHIVED_REPORTS.getWithDetails(Message.ARCHIVED_REPORTS_DETAILS.get()));
+		if(Permission.STAFF_ARCHIVE.isOwned(u))
+			inv.setItem(8, MenuItem.ARCHIVED_REPORTS.getWithDetails(Message.ARCHIVED_REPORTS_DETAILS.get()));
 		
 		return inv;
 	}
@@ -38,14 +39,19 @@ public class ReportsMenu extends Menu implements UpdatedMenu {
 
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
-		if(slot == 8 && Permission.STAFF_ARCHIVE.isOwned(u)) u.openArchivedReportsMenu(1, true);
+		if(slot == 8 && Permission.STAFF_ARCHIVE.isOwned(u))
+			u.openArchivedReportsMenu(1, true);
 		else if(slot >= 18 && slot <= size-9) {
 			Report r = ReportUtils.getReport(getIndex(slot));
-			if(r == null) update(false);
+			if(r == null)
+				update(false);
 			else {
-				if(click.equals(ClickType.MIDDLE) && Permission.STAFF_ARCHIVE.isOwned(u)) u.openConfirmationMenu(r, "ARCHIVE");
-				else if(click.equals(ClickType.DROP) && Permission.STAFF_DELETE.isOwned(u)) u.openConfirmationMenu(r, "DELETE");
-				else u.openReportMenu(r);
+				if(click.equals(ClickType.MIDDLE) && Permission.STAFF_ARCHIVE.isOwned(u))
+					u.openConfirmationMenu(r, "ARCHIVE");
+				else if(click.equals(ClickType.DROP) && Permission.STAFF_DELETE.isOwned(u))
+					u.openConfirmationMenu(r, "DELETE");
+				else
+					u.openReportMenu(r);
 			}
 		}
 	}

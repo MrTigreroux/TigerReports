@@ -26,17 +26,21 @@ public class SignListener implements Listener {
 		Player p = e.getPlayer();
 		OnlineUser u = UserUtils.getOnlineUser(p);
 		Report r = u.getCommentingReport();
-		if(r == null) return;
+		if(r == null)
+			return;
 		
 		String message = "";
-		for(String line : e.getLines()) if(line != null && !line.equals("")) message += message.equals("") ? line : " "+line;
+		for(String line : e.getLines())
+			if(line != null && !line.equals(""))
+				message += message.equals("") ? line : " "+line;
 		if(!message.equals("")) {
 			Comment c = u.getModifiedComment();
 			if(c == null) {
 				String date = MessageUtils.getNowDate();
 				int commentId = TigerReports.getInstance().getDb().insert("INSERT INTO tigerreports_comments (report_id,status,date,author,message) VALUES (?,?,?,?,?);", Arrays.asList(r.getId(), "Private", date, p.getDisplayName(), message));
 				new Comment(r, commentId, "Private", date, p.getDisplayName(), message).save();
-			} else c.addMessage(message);
+			} else
+				c.addMessage(message);
 		}
 		
 		u.setCommentingReport(null);

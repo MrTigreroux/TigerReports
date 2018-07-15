@@ -43,24 +43,29 @@ public abstract class Menu {
 			MessageUtils.sendErrorMessage(p, error);
 			p.closeInventory();
 			return false;
-		} else return true;
+		} else
+			return true;
 	}
 	
 	Inventory getInventory(String title, boolean borders) {
-		if(title.length() > 32) title = title.substring(0, 29)+"..";
+		if(title.length() > 32)
+			title = title.substring(0, 29)+"..";
 		Inventory inv = Bukkit.createInventory(null, size, title);
 		if(borders) {
 			ItemStack gui = new CustomItem().type(Material.STAINED_GLASS_PANE).damage((byte) 7).name(" ").create();
 			int size = inv.getSize();
-			for(int position = 9; position < 18; position++) inv.setItem(position, gui);
-			for(int position = size-9; position < size; position++) inv.setItem(position, gui);
+			for(int position = 9; position < 18; position++)
+				inv.setItem(position, gui);
+			for(int position = size-9; position < size; position++)
+				inv.setItem(position, gui);
 			inv.setItem(size-5, MenuItem.CLOSE.get());
 		}
 		return inv;
 	}
 	
 	public void open(boolean sound) {
-		if(!check()) return;
+		if(!check())
+			return;
 		
 		Inventory inv = onOpen();
 		if(inv == null) {
@@ -69,25 +74,30 @@ public abstract class Menu {
 		}
 		
 		boolean updated = this instanceof UpdatedMenu;
-		if(updated) ((UpdatedMenu) this).onUpdate(inv);
+		if(updated)
+			((UpdatedMenu) this).onUpdate(inv);
 		
 		p.openInventory(inv);
 		u.setOpenedMenu(this);
-		if(updated) MenuUpdater.addUser(u);
-		if(sound) ConfigSound.MENU.play(p);
+		if(updated)
+			MenuUpdater.addUser(u);
+		if(sound)
+			ConfigSound.MENU.play(p);
 	}
 	
 	abstract Inventory onOpen();
 	
 	public void update(boolean sound) {
 		if(this instanceof UpdatedMenu) {
-			if(!check()) return;
+			if(!check())
+				return;
 			InventoryView invView = p.getOpenInventory();
 			if(invView != null) {
 				Inventory inv = invView.getTopInventory();
 				if(inv != null && inv.getSize() == size) {
 					((UpdatedMenu) this).onUpdate(inv);
-					if(sound) ConfigSound.MENU.play(p);
+					if(sound)
+						ConfigSound.MENU.play(p);
 					return;
 				}
 			}
@@ -96,8 +106,8 @@ public abstract class Menu {
 	}
 	
 	public void click(ItemStack item, int slot, ClickType click) {
-		if(slot == -1 || item == null || item.getType() == Material.AIR || (item.getType() == Material.STAINED_GLASS_PANE && ((slot >= size-9 && slot < size) || (slot >= 9 && slot <= 17)))) return;
-		if(!check()) return;
+		if(slot == -1 || item == null || item.getType() == Material.AIR || (item.getType() == Material.STAINED_GLASS_PANE && ((slot >= size-9 && slot < size) || (slot >= 9 && slot <= 17))) || !check())
+			return;
 		
 		if(slot == size-5) {
 			p.closeInventory();

@@ -62,7 +62,8 @@ public class UserUtils {
 		if(!(s instanceof Player)) {
 			s.sendMessage(Message.PLAYER_ONLY.get());
 			return false;
-		} else return true;
+		} else
+			return true;
 	}
 	
 	public static Player getPlayer(String name) {
@@ -82,7 +83,8 @@ public class UserUtils {
 	}
 	
 	public static User getUser(String uuid) {
-		if(uuid == null) return null;
+		if(uuid == null)
+			return null;
 		User u = TigerReports.getInstance().users.get(uuid);
 		if(u == null) {
 			try {
@@ -109,12 +111,10 @@ public class UserUtils {
 		return (OnlineUser) u;
 	}
 	
-	public static List<String> getOnlinePlayers(String ignored) {
+	public static List<String> getOnlinePlayers() {
 		List<String> players = new ArrayList<>();
-		for(Player p : Bukkit.getOnlinePlayers()) {
-			String name = p.getName();
-			if(!name.equals(ignored)) players.add(name);
-		}
+		for(Player p : Bukkit.getOnlinePlayers())
+			players.add(p.getName());
 		return players;
 	}
 	

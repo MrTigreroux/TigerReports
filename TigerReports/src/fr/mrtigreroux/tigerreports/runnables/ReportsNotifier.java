@@ -23,7 +23,8 @@ public class ReportsNotifier implements Runnable {
 	@Override
 	public void run() {
 		String reportsNotifications = getReportsNotification();
-		if(reportsNotifications != null) MessageUtils.sendStaffMessage(reportsNotifications, ConfigSound.STAFF.get());
+		if(reportsNotifications != null)
+			MessageUtils.sendStaffMessage(reportsNotifications, ConfigSound.STAFF.get());
 	}
 	
 	public static String getReportsNotification() {
@@ -37,7 +38,8 @@ public class ReportsNotifier implements Runnable {
 		
 		for(Status status : Status.values()) {
 			String statusPlaceHolder = "_"+status.getConfigWord()+"_";
-			if(!reportsNotification.contains(statusPlaceHolder)) break;
+			if(!reportsNotification.contains(statusPlaceHolder))
+				break;
 			int amount = (statusTypes.get(status) != null ? statusTypes.get(status) : 0);
 			reportsNotification = reportsNotification.replace(statusPlaceHolder, (amount <= 1 ? Message.REPORT_TYPE : Message.REPORTS_TYPE).get().replace("_Amount_", Integer.toString(amount)).replace("_Type_", status.getWord(null).toLowerCase()));
 			totalAmount += amount;
@@ -49,7 +51,8 @@ public class ReportsNotifier implements Runnable {
 	public static void start() {
 		stop();
 		int interval = ConfigFile.CONFIG.get().getInt("Config.ReportsNotifications.MinutesInterval", 0)*1200;
-		if(interval > 0) taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(TigerReports.getInstance(), new ReportsNotifier(), interval, interval);
+		if(interval > 0)
+			taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(TigerReports.getInstance(), new ReportsNotifier(), interval, interval);
 	}
 	
 	public static void stop() {

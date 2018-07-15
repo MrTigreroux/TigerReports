@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -28,7 +29,8 @@ public enum ConfigFile {
 	
 	public void load() {
 		file = new File("plugins/TigerReports", toString().toLowerCase()+".yml");
-		if(!file.exists()) reset();
+		if(!file.exists())
+			reset();
 		config = YamlConfiguration.loadConfiguration(file);
 		
 		try {
@@ -36,7 +38,7 @@ public enum ConfigFile {
 			YamlConfiguration defaultConfig = YamlConfiguration.loadConfiguration(defaultConfigStream);
 			config.setDefaults(defaultConfig);
 		} catch (UnsupportedEncodingException ex) {
-			ex.printStackTrace();
+			Bukkit.getLogger().log(Level.SEVERE, ConfigUtils.getInfoMessage("An error has occurred while loading config files:", "Une erreur est survenue en chargeant les fichiers de configuration:"), ex);
 		}
 	}
 	

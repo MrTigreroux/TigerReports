@@ -46,7 +46,8 @@ public class ReasonMenu extends Menu {
 			inv.setItem(reasonIndex-firstReason+18, new CustomItem().type(material != null ? material : Material.PAPER).damage(ConfigUtils.getDamage(ConfigFile.CONFIG.get(), path+".Item")).skullOwner(ConfigUtils.getSkull(ConfigFile.CONFIG.get(), path+".Item")).name(Message.REASON.get().replace("_Reason_", reason)).lore(Message.REASON_DETAILS.get().replace("_Player_", tu.getName()).replace("_Reason_", reason).split(ConfigUtils.getLineBreakSymbol())).hideFlags(true).create());
 		}
 		
-		if(ConfigUtils.exist(ConfigFile.CONFIG.get(), "Config.DefaultReasons.Reason"+(firstReason+27))) inv.setItem(size-3, MenuItem.PAGE_SWITCH_NEXT.get());
+		if(ConfigUtils.exist(ConfigFile.CONFIG.get(), "Config.DefaultReasons.Reason"+(firstReason+27)))
+			inv.setItem(size-3, MenuItem.PAGE_SWITCH_NEXT.get());
 		
 		return inv;
 	}

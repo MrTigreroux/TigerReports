@@ -28,33 +28,39 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 public class ReportsCommand implements TabExecutor {
 	
-	private final List<String> Actions = Arrays.asList("reload", "notify", "archiveall", "archives", "deleteall", "user", "stopcooldown", "#1");
-	private final List<String> UserActions = Arrays.asList("user", "u", "stopcooldown", "sc");
+	private final List<String> ACTIONS = Arrays.asList("reload", "notify", "archiveall", "archives", "deleteall", "user", "stopcooldown", "#1");
+	private final List<String> USER_ACTIONS = Arrays.asList("user", "u", "stopcooldown", "sc");
 	
 	@Override
 	public boolean onCommand(CommandSender s, Command cmd, String label, String[] args) {
 		if(args.length == 1 && args[0].equalsIgnoreCase("reload")) {
 			if(Permission.MANAGE.check(s)) {
 				MenuUpdater.stop(true);
-				TigerReports main = TigerReports.getInstance();
-				main.reports.clear();
-				main.users.clear();
-				main.unload();
-				main.load();
-				main.initializeDatabase();
-				main.getBungeeManager().collectServerName();
-				if(!(s instanceof Player)) MessageUtils.sendConsoleMessage(Message.RELOAD.get());
-				else s.sendMessage(Message.RELOAD.get());
+				TigerReports plugin = TigerReports.getInstance();
+				plugin.reports.clear();
+				plugin.users.clear();
+				plugin.unload();
+				plugin.load();
+				plugin.initializeDatabase();
+				plugin.getBungeeManager().collectServerName();
+				
+				if(!(s instanceof Player))
+					MessageUtils.sendConsoleMessage(Message.RELOAD.get());
+				else
+					s.sendMessage(Message.RELOAD.get());
 			}
 			return true;
 		}
 		
-		if(!UserUtils.checkPlayer(s) || !Permission.STAFF.check(s)) return true;
+		if(!UserUtils.checkPlayer(s) || !Permission.STAFF.check(s))
+			return true;
 		Player p = (Player) s;
 		OnlineUser u = UserUtils.getOnlineUser(p);
 		
 		switch(args.length) {
-			case 0: u.openReportsMenu(1, true); break;
+			case 0:
+				u.openReportsMenu(1, true);
+				break;
 			case 1:
 				switch(args[0].toLowerCase()) {
 					case "notify":
@@ -71,7 +77,10 @@ public class ReportsCommand implements TabExecutor {
 							MessageUtils.sendStaffMessage(Message.STAFF_ARCHIVEALL.get().replace("_Player_", p.getName()), ConfigSound.STAFF.get());
 						}
 						break;
-					case "archives": if(Permission.STAFF_ARCHIVE.check(s)) u.openArchivedReportsMenu(1, true); break;
+					case "archives":
+						if(Permission.STAFF_ARCHIVE.check(s))
+							u.openArchivedReportsMenu(1, true);
+						break;
 					case "deleteall":
 						if(Permission.STAFF_DELETE.check(s)) {
 							TigerReports.getInstance().getDb().update("DELETE FROM tigerreports_archived_reports;", null);
@@ -94,12 +103,20 @@ public class ReportsCommand implements TabExecutor {
 					return true;
 				}
 				switch(args[0].toLowerCase()) {
-					case "user": case "u": u.openUserMenu(tu); break;
-					case "stopcooldown": case "sc": tu.stopCooldown(p.getName(), false); break;
-					default: s.sendMessage(Message.INVALID_SYNTAX.get().replace("_Command_", "/"+label+" "+Message.REPORTS_SYNTAX.get())); break;
+					case "user": case "u":
+						u.openUserMenu(tu);
+						break;
+					case "stopcooldown": case "sc":
+						tu.stopCooldown(p.getName(), false);
+						break;
+					default:
+						s.sendMessage(Message.INVALID_SYNTAX.get().replace("_Command_", "/"+label+" "+Message.REPORTS_SYNTAX.get()));
+						break;
 				}
 				break;
-			default: s.sendMessage(Message.INVALID_SYNTAX.get().replace("_Command_", "/"+label+" "+Message.REPORTS_SYNTAX.get())); break;
+			default:
+				s.sendMessage(Message.INVALID_SYNTAX.get().replace("_Command_", "/"+label+" "+Message.REPORTS_SYNTAX.get()));
+				break;
 		}
 		return true;
 	}
@@ -107,9 +124,12 @@ public class ReportsCommand implements TabExecutor {
 	@Override
 	public List<String> onTabComplete(CommandSender s, Command cmd, String label, String[] args) {
 		switch(args.length) {
-			case 1: return StringUtil.copyPartialMatches(args[0], Actions, new ArrayList<>());
-			case 2: return UserActions.contains(args[0].toLowerCase()) ? StringUtil.copyPartialMatches(args[1], UserUtils.getOnlinePlayers(""), new ArrayList<>()) : new ArrayList<>();
-			default: return new ArrayList<>();
+			case 1:
+				return StringUtil.copyPartialMatches(args[0], ACTIONS, new ArrayList<>());
+			case 2:
+				return USER_ACTIONS.contains(args[0].toLowerCase()) ? StringUtil.copyPartialMatches(args[1], UserUtils.getOnlinePlayers(), new ArrayList<>()) : new ArrayList<>();
+			default:
+				return new ArrayList<>();
 		}
 	}
 

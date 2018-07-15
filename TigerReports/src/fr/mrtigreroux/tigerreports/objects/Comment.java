@@ -35,7 +35,8 @@ public class Comment {
 	}
 	
 	public String getStatus(boolean config) {
-		if(config) return status;
+		if(config)
+			return status;
 		try {
 			return status != null ? Message.valueOf(status.toUpperCase()).get() : Message.PRIVATE.get();
 		} catch (Exception invalidStatus) {

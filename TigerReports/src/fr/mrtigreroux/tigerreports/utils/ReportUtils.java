@@ -29,13 +29,15 @@ public class ReportUtils {
 	
 	public static void sendReport(Report r, String server, boolean notify) {
 		Bukkit.getServer().getPluginManager().callEvent(new NewReportEvent(server, r));
-		if(!notify) return;
+		if(!notify)
+			return;
 		
 		int reportId = r.getId();
 		
 		TextComponent alert = new TextComponent();
 		alert.setColor(ChatColor.valueOf(MessageUtils.getLastColor(Message.ALERT.get(), "_Reason_").name()));
-		if(reportId == -1) MessageUtils.sendStaffMessage(Message.STAFF_MAX_REPORTS_REACHED.get().replace("_Amount_", Integer.toString(getMaxReports())), ConfigSound.STAFF.get());
+		if(reportId == -1)
+			MessageUtils.sendStaffMessage(Message.STAFF_MAX_REPORTS_REACHED.get().replace("_Amount_", Integer.toString(getMaxReports())), ConfigSound.STAFF.get());
 		else {
 			alert.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/reports #"+reportId));
 			alert.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(Message.ALERT_DETAILS.get().replace("_Report_", r.getName())).create()));
@@ -56,13 +58,15 @@ public class ReportUtils {
 	}
 	
 	public static Report formatReport(Map<String, Object> result, boolean containsAdvancedData) {
-		if(result == null) return null;
+		if(result == null)
+			return null;
 		Report r = new Report((int) result.get("report_id"), (String) result.get("status"), (String) result.get("appreciation"), (String) result.get("date"), (String) result.get("reported_uuid"), (String) result.get("reporter_uuid"), (String) result.get("reason"));
 		if(containsAdvancedData) {
 			Map<String, String> advancedData = new HashMap<>();
 			Set<String> advancedKeys = new HashSet<>(result.keySet());
 			advancedKeys.removeAll(Arrays.asList("report_id", "status", "appreciation", "date", "reported_uuid", "reporter_uuid", "reason"));
-			for(String key : advancedKeys) advancedData.put(key, (String) result.get(key));
+			for(String key : advancedKeys)
+				advancedData.put(key, (String) result.get(key));
 			r.setAdvancedData(advancedData);
 			r.save();
 		}
@@ -81,7 +85,8 @@ public class ReportUtils {
 		int index = 0;
 		ItemStack empty = new ItemStack(Material.AIR);
 		for(int position = 18; position < 45; position++) {
-			if(index == -1) inv.setItem(position, empty);
+			if(index == -1)
+				inv.setItem(position, empty);
 			else {
 				Report r = ReportUtils.formatReport(index < results.size() ? results.get(index) : null, false);
 				if(r == null) {
@@ -94,7 +99,8 @@ public class ReportUtils {
 			}
 		}
 		
-		if(results.size() == 28) inv.setItem(size-3, MenuItem.PAGE_SWITCH_NEXT.get());
+		if(results.size() == 28)
+			inv.setItem(size-3, MenuItem.PAGE_SWITCH_NEXT.get());
 	}
 	
 	public static int getTotalReports() {

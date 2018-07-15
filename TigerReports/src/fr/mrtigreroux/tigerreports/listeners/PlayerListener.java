@@ -36,7 +36,7 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 public class PlayerListener implements Listener {
 
-	private final static List<String> helpCommands = Arrays.asList("tigerreport", "helptigerreport", "reportshelp", "report?", "reports?");
+	private final static List<String> HELP_COMMANDS = Arrays.asList("tigerreport", "helptigerreport", "reportshelp", "report?", "reports?");
 	
 	@EventHandler
 	private void onPlayerJoin(PlayerJoinEvent e) {
@@ -44,15 +44,19 @@ public class PlayerListener implements Listener {
 		OnlineUser u = UserUtils.getOnlineUser(p);
 		
 		Bukkit.getScheduler().runTaskAsynchronously(TigerReports.getInstance(), new Runnable() {
+			
 			@Override
 			public void run() {
-				for(String notification : u.getNotifications()) u.sendNotification(notification, false);
+				for(String notification : u.getNotifications())
+					u.sendNotification(notification, false);
 				if(Permission.STAFF.isOwned(u) && ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.ReportsNotifications.Connection")) {
 					String reportsNotifications = ReportsNotifier.getReportsNotification();
-					if(reportsNotifications != null) p.sendMessage(reportsNotifications);
+					if(reportsNotifications != null)
+						p.sendMessage(reportsNotifications);
 				}
 				TigerReports.getInstance().getDb().update("REPLACE INTO tigerreports_users (uuid,name) VALUES (?,?);", Arrays.asList(p.getUniqueId().toString(), p.getName()));
 			}
+			
 		});
 		
 		u.updateImmunity(Permission.REPORT_EXEMPT.isOwned(u) ? "always" : null, false);
@@ -93,7 +97,8 @@ public class PlayerListener implements Listener {
 	@EventHandler(priority = EventPriority.MONITOR)
 	private void onPlayerLogin(PlayerLoginEvent e) {
 		String error = TigerReports.getInstance().getWebManager().check(e.getPlayer().getUniqueId().toString());
-		if(error != null) e.disallow(Result.KICK_OTHER, error);
+		if(error != null)
+			e.disallow(Result.KICK_OTHER, error);
 	}
 	
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -104,13 +109,16 @@ public class PlayerListener implements Listener {
 	@EventHandler(priority = EventPriority.LOWEST)
 	private void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent e) {
 		String command = e.getMessage();
-		if(checkHelpCommand(command.substring(1), e.getPlayer())) e.setCancelled(true);
-		else if(ConfigFile.CONFIG.get().getStringList("Config.CommandsHistory").contains(command.split(" ")[0])) UserUtils.getOnlineUser(e.getPlayer()).updateLastMessages(command);
+		if(checkHelpCommand(command.substring(1), e.getPlayer()))
+			e.setCancelled(true);
+		else if(ConfigFile.CONFIG.get().getStringList("Config.CommandsHistory").contains(command.split(" ")[0]))
+			UserUtils.getOnlineUser(e.getPlayer()).updateLastMessages(command);
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST)
 	private void onServerCommandPreprocess(ServerCommandEvent e) {
-		if(checkHelpCommand(e.getCommand(), e.getSender())) e.setCommand("tigerreports");
+		if(checkHelpCommand(e.getCommand(), e.getSender()))
+			e.setCommand("tigerreports");
 	}
 	
 	private boolean checkHelpCommand(String command, CommandSender s) {
@@ -121,7 +129,7 @@ public class PlayerListener implements Listener {
 		
 		command = command.toLowerCase().replace(" ", "");
 		if(!command.startsWith("tigerreports:report")) {
-			for(String helpCommand : helpCommands) {
+			for(String helpCommand : HELP_COMMANDS) {
 				if(command.startsWith(helpCommand)) {
 					HelpCommand.onCommand(s);
 					return true;
