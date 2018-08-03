@@ -8,6 +8,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.MenuItem;
@@ -15,7 +16,6 @@ import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.objects.Comment;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.objects.users.User;
-import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 /**
  * @author MrTigreroux
@@ -50,9 +50,9 @@ public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu {
 		boolean delete = Permission.STAFF_DELETE.isOwned(u);
 		ItemStack empty = new ItemStack(Material.AIR);
 		for(int position = 18; position < 45; position++) {
-			if(index == -1)
+			if(index == -1) {
 				inv.setItem(position, empty);
-			else {
+			} else {
 				Comment c = index < comments.size() ? comments.get(index) : null;
 				if(c == null) {
 					inv.setItem(position, empty);
@@ -70,11 +70,11 @@ public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu {
 
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
-		if(slot == 0)
+		if(slot == 0) {
 			u.openReportMenu(r);
-		else if(slot == 8)
+		} else if(slot == 8) {
 			u.comment(r);
-		else if(slot >= 18 && slot <= size-9) {
+		} else if(slot >= 18 && slot <= size-9) {
 			Comment c = new ArrayList<>(r.getComments().values()).get(getIndex(slot)-1);
 			if(c != null) {
 				if(click.toString().contains("LEFT")) {
@@ -87,7 +87,7 @@ public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu {
 					return;
 				} else if(click.toString().contains("RIGHT")) {
 					String comment = "Report"+r.getId()+":Comment"+c.getId();
-					User su = UserUtils.getUser(r.getReporterUniqueId());
+					User su = TigerReports.getInstance().getUsersManager().getUser(r.getReporterUniqueId());
 					boolean isPrivate = c.getStatus(true).equals("Private");
 					if(isPrivate && su instanceof OnlineUser) {
 						((OnlineUser) su).sendNotification(comment, true);
@@ -105,10 +105,11 @@ public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu {
 					}
 					su.setNotifications(notifications);
 				} else if(click.equals(ClickType.DROP)) {
-					if(Permission.STAFF_DELETE.isOwned(u))
+					if(Permission.STAFF_DELETE.isOwned(u)) {
 						c.delete();
-					else
+					} else {
 						return;
+					}
 				}
 			}
 			update(true);

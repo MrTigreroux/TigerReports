@@ -24,11 +24,12 @@ import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.commands.HelpCommand;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
+import fr.mrtigreroux.tigerreports.managers.UsersManager;
 import fr.mrtigreroux.tigerreports.objects.users.OfflineUser;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
+import fr.mrtigreroux.tigerreports.objects.users.User;
 import fr.mrtigreroux.tigerreports.runnables.ReportsNotifier;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
-import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 /**
  * @author MrTigreroux
@@ -36,12 +37,12 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 public class PlayerListener implements Listener {
 
-	private final static List<String> HELP_COMMANDS = Arrays.asList("tigerreport", "helptigerreport", "reportshelp", "report?", "reports?");
+	private final List<String> HELP_COMMANDS = Arrays.asList("tigerreport", "helptigerreport", "reportshelp", "report?", "reports?");
 	
 	@EventHandler
 	private void onPlayerJoin(PlayerJoinEvent e) {
 		Player p = e.getPlayer();
-		OnlineUser u = UserUtils.getOnlineUser(p);
+		OnlineUser u = TigerReports.getInstance().getUsersManager().getOnlineUser(p);
 		
 		Bukkit.getScheduler().runTaskAsynchronously(TigerReports.getInstance(), new Runnable() {
 			
@@ -83,13 +84,16 @@ public class PlayerListener implements Listener {
 	@EventHandler(priority = EventPriority.LOWEST)
 	private void onPlayerQuit(PlayerQuitEvent e) {
 		String uuid = e.getPlayer().getUniqueId().toString();
-		if(TigerReports.getInstance().users.containsKey(uuid)) {
-			List<String> lastMessages = TigerReports.getInstance().users.get(uuid).lastMessages;
-			TigerReports.getInstance().users.remove(uuid);
-			if(!lastMessages.isEmpty()) {
+		UsersManager userManager = TigerReports.getInstance().getUsersManager();
+		User u = userManager.getSavedUser(uuid);
+		if(u != null) {
+			List<String> lastMessages = u.lastMessages;
+			if(lastMessages.isEmpty()) {
+				userManager.removeUser(uuid);
+			} else {
 				OfflineUser ou = new OfflineUser(uuid);
 				ou.lastMessages = lastMessages;
-				ou.save();
+				userManager.saveUser(ou);
 			}
 		}
 	}
@@ -103,16 +107,17 @@ public class PlayerListener implements Listener {
 	
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	private void onPlayerChat(AsyncPlayerChatEvent e) {
-		UserUtils.getOnlineUser(e.getPlayer()).updateLastMessages(e.getMessage());
+		TigerReports.getInstance().getUsersManager().getOnlineUser(e.getPlayer()).updateLastMessages(e.getMessage());
 	}
 	
 	@EventHandler(priority = EventPriority.LOWEST)
 	private void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent e) {
 		String command = e.getMessage();
-		if(checkHelpCommand(command.substring(1), e.getPlayer()))
+		if(checkHelpCommand(command.substring(1), e.getPlayer())) {
 			e.setCancelled(true);
-		else if(ConfigFile.CONFIG.get().getStringList("Config.CommandsHistory").contains(command.split(" ")[0]))
-			UserUtils.getOnlineUser(e.getPlayer()).updateLastMessages(command);
+		} else if(ConfigFile.CONFIG.get().getStringList("Config.CommandsHistory").contains(command.split(" ")[0])) {
+			TigerReports.getInstance().getUsersManager().getOnlineUser(e.getPlayer()).updateLastMessages(command);
+		}
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST)

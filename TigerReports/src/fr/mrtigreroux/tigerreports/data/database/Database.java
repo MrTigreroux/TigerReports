@@ -102,10 +102,11 @@ public abstract class Database {
 			ps.executeUpdate();
 			
 			try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-				if(generatedKeys.next())
+				if(generatedKeys.next()) {
 					return generatedKeys.getInt(1);
-				else
+				} else {
 					return -1;
+				}
 			}
 		} catch (SQLException ex) {
 			logDatabaseError(ex);

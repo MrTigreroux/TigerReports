@@ -18,6 +18,7 @@ import com.google.common.io.ByteStreams;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
+import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.constants.Status;
 import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.objects.users.User;
@@ -38,6 +39,8 @@ public class BungeeManager implements PluginMessageListener {
 	
 	public BungeeManager(TigerReports plugin) {
 		this.plugin = plugin;
+		initialize();
+		collectServerName();
 	}
 	
 	public void initialize() {
@@ -47,8 +50,9 @@ public class BungeeManager implements PluginMessageListener {
 			messenger.registerIncomingPluginChannel(plugin, "BungeeCord", this);
 			initialized = true;
 			Bukkit.getLogger().info(ConfigUtils.getInfoMessage("The plugin is using BungeeCord.", "Le plugin utilise BungeeCord."));
-		} else
+		} else {
 			Bukkit.getLogger().info(ConfigUtils.getInfoMessage("The plugin is not using BungeeCord.", "Le plugin n'utilise pas BungeeCord."));
+		}
 	}
 	
 	public void collectServerName() {
@@ -119,7 +123,7 @@ public class BungeeManager implements PluginMessageListener {
 	}
 	
 	@Override
-	public void onPluginMessageReceived(String channel, Player p, byte[] messageReceived) {
+	public void onPluginMessageReceived(String channel, Player player, byte[] messageReceived) {
 		if(!channel.equals("BungeeCord"))
 			return;
 		
@@ -138,43 +142,59 @@ public class BungeeManager implements PluginMessageListener {
 				
 				message = message.substring(index+1);
 				String[] parts = message.split(" ");
-				Report r = parts.length == 3 ? ReportUtils.getReportById(Integer.parseInt(parts[2])) : null;
-				User u = parts.length == 4 || parts.length == 5 ? UserUtils.getUser(parts[3]) : null;
+				Report r = parts.length == 3 ? TigerReports.getInstance().getReportsManager().getReportById(Integer.parseInt(parts[2])) : null;
+				User u = parts.length == 4 || parts.length == 5 ? TigerReports.getInstance().getUsersManager().getUser(parts[3]) : null;
 				
 				switch(parts[1]) {
 					case "new_report":
-						ReportUtils.sendReport(new Report(Integer.parseInt(parts[0]), Status.WAITING.getConfigWord(), "None", parts[2].replace("_", " "), parts[3], parts[4], parts[5].replace("_", " ")), parts[6], notify); break;
+						ReportUtils.sendReport(new Report(Integer.parseInt(parts[0]), Status.WAITING.getConfigWord(), "None", parts[2].replace("_", " "), parts[3], parts[4], parts[5].replace("_", " ")), parts[6], notify);
+						break;
 					case "new_status":
-						r.setStatus(Status.valueOf(parts[0]), true); break;
+						r.setStatus(Status.valueOf(parts[0]), true);
+						break;
 					case "process":
-						r.process(parts[0].split("/")[0], notify ? parts[0].split("/")[1] : null, parts[3], true, false); break;
+						r.process(parts[0].split("/")[0], notify ? parts[0].split("/")[1] : null, parts[3], true, parts[4].equals("true"));
+						break;
 					case "delete":
-						r.delete(notify ? parts[0] : null, true); break;
+						r.delete(notify ? parts[0] : null, true);
+						break;
 					case "archive":
-						r.archive(notify ? parts[0] : null, true); break;
+						r.archive(notify ? parts[0] : null, true);
+						break;
 					case "unarchive":
-						r.unarchive(notify ? parts[0] : null, true); break;
+						r.unarchive(notify ? parts[0] : null, true);
+						break;
 					case "delete_archive":
-						r.deleteFromArchives(notify ? parts[0] : null, true); break;
+						r.deleteFromArchives(notify ? parts[0] : null, true);
+						break;
 					
 					case "new_immunity":
-						u.updateImmunity(parts[0].equals("null") ? null : parts[0].replace("_", " "), true); break;
+						u.updateImmunity(parts[0].equals("null") ? null : parts[0].replace("_", " "), true);
+						break;
 					case "new_cooldown":
-						u.updateCooldown(parts[0].equals("null") ? null : parts[0].replace("_", " "), true); break;
+						u.updateCooldown(parts[0].equals("null") ? null : parts[0].replace("_", " "), true);
+						break;
 					case "punish":
-						u.punish(Double.parseDouble(parts[4]), notify ? parts[0] : null, true); break;
+						u.punish(Double.parseDouble(parts[4]), notify ? parts[0] : null, true);
+						break;
 					case "stop_cooldown":
-						u.stopCooldown(notify ? parts[0] : null, true); break;
+						u.stopCooldown(notify ? parts[0] : null, true);
+						break;
 					case "change_statistic":
-						u.changeStatistic(parts[2], Integer.parseInt(parts[0]), true); break;
+						u.changeStatistic(parts[2], Integer.parseInt(parts[0]), true);
+						break;
 					case "teleport":
-						UserUtils.getPlayer(parts[0]).teleport(MessageUtils.getConfigLocation(parts[2])); break;
+						Player p = UserUtils.getPlayer(parts[0]);
+						p.teleport(MessageUtils.getConfigLocation(parts[2]));
+						ConfigSound.TELEPORT.play(p);
+						break;
 					default:
 						break;
 				}
 			} catch (Exception ignored) {}
-		} else if(subchannel.equals("GetServer"))
+		} else if(subchannel.equals("GetServer")) {
 			serverName = in.readUTF();
+		}
 	}
 	
 	private Player getRandomPlayer() {

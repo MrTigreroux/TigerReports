@@ -28,10 +28,13 @@ public abstract class User {
 		this.uuid = uuid;
 	}
 	
+	public String getUniqueId() {
+		return uuid;
+	}
+	
 	public String getName() {
 		if(name == null)
 			name = UserUtils.getName(uuid);
-		save();
 		return name;
 	}
 	
@@ -39,7 +42,6 @@ public abstract class User {
 	
 	public void updateImmunity(String immunity, boolean bungee) {
 		this.immunity = immunity;
-		save();
 		if(!bungee) {
 			TigerReports.getInstance().getBungeeManager().sendPluginNotification((immunity != null ? immunity.replace(" ", "_") : "null")+" new_immunity user "+uuid);
 			TigerReports.getInstance().getDb().updateAsynchronously("UPDATE tigerreports_users SET immunity = ? WHERE uuid = ?", Arrays.asList(immunity, uuid));
@@ -57,17 +59,15 @@ public abstract class User {
 			immunity = (String) TigerReports.getInstance().getDb().query("SELECT immunity FROM tigerreports_users WHERE uuid = ?", Collections.singletonList(uuid)).getResult(0, "immunity");
 			if(immunity == null) {
 				immunity = "|";
-				save();
 				return null;
 			}
-			save();
 		}
 		
-		if(immunity.equals("always"))
+		if(immunity.equals("always")) {
 			return immunity;
-		else if(immunity.equals("|"))
+		} else if(immunity.equals("|")) {
 			return null;
-		else {
+		} else {
 			double seconds = MessageUtils.getSeconds(immunity)-MessageUtils.getSeconds(MessageUtils.getNowDate());
 			return seconds > 0 ? MessageUtils.convertToSentence(seconds) : null;
 		}
@@ -75,7 +75,6 @@ public abstract class User {
 	
 	public void updateCooldown(String cooldown, boolean bungee) {
 		this.cooldown = cooldown == null ? "|"+System.currentTimeMillis() : cooldown;
-		save();
 		if(!bungee) {
 			TigerReports.getInstance().getBungeeManager().sendPluginNotification((cooldown != null ? cooldown.replace(" ", "_") : "null")+" new_cooldown user "+uuid);
 			TigerReports.getInstance().getDb().updateAsynchronously("UPDATE tigerreports_users SET cooldown = ? WHERE uuid = ?", Arrays.asList(cooldown, uuid));
@@ -101,17 +100,16 @@ public abstract class User {
 		if(cooldown == null || (cooldown.startsWith("|") && System.currentTimeMillis()-Long.parseLong(cooldown.replace("|", "")) > 300000))
 			cooldown = (String) TigerReports.getInstance().getDb().query("SELECT cooldown FROM tigerreports_users WHERE uuid = ?", Collections.singletonList(uuid)).getResult(0, "cooldown");
 		
-		if(cooldown == null)
+		if(cooldown == null) {
 			cooldown = "|"+System.currentTimeMillis();
-		else if(!cooldown.startsWith("|")) {
+		} else if(!cooldown.startsWith("|")) {
 			double seconds = MessageUtils.getSeconds(cooldown)-MessageUtils.getSeconds(MessageUtils.getNowDate());
 			if(seconds > 0) {
-				save();
 				return MessageUtils.convertToSentence(seconds);
-			} else
+			} else {
 				cooldown = "|"+System.currentTimeMillis();
+			}
 		}
-		save();
 		return null;
 	}
 	
@@ -135,7 +133,6 @@ public abstract class User {
 			String statName = statistic.getConfigName();
 			statistics.put(statName, result != null ? (Integer) result.get(statName) : 0);
 		}
-		save();
 		return statistics;
 	}
 	
@@ -143,7 +140,6 @@ public abstract class User {
 		if(statistics == null)
 			getStatistics();
 		statistics.put(statistic, (statistics.get(statistic) != null ? statistics.get(statistic) : 0)+value);
-		save();
 		if(!bungee) {
 			TigerReports.getInstance().getBungeeManager().sendPluginNotification(value+" change_statistic "+statistic+" "+uuid);
 			TigerReports.getInstance().getDb().updateAsynchronously("UPDATE tigerreports_users SET "+statistic+" = "+statistic+" + ? WHERE uuid = ?", Arrays.asList(value, uuid));
@@ -164,10 +160,6 @@ public abstract class User {
 	
 	public String getLastMessages() {
 		return !lastMessages.isEmpty() ? String.join("#next#", lastMessages) : null;
-	}
-	
-	public void save() {
-		TigerReports.getInstance().users.put(uuid, this);
 	}
 	
 }

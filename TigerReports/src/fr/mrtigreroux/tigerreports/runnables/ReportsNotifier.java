@@ -1,5 +1,6 @@
 package fr.mrtigreroux.tigerreports.runnables;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,7 +32,7 @@ public class ReportsNotifier implements Runnable {
 		String reportsNotification = Message.REPORTS_NOTIFICATION.get();
 		HashMap<Status, Integer> statusTypes = new HashMap<>();
 		int totalAmount = 0;
-		for(Map<String, Object> result : TigerReports.getInstance().getDb().query("SELECT status FROM tigerreports_reports", null).getResultList()) {
+		for(Map<String, Object> result : TigerReports.getInstance().getDb().query("SELECT status FROM tigerreports_reports WHERE archived = ?", Collections.singletonList(0)).getResultList()) {
 			Status status = Status.getFrom((String) result.get("status"));
 			statusTypes.put(status, (statusTypes.get(status) != null ? statusTypes.get(status) : 0)+1);
 		}
@@ -41,7 +42,10 @@ public class ReportsNotifier implements Runnable {
 			if(!reportsNotification.contains(statusPlaceHolder))
 				break;
 			int amount = (statusTypes.get(status) != null ? statusTypes.get(status) : 0);
-			reportsNotification = reportsNotification.replace(statusPlaceHolder, (amount <= 1 ? Message.REPORT_TYPE : Message.REPORTS_TYPE).get().replace("_Amount_", Integer.toString(amount)).replace("_Type_", status.getWord(null).toLowerCase()));
+			reportsNotification = reportsNotification
+					.replace(statusPlaceHolder, (amount <= 1 ? Message.REPORT_TYPE : Message.REPORTS_TYPE).get()
+							.replace("_Amount_", Integer.toString(amount))
+							.replace("_Type_", status.getWord(null).toLowerCase()));
 			totalAmount += amount;
 		}
 		

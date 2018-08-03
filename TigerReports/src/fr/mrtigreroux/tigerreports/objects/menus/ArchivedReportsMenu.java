@@ -1,6 +1,6 @@
 package fr.mrtigreroux.tigerreports.objects.menus;
 
-import java.util.Collections;
+import java.util.Arrays;
 
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
@@ -36,20 +36,20 @@ public class ArchivedReportsMenu extends Menu implements UpdatedMenu {
 	
 	@Override
 	public void onUpdate(Inventory inv) {
-		ReportUtils.addReports("archived_reports", inv, page, Message.REPORT_RESTORE_ACTION.get()+(Permission.STAFF_DELETE.isOwned(u) ? Message.REPORT_DELETE_ACTION.get() : ""));
+		ReportUtils.addReports(true, inv, page, Message.REPORT_RESTORE_ACTION.get()+(Permission.STAFF_DELETE.isOwned(u) ? Message.REPORT_DELETE_ACTION.get() : ""));
 	}
 
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
-		if(slot == 0)
+		if(slot == 0) {
 			u.openReportsMenu(1, true);
-		else if(slot >= 18 && slot <= size-9) {
-			Report r = ReportUtils.formatReport(TigerReports.getInstance().getDb().query("SELECT * FROM tigerreports_archived_reports LIMIT 1 OFFSET ?", Collections.singletonList(getIndex(slot)-1)).getResult(0), true);
-			if(r == null)
+		} else if(slot >= 18 && slot <= size-9) {
+			Report r = TigerReports.getInstance().getReportsManager().formatFullReport(TigerReports.getInstance().getDb().query("SELECT * FROM tigerreports_reports WHERE archived = ? LIMIT 1 OFFSET ?", Arrays.asList(1, getIndex(slot)-1)).getResult(0));
+			if(r == null) {
 				update(true);
-			else if(click.equals(ClickType.DROP) && Permission.STAFF_DELETE.isOwned(u))
+			} else if(click.equals(ClickType.DROP) && Permission.STAFF_DELETE.isOwned(u)) {
 				u.openConfirmationMenu(r, "DELETE_ARCHIVE");
-			else {
+			} else {
 				r.unarchive(p.getName(), false);
 				u.openDelayedlyReportsMenu();
 			}

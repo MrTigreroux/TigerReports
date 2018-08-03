@@ -36,44 +36,31 @@ public class ReportUtils {
 		
 		TextComponent alert = new TextComponent();
 		alert.setColor(ChatColor.valueOf(MessageUtils.getLastColor(Message.ALERT.get(), "_Reason_").name()));
-		if(reportId == -1)
+		if(reportId == -1) {
 			MessageUtils.sendStaffMessage(Message.STAFF_MAX_REPORTS_REACHED.get().replace("_Amount_", Integer.toString(getMaxReports())), ConfigSound.STAFF.get());
-		else {
+		} else {
 			alert.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/reports #"+reportId));
 			alert.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(Message.ALERT_DETAILS.get().replace("_Report_", r.getName())).create()));
 		}
 		
-		for(String line : Message.ALERT.get().replace("_Server_", MessageUtils.getServerName(server)).replace("_Reporter_", r.getPlayerName("Reporter", false, true)).replace("_Reported_", r.getPlayerName("Reported", !ReportUtils.onlinePlayerRequired(), true)).replace("_Reason_", r.getReason(false)).split(ConfigUtils.getLineBreakSymbol())) {
+		for(String line : Message.ALERT.get()
+				.replace("_Server_", MessageUtils.getServerName(server))
+				.replace("_Reporter_", r.getPlayerName("Reporter", false, true))
+				.replace("_Reported_", r.getPlayerName("Reported", !ReportUtils.onlinePlayerRequired(), true))
+				.replace("_Reason_", r.getReason(false))
+				.split(ConfigUtils.getLineBreakSymbol())) {
 			alert.setText(line);
 			MessageUtils.sendStaffMessage(alert.duplicate(), ConfigSound.REPORT.get());
 		}
 	}
 	
-	public static Report getReportById(int reportId) {
-		return reportId <= 0 ? null : TigerReports.getInstance().reports.containsKey(reportId) ? TigerReports.getInstance().reports.get(reportId) : formatReport(TigerReports.getInstance().getDb().query("SELECT * FROM tigerreports_reports WHERE report_id = ?", Collections.singletonList(reportId)).getResult(0), true);
-	}
-	
-	public static Report getReport(int reportIndex) {
-		return formatReport(TigerReports.getInstance().getDb().query("SELECT * FROM tigerreports_reports LIMIT 1 OFFSET ?", Collections.singletonList(reportIndex-1)).getResult(0), true);
-	}
-	
-	public static Report formatReport(Map<String, Object> result, boolean containsAdvancedData) {
+	public static Report formatEssentialOfReport(Map<String, Object> result) {
 		if(result == null)
 			return null;
-		Report r = new Report((int) result.get("report_id"), (String) result.get("status"), (String) result.get("appreciation"), (String) result.get("date"), (String) result.get("reported_uuid"), (String) result.get("reporter_uuid"), (String) result.get("reason"));
-		if(containsAdvancedData) {
-			Map<String, String> advancedData = new HashMap<>();
-			Set<String> advancedKeys = new HashSet<>(result.keySet());
-			advancedKeys.removeAll(Arrays.asList("report_id", "status", "appreciation", "date", "reported_uuid", "reporter_uuid", "reason"));
-			for(String key : advancedKeys)
-				advancedData.put(key, (String) result.get(key));
-			r.setAdvancedData(advancedData);
-			r.save();
-		}
-		return r;
+		return new Report((int) result.get("report_id"), (String) result.get("status"), (String) result.get("appreciation"), (String) result.get("date"), (String) result.get("reported_uuid"), (String) result.get("reporter_uuid"), (String) result.get("reason"));
 	}
 	
-	public static void addReports(String table, Inventory inv, int page, String actions) {
+	public static void addReports(boolean archived, Inventory inv, int page, String actions) {
 		int size = inv.getSize();
 		int firstReport = 1;
 		if(page >= 2) {
@@ -81,14 +68,14 @@ public class ReportUtils {
 			firstReport += (page-1)*27;
 		}
 		
-		List<Map<String, Object>> results = TigerReports.getInstance().getDb().query("SELECT report_id,status,appreciation,date,reported_uuid,reporter_uuid,reason FROM tigerreports_"+table+" LIMIT 28 OFFSET ?", Collections.singletonList(firstReport-1)).getResultList();
+		List<Map<String, Object>> results = TigerReports.getInstance().getDb().query("SELECT report_id,status,appreciation,date,reported_uuid,reporter_uuid,reason FROM tigerreports_reports WHERE archived = ? LIMIT 28 OFFSET ?", Arrays.asList(archived ? 1 : 0, firstReport-1)).getResultList();
 		int index = 0;
 		ItemStack empty = new ItemStack(Material.AIR);
 		for(int position = 18; position < 45; position++) {
-			if(index == -1)
+			if(index == -1) {
 				inv.setItem(position, empty);
-			else {
-				Report r = ReportUtils.formatReport(index < results.size() ? results.get(index) : null, false);
+			} else {
+				Report r = formatEssentialOfReport(index < results.size() ? results.get(index) : null);
 				if(r == null) {
 					inv.setItem(position, empty);
 					index = -1;

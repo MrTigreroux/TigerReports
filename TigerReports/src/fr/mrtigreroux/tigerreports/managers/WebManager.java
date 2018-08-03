@@ -31,6 +31,7 @@ public class WebManager {
 	
 	public WebManager(TigerReports plugin) {
 		this.plugin = plugin;
+		initialize();
 	}
 	
 	public String getNewVersion() {
@@ -47,11 +48,8 @@ public class WebManager {
 			}
 			return new BufferedReader(new InputStreamReader(connection.getInputStream())).readLine();
 		} catch (Exception ex) {
-			try {
-				new URL("https://www.google.com/").openConnection().connect();
-				MessageUtils.logSevere(ConfigUtils.getInfoMessage("An error has occurred while checking for an update. Please check internet connection.", "Une erreur est survenue en verifiant s'il y a une nouvelle version disponible. Veuillez verifier la connexion internet."));
-				Bukkit.getPluginManager().disablePlugin(plugin);
-			} catch (Exception ignored) {}
+			MessageUtils.logSevere(ConfigUtils.getInfoMessage("An error has occurred while checking for an update. Please check internet connection.", "Une erreur est survenue en verifiant s'il y a une nouvelle version disponible. Veuillez verifier la connexion internet."));
+			Bukkit.getPluginManager().disablePlugin(plugin);
 			return null;
 		}
 	}
@@ -63,9 +61,9 @@ public class WebManager {
 			public void run() {
 				newVersion = sendQuery("https://api.spigotmc.org/legacy/update.php?resource=25773", null);
 				if(newVersion != null) {
-					if(plugin.getDescription().getVersion().equals(newVersion))
+					if(plugin.getDescription().getVersion().equals(newVersion)) {
 						newVersion = null;
-					else {
+					} else {
 						Logger logger = Bukkit.getLogger();
 						logger.warning(MessageUtils.LINE);
 						if(ConfigUtils.getInfoLanguage().equalsIgnoreCase("English")) {

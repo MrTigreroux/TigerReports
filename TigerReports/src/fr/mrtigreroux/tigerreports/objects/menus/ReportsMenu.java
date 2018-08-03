@@ -4,6 +4,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.MenuItem;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
@@ -34,24 +35,25 @@ public class ReportsMenu extends Menu implements UpdatedMenu {
 	
 	@Override
 	public void onUpdate(Inventory inv) {
-		ReportUtils.addReports("reports", inv, page, Message.REPORT_SHOW_ACTION.get()+(Permission.STAFF_ARCHIVE.isOwned(u) ? Message.REPORT_ARCHIVE_ACTION.get() : "")+(Permission.STAFF_DELETE.isOwned(u) ? Message.REPORT_DELETE_ACTION.get() : ""));
+		ReportUtils.addReports(false, inv, page, Message.REPORT_SHOW_ACTION.get()+(Permission.STAFF_ARCHIVE.isOwned(u) ? Message.REPORT_ARCHIVE_ACTION.get() : "")+(Permission.STAFF_DELETE.isOwned(u) ? Message.REPORT_DELETE_ACTION.get() : ""));
 	}
 
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
-		if(slot == 8 && Permission.STAFF_ARCHIVE.isOwned(u))
+		if(slot == 8 && Permission.STAFF_ARCHIVE.isOwned(u)) {
 			u.openArchivedReportsMenu(1, true);
-		else if(slot >= 18 && slot <= size-9) {
-			Report r = ReportUtils.getReport(getIndex(slot));
-			if(r == null)
+		} else if(slot >= 18 && slot <= size-9) {
+			Report r = TigerReports.getInstance().getReportsManager().getReport(getIndex(slot));
+			if(r == null) {
 				update(false);
-			else {
-				if(click.equals(ClickType.MIDDLE) && Permission.STAFF_ARCHIVE.isOwned(u))
+			} else {
+				if(click.equals(ClickType.MIDDLE) && Permission.STAFF_ARCHIVE.isOwned(u)) {
 					u.openConfirmationMenu(r, "ARCHIVE");
-				else if(click.equals(ClickType.DROP) && Permission.STAFF_DELETE.isOwned(u))
+				} else if(click.equals(ClickType.DROP) && Permission.STAFF_DELETE.isOwned(u)) {
 					u.openConfirmationMenu(r, "DELETE");
-				else
+				} else {
 					u.openReportMenu(r);
+				}
 			}
 		}
 	}

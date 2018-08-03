@@ -43,8 +43,9 @@ public abstract class Menu {
 			MessageUtils.sendErrorMessage(p, error);
 			p.closeInventory();
 			return false;
-		} else
+		} else {
 			return true;
+		}
 	}
 	
 	Inventory getInventory(String title, boolean borders) {

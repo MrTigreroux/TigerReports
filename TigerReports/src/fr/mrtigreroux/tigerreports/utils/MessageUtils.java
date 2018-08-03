@@ -44,22 +44,25 @@ public class MessageUtils {
 		if(s instanceof Player)
 			ConfigSound.ERROR.play((Player) s);
 	}
-
+	
 	public static void sendStaffMessage(Object message, Sound sound) {
 		boolean isTextComponent = message instanceof TextComponent;
 		for(Player p : Bukkit.getOnlinePlayers()) {
-			if(!p.hasPermission(Permission.STAFF.get()) || !UserUtils.getOnlineUser(p).acceptsNotifications())
+			if(!p.hasPermission(Permission.STAFF.get()) || !TigerReports.getInstance().getUsersManager().getOnlineUser(p).acceptsNotifications())
 				continue;
-			if(isTextComponent)
+			
+			if(isTextComponent) {
 				p.spigot().sendMessage((TextComponent) message);
-			else
+			} else {
 				p.sendMessage((String) message);
+			}
+			
 			if(sound != null)
 				p.playSound(p.getLocation(), sound, 1, 1);
 		}
 		sendConsoleMessage(isTextComponent ? ((TextComponent) message).toLegacyText() : (String) message);
 	}
-
+	
 	public static void sendConsoleMessage(String message) {
 		String temp = Normalizer.normalize(message, Normalizer.Form.NFD);
 		Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
@@ -70,7 +73,7 @@ public class MessageUtils {
 	public static String getNowDate() {
 		return new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date());
 	}
-
+	
 	public static Double getSeconds(String date) {
 		date = date.replace("/", "").replace(":", "").replace("-", "").replace(" ", "");
 		return Double.parseDouble(date.substring(4, 8))*(365*24*60*60)+Double.parseDouble(date.substring(0, 2))*(24*60*60)+Double.parseDouble(date.substring(2, 4))*(30*24*60*60)+Double.parseDouble(date.substring(8, 10))*(60*60)+Double.parseDouble(date.substring(10, 12))*60+Double.parseDouble(date.substring(12, 14));
@@ -117,9 +120,11 @@ public class MessageUtils {
 				case 0:
 					break;
 				case 1:
-					sentenceBuilder.append("1").append(" ").append(Message.valueOf(UNITS.get(valueNumber)).get()).append(" "); break;
+					sentenceBuilder.append("1").append(" ").append(Message.valueOf(UNITS.get(valueNumber)).get()).append(" ");
+					break;
 				default:
-					sentenceBuilder.append(values.get(valueNumber)).append(" ").append(Message.valueOf(UNITS.get(valueNumber)+"S").get()).append(" "); break;
+					sentenceBuilder.append(values.get(valueNumber)).append(" ").append(Message.valueOf(UNITS.get(valueNumber)+"S").get()).append(" ");
+					break;
 			}
 		}
 		
@@ -145,8 +150,11 @@ public class MessageUtils {
 		int index = lastWord != null ? text.indexOf(lastWord) : text.length();
 		if(index == -1)
 			return ChatColor.WHITE;
+		
 		for(String code : org.bukkit.ChatColor.getLastColors(text.substring(0, index)).split("\u00A7"))
-			if(COLOR_CODES.contains(code)) color = code;
+			if(COLOR_CODES.contains(code))
+				color = code;
+		
 		if(color == null)
 			color = "f";
 		return ChatColor.getByChar(color.charAt(0));
@@ -155,6 +163,7 @@ public class MessageUtils {
 	public static String getMenuSentence(String text, Message message, String lastWord, boolean wordSeparation) {
 		if(text == null || text.isEmpty())
 			return Message.NOT_FOUND_MALE.get();
+		
 		StringBuilder sentence = new StringBuilder();
 		int maxLength = 22;
 		String lineBreak = ConfigUtils.getLineBreakSymbol();
@@ -167,15 +176,16 @@ public class MessageUtils {
 				} else if(sentence.toString().replace(lineBreak, "").replace(lastColor.toString(), "").length() >= maxLength) {
 					sentence.append(lineBreak).append(lastColor).append(word).append(" ");
 					maxLength += 35;
-				} else
+				} else {
 					sentence.append(word).append(" ");
+				}
 			}
 			return sentence.substring(0, sentence.length()-1);
 		} else {
 			for(char c : text.toCharArray()) {
-				if(sentence.length() <= maxLength)
+				if(sentence.length() <= maxLength) {
 					sentence.append(c);
-				else {
+				} else {
 					sentence.append(lineBreak).append(lastColor).append(c);
 					maxLength += 35;
 				}
@@ -187,22 +197,30 @@ public class MessageUtils {
 	public static Object getAdvancedMessage(String line, String placeHolder, String replacement, String hover, String command) {
 		if(!line.contains(placeHolder))
 			return line;
-		else {
-			BaseComponent advancedLine = new TextComponent("");
-			for(String part : line.replace(placeHolder, "¤µ¤"+placeHolder+"¤µ¤").split("¤µ¤")) {
-				if(!part.equals(placeHolder))
-					advancedLine.addExtra(part);
-				else {
-					BaseComponent advancedText = new TextComponent(replacement);
-					advancedText.setColor(ChatColor.valueOf(MessageUtils.getLastColor(replacement, null).name()));
-					advancedText.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(hover.replace(ConfigUtils.getLineBreakSymbol(), "\n")).create()));
-					if(command != null)
-						advancedText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command));
-					advancedLine.addExtra(advancedText);
-				} 
-			}
-			return advancedLine;
+		
+		String[] parts = line.split(placeHolder);
+		if(parts.length == 0) {
+			return getAdvancedText(replacement, hover, command);
+		} else if(parts.length == 1) {
+			parts = new String[]{parts[0], ""};
 		}
+		
+		BaseComponent advancedLine = new TextComponent("");
+		advancedLine.addExtra(parts[0]);
+		for(int i = 1; i < parts.length; i++) {
+			advancedLine.addExtra(getAdvancedText(replacement, hover, command));
+			advancedLine.addExtra(parts[i]);
+		}
+		return advancedLine;
+	}
+	
+	public static BaseComponent getAdvancedText(String replacement, String hover, String command) {
+		BaseComponent advancedText = new TextComponent(replacement);
+		advancedText.setColor(ChatColor.valueOf(MessageUtils.getLastColor(replacement, null).name()));
+		advancedText.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(hover.replace(ConfigUtils.getLineBreakSymbol(), "\n")).create()));
+		if(command != null)
+			advancedText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command));
+		return advancedText;
 	}
 	
 	public static String getGamemodeWord(String gamemode) {
@@ -237,7 +255,7 @@ public class MessageUtils {
 	public static String formatConfigEffects(Collection<PotionEffect> effects) {
 		StringBuilder configEffects = new StringBuilder();
 		for(PotionEffect effect : effects)
-			configEffects.append(effect.getType().getName()).append(":").append(effect.getAmplifier()).append("/").append(effect.getDuration()).append(",");
+			configEffects.append(effect.getType().getName()).append(":").append(effect.getAmplifier()+1).append("/").append(effect.getDuration()).append(",");
 		return configEffects.length() > 1 ? configEffects.substring(0, configEffects.length()-1) : null;
 	}
 	

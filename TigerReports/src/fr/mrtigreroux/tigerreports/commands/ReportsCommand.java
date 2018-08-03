@@ -2,8 +2,8 @@ package fr.mrtigreroux.tigerreports.commands;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -19,7 +19,6 @@ import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.objects.users.User;
 import fr.mrtigreroux.tigerreports.runnables.MenuUpdater;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
-import fr.mrtigreroux.tigerreports.utils.ReportUtils;
 import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 /**
@@ -37,17 +36,18 @@ public class ReportsCommand implements TabExecutor {
 			if(Permission.MANAGE.check(s)) {
 				MenuUpdater.stop(true);
 				TigerReports plugin = TigerReports.getInstance();
-				plugin.reports.clear();
-				plugin.users.clear();
 				plugin.unload();
 				plugin.load();
+				plugin.getReportsManager().clearReports();
+				plugin.getUsersManager().clearUsers();
 				plugin.initializeDatabase();
 				plugin.getBungeeManager().collectServerName();
 				
-				if(!(s instanceof Player))
-					MessageUtils.sendConsoleMessage(Message.RELOAD.get());
-				else
+				if(s instanceof Player) {
 					s.sendMessage(Message.RELOAD.get());
+				} else {
+					MessageUtils.sendConsoleMessage(Message.RELOAD.get());
+				}
 			}
 			return true;
 		}
@@ -55,69 +55,65 @@ public class ReportsCommand implements TabExecutor {
 		if(!UserUtils.checkPlayer(s) || !Permission.STAFF.check(s))
 			return true;
 		Player p = (Player) s;
-		OnlineUser u = UserUtils.getOnlineUser(p);
+		OnlineUser u = TigerReports.getInstance().getUsersManager().getOnlineUser(p);
 		
 		switch(args.length) {
 			case 0:
 				u.openReportsMenu(1, true);
-				break;
+				return true;
 			case 1:
 				switch(args[0].toLowerCase()) {
 					case "notify":
 						boolean newState = !u.acceptsNotifications();
 						u.setStaffNotifications(newState);
 						p.sendMessage(Message.STAFF_NOTIFICATIONS.get().replace("_State_", (newState ? Message.ACTIVATED : Message.DISABLED).get()));
-						break;
+						return true;
 					case "archiveall":
 						if(Permission.STAFF_ARCHIVE.check(s)) {
-							for(Map<String, Object> result : TigerReports.getInstance().getDb().query("SELECT * FROM tigerreports_reports", null).getResultList()) {
-								String status = (String) result.get("status");
-								if(status != null && status.startsWith("Done")) ReportUtils.formatReport(result, true).archive(null, false);
-							}
+							TigerReports.getInstance().getDb().updateAsynchronously("UPDATE tigerreports_reports SET archived = ? WHERE archived = ? AND status LIKE 'Done%'", Arrays.asList(1, 0));
 							MessageUtils.sendStaffMessage(Message.STAFF_ARCHIVEALL.get().replace("_Player_", p.getName()), ConfigSound.STAFF.get());
 						}
-						break;
+						return true;
 					case "archives":
 						if(Permission.STAFF_ARCHIVE.check(s))
 							u.openArchivedReportsMenu(1, true);
-						break;
+						return true;
 					case "deleteall":
 						if(Permission.STAFF_DELETE.check(s)) {
-							TigerReports.getInstance().getDb().update("DELETE FROM tigerreports_archived_reports;", null);
+							TigerReports.getInstance().getDb().update("DELETE FROM tigerreports_reports WHERE archived = ?;", Collections.singletonList(1));
 							MessageUtils.sendStaffMessage(Message.STAFF_DELETEALL.get().replace("_Player_", p.getName()), ConfigSound.STAFF.get());
 						}
-						break;
+						return true;
 					default:
 						try {
-							u.openReportMenu(ReportUtils.getReportById(Integer.parseInt(args[0].replace("#", ""))));
+							u.openReportMenu(TigerReports.getInstance().getReportsManager().getReportById(Integer.parseInt(args[0].replace("#", ""))));
 						} catch (Exception invalidIndex) {
 							MessageUtils.sendErrorMessage(s, Message.INVALID_REPORT_ID.get().replace("_Id_", args[0]));
 						}
-						break;
+						return true;
 				}
-				break;
 			case 2:
-				User tu = UserUtils.getUser(UserUtils.getUniqueId(args[1]));
+				User tu = TigerReports.getInstance().getUsersManager().getUser(UserUtils.getUniqueId(args[1]));
 				if(tu == null) {
 					MessageUtils.sendErrorMessage(s, Message.INVALID_PLAYER.get().replace("_Player_", args[1]));
 					return true;
 				}
+				
 				switch(args[0].toLowerCase()) {
 					case "user": case "u":
 						u.openUserMenu(tu);
-						break;
+						return true;
 					case "stopcooldown": case "sc":
 						tu.stopCooldown(p.getName(), false);
-						break;
+						return true;
 					default:
-						s.sendMessage(Message.INVALID_SYNTAX.get().replace("_Command_", "/"+label+" "+Message.REPORTS_SYNTAX.get()));
 						break;
 				}
 				break;
 			default:
-				s.sendMessage(Message.INVALID_SYNTAX.get().replace("_Command_", "/"+label+" "+Message.REPORTS_SYNTAX.get()));
 				break;
 		}
+		s.sendMessage(Message.INVALID_SYNTAX.get().replace("_Command_", "/"+label+" "+Message.REPORTS_SYNTAX.get()));
 		return true;
 	}
 

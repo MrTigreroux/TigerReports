@@ -21,15 +21,16 @@ public class MenuUpdater implements Runnable {
 	
 	@Override
 	public void run() {
-		if(users.isEmpty())
+		if(users.isEmpty()) {
 			stop(false);
-		else {
+		} else {
 			for(OnlineUser u : users) {
 				Menu menu = u.getOpenedMenu();
-				if(menu != null)
+				if(menu != null) {
 					menu.update(false);
-				else
+				} else {
 					removeUser(u);
+				}
 			}
 		}
 	}

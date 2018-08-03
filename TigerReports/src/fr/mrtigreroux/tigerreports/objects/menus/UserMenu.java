@@ -41,14 +41,21 @@ public class UserMenu extends Menu implements UpdatedMenu {
 	@Override
 	public void onUpdate(Inventory inv) {
 		String cooldown = tu.getCooldown();
-		inv.setItem(8, new CustomItem().type(Material.GOLD_AXE).hideFlags(true).name(Message.COOLDOWN_STATUS.get().replace("_Time_", cooldown != null ? cooldown : Message.NONE_FEMALE.get()))
-				.lore(cooldown != null ? Message.COOLDOWN_STATUS_DETAILS.get().replace("_Player_", tu.getName()).split(ConfigUtils.getLineBreakSymbol()) : null).create());
+		inv.setItem(8, new CustomItem()
+			.type(Material.GOLD_AXE)
+			.hideFlags(true)
+			.name(Message.COOLDOWN_STATUS.get().replace("_Time_", cooldown != null ? cooldown : Message.NONE_FEMALE.get()))
+			.lore(cooldown != null ? Message.COOLDOWN_STATUS_DETAILS.get().replace("_Player_", tu.getName()).split(ConfigUtils.getLineBreakSymbol()) : null)
+			.create());
 		
 		Map<String, Integer> statistics = tu.getStatistics();
 		for(Statistic stat : Statistic.values()) {
 			int value = statistics.get(stat.getConfigName());
-			inv.setItem(stat.getPosition(), stat.getCustomItem().amount(value).name(Message.USER_STATISTIC.get().replace("_Statistic_", stat.getName()).replace("_Amount_", Integer.toString(value)))
-					.lore(Permission.MANAGE.isOwned(u) ? Message.USER_STATISTIC_DETAILS.get().split(ConfigUtils.getLineBreakSymbol()) : null).create());
+			inv.setItem(stat.getPosition(), stat.getCustomItem()
+					.amount(value)
+					.name(Message.USER_STATISTIC.get().replace("_Statistic_", stat.getName()).replace("_Amount_", Integer.toString(value)))
+					.lore(Permission.MANAGE.isOwned(u) ? Message.USER_STATISTIC_DETAILS.get().split(ConfigUtils.getLineBreakSymbol()) : null)
+					.create());
 		}
 	}
 	

@@ -10,7 +10,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 public class ReflectionUtils {
-	
+
 	private static double version = 0;
 	
 	public static String cbVer() {

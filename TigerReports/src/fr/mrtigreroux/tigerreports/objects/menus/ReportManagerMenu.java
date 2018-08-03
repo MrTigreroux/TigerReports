@@ -6,7 +6,6 @@ import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.data.constants.Status;
 import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
-import fr.mrtigreroux.tigerreports.utils.ReportUtils;
 
 /**
  * @author MrTigreroux
@@ -18,11 +17,11 @@ public abstract class ReportManagerMenu extends Menu {
 	
 	public ReportManagerMenu(OnlineUser u, int size, int page, Permission permission, int reportId) {
 		super(u, size, page, permission);
-		this.r = ReportUtils.getReportById(reportId);
+		this.r = TigerReports.getInstance().getReportsManager().getReportById(reportId);
 	}
 	
 	String checkReport() {
-		if(r == null || !TigerReports.getInstance().reports.containsKey(r.getId()))
+		if(r == null || !TigerReports.getInstance().getReportsManager().isSaved(r.getId()))
 			return Message.INVALID_REPORT.get();
 		
 		Status reportStatus = r.getStatus();

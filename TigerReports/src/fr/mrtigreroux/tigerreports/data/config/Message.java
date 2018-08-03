@@ -22,6 +22,7 @@ public enum Message {
 	STAFF_STOPCOOLDOWN("Messages.Staff-stop-cooldown"),
 	COOLDOWN_STOPPED("Messages.Cooldown-stopped"),
 	STAFF_PROCESS("Messages.Staff-process"),
+	STAFF_PROCESS_AUTO("Messages.Staff-process-auto"),
 	STAFF_ARCHIVE("Messages.Staff-archive"),
 	STAFF_ARCHIVEALL("Messages.Staff-archiveall"),
 	STAFF_DELETEALL("Messages.Staff-deleteall"),

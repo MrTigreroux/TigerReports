@@ -46,7 +46,6 @@ public class Comment {
 	
 	public void setStatus(String status) {
 		this.status = status;
-		save();
 		TigerReports.getInstance().getDb().updateAsynchronously("UPDATE tigerreports_comments SET status = ? WHERE report_id = ? AND comment_id = ?", Arrays.asList(this.status, r.getId(), commentId));
 	}
 	
@@ -60,23 +59,22 @@ public class Comment {
 	
 	public void addMessage(String message) {
 		this.message += " "+message;
-		save();
 		TigerReports.getInstance().getDb().updateAsynchronously("UPDATE tigerreports_comments SET message = ? WHERE report_id = ? AND comment_id = ?", Arrays.asList(this.message, r.getId(), commentId));
 	}
 	
 	public ItemStack getItem(boolean deletePermission) {
-		return new CustomItem().type(Material.PAPER).name(Message.COMMENT.get().replace("_Id_", Integer.toString(commentId))).lore(Message.COMMENT_DETAILS.get().replace("_Status_", getStatus(false))
-				.replace("_Author_", author).replace("_Date_", date).replace("_Message_", MessageUtils.getMenuSentence(message, Message.COMMENT_DETAILS, "_Message_", true))
-				.replace("_Actions_", Message.COMMENT_ADD_MESSAGE_ACTION.get()+(status.equals("Private") ? Message.COMMENT_SEND_ACTION.get() : Message.COMMENT_CANCEL_SEND_ACTION.get())+(deletePermission ? Message.COMMENT_DELETE_ACTION.get() : "")).split(ConfigUtils.getLineBreakSymbol())).create();
+		return new CustomItem().type(Material.PAPER).name(Message.COMMENT.get().replace("_Id_", Integer.toString(commentId)))
+				.lore(Message.COMMENT_DETAILS.get()
+						.replace("_Status_", getStatus(false))
+						.replace("_Author_", author)
+						.replace("_Date_", date).replace("_Message_", MessageUtils.getMenuSentence(message, Message.COMMENT_DETAILS, "_Message_", true))
+						.replace("_Actions_", Message.COMMENT_ADD_MESSAGE_ACTION.get()+(status.equals("Private") ? Message.COMMENT_SEND_ACTION.get() : Message.COMMENT_CANCEL_SEND_ACTION.get())+(deletePermission ? Message.COMMENT_DELETE_ACTION.get() : ""))
+						.split(ConfigUtils.getLineBreakSymbol())).create();
 	}
 	
 	public void delete() {
-		r.comments.remove(commentId);
+		r.removeComment(this);
 		TigerReports.getInstance().getDb().updateAsynchronously("DELETE FROM tigerreports_comments WHERE report_id = ? AND comment_id = ?", Arrays.asList(r.getId(), commentId));
-	}
-	
-	public void save() {
-		r.comments.put(commentId, this);
 	}
 	
 }

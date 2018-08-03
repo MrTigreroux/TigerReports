@@ -20,7 +20,7 @@ import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 
 public class ReasonMenu extends Menu {
 	
-	User tu;
+	final User tu;
 	
 	public ReasonMenu(OnlineUser u, int page, User tu) {
 		super(u, 54, page, null);
@@ -40,10 +40,20 @@ public class ReasonMenu extends Menu {
 		
 		for(int reasonIndex = firstReason; reasonIndex <= firstReason+26; reasonIndex++) {
 			String path = "Config.DefaultReasons.Reason"+reasonIndex;
-			if(!ConfigUtils.exist(ConfigFile.CONFIG.get(), path)) break;
+			if(!ConfigUtils.exist(ConfigFile.CONFIG.get(), path))
+				break;
 			Material material = ConfigUtils.getMaterial(ConfigFile.CONFIG.get(), path+".Item");
 			String reason = ConfigFile.CONFIG.get().getString(path+".Name");
-			inv.setItem(reasonIndex-firstReason+18, new CustomItem().type(material != null ? material : Material.PAPER).damage(ConfigUtils.getDamage(ConfigFile.CONFIG.get(), path+".Item")).skullOwner(ConfigUtils.getSkull(ConfigFile.CONFIG.get(), path+".Item")).name(Message.REASON.get().replace("_Reason_", reason)).lore(Message.REASON_DETAILS.get().replace("_Player_", tu.getName()).replace("_Reason_", reason).split(ConfigUtils.getLineBreakSymbol())).hideFlags(true).create());
+			inv.setItem(reasonIndex-firstReason+18, new CustomItem()
+					.type(material != null ? material : Material.PAPER)
+					.damage(ConfigUtils.getDamage(ConfigFile.CONFIG.get(), path+".Item"))
+					.skullOwner(ConfigUtils.getSkull(ConfigFile.CONFIG.get(), path+".Item"))
+					.name(Message.REASON.get().replace("_Reason_", reason))
+					.lore(Message.REASON_DETAILS.get()
+							.replace("_Player_", tu.getName())
+							.replace("_Reason_", reason)
+							.split(ConfigUtils.getLineBreakSymbol()))
+							.hideFlags(true).create());
 		}
 		
 		if(ConfigUtils.exist(ConfigFile.CONFIG.get(), "Config.DefaultReasons.Reason"+(firstReason+27)))

@@ -22,7 +22,6 @@ import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.objects.menus.*;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 import fr.mrtigreroux.tigerreports.utils.ReflectionUtils;
-import fr.mrtigreroux.tigerreports.utils.ReportUtils;
 
 /**
  * @author MrTigreroux
@@ -93,7 +92,6 @@ public class OnlineUser extends User {
 	
 	public void setOpenedMenu(Menu menu) {
 		openedMenu = menu;
-		save();
 	}
 
 	public Menu getOpenedMenu() {
@@ -102,7 +100,6 @@ public class OnlineUser extends User {
 	
 	public void setCooldown(String cooldown) {
 		this.cooldown = cooldown;
-		save();
 	}
 	
 	public void updateLastMessages(String newMessage) {
@@ -113,15 +110,15 @@ public class OnlineUser extends User {
 		if(lastMessages.size() >= lastMessagesAmount)
 			lastMessages.remove(0);
 		lastMessages.add(MessageUtils.getNowDate()+":"+newMessage);
-		save();
 	}
 	
 	@Override
 	public void sendMessage(Object message) {
-		if(message instanceof TextComponent)
+		if(message instanceof TextComponent) {
 			p.spigot().sendMessage((TextComponent) message);
-		else
+		} else {
 			p.sendMessage((String) message);
+		}
 	}
 	
 	public void printInChat(Report r, String[] lines) {
@@ -131,10 +128,14 @@ public class OnlineUser extends User {
 		ConfigSound.MENU.play(p);
 		p.closeInventory();
 	}
+
+	public void sendMessageWithReportButton(String message, Report r) {
+		String reportName = r.getName();
+		sendMessage(MessageUtils.getAdvancedMessage(message, "_ReportButton_", Message.REPORT_BUTTON.get().replace("_Report_", reportName), Message.ALERT_DETAILS.get().replace("_Report_", reportName), "/tigerreports:reports #"+r.getId()));
+	}
 	
 	public void setStaffNotifications(boolean state) {
 		notifications = state;
-		save();
 	}
 	
 	public boolean acceptsNotifications() {
@@ -144,12 +145,14 @@ public class OnlineUser extends User {
 	public void sendNotification(String comment, boolean direct) {
 		try {
 			String[] parts = comment.split(":");
-			Report r = ReportUtils.getReportById(Integer.parseInt(parts[0].replace("Report", "")));
+			Report r = TigerReports.getInstance().getReportsManager().getReportById(Integer.parseInt(parts[0].replace("Report", "")));
 			Comment c = r.getComment(Integer.parseInt(parts[1].replace("Comment", "")));
 			if(!direct && !c.getStatus(true).equals("Sent"))
 				return;
-			p.sendMessage(Message.COMMENT_NOTIFICATION.get().replace("_Player_", c.getAuthor())
-					.replace("_Reported_", r.getPlayerName("Reported", false, true)).replace("_Time_", MessageUtils.convertToSentence(MessageUtils.getSeconds(MessageUtils.getNowDate())-MessageUtils.getSeconds(r.getDate())))
+			p.sendMessage(Message.COMMENT_NOTIFICATION.get()
+					.replace("_Player_", c.getAuthor())
+					.replace("_Reported_", r.getPlayerName("Reported", false, true))
+					.replace("_Time_", MessageUtils.convertToSentence(MessageUtils.getSeconds(MessageUtils.getNowDate())-MessageUtils.getSeconds(r.getDate())))
 					.replace("_Message_", c.getMessage()));
 			List<String> notifications = getNotifications();
 			notifications.remove(comment);
@@ -179,7 +182,6 @@ public class OnlineUser extends User {
 			s.update();
 			
 			setCommentingReport(r);
-			save();
 			Object tileEntity = ReflectionUtils.isRecentVersion() ? ReflectionUtils.callSuperMethod(s, "getTileEntity") : ReflectionUtils.getDeclaredField(s, "sign");
 			ReflectionUtils.setDeclaredField(tileEntity, "isEditable", true);
 			ReflectionUtils.setDeclaredField(tileEntity, "h", ReflectionUtils.getHandle(p));
@@ -197,7 +199,6 @@ public class OnlineUser extends User {
 			b.setData(signData);
 		signMaterial = null;
 		signData = null;
-		save();
 	}
 	
 	public void setCommentingReport(Report r) {

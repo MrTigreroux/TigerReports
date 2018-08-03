@@ -1,7 +1,5 @@
 package fr.mrtigreroux.tigerreports;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
@@ -18,7 +16,6 @@ import fr.mrtigreroux.tigerreports.data.database.MySQL;
 import fr.mrtigreroux.tigerreports.data.database.SQLite;
 import fr.mrtigreroux.tigerreports.listeners.*;
 import fr.mrtigreroux.tigerreports.managers.*;
-import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.objects.users.User;
 import fr.mrtigreroux.tigerreports.runnables.ReportsNotifier;
@@ -34,17 +31,14 @@ public class TigerReports extends JavaPlugin {
 
 	private static TigerReports instance;
 	
-	private WebManager webManager;
 	private Database database;
+	private WebManager webManager;
 	private BungeeManager bungeeManager;
-
-	public Map<String, User> users = new HashMap<>();
-	public Map<String, String> lastNameFound = new HashMap<>();
-	public Map<String, String> lastUniqueIdFound = new HashMap<>();
-	public Map<Integer, Report> reports = new HashMap<>();
+	private UsersManager usersManager;
+	private ReportsManager reportsManager;
 	
 	public TigerReports() {}
-
+	
 	public void load() {
 		for(ConfigFile configFiles : ConfigFile.values())
 			configFiles.load();
@@ -66,24 +60,23 @@ public class TigerReports extends JavaPlugin {
 		getCommand("reports").setExecutor(new ReportsCommand());
 		
 		webManager = new WebManager(this);
-		webManager.initialize();
 		
 		PluginDescriptionFile desc = getDescription();
-		if(!desc.getName().equals("TigerReports") || desc.getAuthors().size() > 1 || !desc.getAuthors().contains("MrTigreroux")) {
+		if(!desc.getName().equals("TigerReports") || desc.getAuthors().size() != 1 || !desc.getAuthors().contains("MrTigreroux")) {
 			MessageUtils.logSevere(ConfigUtils.getInfoMessage("The file plugin.yml has been edited without authorization.", "Le fichier plugin.yml a ete modifie sans autorisation."));
 			Bukkit.shutdown();
 		}
-
+		
+		usersManager = new UsersManager();
+		reportsManager = new ReportsManager();
 		bungeeManager = new BungeeManager(this);
-		bungeeManager.initialize();
-		bungeeManager.collectServerName();
 
 		initializeDatabase();
 	}
 	
 	public void unload() {
 		database.closeConnection();
-		for(User u : users.values()) {
+		for(User u : TigerReports.getInstance().getUsersManager().getUsers()) {
 			if(u instanceof OnlineUser) {
 				OnlineUser ou = (OnlineUser) u;
 				if(ou.getOpenedMenu() != null)
@@ -111,6 +104,14 @@ public class TigerReports extends JavaPlugin {
 	
 	public BungeeManager getBungeeManager() {
 		return bungeeManager;
+	}
+	
+	public UsersManager getUsersManager() {
+		return usersManager;
+	}
+	
+	public ReportsManager getReportsManager() {
+		return reportsManager;
 	}
 	
 	public void initializeDatabase() {
