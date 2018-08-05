@@ -6,7 +6,7 @@ import org.bukkit.inventory.ItemStack;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.objects.CustomItem;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
-import fr.mrtigreroux.tigerreports.utils.ReflectionUtils;
+import fr.mrtigreroux.tigerreports.utils.VersionUtils;
 
 /**
  * @author MrTigreroux
@@ -14,7 +14,7 @@ import fr.mrtigreroux.tigerreports.utils.ReflectionUtils;
 
 public enum MenuItem {
 
-	CLOSE(ReflectionUtils.isOldVersion() ? Material.REDSTONE_BLOCK : Material.BARRIER, Message.CLOSE),
+	CLOSE(VersionUtils.isOldVersion() ? Material.REDSTONE_BLOCK : Material.BARRIER, Message.CLOSE),
 	PAGE_SWITCH_PREVIOUS(Material.FEATHER, Message.PAGE_SWITCH_PREVIOUS),
 	PAGE_SWITCH_NEXT(Material.FEATHER, Message.PAGE_SWITCH_NEXT),
 

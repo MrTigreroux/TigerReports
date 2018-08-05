@@ -1,5 +1,6 @@
 package fr.mrtigreroux.tigerreports;
 
+import java.util.Collection;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
@@ -54,7 +55,6 @@ public class TigerReports extends JavaPlugin {
 		PluginManager pm = Bukkit.getServer().getPluginManager();
 		pm.registerEvents(new InventoryListener(), this);
 		pm.registerEvents(new PlayerListener(), this);
-		pm.registerEvents(new SignListener(), this);
 		
 		getCommand("report").setExecutor(new ReportCommand());
 		getCommand("reports").setExecutor(new ReportsCommand());
@@ -76,11 +76,14 @@ public class TigerReports extends JavaPlugin {
 	
 	public void unload() {
 		database.closeConnection();
-		for(User u : TigerReports.getInstance().getUsersManager().getUsers()) {
-			if(u instanceof OnlineUser) {
-				OnlineUser ou = (OnlineUser) u;
-				if(ou.getOpenedMenu() != null)
-					ou.getPlayer().closeInventory();
+		Collection<User> users = TigerReports.getInstance().getUsersManager().getUsers();
+		if(users != null && !users.isEmpty()) {
+			for(User u : users) {
+				if(u instanceof OnlineUser) {
+					OnlineUser ou = (OnlineUser) u;
+					if(ou.getOpenedMenu() != null)
+						ou.getPlayer().closeInventory();
+				}
 			}
 		}
 	}

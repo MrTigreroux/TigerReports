@@ -17,11 +17,11 @@ import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 public class Comment {
 
 	private final Report r;
-	private final int commentId;
+	private final Integer commentId;
 	private final String date, author;
 	private String status, message;
 	
-	public Comment(Report r, int commentId, String status, String date, String author, String message) {
+	public Comment(Report r, Integer commentId, String status, String date, String author, String message) {
 		this.r = r;
 		this.commentId = commentId;
 		this.status = status;
@@ -30,17 +30,25 @@ public class Comment {
 		this.message = message;
 	}
 	
-	public int getId() {
+	public Report getReport() {
+		return r;
+	}
+	
+	public Integer getId() {
 		return commentId;
 	}
 	
 	public String getStatus(boolean config) {
 		if(config)
 			return status;
-		try {
-			return status != null ? Message.valueOf(status.toUpperCase()).get() : Message.PRIVATE.get();
-		} catch (Exception invalidStatus) {
+		
+		if(status == null) {
 			return Message.PRIVATE.get();
+		} else if(status.startsWith("Read")) {
+			return Message.READ.get().replace("_Date_", status.replace("Read ", ""));
+		} else {
+			Message message = Message.valueOf(status.toUpperCase());
+			return message != null ? message.get() : Message.PRIVATE.get();
 		}
 	}
 	
@@ -73,7 +81,6 @@ public class Comment {
 	}
 	
 	public void delete() {
-		r.removeComment(this);
 		TigerReports.getInstance().getDb().updateAsynchronously("DELETE FROM tigerreports_comments WHERE report_id = ? AND comment_id = ?", Arrays.asList(r.getId(), commentId));
 	}
 	

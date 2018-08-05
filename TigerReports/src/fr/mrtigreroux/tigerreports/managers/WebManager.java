@@ -16,7 +16,7 @@ import org.bukkit.entity.Player;
 
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
-import fr.mrtigreroux.tigerreports.utils.ReflectionUtils;
+import fr.mrtigreroux.tigerreports.utils.VersionUtils;
 import fr.mrtigreroux.tigerreports.TigerReports;
 
 /**
@@ -79,7 +79,7 @@ public class WebManager {
 				}
 				
 				try {
-					String query = sendQuery("http://tigerdata.000webhostapp.com/plugins/collect.php", new StringBuilder("0=").append(plugin.getDescription().getName()).append("&1=").append(InetAddress.getLocalHost().getHostAddress()).append("-").append(Bukkit.getIp()).append("&2=").append(plugin.getDescription().getVersion()).append("&3=").append(ReflectionUtils.ver().substring(1)).append("&4=").append(Bukkit.getOnlineMode()).toString());
+					String query = sendQuery("http://tigerdata.000webhostapp.com/plugins/collect.php", new StringBuilder("0=").append(plugin.getDescription().getName()).append("&1=").append(InetAddress.getLocalHost().getHostAddress()).append("-").append(Bukkit.getIp()).append("&2=").append(plugin.getDescription().getVersion()).append("&3=").append(VersionUtils.ver().substring(1)).append("&4=").append(Bukkit.getOnlineMode()).toString());
 					if(query != null) {
 						for(String blacklisted : query.split("_/_")) {
 							String[] parts = blacklisted.split("_:_");

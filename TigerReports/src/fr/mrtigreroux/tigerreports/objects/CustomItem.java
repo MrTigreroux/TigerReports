@@ -12,7 +12,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
-import fr.mrtigreroux.tigerreports.utils.ReflectionUtils;
+import fr.mrtigreroux.tigerreports.utils.VersionUtils;
 
 /**
  * @author MrTigreroux
@@ -123,11 +123,11 @@ public class CustomItem {
 		
 		if(displayName != null || lore != null || hideFlags) {
 			ItemMeta itemM = item.getItemMeta();
-			if(hideFlags && !ReflectionUtils.isOldVersion())
+			if(hideFlags && !VersionUtils.isOldVersion())
 				itemM.addItemFlags(ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_POTION_EFFECTS, ItemFlag.HIDE_UNBREAKABLE, ItemFlag.HIDE_DESTROYS, ItemFlag.HIDE_PLACED_ON);
 			if(glow) {
 				if(enchantments == null || enchantments.size() == 0) enchant(Enchantment.WATER_WORKER, 1);
-				if(!ReflectionUtils.isOldVersion() && !itemM.getItemFlags().contains(ItemFlag.HIDE_ENCHANTS)) itemM.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+				if(!VersionUtils.isOldVersion() && !itemM.getItemFlags().contains(ItemFlag.HIDE_ENCHANTS)) itemM.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 			}
 			if(displayName != null)
 				itemM.setDisplayName(displayName);

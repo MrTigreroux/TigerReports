@@ -38,6 +38,10 @@ public enum Message {
 	REPORT_CHAT_DATA("Messages.Report-chat-data"),
 	REPORT_MESSAGES_HISTORY("Messages.Report-messages-history"),
 	REPORT_MESSAGE_FORMAT("Messages.Report-message-format"),
+	EDIT_COMMENT("Messages.Edit-comment"),
+	CANCEL_BUTTON("Messages.Cancel-button"),
+	CANCEL_BUTTON_DETAILS("Messages.Cancel-button-details"),
+	CANCEL_COMMENT("Messages.Cancel-comment"),
 	
 	INVALID_SYNTAX("ErrorMessages.Invalid-syntax"),
 	PERMISSION_COMMAND("ErrorMessages.Permission-command"),

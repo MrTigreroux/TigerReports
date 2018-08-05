@@ -149,13 +149,13 @@ public abstract class User {
 	public List<String> getNotifications() {
 		List<String> notifications = new ArrayList<>();
 		try {
-			notifications = Arrays.asList(((String) TigerReports.getInstance().getDb().query("SELECT notifications FROM tigerreports_users WHERE uuid = ?", Collections.singletonList(uuid)).getResult(0, "notifications")).split("#next#"));
+			notifications = new ArrayList<>(Arrays.asList(((String) TigerReports.getInstance().getDb().query("SELECT notifications FROM tigerreports_users WHERE uuid = ?", Collections.singletonList(uuid)).getResult(0, "notifications")).split("#next#")));
 		} catch (Exception noNotifications) {}
 		return notifications;
 	}
 	
 	public void setNotifications(List<String> notifications) {
-		TigerReports.getInstance().getDb().updateAsynchronously("UPDATE tigerreports_users SET notifications = ? WHERE uuid = ?", Arrays.asList(String.join("#next#", notifications), uuid));
+		TigerReports.getInstance().getDb().updateAsynchronously("UPDATE tigerreports_users SET notifications = ? WHERE uuid = ?", Arrays.asList(notifications != null ? String.join("#next#", notifications) : null, uuid));
 	}
 	
 	public String getLastMessages() {

@@ -1,15 +1,16 @@
 package fr.mrtigreroux.tigerreports.objects.menus;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
-import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.MenuItem;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
@@ -40,31 +41,33 @@ public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu {
 	
 	@Override
 	public void onUpdate(Inventory inv) {
-		int index = 0;
+		int firstComment = 1;
 		if(page >= 2) {
 			inv.setItem(size-7, MenuItem.PAGE_SWITCH_PREVIOUS.get());
-			index += (page-1)*27;
+			firstComment += (page-1)*27;
 		}
 		
-		List<Comment> comments = new ArrayList<>(r.getComments().values());
+		List<Map<String, Object>> results = TigerReports.getInstance().getDb().query("SELECT * FROM tigerreports_comments WHERE report_id = ? LIMIT 28 OFFSET ?", Arrays.asList(r.getId(), firstComment-1)).getResultList();
+		
 		boolean delete = Permission.STAFF_DELETE.isOwned(u);
+		int index = 0;
 		ItemStack empty = new ItemStack(Material.AIR);
-		for(int position = 18; position < 45; position++) {
+		for(int slot = 18; slot < 45; slot++) {
 			if(index == -1) {
-				inv.setItem(position, empty);
+				inv.setItem(slot, empty);
 			} else {
-				Comment c = index < comments.size() ? comments.get(index) : null;
+				Comment c = index < results.size() ? r.formatComment(results.get(index)) : null;
 				if(c == null) {
-					inv.setItem(position, empty);
+					inv.setItem(slot, empty);
 					index = -1;
 				} else {
-					inv.setItem(position, c.getItem(delete));
+					inv.setItem(slot, c.getItem(delete));
 					index++;
 				}
 			}
 		}
-
-		if(comments.size() == 28)
+		
+		if(results.size() == 28)
 			inv.setItem(size-3, MenuItem.PAGE_SWITCH_NEXT.get());
 	}
 
@@ -73,46 +76,53 @@ public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu {
 		if(slot == 0) {
 			u.openReportMenu(r);
 		} else if(slot == 8) {
-			u.comment(r);
+			u.createComment(r);
 		} else if(slot >= 18 && slot <= size-9) {
-			Comment c = new ArrayList<>(r.getComments().values()).get(getIndex(slot)-1);
+			Comment c = r.getComment(getIndex(slot));
 			if(c != null) {
-				if(click.toString().contains("LEFT")) {
-					if(!c.getAuthor().equalsIgnoreCase(p.getDisplayName())) {
-						ConfigSound.ERROR.play(p);
+				switch(click) {
+					case LEFT:
+					case SHIFT_LEFT:
+						u.editComment(c);
 						return;
-					}
-					u.setModifiedComment(c);
-					u.comment(r);
-					return;
-				} else if(click.toString().contains("RIGHT")) {
-					String comment = "Report"+r.getId()+":Comment"+c.getId();
-					User su = TigerReports.getInstance().getUsersManager().getUser(r.getReporterUniqueId());
-					boolean isPrivate = c.getStatus(true).equals("Private");
-					if(isPrivate && su instanceof OnlineUser) {
-						((OnlineUser) su).sendNotification(comment, true);
-						update(true);
-						return;
-					}
-					
-					List<String> notifications = su.getNotifications();
-					if(isPrivate) {
-						c.setStatus("Sent");
-						notifications.add(comment);
-					} else {
-						c.setStatus("Private");
-						notifications.remove(comment);
-					}
-					su.setNotifications(notifications);
-				} else if(click.equals(ClickType.DROP)) {
-					if(Permission.STAFF_DELETE.isOwned(u)) {
-						c.delete();
-					} else {
-						return;
-					}
+					case RIGHT:
+					case SHIFT_RIGHT:
+						String comment = "Report"+r.getId()+":Comment"+c.getId();
+						User ru = TigerReports.getInstance().getUsersManager().getUser(r.getReporterUniqueId());
+						boolean isPrivate = c.getStatus(true).equals("Private");
+						if(isPrivate && ru instanceof OnlineUser) {
+							((OnlineUser) ru).sendNotification(comment, true);
+						} else {
+							List<String> notifications = ru.getNotifications();
+							if(isPrivate) {
+								c.setStatus("Sent");
+								notifications.add(comment);
+							} else {
+								c.setStatus("Private");
+								notifications.remove(comment);
+							}
+							ru.setNotifications(notifications);
+						}
+						break;
+					case DROP:
+						if(Permission.STAFF_DELETE.isOwned(u)) {
+							c.delete();
+						} else {
+							return;
+						}
+						break;
+					default:
+						break;
 				}
 			}
-			update(true);
+			Bukkit.getScheduler().runTaskLater(TigerReports.getInstance(), new Runnable() {
+				
+				@Override
+				public void run() {
+					update(true);
+				}
+				
+			}, 10);
 		}
 	}
 	

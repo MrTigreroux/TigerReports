@@ -25,11 +25,14 @@ import fr.mrtigreroux.tigerreports.commands.HelpCommand;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
+import fr.mrtigreroux.tigerreports.objects.Comment;
+import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.objects.users.OfflineUser;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.objects.users.User;
 import fr.mrtigreroux.tigerreports.runnables.ReportsNotifier;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
+import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 
 /**
  * @author MrTigreroux
@@ -48,8 +51,7 @@ public class PlayerListener implements Listener {
 			
 			@Override
 			public void run() {
-				for(String notification : u.getNotifications())
-					u.sendNotification(notification, false);
+				u.sendNotifications();
 				if(Permission.STAFF.isOwned(u) && ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.ReportsNotifications.Connection")) {
 					String reportsNotifications = ReportsNotifier.getReportsNotification();
 					if(reportsNotifications != null)
@@ -107,7 +109,22 @@ public class PlayerListener implements Listener {
 	
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	private void onPlayerChat(AsyncPlayerChatEvent e) {
-		TigerReports.getInstance().getUsersManager().getOnlineUser(e.getPlayer()).updateLastMessages(e.getMessage());
+		OnlineUser u = TigerReports.getInstance().getUsersManager().getOnlineUser(e.getPlayer());
+		Comment c = u.getEditingComment();
+		if(c != null) {
+			String message = e.getMessage();
+			Report r = c.getReport();
+			if(c.getId() == null) {
+				TigerReports.getInstance().getDb().insert("INSERT INTO tigerreports_comments (report_id,status,date,author,message) VALUES (?,?,?,?,?);", Arrays.asList(r.getId(), "Private", MessageUtils.getNowDate(), u.getPlayer().getDisplayName(), message));
+			} else {
+				c.addMessage(message);
+			}
+			u.setEditingComment(null);
+			u.openDelayedlyCommentsMenu(r);
+			e.setCancelled(true);
+			return;
+		}
+		u.updateLastMessages(e.getMessage());
 	}
 	
 	@EventHandler(priority = EventPriority.LOWEST)

@@ -63,6 +63,9 @@ public class ReportsCommand implements TabExecutor {
 				return true;
 			case 1:
 				switch(args[0].toLowerCase()) {
+					case "canceledit":
+						u.cancelComment();
+						return true;
 					case "notify":
 						boolean newState = !u.acceptsNotifications();
 						u.setStaffNotifications(newState);

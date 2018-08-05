@@ -5,12 +5,6 @@ import java.util.List;
 import net.md_5.bungee.api.chat.TextComponent;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
@@ -21,7 +15,6 @@ import fr.mrtigreroux.tigerreports.objects.Comment;
 import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.objects.menus.*;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
-import fr.mrtigreroux.tigerreports.utils.ReflectionUtils;
 
 /**
  * @author MrTigreroux
@@ -31,10 +24,7 @@ public class OnlineUser extends User {
 	
 	private final Player p;
 	private Menu openedMenu = null;
-	private Report commentingReport = null;
-	private Comment modifiedComment = null;
-	private Material signMaterial = null;
-	private Byte signData = null;
+	private Comment editingComment = null;
 	private boolean notifications = true;
 	
 	public OnlineUser(Player p) {
@@ -76,6 +66,18 @@ public class OnlineUser extends User {
 	
 	public void openConfirmationMenu(Report r, String action) {
 		new ConfirmationMenu(this, r.getId(), action).open(true);
+	}
+
+	public void openDelayedlyCommentsMenu(Report r) {
+		p.closeInventory();
+		Bukkit.getScheduler().runTaskLater(TigerReports.getInstance(), new Runnable() {
+			
+			@Override
+			public void run() {
+				openCommentsMenu(1, r);
+			}
+			
+		}, 10);
 	}
 
 	public void openCommentsMenu(int page, Report r) {
@@ -142,79 +144,61 @@ public class OnlineUser extends User {
 		return notifications;
 	}
 	
+	public void sendNotifications() {
+		for(String notification : getNotifications())
+			sendNotification(notification, false);
+		setNotifications(null);
+	}
+	
 	public void sendNotification(String comment, boolean direct) {
 		try {
 			String[] parts = comment.split(":");
 			Report r = TigerReports.getInstance().getReportsManager().getReportById(Integer.parseInt(parts[0].replace("Report", "")));
-			Comment c = r.getComment(Integer.parseInt(parts[1].replace("Comment", "")));
-			if(!direct && !c.getStatus(true).equals("Sent"))
+			Comment c = r.getCommentById(Integer.parseInt(parts[1].replace("Comment", "")));
+			if(direct) {
+				List<String> notifications = getNotifications();
+				notifications.remove(comment);
+				setNotifications(notifications);
+			} else if(!c.getStatus(true).equals("Sent")) {
 				return;
+			}
 			p.sendMessage(Message.COMMENT_NOTIFICATION.get()
 					.replace("_Player_", c.getAuthor())
 					.replace("_Reported_", r.getPlayerName("Reported", false, true))
 					.replace("_Time_", MessageUtils.convertToSentence(MessageUtils.getSeconds(MessageUtils.getNowDate())-MessageUtils.getSeconds(r.getDate())))
 					.replace("_Message_", c.getMessage()));
-			List<String> notifications = getNotifications();
-			notifications.remove(comment);
-			setNotifications(notifications);
-			c.setStatus("Read");
+			c.setStatus("Read "+MessageUtils.getNowDate());
 		} catch (Exception invalidNotification) {}
 	}
 	
-	@SuppressWarnings("deprecation")
-	public void comment(Report r) {
-		try {
-			Location loc = p.getLocation();
-			World world = loc.getWorld();
-			Block b = world.getBlockAt(loc.getBlockX(), world.getMaxHeight()-1, loc.getBlockZ());
-			signMaterial = b.getType();
-			signData = b.getData();
-			
-			Block support = b.getRelative(BlockFace.DOWN);
-			if(support.getType() == Material.AIR)
-				support.setType(Material.BEDROCK);
-			b.setType(Material.SIGN_POST);
-			Sign s = (Sign) b.getState();
-			s.setLine(0, "\u00A77[\u00A76TigerReports\u00A77]");
-			s.setLine(1, "\u00A7e"+p.getName());
-			s.setLine(2, "\u00A78r\u00E9dige un");
-			s.setLine(3, "\u00A78commentaire");
-			s.update();
-			
-			setCommentingReport(r);
-			Object tileEntity = ReflectionUtils.isRecentVersion() ? ReflectionUtils.callSuperMethod(s, "getTileEntity") : ReflectionUtils.getDeclaredField(s, "sign");
-			ReflectionUtils.setDeclaredField(tileEntity, "isEditable", true);
-			ReflectionUtils.setDeclaredField(tileEntity, "h", ReflectionUtils.getHandle(p));
-			ReflectionUtils.sendPacket(p, ReflectionUtils.getPacket("PacketPlayOutOpenSignEditor", ReflectionUtils.callDeclaredConstructor(ReflectionUtils.getNMSClass("BlockPosition"), s.getX(), s.getY(), s.getZ())));
-		} catch (Exception ignored) {}
+	public void createComment(Report r) {
+		editComment(new Comment(r, null, null, null, null, null));
 	}
 	
-	@SuppressWarnings("deprecation")
-	public void updateSignBlock(Block b) {
-		b.setType(signMaterial != null ? signMaterial : Material.AIR);
-		Block support = b.getRelative(BlockFace.DOWN);
-		if(support.getType() == Material.BEDROCK)
-			support.setType(Material.AIR);
-		if(signData != null)
-			b.setData(signData);
-		signMaterial = null;
-		signData = null;
+	public void cancelComment() {
+		if(editingComment == null)
+			return;
+		Report r = editingComment.getReport();
+		sendMessageWithReportButton(Message.CANCEL_COMMENT.get().replace("_Report_", r.getName()), r);
+		editingComment = null;
 	}
 	
-	public void setCommentingReport(Report r) {
-		this.commentingReport = r;
+	public void editComment(Comment c) {
+		if(c.getAuthor() != null && !c.getAuthor().equalsIgnoreCase(p.getDisplayName())) {
+			ConfigSound.ERROR.play(p);
+			return;
+		}
+		editingComment = c;
+		p.closeInventory();
+		sendMessage(MessageUtils.getAdvancedMessage(Message.EDIT_COMMENT.get().replace("_Report_", c.getReport().getName()), "_CancelButton_", Message.CANCEL_BUTTON.get(), Message.CANCEL_BUTTON_DETAILS.get().replace("_Report_", c.getReport().getName()), "/tigerreports:reports canceledit"));
 	}
 	
-	public Report getCommentingReport() {
-		return commentingReport;
+	public void setEditingComment(Comment c) {
+		editingComment = c;
 	}
 	
-	public void setModifiedComment(Comment c) {
-		modifiedComment = c;
-	}
-	
-	public Comment getModifiedComment() {
-		return modifiedComment;
+	public Comment getEditingComment() {
+		return editingComment;
 	}
 	
 }

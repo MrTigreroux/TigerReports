@@ -2,7 +2,6 @@ package fr.mrtigreroux.tigerreports.objects;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.bukkit.inventory.ItemStack;
@@ -26,7 +25,6 @@ public class Report {
 	private String status, appreciation;
 	private final String date, reportedUniqueId, reporterUniqueId, reason;
 	private Map<String, String> advancedData = null;
-	private Map<Integer, Comment> comments = null;
 	
 	public Report(int reportId, String status, String appreciation, String date, String reportedUniqueId, String reporterUniqueId, String reason) {
 		this.reportId = reportId;
@@ -189,37 +187,16 @@ public class Report {
 		}
 	}
 	
-	public Map<Integer, Comment> getComments() {
-		if(comments != null)
-			return comments;
-		comments = new HashMap<>();
-		for(Map<String, Object> results : TigerReports.getInstance().getDb().query("SELECT * FROM tigerreports_comments WHERE report_id = ?", Collections.singletonList(reportId)).getResultList())
-			saveComment(results);
-		return comments;
+	public Comment getCommentById(int commentId) {
+		return formatComment(TigerReports.getInstance().getDb().query("SELECT * FROM tigerreports_comments WHERE report_id = ? AND comment_id = ?", Arrays.asList(reportId, commentId)).getResult(0));
 	}
 	
-	public Comment getComment(int commentId) {
-		if(comments != null) {
-			Comment c = comments.get(commentId);
-			if(c != null)
-				return c;
-		}
-		return saveComment(TigerReports.getInstance().getDb().query("SELECT * FROM tigerreports_comments WHERE report_id = ? AND comment_id = ?", Arrays.asList(reportId, commentId)).getResult(0));
+	public Comment getComment(int commentIndex) {
+		return formatComment(TigerReports.getInstance().getDb().query("SELECT * FROM tigerreports_comments WHERE report_id = ? LIMIT 1 OFFSET ?", Arrays.asList(reportId, commentIndex-1)).getResult(0));
 	}
 	
-	private Comment saveComment(Map<String, Object> result) {
-		int commentId = (int) result.get("comment_id");
-		Comment c = new Comment(this, commentId, (String) result.get("status"), (String) result.get("date"), (String) result.get("author"), (String) result.get("message"));
-		comments.put(commentId, c);
-		return c;
-	}
-	
-	public void saveComment(Comment c) {
-		comments.put(c.getId(), c);
-	}
-	
-	public void removeComment(Comment c) {
-		comments.remove(c.getId());
+	public Comment formatComment(Map<String, Object> result) {
+		return new Comment(this, (int) result.get("comment_id"), (String) result.get("status"), (String) result.get("date"), (String) result.get("author"), (String) result.get("message"));
 	}
 	
 	public void delete(String staff, boolean bungee) {
