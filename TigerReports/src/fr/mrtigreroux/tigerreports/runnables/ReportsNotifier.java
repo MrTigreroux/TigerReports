@@ -51,7 +51,7 @@ public class ReportsNotifier implements Runnable {
 		
 		return totalAmount == 0 ? null : reportsNotification;
 	}
-
+	
 	public static void start() {
 		stop();
 		int interval = ConfigFile.CONFIG.get().getInt("Config.ReportsNotifications.MinutesInterval", 0)*1200;

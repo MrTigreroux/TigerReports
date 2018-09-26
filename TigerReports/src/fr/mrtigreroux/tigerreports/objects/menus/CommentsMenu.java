@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -51,14 +50,13 @@ public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu {
 		
 		boolean delete = Permission.STAFF_DELETE.isOwned(u);
 		int index = 0;
-		ItemStack empty = new ItemStack(Material.AIR);
 		for(int slot = 18; slot < 45; slot++) {
 			if(index == -1) {
-				inv.setItem(slot, empty);
+				inv.setItem(slot, null);
 			} else {
 				Comment c = index < results.size() ? r.formatComment(results.get(index)) : null;
 				if(c == null) {
-					inv.setItem(slot, empty);
+					inv.setItem(slot, null);
 					index = -1;
 				} else {
 					inv.setItem(slot, c.getItem(delete));

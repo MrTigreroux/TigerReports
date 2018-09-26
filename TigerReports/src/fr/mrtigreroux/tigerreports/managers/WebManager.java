@@ -48,8 +48,6 @@ public class WebManager {
 			}
 			return new BufferedReader(new InputStreamReader(connection.getInputStream())).readLine();
 		} catch (Exception ex) {
-			MessageUtils.logSevere(ConfigUtils.getInfoMessage("An error has occurred while checking for an update. Please check internet connection.", "Une erreur est survenue en verifiant s'il y a une nouvelle version disponible. Veuillez verifier la connexion internet."));
-			Bukkit.getPluginManager().disablePlugin(plugin);
 			return null;
 		}
 	}

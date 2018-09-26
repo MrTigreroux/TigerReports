@@ -3,9 +3,7 @@ package fr.mrtigreroux.tigerreports.utils;
 import java.util.*;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -70,17 +68,16 @@ public class ReportUtils {
 		
 		List<Map<String, Object>> results = TigerReports.getInstance().getDb().query("SELECT report_id,status,appreciation,date,reported_uuid,reporter_uuid,reason FROM tigerreports_reports WHERE archived = ? LIMIT 28 OFFSET ?", Arrays.asList(archived ? 1 : 0, firstReport-1)).getResultList();
 		int index = 0;
-		ItemStack empty = new ItemStack(Material.AIR);
-		for(int position = 18; position < 45; position++) {
+		for(int slot = 18; slot < 45; slot++) {
 			if(index == -1) {
-				inv.setItem(position, empty);
+				inv.setItem(slot, null);
 			} else {
 				Report r = formatEssentialOfReport(index < results.size() ? results.get(index) : null);
 				if(r == null) {
-					inv.setItem(position, empty);
+					inv.setItem(slot, null);
 					index = -1;
 				} else {
-					inv.setItem(position, r.getItem(actions));
+					inv.setItem(slot, r.getItem(actions));
 					index++;
 				}
 			}

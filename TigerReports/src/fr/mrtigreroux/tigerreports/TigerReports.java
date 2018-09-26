@@ -65,6 +65,7 @@ public class TigerReports extends JavaPlugin {
 		if(!desc.getName().equals("TigerReports") || desc.getAuthors().size() != 1 || !desc.getAuthors().contains("MrTigreroux")) {
 			MessageUtils.logSevere(ConfigUtils.getInfoMessage("The file plugin.yml has been edited without authorization.", "Le fichier plugin.yml a ete modifie sans autorisation."));
 			Bukkit.shutdown();
+			return;
 		}
 		
 		usersManager = new UsersManager();
@@ -76,13 +77,15 @@ public class TigerReports extends JavaPlugin {
 	
 	public void unload() {
 		database.closeConnection();
-		Collection<User> users = TigerReports.getInstance().getUsersManager().getUsers();
-		if(users != null && !users.isEmpty()) {
-			for(User u : users) {
-				if(u instanceof OnlineUser) {
-					OnlineUser ou = (OnlineUser) u;
-					if(ou.getOpenedMenu() != null)
-						ou.getPlayer().closeInventory();
+		if(usersManager != null) {
+			Collection<User> users = usersManager.getUsers();
+			if(users != null && !users.isEmpty()) {
+				for(User u : users) {
+					if(u instanceof OnlineUser) {
+						OnlineUser ou = (OnlineUser) u;
+						if(ou.getOpenedMenu() != null)
+							ou.getPlayer().closeInventory();
+					}
 				}
 			}
 		}
