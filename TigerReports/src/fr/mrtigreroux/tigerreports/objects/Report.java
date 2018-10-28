@@ -2,6 +2,7 @@ package fr.mrtigreroux.tigerreports.objects;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.bukkit.inventory.ItemStack;
@@ -11,6 +12,8 @@ import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Status;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
+import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
+import fr.mrtigreroux.tigerreports.objects.users.User;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 import fr.mrtigreroux.tigerreports.utils.UserUtils;
@@ -80,7 +83,7 @@ public class Report {
 	public String implementDetails(String message, boolean menu) {
 		Status status = getStatus();
 		return message
-				.replace("_Status_", status.equals(Status.DONE) ? status.getWord(getProcessor())+Message.APPRECIATION_SUFFIX.get().replace("_Appreciation_", getAppreciation()) : status.getWord(null))
+				.replace("_Status_", status.equals(Status.DONE) ? status.getWord(getProcessor())+Message.APPRECIATION_SUFFIX.get().replace("_Appreciation_", getAppreciation(false)) : status.getWord(null))
 				.replace("_Date_", getDate()).replace("_Reporter_", getPlayerName("Reporter", true, true))
 				.replace("_Reported_", getPlayerName("Reported", true, true))
 				.replace("_Reason_", getReason(menu));
@@ -146,7 +149,9 @@ public class Report {
 	
 	public ItemStack getItem(String actions) {
 		Status status = getStatus();
-		return new CustomItem().type(status.getMaterial()).hideFlags(true).glow(status.equals(Status.WAITING)).name(Message.REPORT.get().replace("_Report_", getName()))
+		return new CustomItem().type(status.getMaterial())
+				.hideFlags(true).glow(status.equals(Status.WAITING))
+				.name(Message.REPORT.get().replace("_Report_", getName()))
 				.lore(implementDetails(Message.REPORT_DETAILS.get(), true).replace("_Actions_", actions != null ? actions : "").split(ConfigUtils.getLineBreakSymbol())).create();
 	}
 	
@@ -161,14 +166,20 @@ public class Report {
 			MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage((auto ? Message.STAFF_PROCESS_AUTO : Message.STAFF_PROCESS).get().replace("_Player_", staff).replace("_Appreciation_", Message.valueOf(appreciation.toUpperCase()).get()), "_Report_", getName(), getText(), null), ConfigSound.STAFF.get());
 		if(!bungee) {
 			TigerReports.getInstance().getBungeeManager().sendPluginNotification(uuid+"/"+staff+" process "+reportId+" "+appreciation+" "+auto);
-			if(auto) {
-				TigerReports.getInstance().getDb().update("UPDATE tigerreports_reports SET status = ?,appreciation = ?,archived = ? WHERE report_id = ?", Arrays.asList(status, appreciation, 1, reportId));
-			} else {
-				TigerReports.getInstance().getDb().update("UPDATE tigerreports_reports SET status = ?,appreciation = ? WHERE report_id = ?", Arrays.asList(status, appreciation, reportId));
-			}
+			TigerReports.getInstance().getDb().update("UPDATE tigerreports_reports SET status = ?,appreciation = ?,archived = ? WHERE report_id = ?", Arrays.asList(status, appreciation, auto ? 1 : 0, reportId));
 			UsersManager userManager = TigerReports.getInstance().getUsersManager();
 			userManager.getUser(uuid).changeStatistic("processed_reports", 1, false);
-			userManager.getUser(reporterUniqueId).changeStatistic(appreciation.toLowerCase()+"_appreciations", 1, false);
+			User ru = userManager.getUser(reporterUniqueId);
+			ru.changeStatistic(appreciation.toLowerCase()+"_appreciations", 1, false);
+			if(ConfigUtils.playersNotifications()) {
+				if(ru instanceof OnlineUser) {
+					((OnlineUser) ru).sendReportNotification(this, true);
+				} else {
+					List<String> notifications = ru.getNotifications();
+					notifications.add(Integer.toString(getId()));
+					ru.setNotifications(notifications);
+				}
+			}
 		}
 	}
 	
@@ -179,7 +190,9 @@ public class Report {
 		return processor != null ? processor : Message.NOT_FOUND_MALE.get();
 	}
 
-	public String getAppreciation() {
+	public String getAppreciation(boolean config) {
+		if(config)
+			return appreciation;
 		try {
 			return appreciation != null && !appreciation.equalsIgnoreCase("None") ? Message.valueOf(appreciation.toUpperCase()).get() : Message.NONE_FEMALE.get();
 		} catch (Exception invalidAppreciation) {

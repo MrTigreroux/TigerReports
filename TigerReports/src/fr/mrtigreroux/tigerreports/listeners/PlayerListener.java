@@ -47,12 +47,12 @@ public class PlayerListener implements Listener {
 		Player p = e.getPlayer();
 		OnlineUser u = TigerReports.getInstance().getUsersManager().getOnlineUser(p);
 		
-		Bukkit.getScheduler().runTaskAsynchronously(TigerReports.getInstance(), new Runnable() {
+		Bukkit.getScheduler().runTaskLaterAsynchronously(TigerReports.getInstance(), new Runnable() {
 			
 			@Override
 			public void run() {
 				u.sendNotifications();
-				if(Permission.STAFF.isOwned(u) && ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.ReportsNotifications.Connection")) {
+				if(Permission.STAFF.isOwned(u) && ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.Notifications.Staff.Connection")) {
 					String reportsNotifications = ReportsNotifier.getReportsNotification();
 					if(reportsNotifications != null)
 						p.sendMessage(reportsNotifications);
@@ -60,7 +60,7 @@ public class PlayerListener implements Listener {
 				TigerReports.getInstance().getDb().update("REPLACE INTO tigerreports_users (uuid,name) VALUES (?,?);", Arrays.asList(p.getUniqueId().toString(), p.getName()));
 			}
 			
-		});
+		}, ConfigFile.CONFIG.get().getInt("Config.Notifications.Delay", 2)*20);
 		
 		u.updateImmunity(Permission.REPORT_EXEMPT.isOwned(u) ? "always" : null, false);
 		

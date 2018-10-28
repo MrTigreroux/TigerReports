@@ -59,4 +59,8 @@ public class ConfigUtils {
 		return icon != null && icon.startsWith("Skull-") ? icon.split("-")[1] : null;
 	}
 	
+	public static boolean playersNotifications() {
+		return isEnabled(ConfigFile.CONFIG.get(), "Config.Notifications.Players");
+	}
+	
 }

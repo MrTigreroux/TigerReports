@@ -44,7 +44,7 @@ Menus:
   Reason-title: "&6Raport &7> &e_Target_"
   Reasons: "&ePowody raportu"
   Reason: "&7Zgloszony za: &e_Reason_"
-  Reason-details: "//&6Kliknij &7aby teleportowac sie do &c_Player_//&7z powodu: &e_Reason_&7."
+  Reason-details: "//_Lore_//&6Kliknij &7aby teleportowac sie do//&c_Player_ &7z powodu: &e_Reason_&7."
   Report: "_Report_"
   Report-details: "//&7Status: _Status_//&7Data: &e_Date_// //&7Zgloszony przez: &a_Signalman_//&7Podejrzany: &c_Reported_//&7Powod: &6_Reason_ &r_Actions_"
   Report-show-action: "// //&6Kliknij&7, aby wyswietlic szczegoly."

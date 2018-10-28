@@ -54,7 +54,7 @@ public class ReportsNotifier implements Runnable {
 	
 	public static void start() {
 		stop();
-		int interval = ConfigFile.CONFIG.get().getInt("Config.ReportsNotifications.MinutesInterval", 0)*1200;
+		int interval = ConfigFile.CONFIG.get().getInt("Config.Notifications.Staff.MinutesInterval", 0)*1200;
 		if(interval > 0)
 			taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(TigerReports.getInstance(), new ReportsNotifier(), interval, interval);
 	}

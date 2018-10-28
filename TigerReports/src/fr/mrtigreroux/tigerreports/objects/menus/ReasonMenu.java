@@ -1,5 +1,6 @@
 package fr.mrtigreroux.tigerreports.objects.menus;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
@@ -52,6 +53,7 @@ public class ReasonMenu extends Menu {
 					.lore(Message.REASON_DETAILS.get()
 							.replace("_Player_", tu.getName())
 							.replace("_Reason_", reason)
+							.replace("_Lore_", ChatColor.translateAlternateColorCodes(ConfigUtils.getColorCharacter(), ConfigFile.CONFIG.get().getString(path+".Lore")))
 							.split(ConfigUtils.getLineBreakSymbol()))
 							.hideFlags(true).create());
 		}

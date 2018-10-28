@@ -85,19 +85,19 @@ public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu {
 						return;
 					case RIGHT:
 					case SHIFT_RIGHT:
-						String comment = "Report"+r.getId()+":Comment"+c.getId();
+						String notification = r.getId()+":"+c.getId();
 						User ru = TigerReports.getInstance().getUsersManager().getUser(r.getReporterUniqueId());
 						boolean isPrivate = c.getStatus(true).equals("Private");
 						if(isPrivate && ru instanceof OnlineUser) {
-							((OnlineUser) ru).sendNotification(comment, true);
+							((OnlineUser) ru).sendCommentNotification(r, c, true);
 						} else {
 							List<String> notifications = ru.getNotifications();
 							if(isPrivate) {
 								c.setStatus("Sent");
-								notifications.add(comment);
+								notifications.add(notification);
 							} else {
 								c.setStatus("Private");
-								notifications.remove(comment);
+								notifications.remove(notification);
 							}
 							ru.setNotifications(notifications);
 						}

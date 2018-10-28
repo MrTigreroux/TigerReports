@@ -32,6 +32,7 @@ public enum Message {
 	STAFF_MAX_REPORTS_REACHED("Messages.Staff-max-reports-reached"),
 	STAFF_NOTIFICATIONS("Messages.Staff-notifications"),
 	COMMENT_NOTIFICATION("Messages.Comment-notification"),
+	REPORT_NOTIFICATION("Messages.Report-notification"),
 	REPORTS_NOTIFICATION("Messages.Reports-notification"),
 	REPORT_BUTTON("Messages.Report-button"),
 	REPORT_CHAT_DETAILS("Messages.Report-chat-details"),

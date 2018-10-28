@@ -50,7 +50,7 @@ Menus:
   Reason-title: "&6Report &7> &e_Target_"
   Reasons: "&eGrund der Meldung"
   Reason: "&7Gemeldet wegen: &e_Reason_"
-  Reason-details: "//&6Klicke hier &7um den Spieler &c_Player_//&7wegen: &e_Reason_&7 zu melden."
+  Reason-details: "//_Lore_// //&6Klicke hier &7um den Spieler//&c_Player_ &7wegen: &e_Reason_&7 zu melden."
   Report: "_Report_"
   Report-details: "//&7Status: _Status_//&7Datum: &e_Date_// //&7Melder: &a_Reporter_//&7Gemeldeter: &c_Reported_//&7Grund: &6_Reason_ &r_Actions_"
   Report-show-action: "// //&6Klicke hier &7um mehr zu erfahren."

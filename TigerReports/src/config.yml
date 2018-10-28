@@ -1,4 +1,4 @@
-TigerReports:
+﻿TigerReports:
   Version: 1.7+ spigot
   Author: MrTigreroux
   Description: Management of reports / Gestion de signalements.
@@ -30,15 +30,20 @@ Config:
   MessagesHistory: 5
   # Amount of saved messages / Nombre de messages sauvegardés
   CommandsHistory: none
-#   - msg
-#   - tell
+  # - msg
+  # - tell
   # List of saved commands in messages history, put "none" to don't save any / Liste des commandes sauvegardées dans l'historique des messages, mettre "none" pour aucune
-  ReportsNotifications:
-    Connection: yes
-    MinutesInterval: 0
-  # Notifications about reports to process / Notifications à propos des signalements à traiter
-  # Connection:    Display at staff connection / Afficher à la connexion d'un membre de l'équipe
-  # MinutesInterval:    Display each x minutes / Afficher toutes les x minutes
+  Notifications:
+    Delay: 2
+    # Time in seconds before sending the notification after the connection of the user / Delai en secondes avant d'envoyer la notification après la connexion de l'utilisateur
+    Players: true
+    # Notify players about the decisions made on their reports / Informer les joueurs des décisions prises sur leurs signalements
+    Staff:
+      Connection: yes
+      MinutesInterval: 0
+    # Notifications about reports to process / Notifications à propos des signalements à traiter
+    # Connection:    Display at staff connection / Afficher à la connexion d'un membre de l'équipe
+    # MinutesInterval:    Display each x minutes, put 0 to disable / Afficher toutes les x minutes, mettre 0 pour désactiver
   OnlyDoneArchives: no
   # Prevent archive of unprocessed reports / Empêcher l'archivage de signalements non traités
   MenuUpdatesInterval: 10
@@ -55,33 +60,43 @@ Config:
   DefaultReasons:
     Reason1:
       Name: "Fly"
+      Lore: "&7Le joueur se d\xe9place dans//&7les airs."
       Item: Material-Feather
     Reason2:
       Name: "Speed"
+      Lore: "&7Le joueur se d\xe9place anormalement//&7vite."
       Item: Material-Chainmail_leggings
     Reason3:
       Name: "ForceField"
+      Lore: "&7Le joueur tape les joueurs/entit\xe9s//&7proches de lui de fa\u00E7on suspecte."
       Item: Material-Iron_sword
     Reason4:
       Name: "Reach"
+      Lore: "&7Le joueur tape de tr\u00E8s loin//&7les joueurs/entit\xe9s."
       Item: Material-Stick
     Reason5:
       Name: "RapidBowShot"
+      Lore: "&7Le joueur tire des fl\u00E8ches//&7tr\u00E8s vite."
       Item: Material-Bow
     Reason6:
       Name: "NoKnockback"
+      Lore: "&7Le joueur ne recule pas//&7lorsqu'il est frapp\xe9."
       Item: Material-Fishing_rod
     Reason7:
       Name: "Grief"
+      Lore: "&7Le joueur a d\xe9grad\xe9 une de//&7mes constructions."
       Item: Material-TNT
     Reason8:
       Name: "Vol"
+      Lore: "&7Le joueur m'a vol\xe9 des ressources."
       Item: Material-Chest
     Reason9:
       Name: "Insultes"
+      Lore: "&7Le joueur est irrespectueux."
       Item: Material-Sign
   # Default reasons displayed in a menu / Raisons par défaut affichées dans un menu
   # Name:    Reason of the report / Raison du signalement
+  # Lore:    Description of the report / Description du signalement
   # Item:    Material-<item_type>(:damage) or/ou Skull-<pseudo>
   # Examples:    Material-Stone = Stone / Pierre    Material-Wool:2 = Magenta Wool / Laine magenta    Skull-MrTigreroux = Skull of player MrTigreroux / Tête du joueur MrTigreroux
 BungeeCord:

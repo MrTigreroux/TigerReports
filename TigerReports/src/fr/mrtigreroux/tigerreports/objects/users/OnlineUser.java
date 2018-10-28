@@ -1,7 +1,5 @@
 package fr.mrtigreroux.tigerreports.objects.users;
 
-import java.util.List;
-
 import net.md_5.bungee.api.chat.TextComponent;
 
 import org.bukkit.Bukkit;
@@ -11,9 +9,11 @@ import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
+import fr.mrtigreroux.tigerreports.data.constants.Status;
 import fr.mrtigreroux.tigerreports.objects.Comment;
 import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.objects.menus.*;
+import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 
 /**
@@ -145,30 +145,39 @@ public class OnlineUser extends User {
 	}
 	
 	public void sendNotifications() {
-		for(String notification : getNotifications())
-			sendNotification(notification, false);
+		for(String notification : getNotifications()) {
+			try {
+				if(notification.contains(":")) {
+					String[] parts = notification.split(":");
+					Report r = TigerReports.getInstance().getReportsManager().getReportById(Integer.parseInt(parts[0]));
+					Comment c = r.getCommentById(Integer.parseInt(parts[1]));
+					sendCommentNotification(r, c, false);
+				} else if(ConfigUtils.playersNotifications()) {
+					sendReportNotification(TigerReports.getInstance().getReportsManager().getReportById(Integer.parseInt(notification)), false);
+				}
+			} catch (Exception invalidNotification) {}
+		}
 		setNotifications(null);
 	}
 	
-	public void sendNotification(String comment, boolean direct) {
-		try {
-			String[] parts = comment.split(":");
-			Report r = TigerReports.getInstance().getReportsManager().getReportById(Integer.parseInt(parts[0].replace("Report", "")));
-			Comment c = r.getCommentById(Integer.parseInt(parts[1].replace("Comment", "")));
-			if(direct) {
-				List<String> notifications = getNotifications();
-				notifications.remove(comment);
-				setNotifications(notifications);
-			} else if(!c.getStatus(true).equals("Sent")) {
-				return;
-			}
-			p.sendMessage(Message.COMMENT_NOTIFICATION.get()
-					.replace("_Player_", c.getAuthor())
-					.replace("_Reported_", r.getPlayerName("Reported", false, true))
-					.replace("_Time_", MessageUtils.convertToSentence(MessageUtils.getSeconds(MessageUtils.getNowDate())-MessageUtils.getSeconds(r.getDate())))
-					.replace("_Message_", c.getMessage()));
-			c.setStatus("Read "+MessageUtils.getNowDate());
-		} catch (Exception invalidNotification) {}
+	public void sendCommentNotification(Report r, Comment c, boolean direct) {
+		if(!direct && !c.getStatus(true).equals("Sent"))
+			return;
+		p.sendMessage(Message.COMMENT_NOTIFICATION.get()
+				.replace("_Player_", c.getAuthor())
+				.replace("_Reported_", r.getPlayerName("Reported", false, true))
+				.replace("_Time_", MessageUtils.getTimeAgo(r.getDate()))
+				.replace("_Message_", c.getMessage()));
+		c.setStatus("Read "+MessageUtils.getNowDate());
+	}
+	
+	public void sendReportNotification(Report r, boolean direct) {
+		if(!direct && r.getStatus() != Status.DONE)
+			return;
+		p.spigot().sendMessage((TextComponent) MessageUtils.getAdvancedMessage(Message.REPORT_NOTIFICATION.get()
+				.replace("_Player_", r.getProcessor())
+				.replace("_Appreciation_", Message.valueOf(r.getAppreciation(true).toUpperCase()).get())
+				.replace("_Time_", MessageUtils.getTimeAgo(r.getDate())), "_Report_", r.getName(), r.getText(), null));
 	}
 	
 	public void createComment(Report r) {

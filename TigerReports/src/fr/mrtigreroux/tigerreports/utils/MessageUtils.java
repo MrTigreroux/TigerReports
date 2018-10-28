@@ -132,6 +132,10 @@ public class MessageUtils {
 		return sentence.endsWith(" ") ? sentence.substring(0, sentence.length()-1) : sentence;
 	}
 	
+	public static String getTimeAgo(String date) {
+		return convertToSentence(getSeconds(getNowDate())-getSeconds(date));
+	}
+	
 	public static String convertToDate(double seconds) {
 		List<Integer> values = getValues(seconds);
 		values = Arrays.asList(values.get(2)*7+values.get(3), values.get(1), values.get(0), values.get(4), values.get(5), values.get(6));
