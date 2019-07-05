@@ -62,43 +62,84 @@ Config:
       Name: "Fly"
       Lore: "&7Le joueur se d\xe9place dans//&7les airs."
       Item: Material-Feather
+      PunishCommands:
+      - "ban _Player_ 7d Fly"
     Reason2:
       Name: "Speed"
       Lore: "&7Le joueur se d\xe9place anormalement//&7vite."
       Item: Material-Chainmail_leggings
+      PunishCommands:
+      - "ban _Player_ 7d Speed"
     Reason3:
       Name: "ForceField"
       Lore: "&7Le joueur tape les joueurs/entit\xe9s//&7proches de lui de fa\u00E7on suspecte."
       Item: Material-Iron_sword
+      PunishCommands:
+      - "ban _Player_ 14d ForceField"
     Reason4:
       Name: "Reach"
       Lore: "&7Le joueur tape de tr\u00E8s loin//&7les joueurs/entit\xe9s."
       Item: Material-Stick
+      PunishCommands:
+      - "ban _Player_ 7d Reach"
     Reason5:
       Name: "RapidBowShot"
       Lore: "&7Le joueur tire des fl\u00E8ches//&7tr\u00E8s vite."
       Item: Material-Bow
+      PunishCommands:
+      - "ban _Player_ 7d RapidBowShot"
     Reason6:
       Name: "NoKnockback"
       Lore: "&7Le joueur ne recule pas//&7lorsqu'il est frapp\xe9."
       Item: Material-Fishing_rod
+      PunishCommands:
+      - "ban _Player_ 7d NoKnockback"
     Reason7:
       Name: "Grief"
       Lore: "&7Le joueur a d\xe9grad\xe9 une de//&7mes constructions."
       Item: Material-TNT
+      PunishCommands:
+      - "ban _Player_ 2d Grief"
     Reason8:
       Name: "Vol"
       Lore: "&7Le joueur m'a vol\xe9 des ressources."
       Item: Material-Chest
+      PunishCommands:
+      - "ban _Player_ 1d Vol"
     Reason9:
       Name: "Insultes"
       Lore: "&7Le joueur est irrespectueux."
       Item: Material-Sign
+      PunishCommands:
+      - "mute _Player_ 2h Insultes"
   # Default reasons displayed in a menu / Raisons par défaut affichées dans un menu
   # Name:    Reason of the report / Raison du signalement
   # Lore:    Description of the report / Description du signalement
   # Item:    Material-<item_type>(:damage) or/ou Skull-<pseudo>
-  # Examples:    Material-Stone = Stone / Pierre    Material-Wool:2 = Magenta Wool / Laine magenta    Skull-MrTigreroux = Skull of player MrTigreroux / Tête du joueur MrTigreroux
+  #   Examples:    Material-Stone = Stone / Pierre    Material-Wool:2 = Magenta Wool / Laine magenta    Skull-MrTigreroux = Skull of player MrTigreroux / Tête du joueur MrTigreroux
+  # PunishCommandes:    List of commands to execute when punishing / Liste des commandes à exécuter lors d'une sanction.
+  Punishments:
+    DefaultReasons: yes
+    # Use defaults reasons as punishments / Utiliser les raisons par défaut comme des sanctions.
+    # "Punishments:" property must be added below each default reason / La propriété "Punishments:" doit être ajoutée en-dessous de chaque raison par défaut.
+    Punishment1:
+      Name: "R\xe9cidive de triche"
+      Lore: "&7Le joueur r\xe9utilise un hack."
+      Item: Material-TNT
+      PunishCommands:
+      - "ban _Player_ 1m R\xe9cidive de triche"
+    Punishment2:
+      Name: "Harc\u00E8lement"
+      Lore: "&7Le joueur harc\u00E8le les autres."
+      Item: Material-Pumpkin
+      PunishCommands:
+      - "ban _Player_ 7d Harc\u00E8lement"
+  # Punishments available after processing a report as True / Sanctions disponibles après avoir traité un signalement comme vrai.
+  # Name:    Name of the punsihment / Nom de la sanction
+  # Lore:    Description of the punishment / Description de la sanction
+  # Item:    Material-<item_type>(:damage) or/ou Skull-<pseudo>
+  #   Examples:    Material-Stone = Stone / Pierre    Material-Wool:2 = Magenta Wool / Laine magenta    Skull-MrTigreroux = Skull of player MrTigreroux / Tête du joueur MrTigreroux
+  # PunishCommandes:    List of commands to execute when punishing / Liste des commandes à exécuter lors d'une sanction.
 BungeeCord:
   Enabled: yes
   # Interact with the BungeeCord network / Intéragir avec le réseau BungeeCord

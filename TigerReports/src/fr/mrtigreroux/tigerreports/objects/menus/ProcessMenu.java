@@ -19,40 +19,40 @@ import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
  */
 
 public class ProcessMenu extends ReportManagerMenu {
-	
+
 	public ProcessMenu(OnlineUser u, int reportId) {
 		super(u, 27, 0, Permission.STAFF, reportId);
 	}
-	
+
 	@Override
 	public Inventory onOpen() {
 		Inventory inv = getInventory(Message.PROCESS_TITLE.get().replace("_Report_", r.getName()), false);
-		
+
 		ItemStack gui = new CustomItem().type(Material.STAINED_GLASS_PANE).damage((byte) 7).name(" ").create();
-		for(int position : new Integer[]{1, 2, 3, 4, 5, 6, 7, 10, 16, 19, 20, 21, 22, 23, 24, 25})
+		for (int position : new Integer[] {1, 2, 3, 4, 5, 6, 7, 10, 16, 19, 20, 21, 22, 23, 24, 25})
 			inv.setItem(position, gui);
-		
+
 		inv.setItem(0, r.getItem(null));
-		
-		for(String appreciation : Arrays.asList("TRUE", "UNCERTAIN", "FALSE")) {
+
+		for (String appreciation : Arrays.asList("TRUE", "UNCERTAIN", "FALSE")) {
 			String appreciationWord = Message.valueOf(appreciation).get();
-			inv.setItem(appreciation.equals("TRUE") ? 11 : appreciation.equals("UNCERTAIN") ? 13 : 15, new CustomItem()
-					.type(Material.STAINED_CLAY)
+			inv.setItem(appreciation.equals("TRUE") ? 11 : appreciation.equals("UNCERTAIN") ? 13 : 15, new CustomItem().type(Material.STAINED_CLAY)
 					.damage((byte) (appreciation.equals("TRUE") ? 5 : appreciation.equals("UNCERTAIN") ? 4 : 14))
 					.name(Message.PROCESS.get().replace("_Appreciation_", appreciationWord))
-					.lore(Message.PROCESS_DETAILS.get().replace("_Appreciation_", appreciationWord).split(ConfigUtils.getLineBreakSymbol())).create());
+					.lore(Message.PROCESS_DETAILS.get().replace("_Appreciation_", appreciationWord).split(ConfigUtils.getLineBreakSymbol()))
+					.create());
 		}
-		
-		inv.setItem(18, MenuItem.CANCEL_APPRECIATION.get());
-		
+
+		inv.setItem(18, MenuItem.CANCEL_PROCESS.get());
+
 		return inv;
 	}
 
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
-		switch(slot) {
+		switch (slot) {
 			case 11:
-				process("True");
+				u.openPunishmentMenu(1, r);
 				break;
 			case 13:
 				process("Uncertain");
@@ -67,10 +67,10 @@ public class ProcessMenu extends ReportManagerMenu {
 				break;
 		}
 	}
-	
+
 	private void process(String appreciation) {
 		r.process(p.getUniqueId().toString(), p.getName(), appreciation, false, Permission.STAFF_ARCHIVE_AUTO.isOwned(u));
 		u.openDelayedlyReportsMenu();
 	}
-	
+
 }

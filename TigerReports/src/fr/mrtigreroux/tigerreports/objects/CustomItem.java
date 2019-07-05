@@ -29,7 +29,7 @@ public class CustomItem {
 	private String skullOwner = null;
 	private boolean hideFlags = false;
 	private boolean glow = false;
-	
+
 	public CustomItem() {}
 
 	public Material getMaterial() {
@@ -75,24 +75,26 @@ public class CustomItem {
 		this.damage = damage;
 		return this;
 	}
-	
+
 	public CustomItem name(String displayName) {
 		this.displayName = displayName;
 		return this;
 	}
 
 	public CustomItem lore(String... strings) {
-		if(strings != null) this.lore = Arrays.asList(strings);
+		if (strings != null)
+			this.lore = Arrays.asList(strings);
 		return this;
 	}
-	
+
 	public CustomItem skullOwner(String name) {
 		skullOwner = name;
 		return this;
 	}
 
 	public CustomItem enchant(Enchantment enchantment, Integer level) {
-		if(enchantments == null) enchantments = new HashMap<>();
+		if (enchantments == null)
+			enchantments = new HashMap<>();
 		enchantments.put(enchantment, level);
 		return this;
 	}
@@ -106,7 +108,7 @@ public class CustomItem {
 		this.hideFlags = hideFlags;
 		return this;
 	}
-	
+
 	public CustomItem glow(boolean glow) {
 		this.glow = glow;
 		return this;
@@ -114,36 +116,39 @@ public class CustomItem {
 
 	public ItemStack create() {
 		ItemStack item = new ItemStack(getMaterial(), getAmount(), getDamage());
-		
-		if(skullOwner != null) {
+
+		if (skullOwner != null) {
 			SkullMeta skullM = (SkullMeta) item.getItemMeta();
 			skullM.setOwner(skullOwner);
 			item.setItemMeta(skullM);
 		}
-		
-		if(displayName != null || lore != null || hideFlags) {
+
+		if (displayName != null || lore != null || hideFlags) {
 			ItemMeta itemM = item.getItemMeta();
-			if(hideFlags && !VersionUtils.isOldVersion())
-				itemM.addItemFlags(ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_POTION_EFFECTS, ItemFlag.HIDE_UNBREAKABLE, ItemFlag.HIDE_DESTROYS, ItemFlag.HIDE_PLACED_ON);
-			if(glow) {
-				if(enchantments == null || enchantments.size() == 0) enchant(Enchantment.WATER_WORKER, 1);
-				if(!VersionUtils.isOldVersion() && !itemM.getItemFlags().contains(ItemFlag.HIDE_ENCHANTS)) itemM.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+			if (hideFlags && !VersionUtils.isOldVersion())
+				itemM.addItemFlags(ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_POTION_EFFECTS, ItemFlag.HIDE_UNBREAKABLE,
+						ItemFlag.HIDE_DESTROYS, ItemFlag.HIDE_PLACED_ON);
+			if (glow) {
+				if (enchantments == null || enchantments.size() == 0)
+					enchant(Enchantment.WATER_WORKER, 1);
+				if (!VersionUtils.isOldVersion() && !itemM.getItemFlags().contains(ItemFlag.HIDE_ENCHANTS))
+					itemM.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 			}
-			if(displayName != null)
+			if (displayName != null)
 				itemM.setDisplayName(displayName);
-			if(lore != null)
+			if (lore != null)
 				itemM.setLore(lore);
 			item.setItemMeta(itemM);
 		}
-		
-		if(enchantments != null) {
-			for(Enchantment enchant : enchantments.keySet()) {
+
+		if (enchantments != null) {
+			for (Enchantment enchant : enchantments.keySet()) {
 				int level = enchantments.get(enchant);
 				item.addUnsafeEnchantment(enchant, level);
 			}
 		}
-		
+
 		return item;
 	}
-	
+
 }

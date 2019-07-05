@@ -32,107 +32,125 @@ public class ReportCommand implements CommandExecutor {
 
 	@Override
 	public boolean onCommand(CommandSender s, Command cmd, String label, String[] args) {
-		if(!UserUtils.checkPlayer(s) || (ReportUtils.permissionRequired() && !Permission.REPORT.check(s)))
+		if (!UserUtils.checkPlayer(s) || (ReportUtils.permissionRequired() && !Permission.REPORT.check(s)))
 			return true;
 		Player p = (Player) s;
 		OnlineUser u = TigerReports.getInstance().getUsersManager().getOnlineUser(p);
 		String uuid = p.getUniqueId().toString();
-		
+
 		String cooldown = u.getCooldown();
-		if(cooldown != null) {
+		if (cooldown != null) {
 			MessageUtils.sendErrorMessage(p, Message.COOLDOWN.get().replace("_Time_", cooldown));
 			return true;
 		}
-		
-		if(args.length == 0 || (args.length == 1 && !ConfigUtils.exist(ConfigFile.CONFIG.get(), "Config.DefaultReasons.Reason1"))) {
+
+		if (args.length == 0 || (args.length == 1 && !ConfigUtils.exist(ConfigFile.CONFIG.get(), "Config.DefaultReasons.Reason1"))) {
 			s.sendMessage(Message.INVALID_SYNTAX.get().replace("_Command_", "/"+label+" "+Message.REPORT_SYNTAX.get()));
 			return true;
 		}
-		
+
 		String reportedName = args[0];
-		if(reportedName.equalsIgnoreCase(p.getName()) && !Permission.MANAGE.isOwned(u)) {
+		if (reportedName.equalsIgnoreCase(p.getName()) && !Permission.MANAGE.isOwned(u)) {
 			MessageUtils.sendErrorMessage(p, Message.REPORT_ONESELF.get());
 			return true;
 		}
-		
+
 		Player rp = UserUtils.getPlayer(reportedName);
 		String ruuid = UserUtils.getUniqueId(reportedName);
-		if(rp == null && !UserUtils.isValid(ruuid)) {
+		if (rp == null && !UserUtils.isValid(ruuid)) {
 			MessageUtils.sendErrorMessage(p, Message.INVALID_PLAYER.get().replace("_Player_", reportedName));
 			return true;
 		}
-		
-		if(ReportUtils.onlinePlayerRequired() && !UserUtils.isOnline(reportedName)) {
+
+		if (ReportUtils.onlinePlayerRequired() && !UserUtils.isOnline(reportedName)) {
 			MessageUtils.sendErrorMessage(p, Message.REPORTED_OFFLINE.get().replace("_Player_", reportedName));
 			return true;
 		}
-		
+
 		User ru = TigerReports.getInstance().getUsersManager().getUser(ruuid);
 		String reportedImmunity = ru.getImmunity();
-		if(reportedImmunity != null && !reportedName.equalsIgnoreCase(p.getName())) {
-			if(reportedImmunity.equals("always")) {
+		if (reportedImmunity != null && !reportedName.equalsIgnoreCase(p.getName())) {
+			if (reportedImmunity.equals("always")) {
 				MessageUtils.sendErrorMessage(p, Message.PERMISSION_REPORT.get().replace("_Player_", reportedName));
 			} else {
-				MessageUtils.sendErrorMessage(p, Message.PLAYER_ALREADY_REPORTED.get().replace("_Player_", reportedName).replace("_Time_", reportedImmunity));
+				MessageUtils.sendErrorMessage(p, Message.PLAYER_ALREADY_REPORTED.get()
+						.replace("_Player_", reportedName)
+						.replace("_Time_", reportedImmunity));
 			}
 			return true;
 		}
-		
-		if(args.length == 1) {
+
+		if (args.length == 1) {
 			u.openReasonMenu(1, ru);
 			return true;
 		}
-		
+
 		StringBuilder sb = new StringBuilder();
-		for(int argNumber = 1; argNumber < args.length; argNumber++)
+		for (int argNumber = 1; argNumber < args.length; argNumber++)
 			sb.append(args[argNumber]).append(" ");
 		String reason = sb.toString().trim();
-		if(reason.length() < ReportUtils.getMinCharacters()) {
+		if (reason.length() < ReportUtils.getMinCharacters()) {
 			MessageUtils.sendErrorMessage(p, Message.TOO_SHORT_REASON.get().replace("_Reason_", reason));
 			return true;
 		}
-		if(ConfigUtils.getLineBreakSymbol().length() >= 1)
+		if (ConfigUtils.getLineBreakSymbol().length() >= 1)
 			reason = reason.replace(ConfigUtils.getLineBreakSymbol(), ConfigUtils.getLineBreakSymbol().substring(0, 1));
-		
-		if(!ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.CustomReasons")) {
-			for(int reasonNumber = 1; reasonNumber <= 100; reasonNumber++) {
+
+		if (!ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.CustomReasons")) {
+			for (int reasonNumber = 1; reasonNumber <= 100; reasonNumber++) {
 				String defaultReason = ConfigFile.CONFIG.get().getString("Config.DefaultReasons.Reason"+reasonNumber+".Name");
-				if(defaultReason == null) {
+				if (defaultReason == null) {
 					u.openReasonMenu(1, ru);
 					return true;
-				} else if(reason.equals(defaultReason)) {
+				} else if (reason.equals(defaultReason)) {
 					break;
 				}
 			}
 		}
-		
+
 		String date = MessageUtils.getNowDate();
 		int reportId = (reportId = ReportUtils.getTotalReports()+1) <= ReportUtils.getMaxReports() ? reportId : -1;
-		
-		if(reportId != -1) {
+
+		if (reportId != -1) {
 			List<Object> parameters;
-			if(rp != null) {
-				parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", date, ruuid, uuid, reason, rp.getAddress().getAddress().toString(), MessageUtils.formatConfigLocation(rp.getLocation()), ru.getLastMessages(), rp.getGameMode().toString().toLowerCase(), !rp.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().equals(Material.AIR), rp.isSneaking(), rp.isSprinting(), (int) Math.round(rp.getHealth())+"/"+(int) Math.round(rp.getMaxHealth()), rp.getFoodLevel(), MessageUtils.formatConfigEffects(rp.getActivePotionEffects()), p.getAddress().getAddress().toString(), MessageUtils.formatConfigLocation(p.getLocation()), u.getLastMessages());
+			if (rp != null) {
+				parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", date, ruuid, uuid, reason, rp.getAddress().getAddress().toString(),
+						MessageUtils.formatConfigLocation(rp.getLocation()), ru.getLastMessages(), rp.getGameMode().toString().toLowerCase(), !rp
+								.getLocation()
+								.getBlock()
+								.getRelative(BlockFace.DOWN)
+								.getType()
+								.equals(Material.AIR), rp.isSneaking(), rp.isSprinting(), (int) Math.round(rp.getHealth())+"/"+(int) Math.round(rp
+										.getMaxHealth()), rp.getFoodLevel(), MessageUtils.formatConfigEffects(rp.getActivePotionEffects()), p
+												.getAddress()
+												.getAddress()
+												.toString(), MessageUtils.formatConfigLocation(p.getLocation()), u.getLastMessages());
 			} else {
-				parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", date, ruuid, uuid, reason, null, null, ru.getLastMessages(), null, null, null, null, null, null, null, p.getAddress().toString(), MessageUtils.formatConfigLocation(p.getLocation()), u.getLastMessages());
+				parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", date, ruuid, uuid, reason, null, null, ru.getLastMessages(), null,
+						null, null, null, null, null, null, p.getAddress().toString(), MessageUtils.formatConfigLocation(p.getLocation()), u
+								.getLastMessages());
 			}
-			reportId = TigerReports.getInstance().getDb().insert("INSERT INTO tigerreports_reports (status,appreciation,date,reported_uuid,reporter_uuid,reason,reported_ip,reported_location,reported_messages,reported_gamemode,reported_on_ground,reported_sneak,reported_sprint,reported_health,reported_food,reported_effects,reporter_ip,reporter_location,reporter_messages) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);", parameters);
+			reportId = TigerReports.getInstance()
+					.getDb()
+					.insert("INSERT INTO tigerreports_reports (status,appreciation,date,reported_uuid,reporter_uuid,reason,reported_ip,reported_location,reported_messages,reported_gamemode,reported_on_ground,reported_sneak,reported_sprint,reported_health,reported_food,reported_effects,reporter_ip,reporter_location,reporter_messages) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);",
+							parameters);
 		}
-		
+
 		Report r = new Report(reportId, Status.WAITING.getConfigWord(), "None", date, ruuid, uuid, reason);
 		String server = TigerReports.getInstance().getBungeeManager().getServerName();
 		ReportUtils.sendReport(r, server, true);
 		s.sendMessage(Message.REPORT_SENT.get().replace("_Player_", r.getPlayerName("Reported", false, false)).replace("_Reason_", reason));
-		TigerReports.getInstance().getBungeeManager().sendPluginNotification(reportId+" new_report "+date.replace(" ", "_")+" "+ruuid+" "+uuid+" "+reason.replace(" ", "_")+" "+server);
-		
+		TigerReports.getInstance()
+				.getBungeeManager()
+				.sendPluginNotification(reportId+" new_report "+date.replace(" ", "_")+" "+ruuid+" "+uuid+" "+reason.replace(" ", "_")+" "+server);
+
 		u.startCooldown(ReportUtils.getCooldown(), false);
 		ru.startImmunity(false);
 		u.changeStatistic("reports", 1, false);
 		ru.changeStatistic("reported_times", 1, false);
-		
-		for(String command : ConfigFile.CONFIG.get().getStringList("Config.AutoCommands"))
-			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command
-					.replace("_Server_", server)
+
+		for (String command : ConfigFile.CONFIG.get().getStringList("Config.AutoCommands"))
+			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("_Server_", server)
 					.replace("_Date_", date)
 					.replace("_Reporter_", r.getPlayerName("Reporter", false, false))
 					.replace("_Reported_", r.getPlayerName("Reported", false, false))

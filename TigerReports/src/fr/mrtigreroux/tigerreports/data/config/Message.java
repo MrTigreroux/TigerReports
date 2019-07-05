@@ -23,6 +23,8 @@ public enum Message {
 	COOLDOWN_STOPPED("Messages.Cooldown-stopped"),
 	STAFF_PROCESS("Messages.Staff-process"),
 	STAFF_PROCESS_AUTO("Messages.Staff-process-auto"),
+	STAFF_PROCESS_PUNISH("Messages.Staff-process-punish"),
+	STAFF_PROCESS_PUNISH_AUTO("Messages.Staff-process-punish-auto"),
 	STAFF_ARCHIVE("Messages.Staff-archive"),
 	STAFF_ARCHIVEALL("Messages.Staff-archiveall"),
 	STAFF_DELETEALL("Messages.Staff-deleteall"),
@@ -43,7 +45,7 @@ public enum Message {
 	CANCEL_BUTTON("Messages.Cancel-button"),
 	CANCEL_BUTTON_DETAILS("Messages.Cancel-button-details"),
 	CANCEL_COMMENT("Messages.Cancel-comment"),
-	
+
 	INVALID_SYNTAX("ErrorMessages.Invalid-syntax"),
 	PERMISSION_COMMAND("ErrorMessages.Permission-command"),
 	PERMISSION_REPORT("ErrorMessages.Permission-report"),
@@ -59,7 +61,7 @@ public enum Message {
 	INVALID_REPORT_ID("ErrorMessages.Invalid-report-id"),
 	INVALID_REPORT("ErrorMessages.Invalid-report"),
 	INVALID_PLAYER("ErrorMessages.Invalid-player"),
-	
+
 	REASON_TITLE("Menus.Reason-title"),
 	REASONS("Menus.Reasons"),
 	REASON("Menus.Reason"),
@@ -115,6 +117,12 @@ public enum Message {
 	PROCESS_DETAILS("Menus.Process-details"),
 	CANCEL_PROCESS("Menus.Cancel-process"),
 	CANCEL_PROCESS_DETAILS("Menus.Cancel-process-details"),
+	PUNISH_TITLE("Menus.Punish-title"),
+	PUNISHMENTS("Menus.Punishments"),
+	NO_PUNISHMENT("Menus.No-punishment"),
+	NO_PUNISHMENT_DETAILS("Menus.No-punishment-details"),
+	PUNISHMENT("Menus.Punishment"),
+	PUNISHMENT_DETAILS("Menus.Punishment-details"),
 	COMMENTS_TITLE("Menus.Comments-title"),
 	COMMENT("Menus.Comment"),
 	COMMENT_DETAILS("Menus.Comment-details"),
@@ -137,7 +145,7 @@ public enum Message {
 	PAGE_SWITCH_PREVIOUS("Menus.Switch-to-previous-page"),
 	PAGE_SWITCH_NEXT("Menus.Switch-to-next-page"),
 	CLOSE("Menus.Close"),
-	
+
 	REPORT_NAME("Words.Report-name"),
 	REPORTED_NAME("Words.Reported-name"),
 	REPORTER_NAME("Words.Reporter-name"),
@@ -188,19 +196,20 @@ public enum Message {
 	REPORTS_TYPE("Words.Reports-type"),
 	REPORT_SYNTAX("Words.Report-syntax"),
 	REPORTS_SYNTAX("Words.Reports-syntax");
-	
+
 	private final String path;
-	
+
 	Message(String path) {
 		this.path = path;
 	}
-	
+
 	public String get() {
-		return ChatColor.translateAlternateColorCodes(ConfigUtils.getColorCharacter(), StringEscapeUtils.unescapeJava(ConfigFile.MESSAGES.get().getString(path)));
+		return ChatColor.translateAlternateColorCodes(ConfigUtils.getColorCharacter(), StringEscapeUtils.unescapeJava(ConfigFile.MESSAGES.get()
+				.getString(path)));
 	}
-	
+
 	public String getPath() {
 		return path;
 	}
-	
+
 }

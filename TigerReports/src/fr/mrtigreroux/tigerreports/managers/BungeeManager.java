@@ -32,19 +32,19 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
  */
 
 public class BungeeManager implements PluginMessageListener {
-	
+
 	private TigerReports plugin;
 	private boolean initialized = false;
 	private String serverName = null;
-	
+
 	public BungeeManager(TigerReports plugin) {
 		this.plugin = plugin;
 		initialize();
 		collectServerName();
 	}
-	
+
 	public void initialize() {
-		if(ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "BungeeCord.Enabled")) {
+		if (ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "BungeeCord.Enabled")) {
 			Messenger messenger = plugin.getServer().getMessenger();
 			messenger.registerOutgoingPluginChannel(plugin, "BungeeCord");
 			messenger.registerIncomingPluginChannel(plugin, "BungeeCord", this);
@@ -54,52 +54,52 @@ public class BungeeManager implements PluginMessageListener {
 			Bukkit.getLogger().info(ConfigUtils.getInfoMessage("The plugin is not using BungeeCord.", "Le plugin n'utilise pas BungeeCord."));
 		}
 	}
-	
+
 	public void collectServerName() {
-		if(serverName == null)
+		if (serverName == null)
 			sendPluginMessage("GetServer");
 	}
-	
+
 	public void collectDelayedlyServerName() {
-		if(serverName == null) {
+		if (serverName == null) {
 			Bukkit.getScheduler().runTaskLater(TigerReports.getInstance(), new Runnable() {
-				
+
 				@Override
 				public void run() {
 					sendPluginMessage("GetServer");
 				}
-				
+
 			}, 5);
 		}
 	}
-	
+
 	public String getServerName() {
-		if(serverName == null)
+		if (serverName == null)
 			sendPluginMessage("GetServer");
 		return serverName != null ? serverName : "localhost";
 	}
-	
+
 	public void sendServerPluginNotification(String serverName, String message) {
-		if(!initialized)
+		if (!initialized)
 			return;
-		
+
 		Player p = getRandomPlayer();
-		if(p == null)
+		if (p == null)
 			return;
 		try {
 			ByteArrayDataOutput out = ByteStreams.newDataOutput();
 			out.writeUTF("Forward");
 			out.writeUTF(serverName);
 			out.writeUTF("TigerReports");
-			
+
 			ByteArrayOutputStream messageOut = new ByteArrayOutputStream();
 			DataOutputStream messageStream = new DataOutputStream(messageOut);
 			messageStream.writeUTF(message);
-			
+
 			byte[] messageBytes = messageOut.toByteArray();
 			out.writeShort(messageBytes.length);
 			out.write(messageBytes);
-			
+
 			p.sendPluginMessage(plugin, "BungeeCord", out.toByteArray());
 		} catch (IOException ignored) {}
 	}
@@ -107,29 +107,29 @@ public class BungeeManager implements PluginMessageListener {
 	public void sendPluginNotification(String message) {
 		sendServerPluginNotification("ALL", System.currentTimeMillis()+" "+message);
 	}
-	
+
 	public void sendPluginMessage(String... message) {
-		if(!initialized)
+		if (!initialized)
 			return;
-		
+
 		Player p = getRandomPlayer();
-		if(p == null)
+		if (p == null)
 			return;
-		
+
 		ByteArrayDataOutput out = ByteStreams.newDataOutput();
-		for(String part : message)
+		for (String part : message)
 			out.writeUTF(part);
 		p.sendPluginMessage(plugin, "BungeeCord", out.toByteArray());
 	}
-	
+
 	@Override
 	public void onPluginMessageReceived(String channel, Player player, byte[] messageReceived) {
-		if(!channel.equals("BungeeCord"))
+		if (!channel.equals("BungeeCord"))
 			return;
-		
+
 		ByteArrayDataInput in = ByteStreams.newDataInput(messageReceived);
 		String subchannel = in.readUTF();
-		if(subchannel.equals("TigerReports")) {
+		if (subchannel.equals("TigerReports")) {
 			byte[] messageBytes = new byte[in.readShort()];
 			in.readFully(messageBytes);
 
@@ -139,21 +139,27 @@ public class BungeeManager implements PluginMessageListener {
 				int index = message.indexOf(' ');
 				long sendTime = Long.parseLong(message.substring(0, index));
 				boolean notify = System.currentTimeMillis()-sendTime < 20000;
-				
+
 				message = message.substring(index+1);
 				String[] parts = message.split(" ");
 				Report r = parts.length == 3 ? TigerReports.getInstance().getReportsManager().getReportById(Integer.parseInt(parts[2])) : null;
 				User u = parts.length == 4 || parts.length == 5 ? TigerReports.getInstance().getUsersManager().getUser(parts[3]) : null;
-				
-				switch(parts[1]) {
+
+				switch (parts[1]) {
 					case "new_report":
-						ReportUtils.sendReport(new Report(Integer.parseInt(parts[0]), Status.WAITING.getConfigWord(), "None", parts[2].replace("_", " "), parts[3], parts[4], parts[5].replace("_", " ")), parts[6], notify);
+						ReportUtils.sendReport(new Report(Integer.parseInt(parts[0]), Status.WAITING.getConfigWord(), "None", parts[2].replace("_",
+								" "), parts[3], parts[4], parts[5].replace("_", " ")), parts[6], notify);
 						break;
 					case "new_status":
 						r.setStatus(Status.valueOf(parts[0]), true);
 						break;
 					case "process":
 						r.process(parts[0].split("/")[0], notify ? parts[0].split("/")[1] : null, parts[3], true, parts[4].equals("true"));
+						break;
+					case "process_punish":
+						String p4 = parts[4];
+						r.processPunishing(parts[0].split("/")[0], notify ? parts[0].split("/")[1] : null, true, parts[4].equals("true"), message
+								.substring(message.indexOf(p4)+p4.length()+1));
 						break;
 					case "delete":
 						r.delete(notify ? parts[0] : null, true);
@@ -167,7 +173,7 @@ public class BungeeManager implements PluginMessageListener {
 					case "delete_archive":
 						r.deleteFromArchives(notify ? parts[0] : null, true);
 						break;
-					
+
 					case "new_immunity":
 						u.updateImmunity(parts[0].equals("null") ? null : parts[0].replace("_", " "), true);
 						break;
@@ -192,13 +198,13 @@ public class BungeeManager implements PluginMessageListener {
 						break;
 				}
 			} catch (Exception ignored) {}
-		} else if(subchannel.equals("GetServer")) {
+		} else if (subchannel.equals("GetServer")) {
 			serverName = in.readUTF();
 		}
 	}
-	
+
 	private Player getRandomPlayer() {
 		return Iterables.getFirst(Bukkit.getOnlinePlayers(), null);
 	}
-	
+
 }

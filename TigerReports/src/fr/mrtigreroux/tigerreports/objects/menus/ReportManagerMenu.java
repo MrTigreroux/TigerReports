@@ -14,18 +14,24 @@ import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 public abstract class ReportManagerMenu extends Menu {
 
 	final Report r;
-	
+
 	public ReportManagerMenu(OnlineUser u, int size, int page, Permission permission, int reportId) {
 		super(u, size, page, permission);
 		this.r = TigerReports.getInstance().getReportsManager().getReportById(reportId);
 	}
-	
+
 	String checkReport() {
-		if(r == null || !TigerReports.getInstance().getReportsManager().isSaved(r.getId()))
+		if (r == null || !TigerReports.getInstance().getReportsManager().isSaved(r.getId()))
 			return Message.INVALID_REPORT.get();
-		
+
 		Status reportStatus = r.getStatus();
-		return (reportStatus == Status.IMPORTANT || reportStatus == Status.DONE) && !Permission.STAFF_ADVANCED.isOwned(u) ? Message.PERMISSION_ACCESS_DETAILS.get().replace("_Report_", r.getName()) : null;
+		return (reportStatus == Status.IMPORTANT || reportStatus == Status.DONE) && !Permission.STAFF_ADVANCED.isOwned(u)
+																															? Message.PERMISSION_ACCESS_DETAILS
+																																	.get()
+																																	.replace(
+																																			"_Report_",
+																																			r.getName())
+																															: null;
 	}
-	
+
 }

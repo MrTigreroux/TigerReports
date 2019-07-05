@@ -9,10 +9,10 @@ import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
  */
 
 public class HelpCommand {
-	
+
 	public static void onCommand(CommandSender s) {
 		String line = "\u00A77\u00A7m---------------------------------------------------";
-		if(ConfigUtils.getInfoLanguage().equalsIgnoreCase("English")) {
+		if (ConfigUtils.getInfoLanguage().equalsIgnoreCase("English")) {
 			s.sendMessage(line);
 			s.sendMessage("\u00A7r                         \u00A76TigerReports \u00A77> \u00A7eHelp");
 			s.sendMessage(line);
@@ -44,7 +44,8 @@ public class HelpCommand {
 			s.sendMessage("\u00A77- \u00A7b/reports archiveall \u00A77: \u00A7eArchive tous les signalements trait\u00E9s.");
 			s.sendMessage("\u00A77- \u00A7b/reports archives \u00A77: \u00A7eAffiche tous les signalements archiv\u00E9s.");
 			s.sendMessage("\u00A77- \u00A7b/reports deleteall \u00A77: \u00A7eSupprime tous les signalements archiv\u00E9s.");
-			s.sendMessage("\u00A77Le plugin \u00A76TigerReports \u00A77install\u00E9 sur ce serveur a \u00E9t\u00E9 r\u00E9alis\u00E9 par \u00A7a@MrTigreroux\u00A77.");
+			s.sendMessage(
+					"\u00A77Le plugin \u00A76TigerReports \u00A77install\u00E9 sur ce serveur a \u00E9t\u00E9 r\u00E9alis\u00E9 par \u00A7a@MrTigreroux\u00A77.");
 			s.sendMessage(line);
 		}
 	}

@@ -17,39 +17,40 @@ import fr.mrtigreroux.tigerreports.utils.ReportUtils;
  */
 
 public class ReportsMenu extends Menu implements UpdatedMenu {
-	
+
 	public ReportsMenu(OnlineUser u, int page) {
 		super(u, 54, page, Permission.STAFF);
 	}
-	
+
 	@Override
 	public Inventory onOpen() {
 		Inventory inv = getInventory(Message.REPORTS_TITLE.get().replace("_Page_", Integer.toString(page)), true);
-		
+
 		inv.setItem(4, MenuItem.REPORTS.get());
-		if(Permission.STAFF_ARCHIVE.isOwned(u))
+		if (Permission.STAFF_ARCHIVE.isOwned(u))
 			inv.setItem(8, MenuItem.ARCHIVED_REPORTS.getWithDetails(Message.ARCHIVED_REPORTS_DETAILS.get()));
-		
+
 		return inv;
 	}
-	
+
 	@Override
 	public void onUpdate(Inventory inv) {
-		ReportUtils.addReports(false, inv, page, Message.REPORT_SHOW_ACTION.get()+(Permission.STAFF_ARCHIVE.isOwned(u) ? Message.REPORT_ARCHIVE_ACTION.get() : "")+(Permission.STAFF_DELETE.isOwned(u) ? Message.REPORT_DELETE_ACTION.get() : ""));
+		ReportUtils.addReports(false, inv, page, Message.REPORT_SHOW_ACTION.get()+(Permission.STAFF_ARCHIVE.isOwned(u) ? Message.REPORT_ARCHIVE_ACTION
+				.get() : "")+(Permission.STAFF_DELETE.isOwned(u) ? Message.REPORT_DELETE_ACTION.get() : ""));
 	}
 
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
-		if(slot == 8 && Permission.STAFF_ARCHIVE.isOwned(u)) {
+		if (slot == 8 && Permission.STAFF_ARCHIVE.isOwned(u)) {
 			u.openArchivedReportsMenu(1, true);
-		} else if(slot >= 18 && slot <= size-9) {
-			Report r = TigerReports.getInstance().getReportsManager().getReport(getIndex(slot));
-			if(r == null) {
+		} else if (slot >= 18 && slot <= size-9) {
+			Report r = TigerReports.getInstance().getReportsManager().getReport(getConfigIndex(slot));
+			if (r == null) {
 				update(false);
 			} else {
-				if(click.equals(ClickType.MIDDLE) && Permission.STAFF_ARCHIVE.isOwned(u)) {
+				if (click.equals(ClickType.MIDDLE) && Permission.STAFF_ARCHIVE.isOwned(u)) {
 					u.openConfirmationMenu(r, "ARCHIVE");
-				} else if(click.equals(ClickType.DROP) && Permission.STAFF_DELETE.isOwned(u)) {
+				} else if (click.equals(ClickType.DROP) && Permission.STAFF_DELETE.isOwned(u)) {
 					u.openConfirmationMenu(r, "DELETE");
 				} else {
 					u.openReportMenu(r);
@@ -57,5 +58,5 @@ public class ReportsMenu extends Menu implements UpdatedMenu {
 			}
 		}
 	}
-	
+
 }
