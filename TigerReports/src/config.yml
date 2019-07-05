@@ -121,7 +121,7 @@ Config:
   Punishments:
     DefaultReasons: yes
     # Use defaults reasons as punishments / Utiliser les raisons par défaut comme des sanctions.
-    # "Punishments:" property must be added below each default reason / La propriété "Punishments:" doit être ajoutée en-dessous de chaque raison par défaut.
+    # "PunishCommands:" property must be added below each default reason / La propriété "PunishCommands:" doit être ajoutée en-dessous de chaque raison par défaut.
     Punishment1:
       Name: "R\xe9cidive de triche"
       Lore: "&7Le joueur r\xe9utilise un hack."
