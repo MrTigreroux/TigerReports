@@ -24,7 +24,8 @@ import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 
 /**
- * @author MrTigreroux Published on: 30/06/2016
+ * @author MrTigreroux
+ * Published on: 30/06/2016
  */
 
 public class TigerReports extends JavaPlugin {

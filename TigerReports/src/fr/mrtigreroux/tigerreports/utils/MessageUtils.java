@@ -1,10 +1,10 @@
 package fr.mrtigreroux.tigerreports.utils;
 
 import java.text.Normalizer;
-import java.text.SimpleDateFormat;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -71,7 +71,7 @@ public class MessageUtils {
 	}
 
 	public static String getNowDate() {
-		return new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date());
+		return DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").format(ZonedDateTime.now(ConfigUtils.getZoneId()));
 	}
 
 	public static Double getSeconds(String date) {

@@ -1,5 +1,6 @@
 package fr.mrtigreroux.tigerreports.utils;
 
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.List;
 
@@ -62,6 +63,16 @@ public class ConfigUtils {
 
 	public static boolean playersNotifications() {
 		return isEnabled(ConfigFile.CONFIG.get(), "Config.Notifications.Players");
+	}
+
+	public static ZoneId getZoneId() {
+		String time = ConfigFile.CONFIG.get().getString("Config.Time");
+		if (!time.equals("default")) {
+			try {
+				return ZoneId.of(time);
+			} catch (Exception ex) {}
+		}
+		return ZoneId.systemDefault();
 	}
 
 }

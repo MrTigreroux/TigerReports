@@ -10,6 +10,10 @@ Config:
   InfoLanguage: French
   # Language used in info messages of the plugin like warnings and /tigerreports help command / Langue utilisée pour les messages d'information comme les avertissements et la commande d'aide /tigerreports
   # Only 2 languages : French and English / Seulement 2 langues : French et English
+  Time: default
+  # Time of a city to use (example: "America/Chicago"), list of available cities here: / Temps d'une ville à utiliser (exemple: "Europe/Paris"), la liste des villes possibles est ici:
+  # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+  # Put "default" to use the default server time / Mettre "default" pour utiliser le temps par défaut du serveur
   PermissionRequired: no
   # Permission needed to use /report command / Permission requise pour utiliser la commande /report
   ReportOnline: no
@@ -117,7 +121,7 @@ Config:
   # Lore:    Description of the report / Description du signalement
   # Item:    Material-<item_type>(:damage) or/ou Skull-<pseudo>
   #   Examples:    Material-Stone = Stone / Pierre    Material-Wool:2 = Magenta Wool / Laine magenta    Skull-MrTigreroux = Skull of player MrTigreroux / Tête du joueur MrTigreroux
-  # PunishCommandes:    List of commands to execute when punishing / Liste des commandes à exécuter lors d'une sanction.
+  # PunishCommands:    List of commands to execute when punishing / Liste des commandes à exécuter lors d'une sanction.
   Punishments:
     DefaultReasons: yes
     # Use defaults reasons as punishments / Utiliser les raisons par défaut comme des sanctions.
@@ -139,7 +143,7 @@ Config:
   # Lore:    Description of the punishment / Description de la sanction
   # Item:    Material-<item_type>(:damage) or/ou Skull-<pseudo>
   #   Examples:    Material-Stone = Stone / Pierre    Material-Wool:2 = Magenta Wool / Laine magenta    Skull-MrTigreroux = Skull of player MrTigreroux / Tête du joueur MrTigreroux
-  # PunishCommandes:    List of commands to execute when punishing / Liste des commandes à exécuter lors d'une sanction.
+  # PunishCommands:    List of commands to execute when punishing / Liste des commandes à exécuter lors d'une sanction.
 BungeeCord:
   Enabled: yes
   # Interact with the BungeeCord network / Intéragir avec le réseau BungeeCord
