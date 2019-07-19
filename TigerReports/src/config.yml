@@ -39,7 +39,7 @@ Config:
   # List of saved commands in messages history, put "none" to don't save any / Liste des commandes sauvegardées dans l'historique des messages, mettre "none" pour aucune
   Notifications:
     Delay: 2
-    # Time in seconds before sending the notification after the connection of the user / Delai en secondes avant d'envoyer la notification après la connexion de l'utilisateur
+    # Time in seconds before sending the notification after the connection of the user / Délai en secondes avant d'envoyer la notification après la connexion de l'utilisateur
     Players: true
     # Notify players about the decisions made on their reports / Informer les joueurs des décisions prises sur leurs signalements
     Staff:
@@ -68,6 +68,9 @@ Config:
       Item: Material-Feather
       PunishCommands:
       - "ban _Player_ 7d Fly"
+  #    - '-CONSOLE title @a title {"text":""}'
+  #    - '-CONSOLE title @a subtitle ["",{"text":"_Player_","color":"red"},{"text":" a \u00e9t\u00e9 banni pour: ","color":"gray"},{"text":"Fly","color":"yellow"}]'
+  #    - '-CONSOLE tellraw _Staff_ {"text":"Vous avez sanctionn\u00e9 le joueur _Player_"}'
     Reason2:
       Name: "Speed"
       Lore: "&7Le joueur se d\xe9place anormalement//&7vite."
@@ -122,6 +125,7 @@ Config:
   # Item:    Material-<item_type>(:damage) or/ou Skull-<pseudo>
   #   Examples:    Material-Stone = Stone / Pierre    Material-Wool:2 = Magenta Wool / Laine magenta    Skull-MrTigreroux = Skull of player MrTigreroux / Tête du joueur MrTigreroux
   # PunishCommands:    List of commands to execute when punishing / Liste des commandes à exécuter lors d'une sanction.
+  #                    Put "-CONSOLE" at the beginning of a command to execute it with the console (and not the staff member) / Mettre "-CONSOLE" au début d'une commande pour l'exécuter avec la console (et non le membre de la modération)
   Punishments:
     DefaultReasons: yes
     # Use defaults reasons as punishments / Utiliser les raisons par défaut comme des sanctions.
@@ -144,6 +148,7 @@ Config:
   # Item:    Material-<item_type>(:damage) or/ou Skull-<pseudo>
   #   Examples:    Material-Stone = Stone / Pierre    Material-Wool:2 = Magenta Wool / Laine magenta    Skull-MrTigreroux = Skull of player MrTigreroux / Tête du joueur MrTigreroux
   # PunishCommands:    List of commands to execute when punishing / Liste des commandes à exécuter lors d'une sanction.
+  #                    Put "-CONSOLE" at the beginning of a command to execute it with the console (and not the staff member) / Mettre "-CONSOLE" au début d'une commande pour l'exécuter avec la console (et non le membre de la modération)
 BungeeCord:
   Enabled: yes
   # Interact with the BungeeCord network / Intéragir avec le réseau BungeeCord

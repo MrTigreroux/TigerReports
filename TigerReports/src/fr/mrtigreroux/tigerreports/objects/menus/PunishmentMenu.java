@@ -3,6 +3,7 @@ package fr.mrtigreroux.tigerreports.objects.menus;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.ClickType;
@@ -101,8 +102,14 @@ public class PunishmentMenu extends ReportManagerMenu {
 			String configIndex = configIndexes.get(slot);
 			String path = (configIndex.charAt(0) == 't' ? "Config.Punishments.Punishment" : "Config.DefaultReasons.Reason")+configIndex.substring(1);
 
-			for (String command : ConfigFile.CONFIG.get().getStringList(path+".PunishCommands"))
-				p.chat("/"+command.replace("_Player_", reported));
+			for (String command : ConfigFile.CONFIG.get().getStringList(path+".PunishCommands")) {
+				command = command.replace("_Player_", reported).replace("_Staff_", p.getName());
+				if (command.startsWith("-CONSOLE")) {
+					Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.substring(9));
+				} else {
+					Bukkit.dispatchCommand(p, command);
+				}
+			}
 
 			r.processPunishing(p.getUniqueId().toString(), p.getName(), false, Permission.STAFF_ARCHIVE_AUTO.isOwned(u), ConfigFile.CONFIG.get()
 					.getString(path+".Name"));
