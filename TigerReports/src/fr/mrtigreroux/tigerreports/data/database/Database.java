@@ -73,6 +73,8 @@ public abstract class Database {
 		});
 	}
 
+	public abstract void updateUserName(String uuid, String name);
+
 	public QueryResult query(final String query, final List<Object> parameters) {
 		checkConnection();
 		try (PreparedStatement ps = connection.prepareStatement(query)) {

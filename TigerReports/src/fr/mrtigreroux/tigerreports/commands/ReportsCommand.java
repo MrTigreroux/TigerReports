@@ -103,8 +103,9 @@ public class ReportsCommand implements TabExecutor {
 						return true;
 				}
 			case 2:
-				User tu = TigerReports.getInstance().getUsersManager().getUser(UserUtils.getUniqueId(args[1]));
-				if (tu == null) {
+				String tuuid = UserUtils.getUniqueId(args[1]);
+				User tu = TigerReports.getInstance().getUsersManager().getUser(tuuid);
+				if (tu == null || !UserUtils.isValid(tuuid)) {
 					MessageUtils.sendErrorMessage(s, Message.INVALID_PLAYER.get().replace("_Player_", args[1]));
 					return true;
 				}

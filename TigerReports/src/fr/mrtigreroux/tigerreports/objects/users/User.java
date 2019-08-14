@@ -159,16 +159,19 @@ public abstract class User {
 		return statistics;
 	}
 
-	public void changeStatistic(String statistic, int value, boolean bungee) {
+	public void changeStatistic(String statistic, int relativeValue) {
 		if (statistics == null)
 			getStatistics();
-		statistics.put(statistic, (statistics.get(statistic) != null ? statistics.get(statistic) : 0)+value);
+		setStatistic(statistic, (statistics.get(statistic) != null ? statistics.get(statistic) : 0)+relativeValue, false);
+	}
+
+	public void setStatistic(String statistic, int value, boolean bungee) {
+		statistics.put(statistic, value);
 		if (!bungee) {
-			TigerReports.getInstance().getBungeeManager().sendPluginNotification(value+" change_statistic "+statistic+" "+uuid);
+			TigerReports.getInstance().getBungeeManager().sendPluginNotification(value+" set_statistic "+statistic+" "+uuid);
 			TigerReports.getInstance()
 					.getDb()
-					.updateAsynchronously("UPDATE tigerreports_users SET "+statistic+" = "+statistic+" + ? WHERE uuid = ?", Arrays.asList(value,
-							uuid));
+					.updateAsynchronously("UPDATE tigerreports_users SET "+statistic+" = ? WHERE uuid = ?", Arrays.asList(value, uuid));
 		}
 	}
 

@@ -40,6 +40,7 @@ public enum ConfigFile {
 			if (this == CONFIG) {
 				defaultConfig.set("Config.DefaultReasons", null);
 				defaultConfig.set("Config.Punishments", null);
+				defaultConfig.set("Config.Punishments.Enabled", true);
 				defaultConfig.set("Config.Punishments.DefaultReasons", true);
 			}
 

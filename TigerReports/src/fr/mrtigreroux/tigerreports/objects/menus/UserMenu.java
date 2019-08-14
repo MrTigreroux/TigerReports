@@ -72,7 +72,7 @@ public class UserMenu extends Menu implements UpdatedMenu {
 			for (Statistic statistics : Statistic.values())
 				if (statistics.getPosition() == slot)
 					stat = statistics.getConfigName();
-			tu.changeStatistic(stat, click.toString().contains("RIGHT") ? -1 : 1, false);
+			tu.changeStatistic(stat, click.toString().contains("RIGHT") ? -1 : 1);
 			update(true);
 		}
 	}

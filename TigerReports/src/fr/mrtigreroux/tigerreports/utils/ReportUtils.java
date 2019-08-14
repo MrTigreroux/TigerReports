@@ -26,6 +26,9 @@ import fr.mrtigreroux.tigerreports.objects.Report;
 public class ReportUtils {
 
 	public static void sendReport(Report r, String server, boolean notify) {
+		if (!ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.NotifyStackedReports"))
+			return;
+
 		Bukkit.getServer().getPluginManager().callEvent(new NewReportEvent(server, r));
 		if (!notify)
 			return;
@@ -45,7 +48,7 @@ public class ReportUtils {
 
 		for (String line : Message.ALERT.get()
 				.replace("_Server_", MessageUtils.getServerName(server))
-				.replace("_Reporter_", r.getPlayerName("Reporter", false, true))
+				.replace("_Reporter_", r.getPlayerName(r.getLastReporterUniqueId(), "Reporter", false, true))
 				.replace("_Reported_", r.getPlayerName("Reported", !ReportUtils.onlinePlayerRequired(), true))
 				.replace("_Reason_", r.getReason(false))
 				.split(ConfigUtils.getLineBreakSymbol())) {
@@ -125,6 +128,14 @@ public class ReportUtils {
 
 	public static boolean onlyDoneArchives() {
 		return ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.OnlyDoneArchives");
+	}
+
+	public static boolean stackReports() {
+		return ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.StackReports");
+	}
+
+	public static boolean punishmentsEnabled() {
+		return ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.Punishments.Enabled");
 	}
 
 }

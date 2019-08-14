@@ -52,13 +52,39 @@ public class Report {
 	}
 
 	public String getReporterUniqueId() {
-		return reporterUniqueId;
+		return isStackedReport() ? getReportersUniqueIds()[0] : reporterUniqueId;
+	}
+
+	public String[] getReportersUniqueIds() {
+		return reporterUniqueId.split(",");
+	}
+
+	public String getLastReporterUniqueId() {
+		String[] reporters = getReportersUniqueIds();
+		return reporters[reporters.length-1];
+	}
+
+	public boolean isStackedReport() {
+		return reporterUniqueId.contains(",");
 	}
 
 	public String getPlayerName(String type, boolean suffix, boolean color) {
-		String name = UserUtils.getName(type.equals("Reported") ? reportedUniqueId : reporterUniqueId);
+		return getPlayerName(type.equals("Reported") ? reportedUniqueId : getReportersUniqueIds()[0], type, suffix, color);
+	}
+
+	public String getPlayerName(String uuid, String type, boolean suffix, boolean color) {
+		String name = UserUtils.getName(uuid);
 		return name != null ? (color ? Message.valueOf(type.toUpperCase()+"_NAME").get().replace("_Player_", name) : name)+(suffix ? Message.valueOf(
 				(UserUtils.isOnline(name) ? "ONLINE" : "OFFLINE")+"_SUFFIX").get() : "") : Message.NOT_FOUND_MALE.get();
+	}
+
+	public String getReportersNames(int first) {
+		String[] reporters = getReportersUniqueIds();
+		String name = Message.REPORTERS_NAMES.get();
+		StringBuilder names = new StringBuilder();
+		for (int i = first; i < reporters.length; i++)
+			names.append(name.replace("_Player_", getPlayerName(reporters[i], "Reporter", true, true)));
+		return names.toString();
 	}
 
 	public String getDate() {
@@ -87,10 +113,12 @@ public class Report {
 
 	public String implementDetails(String message, boolean menu) {
 		Status status = getStatus();
+		String reportersNames = isStackedReport() ? getReportersNames(0) : getPlayerName("Reporter", true, true);
+
 		return message.replace("_Status_", status.equals(Status.DONE) ? status.getWord(getProcessor())+Message.APPRECIATION_SUFFIX.get()
 				.replace("_Appreciation_", getAppreciation(false)) : status.getWord(null))
 				.replace("_Date_", getDate())
-				.replace("_Reporter_", getPlayerName("Reporter", true, true))
+				.replace("_Reporters_", reportersNames)
 				.replace("_Reported_", getPlayerName("Reported", true, true))
 				.replace("_Reason_", getReason(menu));
 	}
@@ -102,6 +130,7 @@ public class Report {
 	public String implementData(String message, boolean advanced) {
 		if (advancedData == null)
 			return null;
+
 		String defaultData;
 		String reportedAdvancedData = "";
 		try {
@@ -137,6 +166,7 @@ public class Report {
 		} catch (Exception dataNotFound) {
 			defaultData = Message.PLAYER_WAS_OFFLINE.get();
 		}
+
 		return message.replace("_Reported_", getPlayerName("Reported", true, true))
 				.replace("_DefaultData_", defaultData)
 				.replace("_AdvancedData_", !advanced	? ""
@@ -162,6 +192,7 @@ public class Report {
 	public ItemStack getItem(String actions) {
 		Status status = getStatus();
 		return new CustomItem().type(status.getMaterial())
+				.amount(getReportersUniqueIds().length)
 				.hideFlags(true)
 				.glow(status.equals(Status.WAITING))
 				.name(Message.REPORT.get().replace("_Report_", getName()))
@@ -202,19 +233,22 @@ public class Report {
 					.getDb()
 					.update("UPDATE tigerreports_reports SET status = ?,appreciation = ?,archived = ? WHERE report_id = ?", Arrays.asList(status,
 							appreciation, auto ? 1 : 0, reportId));
-			
+
 			UsersManager userManager = TigerReports.getInstance().getUsersManager();
-			userManager.getUser(uuid).changeStatistic("processed_reports", 1, false);
-			User ru = userManager.getUser(reporterUniqueId);
-			ru.changeStatistic(appreciation.toLowerCase()+"_appreciations", 1, false);
-			
-			if (ConfigUtils.playersNotifications()) {
-				if (ru instanceof OnlineUser) {
-					((OnlineUser) ru).sendReportNotification(this, true);
-				} else {
-					List<String> notifications = ru.getNotifications();
-					notifications.add(Integer.toString(getId()));
-					ru.setNotifications(notifications);
+			userManager.getUser(uuid).changeStatistic("processed_reports", 1);
+
+			for (String ruuid : getReportersUniqueIds()) {
+				User ru = userManager.getUser(ruuid);
+				ru.changeStatistic(appreciation.toLowerCase()+"_appreciations", 1);
+
+				if (ConfigUtils.playersNotifications()) {
+					if (ru instanceof OnlineUser) {
+						((OnlineUser) ru).sendReportNotification(this, true);
+					} else {
+						List<String> notifications = ru.getNotifications();
+						notifications.add(Integer.toString(getId()));
+						ru.setNotifications(notifications);
+					}
 				}
 			}
 		}

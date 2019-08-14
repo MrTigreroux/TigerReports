@@ -26,12 +26,7 @@ public abstract class ReportManagerMenu extends Menu {
 
 		Status reportStatus = r.getStatus();
 		return (reportStatus == Status.IMPORTANT || reportStatus == Status.DONE) && !Permission.STAFF_ADVANCED.isOwned(u)
-																															? Message.PERMISSION_ACCESS_DETAILS
-																																	.get()
-																																	.replace(
-																																			"_Report_",
-																																			r.getName())
-																															: null;
+				? Message.PERMISSION_ACCESS_DETAILS.get().replace("_Report_", r.getName()) : null;
 	}
 
 }

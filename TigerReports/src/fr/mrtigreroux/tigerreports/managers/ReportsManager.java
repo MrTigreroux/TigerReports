@@ -41,7 +41,7 @@ public class ReportsManager {
 								: reports.containsKey(reportId)	? reports.get(reportId)
 																: formatFullReport(TigerReports.getInstance()
 																		.getDb()
-																		.query("SELECT * FROM tigerreports_reports WHERE report_id = ? AND archived = ?",
+																		.query("SELECT * FROM tigerreports_reports WHERE report_id = ? AND archived = ? LIMIT 1",
 																				Arrays.asList(reportId, 0))
 																		.getResult(0));
 	}

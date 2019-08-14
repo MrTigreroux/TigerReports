@@ -13,7 +13,7 @@ Config:
   Time: default
   # Time of a city to use (example: "America/Chicago"), list of available cities here: / Temps d'une ville à utiliser (exemple: "Europe/Paris"), la liste des villes possibles est ici:
   # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-  # Put "default" to use the default server time / Mettre "default" pour utiliser le temps par défaut du serveur
+  # Set 'default' to use the default server time / Mettre "default" pour utiliser le temps par défaut du serveur
   PermissionRequired: no
   # Permission needed to use /report command / Permission requise pour utiliser la commande /report
   ReportOnline: no
@@ -27,7 +27,7 @@ Config:
   ReportedImmunity: 120
   # Time in seconds during the reported player cannot be reported again / Temps en secondes durant lequel un joueur signalé ne peut être à nouveau signalé
   AutoCommands: none
-  # List of executed commands after a report, put "none" to don't execute any / Liste des commandes exécutées après chaque signalement, mettre "none" pour aucune
+  # List of executed commands after a report, set 'none' to don't execute any / Liste des commandes exécutées après chaque signalement, mettre "none" pour aucune
   # Usable tags:    _Server_, _Date_, _Reporter_, _Reported_ and _Reason_
   PunishSeconds: 3600
   # Cooldown inflicted for an abusive report / Temps d'attente infligé pour un signalement abusif
@@ -36,7 +36,11 @@ Config:
   CommandsHistory: none
   # - msg
   # - tell
-  # List of saved commands in messages history, put "none" to don't save any / Liste des commandes sauvegardées dans l'historique des messages, mettre "none" pour aucune
+  # List of saved commands in messages history, set 'none' to don't save any / Liste des commandes sauvegardées dans l'historique des messages, mettre "none" pour aucune
+  StackReports: yes
+  # Group reports against the same player for the same reason / Regrouper les signalements contre un même joueur pour une même raison
+  NotifyStackedReports: yes
+  # Notify staff members of same reports against the same player / Informer les membres de l'équipe des mêmes signalements envoyés contre un même joueur
   Notifications:
     Delay: 2
     # Time in seconds before sending the notification after the connection of the user / Délai en secondes avant d'envoyer la notification après la connexion de l'utilisateur
@@ -47,7 +51,7 @@ Config:
       MinutesInterval: 0
     # Notifications about reports to process / Notifications à propos des signalements à traiter
     # Connection:    Display at staff connection / Afficher à la connexion d'un membre de l'équipe
-    # MinutesInterval:    Display each x minutes, put 0 to disable / Afficher toutes les x minutes, mettre 0 pour désactiver
+    # MinutesInterval:    Display each x minutes, set 0 to disable / Afficher toutes les x minutes, mettre 0 pour désactiver
   OnlyDoneArchives: no
   # Prevent archive of unprocessed reports / Empêcher l'archivage de signalements non traités
   MenuUpdatesInterval: 10
@@ -58,7 +62,7 @@ Config:
   TeleportSound: ENTITY_ENDERMEN_TELEPORT
   StaffSound: ENTITY_ITEM_PICKUP
   # Bukkit sounds used on specific actions / Sons bukkit utilisés pour certaines actions
-  # Put 'none' to disable the sound / Mettre 'none' pour désactiver le son
+  # Set 'none' to disable the sound / Mettre "none" pour désactiver le son
   CustomReasons: yes
   # Allow custom reasons / Autoriser les raisons personnalisées
   DefaultReasons:
@@ -125,8 +129,10 @@ Config:
   # Item:    Material-<item_type>(:damage) or/ou Skull-<pseudo>
   #   Examples:    Material-Stone = Stone / Pierre    Material-Wool:2 = Magenta Wool / Laine magenta    Skull-MrTigreroux = Skull of player MrTigreroux / Tête du joueur MrTigreroux
   # PunishCommands:    List of commands to execute when punishing / Liste des commandes à exécuter lors d'une sanction.
-  #                    Put "-CONSOLE" at the beginning of a command to execute it with the console (and not the staff member) / Mettre "-CONSOLE" au début d'une commande pour l'exécuter avec la console (et non le membre de la modération)
+  #                    Set '-CONSOLE' at the beginning of a command to execute it with the console (and not the staff member) / Mettre "-CONSOLE" au début d'une commande pour l'exécuter avec la console (et non le membre de la modération)
   Punishments:
+    Enabled: yes
+    # Open the punishments menu when processing a report as True / Ouvrir le menu des sanctions lors du traitement d'un signalement comme Vrai
     DefaultReasons: yes
     # Use defaults reasons as punishments / Utiliser les raisons par défaut comme des sanctions.
     # "PunishCommands:" property must be added below each default reason / La propriété "PunishCommands:" doit être ajoutée en-dessous de chaque raison par défaut.
@@ -148,7 +154,7 @@ Config:
   # Item:    Material-<item_type>(:damage) or/ou Skull-<pseudo>
   #   Examples:    Material-Stone = Stone / Pierre    Material-Wool:2 = Magenta Wool / Laine magenta    Skull-MrTigreroux = Skull of player MrTigreroux / Tête du joueur MrTigreroux
   # PunishCommands:    List of commands to execute when punishing / Liste des commandes à exécuter lors d'une sanction.
-  #                    Put "-CONSOLE" at the beginning of a command to execute it with the console (and not the staff member) / Mettre "-CONSOLE" au début d'une commande pour l'exécuter avec la console (et non le membre de la modération)
+  #                    Set '-CONSOLE' at the beginning of a command to execute it with the console (and not the staff member) / Mettre "-CONSOLE" au début d'une commande pour l'exécuter avec la console (et non le membre de la modération)
 BungeeCord:
   Enabled: yes
   # Interact with the BungeeCord network / Intéragir avec le réseau BungeeCord

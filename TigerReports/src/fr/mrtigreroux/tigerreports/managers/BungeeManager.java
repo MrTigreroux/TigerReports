@@ -142,8 +142,6 @@ public class BungeeManager implements PluginMessageListener {
 
 				message = message.substring(index+1);
 				String[] parts = message.split(" ");
-				Report r = parts.length == 3 ? TigerReports.getInstance().getReportsManager().getReportById(Integer.parseInt(parts[2])) : null;
-				User u = parts.length == 4 || parts.length == 5 ? TigerReports.getInstance().getUsersManager().getUser(parts[3]) : null;
 
 				switch (parts[1]) {
 					case "new_report":
@@ -151,43 +149,44 @@ public class BungeeManager implements PluginMessageListener {
 								" "), parts[3], parts[4], parts[5].replace("_", " ")), parts[6], notify);
 						break;
 					case "new_status":
-						r.setStatus(Status.valueOf(parts[0]), true);
+						getReport(parts).setStatus(Status.valueOf(parts[0]), true);
 						break;
 					case "process":
-						r.process(parts[0].split("/")[0], notify ? parts[0].split("/")[1] : null, parts[3], true, parts[4].equals("true"));
+						getReport(parts).process(parts[0].split("/")[0], notify ? parts[0].split("/")[1] : null, parts[3], true, parts[4].equals(
+								"true"));
 						break;
 					case "process_punish":
 						String p4 = parts[4];
-						r.processPunishing(parts[0].split("/")[0], notify ? parts[0].split("/")[1] : null, true, parts[4].equals("true"), message
-								.substring(message.indexOf(p4)+p4.length()+1));
+						getReport(parts).processPunishing(parts[0].split("/")[0], notify ? parts[0].split("/")[1] : null, true, parts[4].equals(
+								"true"), message.substring(message.indexOf(p4)+p4.length()+1));
 						break;
 					case "delete":
-						r.delete(notify ? parts[0] : null, true);
+						getReport(parts).delete(notify ? parts[0] : null, true);
 						break;
 					case "archive":
-						r.archive(notify ? parts[0] : null, true);
+						getReport(parts).archive(notify ? parts[0] : null, true);
 						break;
 					case "unarchive":
-						r.unarchive(notify ? parts[0] : null, true);
+						getReport(parts).unarchive(notify ? parts[0] : null, true);
 						break;
 					case "delete_archive":
-						r.deleteFromArchives(notify ? parts[0] : null, true);
+						getReport(parts).deleteFromArchives(notify ? parts[0] : null, true);
 						break;
 
 					case "new_immunity":
-						u.updateImmunity(parts[0].equals("null") ? null : parts[0].replace("_", " "), true);
+						getUser(parts).updateImmunity(parts[0].equals("null") ? null : parts[0].replace("_", " "), true);
 						break;
 					case "new_cooldown":
-						u.updateCooldown(parts[0].equals("null") ? null : parts[0].replace("_", " "), true);
+						getUser(parts).updateCooldown(parts[0].equals("null") ? null : parts[0].replace("_", " "), true);
 						break;
 					case "punish":
-						u.punish(Double.parseDouble(parts[4]), notify ? parts[0] : null, true);
+						getUser(parts).punish(Double.parseDouble(parts[4]), notify ? parts[0] : null, true);
 						break;
 					case "stop_cooldown":
-						u.stopCooldown(notify ? parts[0] : null, true);
+						getUser(parts).stopCooldown(notify ? parts[0] : null, true);
 						break;
-					case "change_statistic":
-						u.changeStatistic(parts[2], Integer.parseInt(parts[0]), true);
+					case "set_statistic":
+						getUser(parts).setStatistic(parts[2], Integer.parseInt(parts[0]), true);
 						break;
 					case "teleport":
 						Player p = UserUtils.getPlayer(parts[0]);
@@ -205,6 +204,14 @@ public class BungeeManager implements PluginMessageListener {
 
 	private Player getRandomPlayer() {
 		return Iterables.getFirst(Bukkit.getOnlinePlayers(), null);
+	}
+
+	private Report getReport(String[] parts) {
+		return TigerReports.getInstance().getReportsManager().getReportById(Integer.parseInt(parts[2]));
+	}
+
+	private User getUser(String[] parts) {
+		return TigerReports.getInstance().getUsersManager().getUser(parts[3]);
 	}
 
 }

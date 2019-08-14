@@ -37,7 +37,7 @@ public class CustomItem {
 	}
 
 	public Integer getAmount() {
-		return amount;
+		return amount > 64 ? 64 : amount < 0 ? 0 : amount;
 	}
 
 	public Short getDamage() {

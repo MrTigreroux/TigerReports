@@ -13,6 +13,7 @@ import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.objects.CustomItem;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
+import fr.mrtigreroux.tigerreports.utils.ReportUtils;
 
 /**
  * @author MrTigreroux
@@ -52,7 +53,11 @@ public class ProcessMenu extends ReportManagerMenu {
 	public void onClick(ItemStack item, int slot, ClickType click) {
 		switch (slot) {
 			case 11:
-				u.openPunishmentMenu(1, r);
+				if (ReportUtils.punishmentsEnabled()) {
+					u.openPunishmentMenu(1, r);
+				} else {
+					process("True");
+				}
 				break;
 			case 13:
 				process("Uncertain");

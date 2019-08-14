@@ -57,9 +57,7 @@ public class PlayerListener implements Listener {
 					if (reportsNotifications != null)
 						p.sendMessage(reportsNotifications);
 				}
-				TigerReports.getInstance()
-						.getDb()
-						.update("REPLACE INTO tigerreports_users (uuid,name) VALUES (?,?);", Arrays.asList(p.getUniqueId().toString(), p.getName()));
+				TigerReports.getInstance().getDb().updateUserName(p.getUniqueId().toString(), p.getName());
 			}
 
 		}, ConfigFile.CONFIG.get().getInt("Config.Notifications.Delay", 2)*20);

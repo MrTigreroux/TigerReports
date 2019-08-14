@@ -149,6 +149,7 @@ public enum Message {
 	REPORT_NAME("Words.Report-name"),
 	REPORTED_NAME("Words.Reported-name"),
 	REPORTER_NAME("Words.Reporter-name"),
+	REPORTERS_NAMES("Words.Reporters-names"),
 	ONLINE_SUFFIX("Words.Online-suffix"),
 	OFFLINE_SUFFIX("Words.Offline-suffix"),
 	NOT_FOUND_MALE("Words.Not-found-male"),
@@ -210,6 +211,11 @@ public enum Message {
 
 	public String getPath() {
 		return path;
+	}
+	
+	public static String get(String path) {
+		return ChatColor.translateAlternateColorCodes(ConfigUtils.getColorCharacter(), StringEscapeUtils.unescapeJava(ConfigFile.MESSAGES.get()
+				.getString(path)));
 	}
 
 }

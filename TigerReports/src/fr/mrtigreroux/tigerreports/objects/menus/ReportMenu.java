@@ -46,48 +46,59 @@ public class ReportMenu extends ReportManagerMenu {
 		inv.setItem(4, r.getItem(null));
 		inv.setItem(18, r.getItem(Message.REPORT_CHAT_ACTION.get()));
 
-		inv.setItem(22, MenuItem.PUNISH_ABUSE.getWithDetails(Message.PUNISH_ABUSE_DETAILS.get()
-				.replace("_Player_", r.getPlayerName("Reporter", false, true))
-				.replace("_Time_", MessageUtils.convertToSentence(ReportUtils.getPunishSeconds()))));
+		boolean stackedReport = r.isStackedReport();
+		if (!stackedReport) {
+			inv.setItem(22, MenuItem.PUNISH_ABUSE.getWithDetails(Message.PUNISH_ABUSE_DETAILS.get()
+					.replace("_Player_", r.getPlayerName("Reporter", false, true))
+					.replace("_Time_", MessageUtils.convertToSentence(ReportUtils.getPunishSeconds()))));
+		}
 
 		if (statisticsQuery == null)
 			statisticsQuery = TigerReports.getInstance()
 					.getDb()
-					.query("SELECT true_appreciations,uncertain_appreciations,false_appreciations,reports,reported_times,processed_reports FROM tigerreports_users WHERE uuid IN (?,?)",
+					.query("SELECT uuid,true_appreciations,uncertain_appreciations,false_appreciations,reports,reported_times,processed_reports FROM tigerreports_users WHERE uuid = ? OR uuid = ? LIMIT 2",
 							Arrays.asList(r.getReporterUniqueId(), r.getReportedUniqueId()));
+		Map<String, Object> reporter_stats = statisticsQuery.getResult(0);
+		Map<String, Object> reported_stats = null;
+		if (reporter_stats != null && !reporter_stats.get("uuid").equals(r.getReporterUniqueId())) {
+			reported_stats = reporter_stats;
+			reporter_stats = statisticsQuery.getResult(1);
+		} else {
+			reported_stats = statisticsQuery.getResult(1);
+		}
+
 		for (String type : new String[] {"Reporter", "Reported"}) {
 			String name = r.getPlayerName(type, false, false);
-			String details = Message.PLAYER_DETAILS.get();
-			Map<String, Object> statistics = statisticsQuery.getResult(type.equals("Reporter") ? 0 : 1);
-			for (Statistic stat : Statistic.values()) {
-				String statName = stat.getConfigName();
-				String value;
-				try {
-					value = String.valueOf(statistics.get(statName));
-				} catch (Exception notFound) {
-					value = Message.NOT_FOUND_MALE.get();
+			String details = stackedReport && type.equals("Reporter") ? Message.get("Menus.Stacked-report-reporters-details")
+					.replace("_First_", r.getPlayerName(type, true, true))
+					.replace("_Others_", r.getReportersNames(1)) : Message.PLAYER_DETAILS.get();
+			Map<String, Object> statistics = type.equals("Reporter") ? reporter_stats : reported_stats;
+
+			if (statistics != null) {
+				for (Statistic stat : Statistic.values()) {
+					String statName = stat.getConfigName();
+					String value = null;
+					try {
+						value = String.valueOf(statistics.get(statName));
+					} catch (Exception notFound) {}
+					if (value == null)
+						value = Message.NOT_FOUND_MALE.get();
+					details = details.replace("_"+statName.substring(0, 1).toUpperCase()+statName.substring(1).replace("_", "")+"_", value);
 				}
-				details = details.replace("_"+statName.substring(0, 1).toUpperCase()+statName.substring(1).replace("_", "")+"_", value);
 			}
 			String server = (server = MessageUtils.getConfigServerLocation(r.getOldLocation(type))) != null ? server : Message.NOT_FOUND_MALE.get();
+
+			String tp = "";
+			if (Permission.STAFF_TELEPORT.isOwned(u)) {
+				tp = (UserUtils.isOnline(name) ? Message.TELEPORT_TO_CURRENT_POSITION : Message.CAN_NOT_TELEPORT_TO_CURRENT_POSITION).get()+(r
+						.getOldLocation(type) != null ? Message.TELEPORT_TO_OLD_POSITION : Message.CAN_NOT_TELEPORT_TO_OLD_POSITION).get();
+			}
 			inv.setItem(type.equals("Reporter") ? 21 : 23, new CustomItem().skullOwner(name)
-					.name(Message.valueOf(type.toUpperCase()).get().replace("_Player_", r.getPlayerName(type, true, true)))
+					.name((stackedReport & type.equals("Reporter")	? Message.get("Menus.Stacked-report-reporters")
+																	: Message.valueOf(type.toUpperCase()).get()).replace("_Player_", r.getPlayerName(
+																			type, true, true)))
 					.lore(details.replace("_Server_", MessageUtils.getServerName(server))
-							.replace("_Teleportation_", Permission.STAFF_TELEPORT.isOwned(u)	? ((UserUtils.isOnline(name)
-																															? Message.TELEPORT_TO_CURRENT_POSITION
-																																	.get()
-																															: Message.CAN_NOT_TELEPORT_TO_CURRENT_POSITION
-																																	.get()).replace(
-																																			"_Player_",
-																																			name)+(r
-																																					.getOldLocation(
-																																							type) != null	? Message.TELEPORT_TO_OLD_POSITION
-																																									.get()
-																																											: Message.CAN_NOT_TELEPORT_TO_OLD_POSITION
-																																													.get()).replace(
-																																															"_Player_",
-																																															name))
-																								: "")
+							.replace("_Teleportation_", tp.replace("_Player_", name))
 							.split(ConfigUtils.getLineBreakSymbol()))
 					.create());
 		}
@@ -173,10 +184,12 @@ public class ReportMenu extends ReportManagerMenu {
 				}
 				break;
 			case 22:
-				long seconds = ReportUtils.getPunishSeconds();
-				TigerReports.getInstance().getUsersManager().getUser(r.getReporterUniqueId()).punish(seconds, p.getName(), false);
-				r.process(p.getUniqueId().toString(), null, "False", false, false);
-				u.openReportsMenu(1, false);
+				if (!r.isStackedReport()) {
+					long seconds = ReportUtils.getPunishSeconds();
+					TigerReports.getInstance().getUsersManager().getUser(r.getReporterUniqueId()).punish(seconds, p.getName(), false);
+					r.process(p.getUniqueId().toString(), null, "False", false, false);
+					u.openReportsMenu(1, false);
+				}
 				break;
 			case 26:
 				if (click == ClickType.LEFT) {
