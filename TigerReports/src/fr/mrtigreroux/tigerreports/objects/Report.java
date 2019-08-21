@@ -11,6 +11,7 @@ import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Status;
+import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.objects.users.User;
@@ -208,13 +209,11 @@ public class Report {
 
 	public void process(String uuid, String staff, String appreciation, boolean bungee, boolean auto) {
 		processing(uuid, staff, appreciation, bungee, auto, (auto ? Message.STAFF_PROCESS_AUTO : Message.STAFF_PROCESS).get()
-				.replace("_Player_", staff)
 				.replace("_Appreciation_", Message.valueOf(appreciation.toUpperCase()).get()), "process");
 	}
 
 	public void processPunishing(String uuid, String staff, boolean bungee, boolean auto, String punishment) {
 		processing(uuid, staff, "True", bungee, auto, (auto ? Message.STAFF_PROCESS_PUNISH_AUTO : Message.STAFF_PROCESS_PUNISH).get()
-				.replace("_Player_", staff)
 				.replace("_Punishment_", punishment)
 				.replace("_Reported_", getPlayerName("Reported", false, false)), "process_punish");
 	}
@@ -223,32 +222,41 @@ public class Report {
 		this.status = Status.DONE.getConfigWord()+" by "+uuid;
 		this.appreciation = appreciation;
 		if (staff != null)
-			MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage(staffMessage, "_Report_", getName(), getText(), null), ConfigSound.STAFF
-					.get());
+			MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage(staffMessage.replace("_Player_", staff), "_Report_", getName(), getText(),
+					null), ConfigSound.STAFF.get());
+
+		TigerReports plugin = TigerReports.getInstance();
+		UsersManager um = plugin.getUsersManager();
+		BungeeManager bm = plugin.getBungeeManager();
+
 		if (!bungee) {
-			TigerReports.getInstance()
-					.getBungeeManager()
-					.sendPluginNotification(uuid+"/"+staff+" "+bungeeAction+" "+reportId+" "+appreciation+" "+auto);
-			TigerReports.getInstance()
-					.getDb()
+			bm.sendPluginNotification(uuid+"/"+staff+" "+bungeeAction+" "+reportId+" "+appreciation+" "+auto);
+			plugin.getDb()
 					.update("UPDATE tigerreports_reports SET status = ?,appreciation = ?,archived = ? WHERE report_id = ?", Arrays.asList(status,
 							appreciation, auto ? 1 : 0, reportId));
 
-			UsersManager userManager = TigerReports.getInstance().getUsersManager();
-			userManager.getUser(uuid).changeStatistic("processed_reports", 1);
+			um.getUser(uuid).changeStatistic("processed_reports", 1);
 
 			for (String ruuid : getReportersUniqueIds()) {
-				User ru = userManager.getUser(ruuid);
+				User ru = um.getUser(ruuid);
 				ru.changeStatistic(appreciation.toLowerCase()+"_appreciations", 1);
 
 				if (ConfigUtils.playersNotifications()) {
 					if (ru instanceof OnlineUser) {
 						((OnlineUser) ru).sendReportNotification(this, true);
-					} else {
+					} else if (!bm.isOnline(ru.getName())) {
 						List<String> notifications = ru.getNotifications();
 						notifications.add(Integer.toString(getId()));
 						ru.setNotifications(notifications);
 					}
+				}
+			}
+		} else {
+			if (ConfigUtils.playersNotifications()) {
+				for (String ruuid : getReportersUniqueIds()) {
+					User ru = um.getUser(ruuid);
+					if (ru instanceof OnlineUser)
+						((OnlineUser) ru).sendReportNotification(this, true);
 				}
 			}
 		}

@@ -15,6 +15,7 @@ import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
+import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.objects.users.User;
 import fr.mrtigreroux.tigerreports.runnables.MenuUpdater;
@@ -41,7 +42,9 @@ public class ReportsCommand implements TabExecutor {
 				plugin.getReportsManager().clearReports();
 				plugin.getUsersManager().clearUsers();
 				plugin.initializeDatabase();
-				plugin.getBungeeManager().collectServerName();
+				BungeeManager bm = plugin.getBungeeManager();
+				bm.collectServerName();
+				bm.collectOnlinePlayers();
 
 				if (s instanceof Player) {
 					s.sendMessage(Message.RELOAD.get());
@@ -96,7 +99,7 @@ public class ReportsCommand implements TabExecutor {
 						try {
 							u.openReportMenu(TigerReports.getInstance()
 									.getReportsManager()
-									.getReportById(Integer.parseInt(args[0].replace("#", ""))));
+									.getReportById(Integer.parseInt(args[0].replace("#", "")), true));
 						} catch (Exception invalidIndex) {
 							MessageUtils.sendErrorMessage(s, Message.INVALID_REPORT_ID.get().replace("_Id_", args[0]));
 						}

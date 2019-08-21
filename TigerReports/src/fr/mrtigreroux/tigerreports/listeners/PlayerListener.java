@@ -45,7 +45,8 @@ public class PlayerListener implements Listener {
 	@EventHandler
 	private void onPlayerJoin(PlayerJoinEvent e) {
 		Player p = e.getPlayer();
-		OnlineUser u = TigerReports.getInstance().getUsersManager().getOnlineUser(p);
+		TigerReports plugin = TigerReports.getInstance();
+		OnlineUser u = plugin.getUsersManager().getOnlineUser(p);
 
 		Bukkit.getScheduler().runTaskLaterAsynchronously(TigerReports.getInstance(), new Runnable() {
 
@@ -57,7 +58,7 @@ public class PlayerListener implements Listener {
 					if (reportsNotifications != null)
 						p.sendMessage(reportsNotifications);
 				}
-				TigerReports.getInstance().getDb().updateUserName(p.getUniqueId().toString(), p.getName());
+				plugin.getDb().updateUserName(p.getUniqueId().toString(), p.getName());
 			}
 
 		}, ConfigFile.CONFIG.get().getInt("Config.Notifications.Delay", 2)*20);
@@ -65,7 +66,7 @@ public class PlayerListener implements Listener {
 		u.updateImmunity(Permission.REPORT_EXEMPT.isOwned(u) ? "always" : null, false);
 
 		if (Permission.MANAGE.isOwned(u)) {
-			String newVersion = TigerReports.getInstance().getWebManager().getNewVersion();
+			String newVersion = plugin.getWebManager().getNewVersion();
 			if (newVersion != null) {
 				boolean english = ConfigUtils.getInfoLanguage().equalsIgnoreCase("English");
 				p.sendMessage("\u00A77[\u00A76TigerReports\u00A77] "+(english	? "\u00A7eThe plugin \u00A76TigerReports \u00A7ehas been updated."
@@ -85,14 +86,16 @@ public class PlayerListener implements Listener {
 			}
 		}
 
-		TigerReports.getInstance().getBungeeManager().collectDelayedlyServerName();
+		plugin.getBungeeManager().processPlayerConnection(p.getName());
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST)
 	private void onPlayerQuit(PlayerQuitEvent e) {
-		String uuid = e.getPlayer().getUniqueId().toString();
+		Player p = e.getPlayer();
+		String uuid = p.getUniqueId().toString();
 		UsersManager userManager = TigerReports.getInstance().getUsersManager();
 		User u = userManager.getSavedUser(uuid);
+
 		if (u != null) {
 			List<String> lastMessages = u.lastMessages;
 			if (lastMessages.isEmpty()) {
@@ -103,6 +106,8 @@ public class PlayerListener implements Listener {
 				userManager.saveUser(ou);
 			}
 		}
+
+		TigerReports.getInstance().getBungeeManager().processPlayerDisconnection(p.getName());
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR)

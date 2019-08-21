@@ -155,11 +155,11 @@ public class OnlineUser extends User {
 			try {
 				if (notification.contains(":")) {
 					String[] parts = notification.split(":");
-					Report r = TigerReports.getInstance().getReportsManager().getReportById(Integer.parseInt(parts[0]));
+					Report r = TigerReports.getInstance().getReportsManager().getReportById(Integer.parseInt(parts[0]), false);
 					Comment c = r.getCommentById(Integer.parseInt(parts[1]));
 					sendCommentNotification(r, c, false);
 				} else if (ConfigUtils.playersNotifications()) {
-					sendReportNotification(TigerReports.getInstance().getReportsManager().getReportById(Integer.parseInt(notification)), false);
+					sendReportNotification(TigerReports.getInstance().getReportsManager().getReportById(Integer.parseInt(notification), false), false);
 				}
 			} catch (Exception invalidNotification) {}
 		}

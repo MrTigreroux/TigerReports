@@ -17,7 +17,7 @@ public abstract class ReportManagerMenu extends Menu {
 
 	public ReportManagerMenu(OnlineUser u, int size, int page, Permission permission, int reportId) {
 		super(u, size, page, permission);
-		this.r = TigerReports.getInstance().getReportsManager().getReportById(reportId);
+		this.r = TigerReports.getInstance().getReportsManager().getReportById(reportId, true);
 	}
 
 	String checkReport() {

@@ -44,6 +44,14 @@ public class UserUtils {
 		}
 	}
 
+	public static Player getPlayerFromUniqueId(String uuid) {
+		try {
+			return Bukkit.getPlayer(UUID.fromString(uuid));
+		} catch (Exception offlinePlayer) {
+			return null;
+		}
+	}
+
 	public static Player getPlayer(String name) {
 		try {
 			return Bukkit.getPlayerExact(name);
@@ -60,13 +68,16 @@ public class UserUtils {
 	}
 
 	public static boolean isOnline(String name) {
-		return getPlayer(name) != null;
+		return getPlayer(name) != null ? true : TigerReports.getInstance().getBungeeManager().isOnline(name);
 	}
 
 	public static List<String> getOnlinePlayers() {
-		List<String> players = new ArrayList<>();
-		for (Player p : Bukkit.getOnlinePlayers())
-			players.add(p.getName());
+		List<String> players = TigerReports.getInstance().getBungeeManager().getOnlinePlayers();
+		if (players == null) {
+			players = new ArrayList<>();
+			for (Player p : Bukkit.getOnlinePlayers())
+				players.add(p.getName());
+		}
 		return players;
 	}
 

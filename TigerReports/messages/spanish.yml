@@ -1,4 +1,4 @@
-﻿Messages: # Spanish messages by maxrio21. If you are in Minecraft 1.8 or less, encode in ANSI, else encode in UTF-8.
+﻿Messages: # Spanish messages by maxrio21. If you are in Minecraft 1.8 or less, encode in ANSI, else encode in UTF-8 / Si estas en Minecraft 1.8 o menos, codificar en ANSI, de lo contrario codificar en UTF-8.
   Reload: "&7[&6TigerReports&7] &eEl plugin se ha recargado."
   Report-sent: "&7[&6Reportes&7] &eHas reportado &6_Player_ &epor: &7_Reason_&e."
   Alert: "&7[&cReportes &7- &8_Server_&7] &a_Reporter_ &7» &c_Reported_&7: &6_Reason_&7."

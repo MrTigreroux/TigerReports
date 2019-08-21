@@ -16,6 +16,7 @@ import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.objects.Comment;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.objects.users.User;
+import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 /**
  * @author MrTigreroux
@@ -88,11 +89,15 @@ public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu {
 						return;
 					case RIGHT:
 					case SHIFT_RIGHT:
-						String notification = r.getId()+":"+c.getId();
+						int reportId = r.getId();
+						int commentId = c.getId();
+						String notification = reportId+":"+commentId;
 						User ru = TigerReports.getInstance().getUsersManager().getUser(r.getReporterUniqueId());
 						boolean isPrivate = c.getStatus(true).equals("Private");
 						if (isPrivate && ru instanceof OnlineUser) {
 							((OnlineUser) ru).sendCommentNotification(r, c, true);
+						} else if (isPrivate && UserUtils.isOnline(ru.getName())) {
+							TigerReports.getInstance().getBungeeManager().sendPluginNotification(reportId+" comment "+commentId+" "+ru.getName());
 						} else {
 							List<String> notifications = ru.getNotifications();
 							if (isPrivate) {

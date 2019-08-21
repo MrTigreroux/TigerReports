@@ -36,13 +36,15 @@ public class ReportsManager {
 		reports.clear();
 	}
 
-	public Report getReportById(int reportId) {
+	public Report getReportById(int reportId, boolean notArchived) {
 		return reportId <= 0	? null
 								: reports.containsKey(reportId)	? reports.get(reportId)
 																: formatFullReport(TigerReports.getInstance()
 																		.getDb()
-																		.query("SELECT * FROM tigerreports_reports WHERE report_id = ? AND archived = ? LIMIT 1",
-																				Arrays.asList(reportId, 0))
+																		.query("SELECT * FROM tigerreports_reports WHERE report_id = ? "+(notArchived
+																																						? "AND archived = 0 "
+																																						: "")
+																				+"LIMIT 1", Arrays.asList(reportId))
 																		.getResult(0));
 	}
 

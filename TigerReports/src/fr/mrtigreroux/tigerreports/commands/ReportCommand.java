@@ -1,5 +1,6 @@
 package fr.mrtigreroux.tigerreports.commands;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -8,9 +9,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+import org.bukkit.util.StringUtil;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
@@ -30,7 +32,7 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
  * @author MrTigreroux
  */
 
-public class ReportCommand implements CommandExecutor {
+public class ReportCommand implements TabExecutor {
 
 	@Override
 	public boolean onCommand(CommandSender s, Command cmd, String label, String[] args) {
@@ -140,6 +142,7 @@ public class ReportCommand implements CommandExecutor {
 			}
 		}
 
+		boolean missingData = false;
 		if (r == null) {
 			reportId = (reportId = ReportUtils.getTotalReports()+1) <= ReportUtils.getMaxReports() ? reportId : -1;
 
@@ -155,6 +158,7 @@ public class ReportCommand implements CommandExecutor {
 							rp.getFoodLevel(), MessageUtils.formatConfigEffects(rp.getActivePotionEffects()), p.getAddress().getAddress().toString(),
 							MessageUtils.formatConfigLocation(p.getLocation()), u.getLastMessages());
 				} else {
+					missingData = true;
 					parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", date, ruuid, uuid, reason, null, null, ru.getLastMessages(),
 							null, null, null, null, null, null, null, p.getAddress().toString(), MessageUtils.formatConfigLocation(p.getLocation()), u
 									.getLastMessages());
@@ -173,7 +177,7 @@ public class ReportCommand implements CommandExecutor {
 		TigerReports.getInstance()
 				.getBungeeManager()
 				.sendPluginNotification(reportId+" new_report "+date.replace(" ", "_")+" "+ruuid+" "+r.getLastReporterUniqueId()+" "+reason.replace(
-						" ", "_")+" "+server);
+						" ", "_")+" "+server+" "+missingData);
 
 		u.startCooldown(ReportUtils.getCooldown(), false);
 		ru.startImmunity(false);
@@ -187,6 +191,11 @@ public class ReportCommand implements CommandExecutor {
 					.replace("_Reported_", r.getPlayerName("Reported", false, false))
 					.replace("_Reason_", reason));
 		return true;
+	}
+
+	@Override
+	public List<String> onTabComplete(CommandSender s, Command cmd, String label, String[] args) {
+		return args.length == 1 ? StringUtil.copyPartialMatches(args[0], UserUtils.getOnlinePlayers(), new ArrayList<>()) : new ArrayList<>();
 	}
 
 }

@@ -252,11 +252,11 @@ public class MessageUtils {
 		return configLoc.toString();
 	}
 
-	public static String getConfigServerLocation(String configLoc) {
+	public static String getServer(String configLoc) {
 		return configLoc != null ? configLoc.split("/")[0] : null;
 	}
 
-	public static Location getConfigLocation(String configLoc) {
+	public static Location getLocation(String configLoc) {
 		if (configLoc == null)
 			return null;
 		String[] coords = configLoc.split("/");

@@ -5,8 +5,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.Messenger;
 import org.bukkit.plugin.messaging.PluginMessageListener;
@@ -20,7 +26,9 @@ import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.constants.Status;
+import fr.mrtigreroux.tigerreports.objects.Comment;
 import fr.mrtigreroux.tigerreports.objects.Report;
+import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.objects.users.User;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
@@ -36,6 +44,9 @@ public class BungeeManager implements PluginMessageListener {
 	private TigerReports plugin;
 	private boolean initialized = false;
 	private String serverName = null;
+	private List<String> onlinePlayers = new ArrayList<>();
+	private boolean onlinePlayersCollected = false;
+	private String playerToRemove = null;
 
 	public BungeeManager(TigerReports plugin) {
 		this.plugin = plugin;
@@ -60,16 +71,37 @@ public class BungeeManager implements PluginMessageListener {
 			sendPluginMessage("GetServer");
 	}
 
-	public void collectDelayedlyServerName() {
-		if (serverName == null) {
-			Bukkit.getScheduler().runTaskLater(TigerReports.getInstance(), new Runnable() {
+	public void processPlayerConnection(String name) {
+		if (!initialized)
+			return;
 
-				@Override
-				public void run() {
-					sendPluginMessage("GetServer");
+		Bukkit.getScheduler().runTaskLater(TigerReports.getInstance(), new Runnable() {
+
+			@Override
+			public void run() {
+				collectServerName();
+				if (!onlinePlayersCollected)
+					collectOnlinePlayers();
+				if (playerToRemove != null && playerToRemove != name) {
+					sendPluginNotification(playerToRemove+" player_status false");
+					playerToRemove = null;
 				}
+				updatePlayerStatus(name, true);
+			}
 
-			}, 5);
+		}, 5);
+
+	}
+
+	public void processPlayerDisconnection(String name) {
+		if (!initialized)
+			return;
+
+		if (Bukkit.getOnlinePlayers().size() > 1) {
+			updatePlayerStatus(name, false);
+		} else {
+			setPlayerStatus(name, false);
+			playerToRemove = name;
 		}
 	}
 
@@ -145,8 +177,11 @@ public class BungeeManager implements PluginMessageListener {
 
 				switch (parts[1]) {
 					case "new_report":
-						ReportUtils.sendReport(new Report(Integer.parseInt(parts[0]), Status.WAITING.getConfigWord(), "None", parts[2].replace("_",
-								" "), parts[3], parts[4], parts[5].replace("_", " ")), parts[6], notify);
+						Report r = new Report(Integer.parseInt(parts[0]), Status.WAITING.getConfigWord(), "None", parts[2].replace("_", " "),
+								parts[3], parts[4], parts[5].replace("_", " "));
+						ReportUtils.sendReport(r, parts[6], notify);
+						if (notify && parts[7].equals("true"))
+							implementMissingData(r);
 						break;
 					case "new_status":
 						getReport(parts).setStatus(Status.valueOf(parts[0]), true);
@@ -188,17 +223,52 @@ public class BungeeManager implements PluginMessageListener {
 					case "set_statistic":
 						getUser(parts).setStatistic(parts[2], Integer.parseInt(parts[0]), true);
 						break;
-					case "teleport":
-						Player p = UserUtils.getPlayer(parts[0]);
-						p.teleport(MessageUtils.getConfigLocation(parts[2]));
-						ConfigSound.TELEPORT.play(p);
+					case "tp_loc":
+						teleportDelayedly(parts[0], MessageUtils.getLocation(parts[2]));
 						break;
+					case "tp_player":
+						if (!notify)
+							break;
+
+						String target = parts[2];
+						Player t = UserUtils.getPlayer(target);
+						if (t != null) {
+							String staff = parts[0];
+							sendPluginMessage("ConnectOther", staff, serverName);
+							teleportDelayedly(staff, t.getLocation());
+						}
+						break;
+					case "comment":
+						Player rp = UserUtils.getPlayer(parts[3]);
+						if (rp == null)
+							break;
+
+						OnlineUser ru = TigerReports.getInstance().getUsersManager().getOnlineUser(rp);
+						Report report = TigerReports.getInstance().getReportsManager().getReportById(Integer.parseInt(parts[0]), false);
+						Comment c = report.getCommentById(Integer.parseInt(parts[2]));
+						((OnlineUser) ru).sendCommentNotification(report, c, true);
+						break;
+
+					case "player_status":
+						String name = parts[0];
+						boolean online = parts[2].equals("true");
+						if (!online && UserUtils.getPlayer(name) != null) {
+							updatePlayerStatus(name, true);
+						} else {
+							setPlayerStatus(name, online);
+						}
+						break;
+
 					default:
 						break;
 				}
 			} catch (Exception ignored) {}
 		} else if (subchannel.equals("GetServer")) {
 			serverName = in.readUTF();
+		} else if (subchannel.equals("PlayerList")) {
+			onlinePlayersCollected = true;
+			in.readUTF();
+			onlinePlayers = new ArrayList<>(Arrays.asList(in.readUTF().split(", ")));
 		}
 	}
 
@@ -207,11 +277,74 @@ public class BungeeManager implements PluginMessageListener {
 	}
 
 	private Report getReport(String[] parts) {
-		return TigerReports.getInstance().getReportsManager().getReportById(Integer.parseInt(parts[2]));
+		return TigerReports.getInstance().getReportsManager().getReportById(Integer.parseInt(parts[2]), false);
 	}
 
 	private User getUser(String[] parts) {
 		return TigerReports.getInstance().getUsersManager().getUser(parts[3]);
+	}
+
+	private void teleportDelayedly(String name, Location loc) {
+		Bukkit.getScheduler().runTaskLater(TigerReports.getInstance(), new Runnable() {
+
+			@Override
+			public void run() {
+				Player p = UserUtils.getPlayer(name);
+				if (name != null) {
+					p.teleport(loc);
+					ConfigSound.TELEPORT.play(p);
+				}
+			}
+
+		}, 5);
+	}
+
+	private void implementMissingData(Report r) {
+		Player rp = UserUtils.getPlayerFromUniqueId(r.getReportedUniqueId());
+		if (rp == null)
+			return;
+		OnlineUser ru = plugin.getUsersManager().getOnlineUser(rp);
+		plugin.getDb()
+				.updateAsynchronously(
+						"UPDATE tigerreports_reports SET reported_ip=?,reported_location=?,reported_messages=?,reported_gamemode=?,reported_on_ground=?,reported_sneak=?,reported_sprint=?,reported_health=?,reported_food=?,reported_effects=? WHERE report_id=?",
+						Arrays.asList(rp.getAddress().getAddress().toString(), MessageUtils.formatConfigLocation(rp.getLocation()), ru
+								.getLastMessages(), rp.getGameMode().toString().toLowerCase(), !rp.getLocation()
+										.getBlock()
+										.getRelative(BlockFace.DOWN)
+										.getType()
+										.equals(Material.AIR), rp.isSneaking(), rp.isSprinting(), (int) Math.round(rp.getHealth())+"/"+(int) Math
+												.round(rp.getMaxHealth()), rp.getFoodLevel(), MessageUtils.formatConfigEffects(rp
+														.getActivePotionEffects()), r.getId()));
+	}
+
+	public void collectOnlinePlayers() {
+		onlinePlayersCollected = false;
+		sendPluginMessage("PlayerList", "ALL");
+	}
+
+	public boolean isOnline(String name) {
+		return onlinePlayers.contains(name);
+	}
+
+	public List<String> getOnlinePlayers() {
+		return onlinePlayersCollected ? onlinePlayers : null;
+	}
+
+	private void setPlayerStatus(String name, boolean online) {
+		if (online) {
+			if (!onlinePlayers.contains(name))
+				onlinePlayers.add(name);
+		} else {
+			onlinePlayers.remove(name);
+		}
+	}
+
+	public void updatePlayerStatus(String name, boolean online) {
+		if (!initialized)
+			return;
+
+		setPlayerStatus(name, online);
+		sendPluginNotification(name+" player_status "+online);
 	}
 
 }

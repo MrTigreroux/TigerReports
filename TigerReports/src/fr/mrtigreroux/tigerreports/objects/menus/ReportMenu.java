@@ -86,7 +86,7 @@ public class ReportMenu extends ReportManagerMenu {
 					details = details.replace("_"+statName.substring(0, 1).toUpperCase()+statName.substring(1).replace("_", "")+"_", value);
 				}
 			}
-			String server = (server = MessageUtils.getConfigServerLocation(r.getOldLocation(type))) != null ? server : Message.NOT_FOUND_MALE.get();
+			String serverName = (serverName = MessageUtils.getServer(r.getOldLocation(type))) != null ? MessageUtils.getServerName(serverName) : Message.NOT_FOUND_MALE.get();
 
 			String tp = "";
 			if (Permission.STAFF_TELEPORT.isOwned(u)) {
@@ -94,10 +94,10 @@ public class ReportMenu extends ReportManagerMenu {
 						.getOldLocation(type) != null ? Message.TELEPORT_TO_OLD_POSITION : Message.CAN_NOT_TELEPORT_TO_OLD_POSITION).get();
 			}
 			inv.setItem(type.equals("Reporter") ? 21 : 23, new CustomItem().skullOwner(name)
-					.name((stackedReport & type.equals("Reporter")	? Message.get("Menus.Stacked-report-reporters")
+					.name((stackedReport && type.equals("Reporter")	? Message.get("Menus.Stacked-report-reporters")
 																	: Message.valueOf(type.toUpperCase()).get()).replace("_Player_", r.getPlayerName(
 																			type, true, true)))
-					.lore(details.replace("_Server_", MessageUtils.getServerName(server))
+					.lore(details.replace("_Server_", serverName)
 							.replace("_Teleportation_", tp.replace("_Player_", name))
 							.split(ConfigUtils.getLineBreakSymbol()))
 					.create());
@@ -144,43 +144,52 @@ public class ReportMenu extends ReportManagerMenu {
 				if (!Permission.STAFF_TELEPORT.isOwned(u))
 					return;
 				String targetType = slot == 21 ? "Reporter" : "Reported";
-				String name = r.getPlayerName(targetType, false, false);
-				Player t = UserUtils.getPlayer(name);
+				String target = r.getPlayerName(targetType, false, false);
+				Player t = UserUtils.getPlayer(target);
 				String locType;
-				String serverName;
-				Location loc;
+				String serverName = null;
+				Location loc = null;
 				String configLoc = null;
+				boolean tpDifferentServer = false;
+				
+				BungeeManager bm = TigerReports.getInstance().getBungeeManager();
 				if (click.toString().contains("LEFT")) {
 					if (t == null) {
-						MessageUtils.sendErrorMessage(p, Message.PLAYER_OFFLINE.get().replace("_Player_", name));
-						return;
+						if(bm.isOnline(target)) {
+							tpDifferentServer = true;
+						} else {
+							MessageUtils.sendErrorMessage(p, Message.PLAYER_OFFLINE.get().replace("_Player_", target));
+							return;
+						}
+					} else {
+						serverName = "localhost";
+						loc = t.getLocation();
 					}
-					serverName = "localhost";
-					loc = t.getLocation();
 					locType = "CURRENT";
 				} else if (click.toString().contains("RIGHT")) {
 					configLoc = r.getOldLocation(targetType);
-					loc = MessageUtils.getConfigLocation(configLoc);
+					loc = MessageUtils.getLocation(configLoc);
 					if (loc == null) {
-						MessageUtils.sendErrorMessage(p, Message.LOCATION_UNKNOWN.get().replace("_Player_", name));
+						MessageUtils.sendErrorMessage(p, Message.LOCATION_UNKNOWN.get().replace("_Player_", target));
 						return;
 					}
-					serverName = MessageUtils.getConfigServerLocation(configLoc);
+					serverName = MessageUtils.getServer(configLoc);
 					locType = "OLD";
 				} else {
 					return;
 				}
 				u.sendMessageWithReportButton(Message.valueOf("TELEPORT_"+locType+"_LOCATION")
 						.get()
-						.replace("_Player_", Message.valueOf(targetType.toUpperCase()+"_NAME").get().replace("_Player_", name))
+						.replace("_Player_", Message.valueOf(targetType.toUpperCase()+"_NAME").get().replace("_Player_", target))
 						.replace("_Report_", r.getName()), r);
-				BungeeManager bungeeManager = TigerReports.getInstance().getBungeeManager();
-				if (serverName.equals("localhost") || bungeeManager.getServerName().equals(serverName)) {
+				if (tpDifferentServer) {
+					bm.sendPluginNotification(p.getName()+" tp_player "+target);
+				} else if (serverName.equals("localhost") || bm.getServerName().equals(serverName)) {
 					p.teleport(loc);
 					ConfigSound.TELEPORT.play(p);
 				} else {
-					bungeeManager.sendPluginMessage("ConnectOther", p.getName(), serverName);
-					bungeeManager.sendServerPluginNotification(serverName, p.getName()+" teleport "+configLoc);
+					bm.sendPluginMessage("ConnectOther", p.getName(), serverName);
+					bm.sendServerPluginNotification(serverName, System.currentTimeMillis()+" "+p.getName()+" tp_loc "+configLoc);
 				}
 				break;
 			case 22:
@@ -197,7 +206,7 @@ public class ReportMenu extends ReportManagerMenu {
 							.replace("_Report_", r.getName())
 							.split(ConfigUtils.getLineBreakSymbol()));
 				} else if (click == ClickType.RIGHT) {
-					Map<Double, String> sortedMessages = new TreeMap<>();
+					Map<Double, String> sortedMessages = new TreeMap<Double, String>();
 					for (String type : new String[] {"Reported", "Reporter"}) {
 						for (String message : r.getMessagesHistory(type)) {
 							if (message != null && message.length() >= 20) {
