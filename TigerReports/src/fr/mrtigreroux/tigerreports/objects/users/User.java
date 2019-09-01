@@ -8,6 +8,7 @@ import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.data.constants.Statistic;
+import fr.mrtigreroux.tigerreports.data.database.Database;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
@@ -46,9 +47,9 @@ public abstract class User {
 			TigerReports.getInstance()
 					.getBungeeManager()
 					.sendPluginNotification((immunity != null ? immunity.replace(" ", "_") : "null")+" new_immunity user "+uuid);
-			TigerReports.getInstance()
-					.getDb()
-					.updateAsynchronously("UPDATE tigerreports_users SET immunity = ? WHERE uuid = ?", Arrays.asList(immunity, uuid));
+			Database db = TigerReports.getInstance().getDb();
+			if (db != null)
+				db.updateAsynchronously("UPDATE tigerreports_users SET immunity = ? WHERE uuid = ?", Arrays.asList(immunity, uuid));
 		}
 	}
 

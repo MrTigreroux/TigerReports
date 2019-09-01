@@ -13,6 +13,7 @@ import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Status;
 import fr.mrtigreroux.tigerreports.events.ProcessReportEvent;
+import fr.mrtigreroux.tigerreports.events.ReportStatusChangeEvent;
 import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
@@ -103,6 +104,10 @@ public class Report {
 					.updateAsynchronously("UPDATE tigerreports_reports SET status = ? WHERE report_id = ?", Arrays.asList(status.getConfigWord(),
 							reportId));
 		}
+		
+		try {
+			Bukkit.getServer().getPluginManager().callEvent(new ReportStatusChangeEvent(this, status.getConfigWord()));
+		} catch (Exception ignored) {}
 	}
 
 	public Status getStatus() {
