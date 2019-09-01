@@ -5,12 +5,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Status;
+import fr.mrtigreroux.tigerreports.events.ProcessReportEvent;
 import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
@@ -221,9 +223,10 @@ public class Report {
 	private void processing(String uuid, String staff, String appreciation, boolean bungee, boolean auto, String staffMessage, String bungeeAction) {
 		this.status = Status.DONE.getConfigWord()+" by "+uuid;
 		this.appreciation = appreciation;
-		if (staff != null)
+		if (staff != null) {
 			MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage(staffMessage.replace("_Player_", staff), "_Report_", getName(), getText(),
 					null), ConfigSound.STAFF.get());
+		}
 
 		TigerReports plugin = TigerReports.getInstance();
 		UsersManager um = plugin.getUsersManager();
@@ -260,6 +263,10 @@ public class Report {
 				}
 			}
 		}
+		
+		try {
+			Bukkit.getServer().getPluginManager().callEvent(new ProcessReportEvent(this, staff));
+		} catch (Exception ignored) {}
 	}
 
 	public String getProcessor() {

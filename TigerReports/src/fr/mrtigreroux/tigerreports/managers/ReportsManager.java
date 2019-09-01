@@ -48,14 +48,17 @@ public class ReportsManager {
 																		.getResult(0));
 	}
 
-	public Report getReport(int reportIndex) {
+	public Report getReport(boolean archived, int reportIndex) {
 		return formatFullReport(TigerReports.getInstance()
 				.getDb()
-				.query("SELECT * FROM tigerreports_reports WHERE archived = ? LIMIT 1 OFFSET ?", Arrays.asList(0, reportIndex-1))
+				.query("SELECT * FROM tigerreports_reports WHERE archived = ? LIMIT 1 OFFSET ?", Arrays.asList(archived ? 1 : 0, reportIndex-1))
 				.getResult(0));
 	}
 
 	public Report formatFullReport(Map<String, Object> result) {
+		if (result == null)
+			return null;
+
 		Report r = ReportUtils.formatEssentialOfReport(result);
 
 		Map<String, String> advancedData = new HashMap<>();

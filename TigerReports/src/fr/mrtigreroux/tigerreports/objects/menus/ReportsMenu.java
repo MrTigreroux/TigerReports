@@ -35,7 +35,7 @@ public class ReportsMenu extends Menu implements UpdatedMenu {
 
 	@Override
 	public void onUpdate(Inventory inv) {
-		ReportUtils.addReports(false, inv, page, Message.REPORT_SHOW_ACTION.get()+(Permission.STAFF_ARCHIVE.isOwned(u) ? Message.REPORT_ARCHIVE_ACTION
+		ReportUtils.addReports(null, false, inv, page, Message.REPORT_SHOW_ACTION.get()+(Permission.STAFF_ARCHIVE.isOwned(u) ? Message.REPORT_ARCHIVE_ACTION
 				.get() : "")+(Permission.STAFF_DELETE.isOwned(u) ? Message.REPORT_DELETE_ACTION.get() : ""));
 	}
 
@@ -44,7 +44,7 @@ public class ReportsMenu extends Menu implements UpdatedMenu {
 		if (slot == 8 && Permission.STAFF_ARCHIVE.isOwned(u)) {
 			u.openArchivedReportsMenu(1, true);
 		} else if (slot >= 18 && slot <= size-9) {
-			Report r = TigerReports.getInstance().getReportsManager().getReport(getConfigIndex(slot));
+			Report r = TigerReports.getInstance().getReportsManager().getReport(false, getConfigIndex(slot));
 			if (r == null) {
 				update(false);
 			} else {

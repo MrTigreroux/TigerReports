@@ -136,7 +136,11 @@ public class ReportCommand implements TabExecutor {
 					r = ReportUtils.formatEssentialOfReport(result);
 					if (r != null) {
 						reportId = r.getId();
-						db.update("UPDATE tigerreports_reports SET reporter_uuid = ? WHERE report_id = ?", Arrays.asList(reporterUuid, reportId));
+						if (ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.UpdateDateOfStackedReports")) {
+							db.update("UPDATE tigerreports_reports SET reporter_uuid = ?, date = ? WHERE report_id = ?", Arrays.asList(reporterUuid, date, reportId));
+						} else {
+							db.update("UPDATE tigerreports_reports SET reporter_uuid = ? WHERE report_id = ?", Arrays.asList(reporterUuid, reportId));
+						}
 					}
 				} catch (Exception invalidReport) {}
 			}

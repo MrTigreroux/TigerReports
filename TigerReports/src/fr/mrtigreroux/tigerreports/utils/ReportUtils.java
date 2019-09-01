@@ -29,7 +29,9 @@ public class ReportUtils {
 		if (!ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.NotifyStackedReports"))
 			return;
 
-		Bukkit.getServer().getPluginManager().callEvent(new NewReportEvent(server, r));
+		try {
+			Bukkit.getServer().getPluginManager().callEvent(new NewReportEvent(server, r));
+		} catch (Exception ignored) {}
 		if (!notify)
 			return;
 
@@ -64,7 +66,7 @@ public class ReportUtils {
 				"date"), (String) result.get("reported_uuid"), (String) result.get("reporter_uuid"), (String) result.get("reason"));
 	}
 
-	public static void addReports(boolean archived, Inventory inv, int page, String actions) {
+	public static void addReports(String reporter, boolean archived, Inventory inv, int page, String actions) {
 		int size = inv.getSize();
 		int firstReport = 1;
 		if (page >= 2) {
@@ -74,8 +76,9 @@ public class ReportUtils {
 
 		List<Map<String, Object>> results = TigerReports.getInstance()
 				.getDb()
-				.query("SELECT report_id,status,appreciation,date,reported_uuid,reporter_uuid,reason FROM tigerreports_reports WHERE archived = ? LIMIT 28 OFFSET ?",
-						Arrays.asList(archived ? 1 : 0, firstReport-1))
+				.query("SELECT report_id,status,appreciation,date,reported_uuid,reporter_uuid,reason FROM tigerreports_reports WHERE archived = ? "
+						+(reporter != null ? "AND reporter_uuid LIKE '%"+reporter+"%'" : "")+"LIMIT 28 OFFSET ?", Arrays.asList(archived ? 1 : 0,
+								firstReport-1))
 				.getResultList();
 		int index = 0;
 		for (int slot = 18; slot < 45; slot++) {

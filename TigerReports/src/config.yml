@@ -41,6 +41,8 @@ Config:
   # Group reports against the same player for the same reason / Regrouper les signalements contre un même joueur pour une même raison
   NotifyStackedReports: yes
   # Notify staff members of same reports against the same player / Informer les membres de l'équipe des mêmes signalements envoyés contre un même joueur
+  UpdateDateOfStackedReports: no
+  # Update the report date of stacked reports (against the same player for the same reason) at each new report / Mettre à jour la date des signalements groupés (envoyés contre un même joueur pour une même raison) à chaque nouveau signalement
   Notifications:
     Delay: 2
     # Time in seconds before sending the notification after the connection of the user / Délai en secondes avant d'envoyer la notification après la connexion de l'utilisateur

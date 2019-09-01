@@ -1,4 +1,4 @@
-﻿Messages: # French messages by MrTigreroux. If you are in Minecraft 1.8 or less, encode in ANSI, else encode in UTF-8 / Si vous etes en Minecraft 1.8 ou inférieur, encodez en ANSI, sinon encodez en UTF-8.
+﻿Messages: # French messages by MrTigreroux. If you are in Minecraft 1.8 or less, encode in ANSI, else encode in UTF-8.
   Reload: "&7[&6TigerReports&7] &eLe plugin a \xe9t\xe9 recharg\xe9."
   Report-sent: "&7[&6Report&7] &eVous avez signal\xe9 le joueur &6_Player_ &epour: &7_Reason_&e."
   Alert: "&7[&cReport &7- &8_Server_&7] &a_Reporter_ &7» &c_Reported_&7: &6_Reason_&7."
@@ -32,7 +32,7 @@
   Edit-comment: "&7[&6Reports&7] &eVeuillez &eindiquer &edans &ele &echat &6votre &6commentaire &esur &ele _Report_&e. _CancelButton_"
   Cancel-button: "&7[&cA&cn&cn&cu&cl&ce&cr&7]"
   Cancel-button-details: "&6Clic gauche &7pour annuler votre commentaire//&7sur le _Report_&7."
-  Cancel-comment: "&7[&6Reports&7] &eVous &eavez &cannulé &evotre &ecommentaire &esur &ele _Report_&e. _ReportButton_"
+  Cancel-comment: "&7[&6Reports&7] &eVous &eavez &cannul\xe9 &evotre &ecommentaire &esur &ele _Report_&e. _ReportButton_"
 ErrorMessages:
   Invalid-syntax: "&7[&6Reports&7] &eVeuillez d\xe9tailler votre commande tel que &b_Command_&e."
   Permission-command: "&7[&6Reports&7] &cVous n'avez pas acc\u00E8s \u00E0 cette commande."
@@ -125,10 +125,17 @@ Menus:
   Write-comment-details: "//&6Clic &7pour r\xe9diger un nouveau//&7commentaire sur ce signalement."
   User-title: "&6Joueur &7> &e_Target_"
   User: "&7Joueur: &e_Target_"
+  User-details: "//&6Clic &7pour afficher les statistiques//&7du joueur &e_Target_&7."
   User-statistic: "&7_Statistic_&7: &b_Amount_"
   User-statistic-details: "//&6Clic gauche &7pour augmenter de un.//&6Clic droit &7pour r\xe9duire de un."
   Cooldown-status: "&7Attente: &e_Time_"
   Cooldown-status-details: "//&6Clic &7pour annuler l'attente du//&7joueur &e_Player_&7."
+  User-reports: "&eSignalements de &7_Target_"
+  User-reports-details: "//&6Clic &7pour afficher les signalements//&aen cours &7du joueur &e_Target_&7."
+  User-reports-title: "&6Reports &7> &e_Target_ &7> &ePage _Page_"
+  User-archived-reports: "&eSignalements archiv\xe9s de &7_Target_"
+  User-archived-reports-details: "//&6Clic &7pour afficher les signalements//&8archiv\xe9s &7du joueur &e_Target_&7."
+  User-archived-reports-title: "&6Archives &7> &e_Target_ &7> &ePage _Page_"
   Archived-reports: "&eSignalements archiv\xe9s"
   Archived-reports-details: "//&6Clic &7pour afficher les signalements//&7archiv\xe9s."
   Archived-reports-title: "&6Archives &7> &ePage _Page_"

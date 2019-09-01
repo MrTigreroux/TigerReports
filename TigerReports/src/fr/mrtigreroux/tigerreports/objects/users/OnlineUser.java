@@ -73,7 +73,6 @@ public class OnlineUser extends User {
 	}
 
 	public void openDelayedlyCommentsMenu(Report r) {
-		p.closeInventory();
 		Bukkit.getScheduler().runTaskLater(TigerReports.getInstance(), new Runnable() {
 
 			@Override
@@ -94,6 +93,14 @@ public class OnlineUser extends User {
 
 	public void openUserMenu(User tu) {
 		new UserMenu(this, tu).open(true);
+	}
+
+	public void openUserReportsMenu(User tu, int page) {
+		new UserReportsMenu(this, page, tu).open(true);
+	}
+
+	public void openUserArchivedReportsMenu(User tu, int page) {
+		new UserArchivedReportsMenu(this, page, tu).open(true);
 	}
 
 	public void setOpenedMenu(Menu menu) {
@@ -159,7 +166,8 @@ public class OnlineUser extends User {
 					Comment c = r.getCommentById(Integer.parseInt(parts[1]));
 					sendCommentNotification(r, c, false);
 				} else if (ConfigUtils.playersNotifications()) {
-					sendReportNotification(TigerReports.getInstance().getReportsManager().getReportById(Integer.parseInt(notification), false), false);
+					sendReportNotification(TigerReports.getInstance().getReportsManager().getReportById(Integer.parseInt(notification), false),
+							false);
 				}
 			} catch (Exception invalidNotification) {}
 		}
