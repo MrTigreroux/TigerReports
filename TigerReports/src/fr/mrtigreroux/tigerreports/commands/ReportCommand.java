@@ -111,89 +111,104 @@ public class ReportCommand implements TabExecutor {
 				}
 			}
 		}
+		
+		String freason = reason;
+		
+		Bukkit.getScheduler().runTaskAsynchronously(TigerReports.getInstance(), new Runnable() {
 
-		String date = MessageUtils.getNowDate();
-		Database db = TigerReports.getInstance().getDb();
+			@Override
+			public void run() {
+				boolean cancelled = false;
+				
+				String date = MessageUtils.getNowDate();
+				Database db = TigerReports.getInstance().getDb();
 
-		int reportId = -1;
-		Report r = null;
-		if (ReportUtils.stackReports()) {
-			Map<String, Object> result = db.query(
-					"SELECT report_id,status,appreciation,date,reported_uuid,reporter_uuid,reason FROM tigerreports_reports WHERE status NOT LIKE ? AND reported_uuid = ? AND archived = ? AND LOWER(reason) = LOWER(?) LIMIT 1",
-					Arrays.asList(Status.DONE.getConfigWord()+"%", ruuid, 0, reason)).getResult(0);
-			if (result != null) {
-				try {
-					String reporterUuid = (String) result.get("reporter_uuid");
-					if (reporterUuid.contains(uuid)) {
-						MessageUtils.sendErrorMessage(p, Message.get("ErrorMessages.Player-already-reported-by-you")
-								.replace("_Player_", reportedName)
-								.replace("_Reason_", reason));
-						return true;
+				int reportId = -1;
+				Report r = null;
+				if (ReportUtils.stackReports()) {
+					Map<String, Object> result = db.query(
+							"SELECT report_id,status,appreciation,date,reported_uuid,reporter_uuid,reason FROM tigerreports_reports WHERE status NOT LIKE ? AND reported_uuid = ? AND archived = ? AND LOWER(reason) = LOWER(?) LIMIT 1",
+							Arrays.asList(Status.DONE.getConfigWord()+"%", ruuid, 0, freason)).getResult(0);
+					if (result != null) {
+						try {
+							String reporterUuid = (String) result.get("reporter_uuid");
+							if (reporterUuid.contains(uuid)) {
+								MessageUtils.sendErrorMessage(p, Message.get("ErrorMessages.Player-already-reported-by-you")
+										.replace("_Player_", reportedName)
+										.replace("_Reason_", freason));
+								cancelled = true;
+							}
+							else {
+								reporterUuid += ","+uuid;
+								result.put("reporter_uuid", reporterUuid);
+								r = ReportUtils.formatEssentialOfReport(result);
+								if (r != null) {
+									reportId = r.getId();
+									if (ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.UpdateDateOfStackedReports")) {
+										db.update("UPDATE tigerreports_reports SET reporter_uuid = ?, date = ? WHERE report_id = ?", Arrays.asList(reporterUuid, date, reportId));
+									} else {
+										db.update("UPDATE tigerreports_reports SET reporter_uuid = ? WHERE report_id = ?", Arrays.asList(reporterUuid, reportId));
+									}
+								}
+							}
+						} catch (Exception invalidReport) {}
 					}
-
-					reporterUuid += ","+uuid;
-					result.put("reporter_uuid", reporterUuid);
-					r = ReportUtils.formatEssentialOfReport(result);
-					if (r != null) {
-						reportId = r.getId();
-						if (ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.UpdateDateOfStackedReports")) {
-							db.update("UPDATE tigerreports_reports SET reporter_uuid = ?, date = ? WHERE report_id = ?", Arrays.asList(reporterUuid, date, reportId));
-						} else {
-							db.update("UPDATE tigerreports_reports SET reporter_uuid = ? WHERE report_id = ?", Arrays.asList(reporterUuid, reportId));
-						}
-					}
-				} catch (Exception invalidReport) {}
-			}
-		}
-
-		boolean missingData = false;
-		if (r == null) {
-			reportId = (reportId = ReportUtils.getTotalReports()+1) <= ReportUtils.getMaxReports() ? reportId : -1;
-
-			if (reportId != -1) {
-				List<Object> parameters;
-				if (rp != null) {
-					parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", date, ruuid, uuid, reason, rp.getAddress()
-							.getAddress()
-							.toString(), MessageUtils.formatConfigLocation(rp.getLocation()), ru.getLastMessages(), rp.getGameMode()
-									.toString()
-									.toLowerCase(), !rp.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().equals(Material.AIR), rp
-											.isSneaking(), rp.isSprinting(), (int) Math.round(rp.getHealth())+"/"+(int) Math.round(rp.getMaxHealth()),
-							rp.getFoodLevel(), MessageUtils.formatConfigEffects(rp.getActivePotionEffects()), p.getAddress().getAddress().toString(),
-							MessageUtils.formatConfigLocation(p.getLocation()), u.getLastMessages());
-				} else {
-					missingData = true;
-					parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", date, ruuid, uuid, reason, null, null, ru.getLastMessages(),
-							null, null, null, null, null, null, null, p.getAddress().toString(), MessageUtils.formatConfigLocation(p.getLocation()), u
-									.getLastMessages());
 				}
-				reportId = db.insert(
-						"INSERT INTO tigerreports_reports (status,appreciation,date,reported_uuid,reporter_uuid,reason,reported_ip,reported_location,reported_messages,reported_gamemode,reported_on_ground,reported_sneak,reported_sprint,reported_health,reported_food,reported_effects,reporter_ip,reporter_location,reporter_messages) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);",
-						parameters);
+
+				if(!cancelled) {
+					boolean missingData = false;
+					if (r == null) {
+						reportId = (reportId = ReportUtils.getTotalReports()+1) <= ReportUtils.getMaxReports() ? reportId : -1;
+	
+						if (reportId != -1) {
+							List<Object> parameters;
+							if (rp != null) {
+								parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", date, ruuid, uuid, freason, rp.getAddress()
+										.getAddress()
+										.toString(), MessageUtils.formatConfigLocation(rp.getLocation()), ru.getLastMessages(), rp.getGameMode()
+												.toString()
+												.toLowerCase(), !rp.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().equals(Material.AIR), rp
+														.isSneaking(), rp.isSprinting(), (int) Math.round(rp.getHealth())+"/"+(int) Math.round(rp.getMaxHealth()),
+										rp.getFoodLevel(), MessageUtils.formatConfigEffects(rp.getActivePotionEffects()), p.getAddress().getAddress().toString(),
+										MessageUtils.formatConfigLocation(p.getLocation()), u.getLastMessages());
+							} else {
+								missingData = true;
+								parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", date, ruuid, uuid, freason, null, null, ru.getLastMessages(),
+										null, null, null, null, null, null, null, p.getAddress().toString(), MessageUtils.formatConfigLocation(p.getLocation()), u
+												.getLastMessages());
+							}
+							reportId = db.insert(
+									"INSERT INTO tigerreports_reports (status,appreciation,date,reported_uuid,reporter_uuid,reason,reported_ip,reported_location,reported_messages,reported_gamemode,reported_on_ground,reported_sneak,reported_sprint,reported_health,reported_food,reported_effects,reporter_ip,reporter_location,reporter_messages) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);",
+									parameters);
+						}
+	
+						r = new Report(reportId, Status.WAITING.getConfigWord(), "None", date, ruuid, uuid, freason);
+					}
+	
+					String server = TigerReports.getInstance().getBungeeManager().getServerName();
+					ReportUtils.sendReport(r, server, true);
+					s.sendMessage(Message.REPORT_SENT.get().replace("_Player_", r.getPlayerName("Reported", false, false)).replace("_Reason_", freason));
+					TigerReports.getInstance()
+							.getBungeeManager()
+							.sendPluginNotification(reportId+" new_report "+date.replace(" ", "_")+" "+ruuid+" "+r.getLastReporterUniqueId()+" "+freason.replace(
+									" ", "_")+" "+server+" "+missingData);
+	
+					u.startCooldown(ReportUtils.getCooldown(), false);
+					ru.startImmunity(false);
+					u.changeStatistic("reports", 1);
+					ru.changeStatistic("reported_times", 1);
+	
+					for (String command : ConfigFile.CONFIG.get().getStringList("Config.AutoCommands"))
+						Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("_Server_", server)
+								.replace("_Date_", date)
+								.replace("_Reporter_", p.getName())
+								.replace("_Reported_", r.getPlayerName("Reported", false, false))
+								.replace("_Reason_", freason));
+				}
 			}
-
-			r = new Report(reportId, Status.WAITING.getConfigWord(), "None", date, ruuid, uuid, reason);
-		}
-
-		String server = TigerReports.getInstance().getBungeeManager().getServerName();
-		ReportUtils.sendReport(r, server, true);
-		s.sendMessage(Message.REPORT_SENT.get().replace("_Player_", r.getPlayerName("Reported", false, false)).replace("_Reason_", reason));
-		TigerReports.getInstance()
-				.getBungeeManager()
-				.sendPluginNotification(reportId+" new_report "+date.replace(" ", "_")+" "+ruuid+" "+r.getLastReporterUniqueId()+" "+reason.replace(
-						" ", "_")+" "+server+" "+missingData);
-
-		u.startCooldown(ReportUtils.getCooldown(), false);
-		ru.startImmunity(false);
-		u.changeStatistic("reports", 1);
-		ru.changeStatistic("reported_times", 1);
-
-		for (String command : ConfigFile.CONFIG.get().getStringList("Config.AutoCommands"))
-			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("_Server_", server)
-					.replace("_Date_", date)
-					.replace("_Reporter_", p.getName())
-					.replace("_Reported_", r.getPlayerName("Reported", false, false))
-					.replace("_Reason_", reason));
+			
+		});
+		
 		return true;
 	}
 
