@@ -1,4 +1,4 @@
-﻿Messages: # Russian messages by Dreylox. If you are in Minecraft 1.8 or less, encode in ANSI, else encode in UTF-8 / Если Вы используете Minecraft 1.8 или меньше, используйте кодировку ANSI, если Вы используете Minecraft более высокой версии, используйте кодировку UTF-8.
+﻿Messages: # Russian messages by Dreylox. If you are in Minecraft 1.8 or less, encode in ANSI, else encode in UTF-8 / Перевод на русский язык выполнен Dreylox. Если Вы используете Minecraft 1.8 или меньше, используйте кодировку ANSI, если Вы используете Minecraft более высокой версии, используйте кодировку UTF-8.
   Reload: "&7[&6TigerReports&7] &eКонфигурация плагина была перезагружена."
   Report-sent: "&7[&6Report&7] &eВы отправили жалобу на &6_Player_&e, причина: &7_Reason_&e."
   Alert: "&7[&cЖалоба &7- &8_Server_&7] &a_Reporter_ &7» &c_Reported_&7: &6_Reason_&7." 

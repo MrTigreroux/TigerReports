@@ -103,7 +103,7 @@ public class PunishmentMenu extends ReportManagerMenu {
 			String path = (configIndex.charAt(0) == 't' ? "Config.Punishments.Punishment" : "Config.DefaultReasons.Reason")+configIndex.substring(1);
 
 			for (String command : ConfigFile.CONFIG.get().getStringList(path+".PunishCommands")) {
-				command = command.replace("_Player_", reported).replace("_Staff_", p.getName());
+				command = command.replace("_Player_", reported).replace("_Staff_", p.getName()).replace("_Id_", Integer.toString(r.getId()));
 				if (command.startsWith("-CONSOLE")) {
 					Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.substring(9));
 				} else {

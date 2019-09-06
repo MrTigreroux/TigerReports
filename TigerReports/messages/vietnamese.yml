@@ -1,4 +1,4 @@
-﻿Messages: # Vietnamese messages by Huy5423. If you are in Minecraft 1.8 or less, encode in ANSI, else encode in UTF-8 - Việt hóa được tạo bởi Huy5423. Nếu bạn sử dụng phiên bản Minecraft 1.8 hoặc cũ hơn hãy encode lại tệp này dưới dạng ANSI hoặc UTF-8.
+﻿Messages: # Vietnamese messages by Huy5423. If you are in Minecraft 1.8 or less, encode in ANSI, else encode in UTF-8. / Việt hóa được tạo bởi Huy5423. Nếu bạn sử dụng phiên bản Minecraft 1.8 hoặc cũ hơn hãy encode lại tệp này dưới dạng ANSI hoặc UTF-8.
   Reload: "&7[&6TigerReports&7] &ePlugin đã được reload."
   Report-sent: "&7[&6Reports&7] &eBạn đã tố cáo người chơi: &6_Player_&e. Lý do: &c_Reason_&e."
   Alert: "&7[&cReport &7- &8_Server_&7] &a_Reporter_ &7» &c_Reported_&7: &6_Reason_&7."
