@@ -33,16 +33,16 @@ public class ReportsCommand implements TabExecutor {
 
 	@Override
 	public boolean onCommand(CommandSender s, Command cmd, String label, String[] args) {
+		TigerReports tr = TigerReports.getInstance();
 		if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
 			if (Permission.MANAGE.check(s)) {
 				MenuUpdater.stop(true);
-				TigerReports plugin = TigerReports.getInstance();
-				plugin.unload();
-				plugin.load();
-				plugin.getReportsManager().clearReports();
-				plugin.getUsersManager().clearUsers();
-				plugin.initializeDatabase();
-				BungeeManager bm = plugin.getBungeeManager();
+				tr.unload();
+				tr.load();
+				tr.getReportsManager().clearReports();
+				tr.getUsersManager().clearUsers();
+				tr.initializeDatabase();
+				BungeeManager bm = tr.getBungeeManager();
 				bm.collectServerName();
 				bm.collectOnlinePlayers();
 
@@ -58,7 +58,7 @@ public class ReportsCommand implements TabExecutor {
 		if (!UserUtils.checkPlayer(s) || !Permission.STAFF.check(s))
 			return true;
 		Player p = (Player) s;
-		OnlineUser u = TigerReports.getInstance().getUsersManager().getOnlineUser(p);
+		OnlineUser u = tr.getUsersManager().getOnlineUser(p);
 
 		switch (args.length) {
 			case 0:
@@ -76,8 +76,7 @@ public class ReportsCommand implements TabExecutor {
 						return true;
 					case "archiveall":
 						if (Permission.STAFF_ARCHIVE.check(s)) {
-							TigerReports.getInstance()
-									.getDb()
+							tr.getDb()
 									.updateAsynchronously("UPDATE tigerreports_reports SET archived = ? WHERE archived = ? AND status LIKE 'Done%'",
 											Arrays.asList(1, 0));
 							MessageUtils.sendStaffMessage(Message.STAFF_ARCHIVEALL.get().replace("_Player_", p.getName()), ConfigSound.STAFF.get());
@@ -89,17 +88,13 @@ public class ReportsCommand implements TabExecutor {
 						return true;
 					case "deleteall":
 						if (Permission.STAFF_DELETE.check(s)) {
-							TigerReports.getInstance()
-									.getDb()
-									.update("DELETE FROM tigerreports_reports WHERE archived = ?;", Collections.singletonList(1));
+							tr.getDb().update("DELETE FROM tigerreports_reports WHERE archived = ?;", Collections.singletonList(1));
 							MessageUtils.sendStaffMessage(Message.STAFF_DELETEALL.get().replace("_Player_", p.getName()), ConfigSound.STAFF.get());
 						}
 						return true;
 					default:
 						try {
-							u.openReportMenu(TigerReports.getInstance()
-									.getReportsManager()
-									.getReportById(Integer.parseInt(args[0].replace("#", "")), true));
+							u.openReportMenu(tr.getReportsManager().getReportById(Integer.parseInt(args[0].replace("#", "")), true));
 						} catch (Exception invalidIndex) {
 							MessageUtils.sendErrorMessage(s, Message.INVALID_REPORT_ID.get().replace("_Id_", args[0]));
 						}
@@ -107,7 +102,7 @@ public class ReportsCommand implements TabExecutor {
 				}
 			case 2:
 				String tuuid = UserUtils.getUniqueId(args[1]);
-				User tu = TigerReports.getInstance().getUsersManager().getUser(tuuid);
+				User tu = tr.getUsersManager().getUser(tuuid);
 				if (tu == null || !UserUtils.isValid(tuuid)) {
 					MessageUtils.sendErrorMessage(s, Message.INVALID_PLAYER.get().replace("_Player_", args[1]));
 					return true;

@@ -28,7 +28,7 @@ Config:
   # Time in seconds during the reported player cannot be reported again / Temps en secondes durant lequel un joueur signalé ne peut être à nouveau signalé
   AutoCommands: none
   # List of executed commands after a report, set 'none' to don't execute any / Liste des commandes exécutées après chaque signalement, mettre "none" pour aucune
-  # Usable tags:    _Server_, _Date_, _Reporter_, _Reported_ and _Reason_
+  # Usable placeholders:    _Server_, _Date_, _Reporter_, _Reported_ and _Reason_
   PunishSeconds: 3600
   # Cooldown inflicted for an abusive report / Temps d'attente infligé pour un signalement abusif
   MessagesHistory: 5
@@ -132,6 +132,7 @@ Config:
   #   Examples:    Material-Stone = Stone / Pierre    Material-Wool:2 = Magenta Wool / Laine magenta    Skull-MrTigreroux = Skull of player MrTigreroux / Tête du joueur MrTigreroux
   # PunishCommands:    List of commands to execute when punishing / Liste des commandes à exécuter lors d'une sanction.
   #                    Set '-CONSOLE' at the beginning of a command to execute it with the console (and not the staff member) / Mettre "-CONSOLE" au début d'une commande pour l'exécuter avec la console (et non le membre de la modération)
+  #                    Usable placeholders: _Id_ (id of the report), _Player_ (reported player name) and _Staff_ (processor staff name) / Données utilisables: _Id_ (identifiant du signalement), _Player_ (pseudo du joueur signalé) et _Staff_ (pseudo du membre du staff qui traite le signalement)
   Punishments:
     Enabled: yes
     # Open the punishments menu when processing a report as True / Ouvrir le menu des sanctions lors du traitement d'un signalement comme Vrai
@@ -157,6 +158,7 @@ Config:
   #   Examples:    Material-Stone = Stone / Pierre    Material-Wool:2 = Magenta Wool / Laine magenta    Skull-MrTigreroux = Skull of player MrTigreroux / Tête du joueur MrTigreroux
   # PunishCommands:    List of commands to execute when punishing / Liste des commandes à exécuter lors d'une sanction.
   #                    Set '-CONSOLE' at the beginning of a command to execute it with the console (and not the staff member) / Mettre "-CONSOLE" au début d'une commande pour l'exécuter avec la console (et non le membre de la modération)
+  #                    Usable placeholders: _Id_ (id of the report), _Player_ (reported player name) and _Staff_ (processor staff name) / Données utilisables: _Id_ (identifiant du signalement), _Player_ (pseudo du joueur signalé) et _Staff_ (pseudo du membre du staff qui traite le signalement)
 BungeeCord:
   Enabled: yes
   # Interact with the BungeeCord network / Intéragir avec le réseau BungeeCord

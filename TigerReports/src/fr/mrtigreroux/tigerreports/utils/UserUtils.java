@@ -20,7 +20,7 @@ public class UserUtils {
 
 	public static String getUniqueId(String name) {
 		try {
-			return Bukkit.getPlayerExact(name).getUniqueId().toString();
+			return Bukkit.getPlayer(name).getUniqueId().toString();
 		} catch (Exception offlinePlayer) {
 			return TigerReports.getInstance().getUsersManager().getUniqueId(name);
 		}
@@ -54,7 +54,7 @@ public class UserUtils {
 
 	public static Player getPlayer(String name) {
 		try {
-			return Bukkit.getPlayerExact(name);
+			return Bukkit.getPlayer(name);
 		} catch (Exception offlinePlayer) {
 			return null;
 		}

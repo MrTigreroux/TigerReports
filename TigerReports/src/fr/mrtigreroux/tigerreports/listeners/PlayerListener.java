@@ -45,10 +45,10 @@ public class PlayerListener implements Listener {
 	@EventHandler
 	private void onPlayerJoin(PlayerJoinEvent e) {
 		Player p = e.getPlayer();
-		TigerReports plugin = TigerReports.getInstance();
-		OnlineUser u = plugin.getUsersManager().getOnlineUser(p);
+		TigerReports tr = TigerReports.getInstance();
+		OnlineUser u = tr.getUsersManager().getOnlineUser(p);
 
-		Bukkit.getScheduler().runTaskLaterAsynchronously(TigerReports.getInstance(), new Runnable() {
+		Bukkit.getScheduler().runTaskLaterAsynchronously(tr, new Runnable() {
 
 			@Override
 			public void run() {
@@ -58,7 +58,7 @@ public class PlayerListener implements Listener {
 					if (reportsNotifications != null)
 						p.sendMessage(reportsNotifications);
 				}
-				plugin.getDb().updateUserName(p.getUniqueId().toString(), p.getName());
+				tr.getDb().updateUserName(p.getUniqueId().toString(), p.getName());
 			}
 
 		}, ConfigFile.CONFIG.get().getInt("Config.Notifications.Delay", 2)*20);
@@ -66,7 +66,7 @@ public class PlayerListener implements Listener {
 		u.updateImmunity(Permission.REPORT_EXEMPT.isOwned(u) ? "always" : null, false);
 
 		if (Permission.MANAGE.isOwned(u)) {
-			String newVersion = plugin.getWebManager().getNewVersion();
+			String newVersion = tr.getWebManager().getNewVersion();
 			if (newVersion != null) {
 				boolean english = ConfigUtils.getInfoLanguage().equalsIgnoreCase("English");
 				p.sendMessage("\u00A77[\u00A76TigerReports\u00A77] "+(english	? "\u00A7eThe plugin \u00A76TigerReports \u00A7ehas been updated."
@@ -86,7 +86,7 @@ public class PlayerListener implements Listener {
 			}
 		}
 
-		plugin.getBungeeManager().processPlayerConnection(p.getName());
+		tr.getBungeeManager().processPlayerConnection(p.getName());
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST)
