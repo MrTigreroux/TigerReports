@@ -57,7 +57,7 @@ public class OnlineUser extends User {
 	}
 
 	public void openReportMenu(Report r) {
-		new ReportMenu(this, r.getId()).open(true);
+		new ReportMenu(this, r.getId()).preloadAndOpen(true);
 	}
 
 	public void openProcessMenu(Report r) {

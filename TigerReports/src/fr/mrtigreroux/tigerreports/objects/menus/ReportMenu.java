@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -37,6 +38,29 @@ public class ReportMenu extends ReportManagerMenu {
 
 	public ReportMenu(OnlineUser u, int reportId) {
 		super(u, 54, 0, Permission.STAFF, reportId);
+	}
+	
+	public void preloadAndOpen(boolean sound) {
+		Bukkit.getScheduler().runTaskAsynchronously(TigerReports.getInstance(), new Runnable() {
+
+			@Override
+			public void run() {
+				statisticsQuery = TigerReports.getInstance()
+						.getDb()
+						.query("SELECT uuid,true_appreciations,uncertain_appreciations,false_appreciations,reports,reported_times,processed_reports FROM tigerreports_users WHERE uuid = ? OR uuid = ? LIMIT 2",
+								Arrays.asList(r.getReporterUniqueId(), r.getReportedUniqueId()));
+				
+				Bukkit.getScheduler().runTask(TigerReports.getInstance(), new Runnable() {
+
+					@Override
+					public void run() {
+						open(sound);
+					}
+					
+				});
+			}
+		
+		});
 	}
 
 	@Override
