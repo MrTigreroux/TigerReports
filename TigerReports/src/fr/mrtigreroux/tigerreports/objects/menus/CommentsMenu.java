@@ -14,6 +14,7 @@ import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.MenuItem;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.objects.Comment;
+import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.objects.users.User;
 import fr.mrtigreroux.tigerreports.utils.UserUtils;
@@ -24,8 +25,8 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu {
 
-	public CommentsMenu(OnlineUser u, int page, int reportId) {
-		super(u, 54, page, Permission.STAFF, reportId);
+	public CommentsMenu(OnlineUser u, int page, Report report) {
+		super(u, 54, page, Permission.STAFF, report);
 	}
 
 	@Override

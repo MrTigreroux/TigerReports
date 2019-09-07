@@ -22,6 +22,7 @@ import fr.mrtigreroux.tigerreports.data.constants.Status;
 import fr.mrtigreroux.tigerreports.data.database.QueryResult;
 import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.objects.CustomItem;
+import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
@@ -36,8 +37,8 @@ public class ReportMenu extends ReportManagerMenu {
 
 	private QueryResult statisticsQuery = null;
 
-	public ReportMenu(OnlineUser u, int reportId) {
-		super(u, 54, 0, Permission.STAFF, reportId);
+	public ReportMenu(OnlineUser u, Report report) {
+		super(u, 54, 0, Permission.STAFF, report);
 	}
 	
 	public void preloadAndOpen(boolean sound) {
@@ -76,12 +77,7 @@ public class ReportMenu extends ReportManagerMenu {
 					.replace("_Player_", r.getPlayerName("Reporter", false, true))
 					.replace("_Time_", MessageUtils.convertToSentence(ReportUtils.getPunishSeconds()))));
 		}
-
-		if (statisticsQuery == null)
-			statisticsQuery = TigerReports.getInstance()
-					.getDb()
-					.query("SELECT uuid,true_appreciations,uncertain_appreciations,false_appreciations,reports,reported_times,processed_reports FROM tigerreports_users WHERE uuid = ? OR uuid = ? LIMIT 2",
-							Arrays.asList(r.getReporterUniqueId(), r.getReportedUniqueId()));
+		
 		Map<String, Object> reporter_stats = statisticsQuery.getResult(0);
 		Map<String, Object> reported_stats = null;
 		if (reporter_stats != null && !reporter_stats.get("uuid").equals(r.getReporterUniqueId())) {

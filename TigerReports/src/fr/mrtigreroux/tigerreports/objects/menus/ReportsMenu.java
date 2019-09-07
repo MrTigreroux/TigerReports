@@ -1,5 +1,6 @@
 package fr.mrtigreroux.tigerreports.objects.menus;
 
+import org.bukkit.Bukkit;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -44,18 +45,33 @@ public class ReportsMenu extends Menu implements UpdatedMenu {
 		if (slot == 8 && Permission.STAFF_ARCHIVE.isOwned(u)) {
 			u.openArchivedReportsMenu(1, true);
 		} else if (slot >= 18 && slot <= size-9) {
-			Report r = TigerReports.getInstance().getReportsManager().getReport(false, getConfigIndex(slot));
-			if (r == null) {
-				update(false);
-			} else {
-				if (click.equals(ClickType.MIDDLE) && Permission.STAFF_ARCHIVE.isOwned(u)) {
-					u.openConfirmationMenu(r, "ARCHIVE");
-				} else if (click.equals(ClickType.DROP) && Permission.STAFF_DELETE.isOwned(u)) {
-					u.openConfirmationMenu(r, "DELETE");
-				} else {
-					u.openReportMenu(r);
+			Bukkit.getScheduler().runTaskAsynchronously(TigerReports.getInstance(), new Runnable() {
+
+				@Override
+				public void run() {
+					Report r = TigerReports.getInstance().getReportsManager().getReport(false, getConfigIndex(slot));
+					
+					Bukkit.getScheduler().runTask(TigerReports.getInstance(), new Runnable() {
+
+						@Override
+						public void run() {
+							if (r == null) {
+								update(false);
+							} else {
+								if (click.equals(ClickType.MIDDLE) && Permission.STAFF_ARCHIVE.isOwned(u)) {
+									u.openConfirmationMenu(r, "ARCHIVE");
+								} else if (click.equals(ClickType.DROP) && Permission.STAFF_DELETE.isOwned(u)) {
+									u.openConfirmationMenu(r, "DELETE");
+								} else {
+									u.openReportMenu(r);
+								}
+							}
+						}
+						
+					});
 				}
-			}
+				
+			});
 		}
 	}
 

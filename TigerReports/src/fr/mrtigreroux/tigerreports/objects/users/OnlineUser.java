@@ -57,19 +57,19 @@ public class OnlineUser extends User {
 	}
 
 	public void openReportMenu(Report r) {
-		new ReportMenu(this, r.getId()).preloadAndOpen(true);
+		new ReportMenu(this, r).preloadAndOpen(true);
 	}
 
 	public void openProcessMenu(Report r) {
-		new ProcessMenu(this, r.getId()).open(true);
+		new ProcessMenu(this, r).open(true);
 	}
 
 	public void openPunishmentMenu(int page, Report r) {
-		new PunishmentMenu(this, page, r.getId()).open(true);
+		new PunishmentMenu(this, page, r).open(true);
 	}
 
 	public void openConfirmationMenu(Report r, String action) {
-		new ConfirmationMenu(this, r.getId(), action).open(true);
+		new ConfirmationMenu(this, r, action).open(true);
 	}
 
 	public void openDelayedlyCommentsMenu(Report r) {
@@ -84,7 +84,7 @@ public class OnlineUser extends User {
 	}
 
 	public void openCommentsMenu(int page, Report r) {
-		new CommentsMenu(this, page, r.getId()).open(true);
+		new CommentsMenu(this, page, r).open(true);
 	}
 
 	public void openArchivedReportsMenu(int page, boolean sound) {

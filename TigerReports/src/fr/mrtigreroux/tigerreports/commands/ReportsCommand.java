@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -16,6 +17,7 @@ import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.managers.BungeeManager;
+import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.objects.users.User;
 import fr.mrtigreroux.tigerreports.runnables.MenuUpdater;
@@ -93,11 +95,19 @@ public class ReportsCommand implements TabExecutor {
 						}
 						return true;
 					default:
-						try {
-							u.openReportMenu(tr.getReportsManager().getReportById(Integer.parseInt(args[0].replace("#", "")), true));
-						} catch (Exception invalidIndex) {
-							MessageUtils.sendErrorMessage(s, Message.INVALID_REPORT_ID.get().replace("_Id_", args[0]));
-						}
+						Bukkit.getScheduler().runTaskAsynchronously(TigerReports.getInstance(), new Runnable() {
+
+							@Override
+							public void run() {
+								Report report = tr.getReportsManager().getReportById(Integer.parseInt(args[0].replace("#", "")), true);
+								try {
+									u.openReportMenu(report);
+								} catch (Exception invalidIndex) {
+									MessageUtils.sendErrorMessage(s, Message.INVALID_REPORT_ID.get().replace("_Id_", args[0]));
+								}
+							}
+							
+						});
 						return true;
 				}
 			case 2:

@@ -16,6 +16,7 @@ import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.MenuItem;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.objects.CustomItem;
+import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 
@@ -28,8 +29,8 @@ public class PunishmentMenu extends ReportManagerMenu {
 	private String reported = r.getPlayerName("Reported", false, false);
 	private Map<Integer, String> configIndexes = new HashMap<>();
 
-	public PunishmentMenu(OnlineUser u, int page, int reportId) {
-		super(u, 54, page, Permission.STAFF, reportId);
+	public PunishmentMenu(OnlineUser u, int page, Report report) {
+		super(u, 54, page, Permission.STAFF, report);
 	}
 
 	@Override

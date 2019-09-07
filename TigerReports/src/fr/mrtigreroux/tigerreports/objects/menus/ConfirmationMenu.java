@@ -8,6 +8,7 @@ import org.bukkit.inventory.ItemStack;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.objects.CustomItem;
+import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 
@@ -19,8 +20,8 @@ public class ConfirmationMenu extends ReportManagerMenu {
 
 	private String action;
 
-	public ConfirmationMenu(OnlineUser u, int reportId, String action) {
-		super(u, 27, 0, Permission.STAFF, reportId);
+	public ConfirmationMenu(OnlineUser u, Report report, String action) {
+		super(u, 27, 0, Permission.STAFF, report);
 		this.action = action;
 	}
 

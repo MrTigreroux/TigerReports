@@ -11,6 +11,7 @@ import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.MenuItem;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.objects.CustomItem;
+import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.ReportUtils;
@@ -21,8 +22,8 @@ import fr.mrtigreroux.tigerreports.utils.ReportUtils;
 
 public class ProcessMenu extends ReportManagerMenu {
 
-	public ProcessMenu(OnlineUser u, int reportId) {
-		super(u, 27, 0, Permission.STAFF, reportId);
+	public ProcessMenu(OnlineUser u, Report report) {
+		super(u, 27, 0, Permission.STAFF, report);
 	}
 
 	@Override
