@@ -48,7 +48,7 @@ public class PlayerListener implements Listener {
 		TigerReports tr = TigerReports.getInstance();
 		OnlineUser u = tr.getUsersManager().getOnlineUser(p);
 
-		Bukkit.getScheduler().runTaskLaterAsynchronously(tr, new Runnable() {
+		Bukkit.getScheduler().runTaskLater(tr, new Runnable() {
 
 			@Override
 			public void run() {

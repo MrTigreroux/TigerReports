@@ -2,11 +2,13 @@ package fr.mrtigreroux.tigerreports.objects.menus;
 
 import java.util.Map;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.data.constants.Statistic;
@@ -34,7 +36,7 @@ public class UserMenu extends Menu implements UpdatedMenu {
 		Inventory inv = getInventory(Message.USER_TITLE.get().replace("_Target_", name), true);
 
 		inv.setItem(4, new CustomItem().skullOwner(name).name(Message.USER.get().replace("_Target_", name)).create());
-		
+
 		String tag = "Menus.User-reports";
 		inv.setItem(27, new CustomItem().type(Material.BOOKSHELF)
 				.name(Message.get(tag).replace("_Target_", name))
@@ -51,24 +53,41 @@ public class UserMenu extends Menu implements UpdatedMenu {
 
 	@Override
 	public void onUpdate(Inventory inv) {
-		String cooldown = tu.getCooldown();
-		inv.setItem(8, new CustomItem().type(Material.GOLD_AXE)
-				.hideFlags(true)
-				.name(Message.COOLDOWN_STATUS.get().replace("_Time_", cooldown != null ? cooldown : Message.NONE_FEMALE.get()))
-				.lore(cooldown != null ? Message.COOLDOWN_STATUS_DETAILS.get()
-						.replace("_Player_", tu.getName())
-						.split(ConfigUtils.getLineBreakSymbol()) : null)
-				.create());
+		TigerReports tr = TigerReports.getInstance();
+		Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
 
-		Map<String, Integer> statistics = tu.getStatistics();
-		for (Statistic stat : Statistic.values()) {
-			int value = statistics.get(stat.getConfigName());
-			inv.setItem(stat.getPosition(), stat.getCustomItem()
-					.amount(value)
-					.name(Message.USER_STATISTIC.get().replace("_Statistic_", stat.getName()).replace("_Amount_", Integer.toString(value)))
-					.lore(Permission.MANAGE.isOwned(u) ? Message.USER_STATISTIC_DETAILS.get().split(ConfigUtils.getLineBreakSymbol()) : null)
-					.create());
-		}
+			@Override
+			public void run() {
+				String cooldown = tu.getCooldown();
+				Map<String, Integer> statistics = tu.getStatistics();
+				Bukkit.getScheduler().runTask(tr, new Runnable() {
+
+					@Override
+					public void run() {
+						inv.setItem(8, new CustomItem().type(Material.GOLD_AXE)
+								.hideFlags(true)
+								.name(Message.COOLDOWN_STATUS.get().replace("_Time_", cooldown != null ? cooldown : Message.NONE_FEMALE.get()))
+								.lore(cooldown != null ? Message.COOLDOWN_STATUS_DETAILS.get()
+										.replace("_Player_", tu.getName())
+										.split(ConfigUtils.getLineBreakSymbol()) : null)
+								.create());
+
+						for (Statistic stat : Statistic.values()) {
+							int value = statistics.get(stat.getConfigName());
+							inv.setItem(stat.getPosition(), stat.getCustomItem()
+									.amount(value)
+									.name(Message.USER_STATISTIC.get()
+											.replace("_Statistic_", stat.getName())
+											.replace("_Amount_", Integer.toString(value)))
+									.lore(Permission.MANAGE.isOwned(u)	? Message.USER_STATISTIC_DETAILS.get().split(ConfigUtils.getLineBreakSymbol())
+																		: null)
+									.create());
+						}
+					}
+
+				});
+			}
+		});
 	}
 
 	@Override

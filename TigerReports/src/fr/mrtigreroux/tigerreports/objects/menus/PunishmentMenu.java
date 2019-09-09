@@ -6,6 +6,7 @@ import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -18,6 +19,7 @@ import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.objects.CustomItem;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
+import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 /**
  * @author MrTigreroux
@@ -25,7 +27,6 @@ import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 
 public class PunishmentMenu extends ReportManagerMenu {
 
-	private String reported = r.getPlayerName("Reported", false, false);
 	private Map<Integer, String> configIndexes = new HashMap<>();
 
 	public PunishmentMenu(OnlineUser u, int page, int reportId) {
@@ -34,6 +35,7 @@ public class PunishmentMenu extends ReportManagerMenu {
 
 	@Override
 	public Inventory onOpen() {
+		String reported = r.getPlayerName("Reported", false, false);
 		Inventory inv = getInventory(Message.PUNISH_TITLE.get().replace("_Reported_", reported), true);
 
 		inv.setItem(0, MenuItem.CANCEL_PROCESS.get());
@@ -76,7 +78,7 @@ public class PunishmentMenu extends ReportManagerMenu {
 					.skullOwner(ConfigUtils.getSkull(ConfigFile.CONFIG.get(), path+".Item"))
 					.name(Message.PUNISHMENT.get().replace("_Punishment_", punishment))
 					.lore(Message.PUNISHMENT_DETAILS.get()
-							.replace("_Reported_", reported)
+							.replace("_Reported_", r.getPlayerName("Reported", false, false))
 							.replace("_Punishment_", punishment)
 							.replace("_Lore_", ChatColor.translateAlternateColorCodes(ConfigUtils.getColorCharacter(), ConfigFile.CONFIG.get()
 									.getString(path+".Lore")))
@@ -93,7 +95,7 @@ public class PunishmentMenu extends ReportManagerMenu {
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
 		if (slot == 0) {
-			u.openReportMenu(r);
+			u.openReportMenu(r.getId());
 		} else if (slot == 8) {
 			r.process(p.getUniqueId().toString(), p.getName(), "True", false, Permission.STAFF_ARCHIVE_AUTO.isOwned(u));
 			u.openDelayedlyReportsMenu();
@@ -103,17 +105,26 @@ public class PunishmentMenu extends ReportManagerMenu {
 			String path = (configIndex.charAt(0) == 't' ? "Config.Punishments.Punishment" : "Config.DefaultReasons.Reason")+configIndex.substring(1);
 
 			for (String command : ConfigFile.CONFIG.get().getStringList(path+".PunishCommands")) {
-				command = command.replace("_Player_", reported).replace("_Staff_", p.getName()).replace("_Id_", Integer.toString(r.getId()));
-				if (command.startsWith("-CONSOLE")) {
-					Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.substring(9));
+				command = command.replace("_Reported_", r.getPlayerName("Reported", false, false)).replace("_Staff_", p.getName()).replace("_Id_", Integer.toString(r.getId()));
+				if (command.contains("_Reporter_")) {
+					for (String uuid : r.getReportersUniqueIds())
+						executePunishCommand(p, command.replace("_Reporter_", UserUtils.getName(uuid)));
 				} else {
-					Bukkit.dispatchCommand(p, command);
+					executePunishCommand(p, command);
 				}
 			}
 
 			r.processPunishing(p.getUniqueId().toString(), p.getName(), false, Permission.STAFF_ARCHIVE_AUTO.isOwned(u), ConfigFile.CONFIG.get()
 					.getString(path+".Name"));
 			u.openDelayedlyReportsMenu();
+		}
+	}
+
+	private void executePunishCommand(Player p, String command) {
+		if (command.startsWith("-CONSOLE")) {
+			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.substring(9));
+		} else {
+			Bukkit.dispatchCommand(p, command);
 		}
 	}
 

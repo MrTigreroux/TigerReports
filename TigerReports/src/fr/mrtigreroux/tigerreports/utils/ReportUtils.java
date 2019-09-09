@@ -74,30 +74,47 @@ public class ReportUtils {
 			firstReport += (page-1)*27;
 		}
 
-		List<Map<String, Object>> results = TigerReports.getInstance()
-				.getDb()
-				.query("SELECT report_id,status,appreciation,date,reported_uuid,reporter_uuid,reason FROM tigerreports_reports WHERE archived = ? "
-						+(reporter != null ? "AND reporter_uuid LIKE '%"+reporter+"%'" : "")+"LIMIT 28 OFFSET ?", Arrays.asList(archived ? 1 : 0,
-								firstReport-1))
-				.getResultList();
-		int index = 0;
-		for (int slot = 18; slot < 45; slot++) {
-			if (index == -1) {
-				inv.setItem(slot, null);
-			} else {
-				Report r = formatEssentialOfReport(index < results.size() ? results.get(index) : null);
-				if (r == null) {
-					inv.setItem(slot, null);
-					index = -1;
-				} else {
-					inv.setItem(slot, r.getItem(actions));
-					index++;
-				}
-			}
-		}
+		int first = firstReport-1;
+		TigerReports tr = TigerReports.getInstance();
+		Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
 
-		if (results.size() == 28)
-			inv.setItem(size-3, MenuItem.PAGE_SWITCH_NEXT.get());
+			@Override
+			public void run() {
+				List<Map<String, Object>> results = tr.getDb()
+						.query("SELECT report_id,status,appreciation,date,reported_uuid,reporter_uuid,reason FROM tigerreports_reports WHERE archived = ? "
+								+(reporter != null ? "AND reporter_uuid LIKE '%"+reporter+"%'" : "")+"LIMIT 28 OFFSET ?", Arrays.asList(archived	? 1
+																																					: 0,
+										first))
+						.getResultList();
+
+				Bukkit.getScheduler().runTask(tr, new Runnable() {
+
+					@Override
+					public void run() {
+						int index = 0;
+						for (int slot = 18; slot < 45; slot++) {
+							if (index == -1) {
+								inv.setItem(slot, null);
+							} else {
+								Report r = formatEssentialOfReport(index < results.size() ? results.get(index) : null);
+								if (r == null) {
+									inv.setItem(slot, null);
+									index = -1;
+								} else {
+									inv.setItem(slot, r.getItem(actions));
+									index++;
+								}
+							}
+						}
+
+						if (results.size() == 28)
+							inv.setItem(size-3, MenuItem.PAGE_SWITCH_NEXT.get());
+					}
+
+				});
+			}
+
+		});
 	}
 
 	public static int getTotalReports() {

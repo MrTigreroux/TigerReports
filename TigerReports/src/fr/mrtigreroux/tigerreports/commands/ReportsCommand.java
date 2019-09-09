@@ -88,13 +88,13 @@ public class ReportsCommand implements TabExecutor {
 						return true;
 					case "deleteall":
 						if (Permission.STAFF_DELETE.check(s)) {
-							tr.getDb().update("DELETE FROM tigerreports_reports WHERE archived = ?;", Collections.singletonList(1));
+							tr.getDb().updateAsynchronously("DELETE FROM tigerreports_reports WHERE archived = ?", Collections.singletonList(1));
 							MessageUtils.sendStaffMessage(Message.STAFF_DELETEALL.get().replace("_Player_", p.getName()), ConfigSound.STAFF.get());
 						}
 						return true;
 					default:
 						try {
-							u.openReportMenu(tr.getReportsManager().getReportById(Integer.parseInt(args[0].replace("#", "")), true));
+							u.openReportMenu(Integer.parseInt(args[0].replace("#", "")));
 						} catch (Exception invalidIndex) {
 							MessageUtils.sendErrorMessage(s, Message.INVALID_REPORT_ID.get().replace("_Id_", args[0]));
 						}
@@ -124,6 +124,7 @@ public class ReportsCommand implements TabExecutor {
 			default:
 				break;
 		}
+
 		s.sendMessage(Message.INVALID_SYNTAX.get().replace("_Command_", "/"+label+" "+Message.REPORTS_SYNTAX.get()));
 		return true;
 	}

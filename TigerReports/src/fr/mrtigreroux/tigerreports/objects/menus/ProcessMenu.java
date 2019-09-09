@@ -66,7 +66,7 @@ public class ProcessMenu extends ReportManagerMenu {
 				process("False");
 				break;
 			case 18:
-				u.openReportMenu(r);
+				u.openReportMenu(r.getId());
 				break;
 			default:
 				break;

@@ -1,9 +1,11 @@
 package fr.mrtigreroux.tigerreports.objects.menus;
 
+import org.bukkit.Bukkit;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.objects.Report;
@@ -34,15 +36,30 @@ public class UserArchivedReportsMenu extends UserManagerMenu implements UpdatedM
 		if (slot == 0) {
 			u.openUserMenu(tu);
 		} else if (slot >= 18 && slot <= size-9) {
-			Report r = getReport(true, getConfigIndex(slot));
-			if (r == null) {
-				update(true);
-			} else if (click.equals(ClickType.DROP) && Permission.STAFF_DELETE.isOwned(u)) {
-				u.openConfirmationMenu(r, "DELETE_ARCHIVE");
-			} else {
-				r.unarchive(p.getName(), false);
-				u.openDelayedlyReportsMenu();
-			}
+			TigerReports tr = TigerReports.getInstance();
+			Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
+
+				@Override
+				public void run() {
+					Report r = getReport(true, getConfigIndex(slot));
+					Bukkit.getScheduler().runTask(tr, new Runnable() {
+
+						@Override
+						public void run() {
+							if (r == null) {
+								update(true);
+							} else if (click.equals(ClickType.DROP) && Permission.STAFF_DELETE.isOwned(u)) {
+								u.openConfirmationMenu(r, "DELETE_ARCHIVE");
+							} else {
+								r.unarchive(p.getName(), false);
+								u.openDelayedlyReportsMenu();
+							}
+						}
+
+					});
+				}
+
+			});
 		}
 	}
 

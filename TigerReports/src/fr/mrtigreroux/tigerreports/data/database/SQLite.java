@@ -66,8 +66,15 @@ public class SQLite extends Database {
 	}
 
 	public void updateUserName(String uuid, String name) {
-		update("INSERT OR IGNORE INTO tigerreports_users (uuid,name) VALUES (?,?)", Arrays.asList(uuid, name));
-		update("UPDATE tigerreports_users SET name = ? WHERE uuid = ?", Arrays.asList(name, uuid));
+		Bukkit.getScheduler().runTaskAsynchronously(TigerReports.getInstance(), new Runnable() {
+
+			@Override
+			public void run() {
+				update("INSERT OR IGNORE INTO tigerreports_users (uuid,name) VALUES (?,?)", Arrays.asList(uuid, name));
+				update("UPDATE tigerreports_users SET name = ? WHERE uuid = ?", Arrays.asList(name, uuid));
+			}
+
+		});
 	}
 
 }

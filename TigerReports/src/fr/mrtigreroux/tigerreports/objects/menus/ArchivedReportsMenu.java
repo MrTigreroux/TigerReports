@@ -1,5 +1,6 @@
 package fr.mrtigreroux.tigerreports.objects.menus;
 
+import org.bukkit.Bukkit;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -34,8 +35,10 @@ public class ArchivedReportsMenu extends Menu implements UpdatedMenu {
 
 	@Override
 	public void onUpdate(Inventory inv) {
-		ReportUtils.addReports(null, true, inv, page, Message.REPORT_RESTORE_ACTION.get()+(Permission.STAFF_DELETE.isOwned(u) ? Message.REPORT_DELETE_ACTION
-				.get() : ""));
+		ReportUtils.addReports(null, true, inv, page, Message.REPORT_RESTORE_ACTION.get()+(Permission.STAFF_DELETE.isOwned(u)
+																																? Message.REPORT_DELETE_ACTION
+																																		.get()
+																																: ""));
 	}
 
 	@Override
@@ -43,15 +46,30 @@ public class ArchivedReportsMenu extends Menu implements UpdatedMenu {
 		if (slot == 0) {
 			u.openReportsMenu(1, true);
 		} else if (slot >= 18 && slot <= size-9) {
-			Report r = TigerReports.getInstance().getReportsManager().getReport(true, getConfigIndex(slot));
-			if (r == null) {
-				update(true);
-			} else if (click.equals(ClickType.DROP) && Permission.STAFF_DELETE.isOwned(u)) {
-				u.openConfirmationMenu(r, "DELETE_ARCHIVE");
-			} else {
-				r.unarchive(p.getName(), false);
-				u.openDelayedlyReportsMenu();
-			}
+			TigerReports tr = TigerReports.getInstance();
+			Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
+
+				@Override
+				public void run() {
+					Report r = tr.getReportsManager().getReport(true, getConfigIndex(slot));
+					Bukkit.getScheduler().runTask(tr, new Runnable() {
+
+						@Override
+						public void run() {
+							if (r == null) {
+								update(true);
+							} else if (click.equals(ClickType.DROP) && Permission.STAFF_DELETE.isOwned(u)) {
+								u.openConfirmationMenu(r, "DELETE_ARCHIVE");
+							} else {
+								r.unarchive(p.getName(), false);
+								u.openDelayedlyReportsMenu();
+							}
+						}
+
+					});
+				}
+
+			});
 		}
 	}
 

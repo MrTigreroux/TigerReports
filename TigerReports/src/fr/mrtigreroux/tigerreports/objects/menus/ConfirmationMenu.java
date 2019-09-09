@@ -56,7 +56,7 @@ public class ConfirmationMenu extends ReportManagerMenu {
 	public void onClick(ItemStack item, int slot, ClickType click) {
 		if (slot == 11) {
 			if (!Permission.valueOf("STAFF_"+(action.equals("DELETE_ARCHIVE") ? "DELETE" : action)).isOwned(u)) {
-				u.openReportMenu(r);
+				u.openReportMenu(r.getId());
 				return;
 			}
 
@@ -76,7 +76,7 @@ public class ConfirmationMenu extends ReportManagerMenu {
 			if (action.equals("DELETE_ARCHIVE")) {
 				u.openArchivedReportsMenu(1, true);
 			} else {
-				u.openReportMenu(r);
+				u.openReportMenu(r.getId());
 			}
 		}
 	}

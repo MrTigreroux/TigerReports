@@ -73,58 +73,59 @@ Config:
       Lore: "&7Le joueur se d\xe9place dans//&7les airs."
       Item: Material-Feather
       PunishCommands:
-      - "ban _Player_ 7d Fly"
+      - "ban _Reported_ 7d Fly"
   #    - '-CONSOLE title @a title {"text":""}'
-  #    - '-CONSOLE title @a subtitle ["",{"text":"_Player_","color":"red"},{"text":" a \u00e9t\u00e9 banni pour: ","color":"gray"},{"text":"Fly","color":"yellow"}]'
-  #    - '-CONSOLE tellraw _Staff_ {"text":"Vous avez sanctionn\u00e9 le joueur _Player_"}'
+  #    - '-CONSOLE title @a subtitle ["",{"text":"_Reported_","color":"red"},{"text":" a \u00e9t\u00e9 banni pour: ","color":"gray"},{"text":"Fly","color":"yellow"}]'
+  #    - '-CONSOLE tellraw _Staff_ {"text":"Vous avez sanctionn\u00e9 le joueur _Reported_"}'
+  #    - '-CONSOLE eco give _Reporter_ 5'
     Reason2:
       Name: "Speed"
       Lore: "&7Le joueur se d\xe9place anormalement//&7vite."
       Item: Material-Chainmail_leggings
       PunishCommands:
-      - "ban _Player_ 7d Speed"
+      - "ban _Reported_ 7d Speed"
     Reason3:
       Name: "ForceField"
       Lore: "&7Le joueur tape les joueurs/entit\xe9s//&7proches de lui de fa\u00E7on suspecte."
       Item: Material-Iron_sword
       PunishCommands:
-      - "ban _Player_ 14d ForceField"
+      - "ban _Reported_ 14d ForceField"
     Reason4:
       Name: "Reach"
       Lore: "&7Le joueur tape de tr\u00E8s loin//&7les joueurs/entit\xe9s."
       Item: Material-Stick
       PunishCommands:
-      - "ban _Player_ 7d Reach"
+      - "ban _Reported_ 7d Reach"
     Reason5:
       Name: "RapidBowShot"
       Lore: "&7Le joueur tire des fl\u00E8ches//&7tr\u00E8s vite."
       Item: Material-Bow
       PunishCommands:
-      - "ban _Player_ 7d RapidBowShot"
+      - "ban _Reported_ 7d RapidBowShot"
     Reason6:
       Name: "NoKnockback"
       Lore: "&7Le joueur ne recule pas//&7lorsqu'il est frapp\xe9."
       Item: Material-Fishing_rod
       PunishCommands:
-      - "ban _Player_ 7d NoKnockback"
+      - "ban _Reported_ 7d NoKnockback"
     Reason7:
       Name: "Grief"
       Lore: "&7Le joueur a d\xe9grad\xe9 une de//&7mes constructions."
       Item: Material-TNT
       PunishCommands:
-      - "ban _Player_ 2d Grief"
+      - "ban _Reported_ 2d Grief"
     Reason8:
       Name: "Vol"
       Lore: "&7Le joueur m'a vol\xe9 des ressources."
       Item: Material-Chest
       PunishCommands:
-      - "ban _Player_ 1d Vol"
+      - "ban _Reported_ 1d Vol"
     Reason9:
       Name: "Insultes"
       Lore: "&7Le joueur est irrespectueux."
       Item: Material-Sign
       PunishCommands:
-      - "mute _Player_ 2h Insultes"
+      - "mute _Reported_ 2h Insultes"
   # Default reasons displayed in a menu / Raisons par défaut affichées dans un menu
   # Name:    Reason of the report / Raison du signalement
   # Lore:    Description of the report / Description du signalement
@@ -132,7 +133,7 @@ Config:
   #   Examples:    Material-Stone = Stone / Pierre    Material-Wool:2 = Magenta Wool / Laine magenta    Skull-MrTigreroux = Skull of player MrTigreroux / Tête du joueur MrTigreroux
   # PunishCommands:    List of commands to execute when punishing / Liste des commandes à exécuter lors d'une sanction.
   #                    Set '-CONSOLE' at the beginning of a command to execute it with the console (and not the staff member) / Mettre "-CONSOLE" au début d'une commande pour l'exécuter avec la console (et non le membre de la modération)
-  #                    Usable placeholders: _Id_ (id of the report), _Player_ (reported player name) and _Staff_ (processor staff name) / Données utilisables: _Id_ (identifiant du signalement), _Player_ (pseudo du joueur signalé) et _Staff_ (pseudo du membre du staff qui traite le signalement)
+  #                    Usable placeholders: _Id_ (id of the report), _Reported_ (reported player name), _Reporter_ (reporter player name, the command is executed for each reporter if they are multiple) and _Staff_ (processor staff name) / Données utilisables: _Id_ (identifiant du signalement), _Reported_ (pseudo du joueur signalé), _Reporter_ (pseudo du joueur signaleur, la commande est exécutée pour chaque signaleur s'il y en a plusieurs) et _Staff_ (pseudo du membre du staff qui traite le signalement)
   Punishments:
     Enabled: yes
     # Open the punishments menu when processing a report as True / Ouvrir le menu des sanctions lors du traitement d'un signalement comme Vrai
@@ -144,13 +145,13 @@ Config:
       Lore: "&7Le joueur r\xe9utilise un hack."
       Item: Material-TNT
       PunishCommands:
-      - "ban _Player_ 1m R\xe9cidive de triche"
+      - "ban _Reported_ 1m R\xe9cidive de triche"
     Punishment2:
       Name: "Harc\u00E8lement"
       Lore: "&7Le joueur harc\u00E8le les autres."
       Item: Material-Pumpkin
       PunishCommands:
-      - "ban _Player_ 7d Harc\u00E8lement"
+      - "ban _Reported_ 7d Harc\u00E8lement"
   # Punishments available after processing a report as True / Sanctions disponibles après avoir traité un signalement comme vrai.
   # Name:    Name of the punsihment / Nom de la sanction
   # Lore:    Description of the punishment / Description de la sanction
@@ -158,7 +159,7 @@ Config:
   #   Examples:    Material-Stone = Stone / Pierre    Material-Wool:2 = Magenta Wool / Laine magenta    Skull-MrTigreroux = Skull of player MrTigreroux / Tête du joueur MrTigreroux
   # PunishCommands:    List of commands to execute when punishing / Liste des commandes à exécuter lors d'une sanction.
   #                    Set '-CONSOLE' at the beginning of a command to execute it with the console (and not the staff member) / Mettre "-CONSOLE" au début d'une commande pour l'exécuter avec la console (et non le membre de la modération)
-  #                    Usable placeholders: _Id_ (id of the report), _Player_ (reported player name) and _Staff_ (processor staff name) / Données utilisables: _Id_ (identifiant du signalement), _Player_ (pseudo du joueur signalé) et _Staff_ (pseudo du membre du staff qui traite le signalement)
+  #                    Usable placeholders: _Id_ (id of the report), _Reported_ (reported player name), _Reporter_ (reporter player name, the command is executed for each reporter if they are multiple) and _Staff_ (processor staff name) / Données utilisables: _Id_ (identifiant du signalement), _Reported_ (pseudo du joueur signalé), _Reporter_ (pseudo du joueur signaleur, la commande est exécutée pour chaque signaleur s'il y en a plusieurs) et _Staff_ (pseudo du membre du staff qui traite le signalement)
 BungeeCord:
   Enabled: yes
   # Interact with the BungeeCord network / Intéragir avec le réseau BungeeCord

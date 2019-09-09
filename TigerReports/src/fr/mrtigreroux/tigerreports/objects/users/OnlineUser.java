@@ -56,8 +56,14 @@ public class OnlineUser extends User {
 		new ReportsMenu(this, page).open(sound);
 	}
 
+	public void openReportMenu(int reportId) {
+		new ReportMenu(this, reportId).open(true);
+	}
+
 	public void openReportMenu(Report r) {
-		new ReportMenu(this, r.getId()).open(true);
+		ReportMenu rm = new ReportMenu(this, r.getId());
+		rm.setReport(r);
+		rm.open(true);
 	}
 
 	public void openProcessMenu(Report r) {
@@ -160,14 +166,43 @@ public class OnlineUser extends User {
 	public void sendNotifications() {
 		for (String notification : getNotifications()) {
 			try {
+				TigerReports tr = TigerReports.getInstance();
 				if (notification.contains(":")) {
 					String[] parts = notification.split(":");
-					Report r = TigerReports.getInstance().getReportsManager().getReportById(Integer.parseInt(parts[0]), false);
-					Comment c = r.getCommentById(Integer.parseInt(parts[1]));
-					sendCommentNotification(r, c, false);
+					Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
+
+						@Override
+						public void run() {
+							Report r = TigerReports.getInstance().getReportsManager().getReportById(Integer.parseInt(parts[0]), false);
+							Comment c = r.getCommentById(Integer.parseInt(parts[1]));
+							Bukkit.getScheduler().runTask(tr, new Runnable() {
+
+								@Override
+								public void run() {
+									sendCommentNotification(r, c, false);
+								}
+
+							});
+						}
+
+					});
 				} else if (ConfigUtils.playersNotifications()) {
-					sendReportNotification(TigerReports.getInstance().getReportsManager().getReportById(Integer.parseInt(notification), false),
-							false);
+					Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
+
+						@Override
+						public void run() {
+							Report r = TigerReports.getInstance().getReportsManager().getReportById(Integer.parseInt(notification), false);
+							Bukkit.getScheduler().runTask(tr, new Runnable() {
+
+								@Override
+								public void run() {
+									sendReportNotification(r, false);
+								}
+
+							});
+						}
+
+					});
 				}
 			} catch (Exception invalidNotification) {}
 		}

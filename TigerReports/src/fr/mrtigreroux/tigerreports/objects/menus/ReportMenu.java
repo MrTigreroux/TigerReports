@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -14,18 +15,13 @@ import org.bukkit.inventory.ItemStack;
 import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
-import fr.mrtigreroux.tigerreports.data.constants.MenuItem;
-import fr.mrtigreroux.tigerreports.data.constants.Permission;
-import fr.mrtigreroux.tigerreports.data.constants.Statistic;
-import fr.mrtigreroux.tigerreports.data.constants.Status;
+import fr.mrtigreroux.tigerreports.data.constants.*;
 import fr.mrtigreroux.tigerreports.data.database.QueryResult;
 import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.objects.CustomItem;
+import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
-import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
-import fr.mrtigreroux.tigerreports.utils.MessageUtils;
-import fr.mrtigreroux.tigerreports.utils.ReportUtils;
-import fr.mrtigreroux.tigerreports.utils.UserUtils;
+import fr.mrtigreroux.tigerreports.utils.*;
 
 /**
  * @author MrTigreroux
@@ -34,9 +30,49 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
 public class ReportMenu extends ReportManagerMenu {
 
 	private QueryResult statisticsQuery = null;
+	private boolean statisticsCollected = false;
 
 	public ReportMenu(OnlineUser u, int reportId) {
 		super(u, 54, 0, Permission.STAFF, reportId);
+	}
+
+	@Override
+	protected boolean collectReport() {
+		if (reportCollected && statisticsCollected) {
+			return true;
+		} else {
+			Report r = this.r;
+			TigerReports tr = TigerReports.getInstance();
+			Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
+
+				@Override
+				public void run() {
+					Report upr = r != null ? r : tr.getReportsManager().getReportById(reportId, true);
+					QueryResult upStatisticsQuery = statisticsQuery != null	? statisticsQuery
+																			: upr != null ? tr.getDb()
+																					.query("SELECT uuid,true_appreciations,uncertain_appreciations,false_appreciations,reports,reported_times,processed_reports FROM tigerreports_users WHERE uuid = ? OR uuid = ? LIMIT 2",
+																							Arrays.asList(upr.getReporterUniqueId(), upr
+																									.getReportedUniqueId())) : null;
+					Bukkit.getScheduler().runTask(tr, new Runnable() {
+
+						@Override
+						public void run() {
+							setReport(upr);
+							setStatistics(upStatisticsQuery);
+							open(true);
+						}
+
+					});
+				}
+
+			});
+			return false;
+		}
+	}
+
+	private void setStatistics(QueryResult statistics) {
+		this.statisticsCollected = true;
+		this.statisticsQuery = statistics;
 	}
 
 	@Override
@@ -53,18 +89,15 @@ public class ReportMenu extends ReportManagerMenu {
 					.replace("_Time_", MessageUtils.convertToSentence(ReportUtils.getPunishSeconds()))));
 		}
 
-		if (statisticsQuery == null)
-			statisticsQuery = TigerReports.getInstance()
-					.getDb()
-					.query("SELECT uuid,true_appreciations,uncertain_appreciations,false_appreciations,reports,reported_times,processed_reports FROM tigerreports_users WHERE uuid = ? OR uuid = ? LIMIT 2",
-							Arrays.asList(r.getReporterUniqueId(), r.getReportedUniqueId()));
-		Map<String, Object> reporter_stats = statisticsQuery.getResult(0);
+		Map<String, Object> reporter_stats = statisticsQuery != null ? statisticsQuery.getResult(0) : null;
 		Map<String, Object> reported_stats = null;
 		if (reporter_stats != null && !reporter_stats.get("uuid").equals(r.getReporterUniqueId())) {
 			reported_stats = reporter_stats;
-			reporter_stats = statisticsQuery.getResult(1);
+			if (statisticsQuery != null)
+				reporter_stats = statisticsQuery.getResult(1);
 		} else {
-			reported_stats = statisticsQuery.getResult(1);
+			if (statisticsQuery != null)
+				reported_stats = statisticsQuery.getResult(1);
 		}
 
 		for (String type : new String[] {"Reporter", "Reported"}) {
@@ -74,19 +107,18 @@ public class ReportMenu extends ReportManagerMenu {
 					.replace("_Others_", r.getReportersNames(1)) : Message.PLAYER_DETAILS.get();
 			Map<String, Object> statistics = type.equals("Reporter") ? reporter_stats : reported_stats;
 
-			if (statistics != null) {
-				for (Statistic stat : Statistic.values()) {
-					String statName = stat.getConfigName();
-					String value = null;
-					try {
-						value = String.valueOf(statistics.get(statName));
-					} catch (Exception notFound) {}
-					if (value == null)
-						value = Message.NOT_FOUND_MALE.get();
-					details = details.replace("_"+statName.substring(0, 1).toUpperCase()+statName.substring(1).replace("_", "")+"_", value);
-				}
+			for (Statistic stat : Statistic.values()) {
+				String statName = stat.getConfigName();
+				String value = null;
+				try {
+					value = statistics != null ? String.valueOf(statistics.get(statName)) : null;
+				} catch (Exception notFound) {}
+				if (value == null)
+					value = Message.NOT_FOUND_MALE.get();
+				details = details.replace("_"+statName.substring(0, 1).toUpperCase()+statName.substring(1).replace("_", "")+"_", value);
 			}
-			String serverName = (serverName = MessageUtils.getServer(r.getOldLocation(type))) != null ? MessageUtils.getServerName(serverName) : Message.NOT_FOUND_MALE.get();
+			String serverName = (serverName = MessageUtils.getServer(r.getOldLocation(type))) != null	? MessageUtils.getServerName(serverName)
+																										: Message.NOT_FOUND_MALE.get();
 
 			String tp = "";
 			if (Permission.STAFF_TELEPORT.isOwned(u)) {
@@ -151,11 +183,11 @@ public class ReportMenu extends ReportManagerMenu {
 				Location loc = null;
 				String configLoc = null;
 				boolean tpDifferentServer = false;
-				
+
 				BungeeManager bm = TigerReports.getInstance().getBungeeManager();
 				if (click.toString().contains("LEFT")) {
 					if (t == null) {
-						if(bm.isOnline(target)) {
+						if (bm.isOnline(target)) {
 							tpDifferentServer = true;
 						} else {
 							MessageUtils.sendErrorMessage(p, Message.PLAYER_OFFLINE.get().replace("_Player_", target));

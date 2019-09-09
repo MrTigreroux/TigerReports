@@ -71,7 +71,7 @@ public class MySQL extends Database {
 	}
 
 	public void updateUserName(String uuid, String name) {
-		update("INSERT INTO tigerreports_users (uuid,name) VALUES (?,?) ON DUPLICATE KEY UPDATE name=VALUES(name)", Arrays.asList(uuid, name));
+		updateAsynchronously("INSERT INTO tigerreports_users (uuid,name) VALUES (?,?) ON DUPLICATE KEY UPDATE name=VALUES(name)", Arrays.asList(uuid, name));
 	}
 
 }

@@ -67,6 +67,9 @@ public abstract class Menu {
 	}
 
 	public void open(boolean sound) {
+		if (this instanceof ReportManagerMenu && !((ReportManagerMenu) this).collectReport())
+			return;
+
 		if (!check())
 			return;
 
