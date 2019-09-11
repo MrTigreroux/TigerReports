@@ -38,7 +38,7 @@ public class ArchivedReportsMenu extends Menu implements UpdatedMenu {
 		ReportUtils.addReports(null, true, inv, page, Message.REPORT_RESTORE_ACTION.get()+(Permission.STAFF_DELETE.isOwned(u)
 																																? Message.REPORT_DELETE_ACTION
 																																		.get()
-																																: ""));
+																																: ""), false, "");
 	}
 
 	@Override

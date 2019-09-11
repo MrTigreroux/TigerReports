@@ -16,6 +16,7 @@ import com.google.common.primitives.Ints;
 import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.*;
 import fr.mrtigreroux.tigerreports.data.constants.MenuItem;
+import fr.mrtigreroux.tigerreports.data.constants.Status;
 import fr.mrtigreroux.tigerreports.events.NewReportEvent;
 import fr.mrtigreroux.tigerreports.objects.Report;
 
@@ -66,7 +67,7 @@ public class ReportUtils {
 				"date"), (String) result.get("reported_uuid"), (String) result.get("reporter_uuid"), (String) result.get("reason"));
 	}
 
-	public static void addReports(String reporter, boolean archived, Inventory inv, int page, String actions) {
+	public static void addReports(String reporter, boolean archived, Inventory inv, int page, String actionsBefore, boolean archiveAction, String actionsAfter) {
 		int size = inv.getSize();
 		int firstReport = 1;
 		if (page >= 2) {
@@ -101,7 +102,7 @@ public class ReportUtils {
 									inv.setItem(slot, null);
 									index = -1;
 								} else {
-									inv.setItem(slot, r.getItem(actions));
+									inv.setItem(slot, r.getItem(actionsBefore+(archiveAction && (r.getStatus() == Status.DONE || !ReportUtils.onlyDoneArchives()) ? Message.REPORT_ARCHIVE_ACTION.get() : "")+actionsAfter));
 									index++;
 								}
 							}

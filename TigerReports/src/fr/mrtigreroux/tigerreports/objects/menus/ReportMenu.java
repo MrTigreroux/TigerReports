@@ -138,7 +138,7 @@ public class ReportMenu extends ReportManagerMenu {
 		inv.setItem(26, MenuItem.DATA.getWithDetails(r.implementData(Message.DATA_DETAILS.get(), Permission.STAFF_ADVANCED.isOwned(u))));
 
 		int statusPosition = 29;
-		boolean archive = Permission.STAFF_ARCHIVE.isOwned(u) && (r.getStatus() == Status.DONE || !ReportUtils.onlyDoneArchives());
+		boolean archive = u.canArchive(r);
 		for (Status status : Status.values()) {
 			inv.setItem(statusPosition, new CustomItem().type(Material.STAINED_CLAY)
 					.damage(status.getColor())
@@ -284,7 +284,11 @@ public class ReportMenu extends ReportManagerMenu {
 						u.openProcessMenu(r);
 						break;
 					case 33:
-						u.openConfirmationMenu(r, "ARCHIVE");
+						if(u.canArchive(r)) {
+							u.openConfirmationMenu(r, "ARCHIVE");
+						} else {
+							open(false);
+						}
 						break;
 					default:
 						break;

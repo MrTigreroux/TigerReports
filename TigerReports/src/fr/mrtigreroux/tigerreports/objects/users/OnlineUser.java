@@ -9,12 +9,14 @@ import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
+import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.data.constants.Status;
 import fr.mrtigreroux.tigerreports.objects.Comment;
 import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.objects.menus.*;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
+import fr.mrtigreroux.tigerreports.utils.ReportUtils;
 
 /**
  * @author MrTigreroux
@@ -260,6 +262,10 @@ public class OnlineUser extends User {
 
 	public Comment getEditingComment() {
 		return editingComment;
+	}
+	
+	public boolean canArchive(Report r) {
+		return Permission.STAFF_ARCHIVE.isOwned(this) && (r.getStatus() == Status.DONE || !ReportUtils.onlyDoneArchives());
 	}
 
 }
