@@ -105,7 +105,7 @@ public class PunishmentMenu extends ReportManagerMenu {
 			String path = (configIndex.charAt(0) == 't' ? "Config.Punishments.Punishment" : "Config.DefaultReasons.Reason")+configIndex.substring(1);
 
 			for (String command : ConfigFile.CONFIG.get().getStringList(path+".PunishCommands")) {
-				command = command.replace("_Reported_", r.getPlayerName("Reported", false, false)).replace("_Staff_", p.getName()).replace("_Id_", Integer.toString(r.getId()));
+				command = command.replace("_Reported_", r.getPlayerName("Reported", false, false)).replace("_Staff_", p.getName()).replace("_Id_", Integer.toString(r.getId())).replace("_Reason_", r.getReason(false));
 				if (command.contains("_Reporter_")) {
 					for (String uuid : r.getReportersUniqueIds())
 						executePunishCommand(p, command.replace("_Reporter_", UserUtils.getName(uuid)));

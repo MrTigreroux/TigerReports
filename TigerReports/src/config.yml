@@ -8,8 +8,8 @@ Config:
   LineBreakSymbol: "//"
   # Symbol used to separate lines in messages.yml / Symbole utilisé pour séparer les lignes dans messages.yml
   InfoLanguage: French
-  # Language used in info messages of the plugin like warnings and /tigerreports help command / Langue utilisée pour les messages d'information comme les avertissements et la commande d'aide /tigerreports
-  # Only 2 languages : French and English / Seulement 2 langues : French et English
+  # Language used in info messages of the plugin like warnings in the console and /tigerreports help command / Langue utilisée pour les messages d'information comme les avertissements dans la console et la commande d'aide /tigerreports
+  # Only 2 languages available : French and English / Seulement 2 langues disponibles : French et English
   Time: default
   # Time of a city to use (example: "America/Chicago"), list of available cities here: / Temps d'une ville à utiliser (exemple: "Europe/Paris"), la liste des villes possibles est ici:
   # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
@@ -133,7 +133,7 @@ Config:
   #   Examples:    Material-Stone = Stone / Pierre    Material-Wool:2 = Magenta Wool / Laine magenta    Skull-MrTigreroux = Skull of player MrTigreroux / Tête du joueur MrTigreroux
   # PunishCommands:    List of commands to execute when punishing / Liste des commandes à exécuter lors d'une sanction.
   #                    Set '-CONSOLE' at the beginning of a command to execute it with the console (and not the staff member) / Mettre "-CONSOLE" au début d'une commande pour l'exécuter avec la console (et non le membre de la modération)
-  #                    Usable placeholders: _Id_ (id of the report), _Reported_ (reported player name), _Reporter_ (reporter player name, the command is executed for each reporter if they are multiple) and _Staff_ (processor staff name) / Données utilisables: _Id_ (identifiant du signalement), _Reported_ (pseudo du joueur signalé), _Reporter_ (pseudo du joueur signaleur, la commande est exécutée pour chaque signaleur s'il y en a plusieurs) et _Staff_ (pseudo du membre du staff qui traite le signalement)
+  #                    Usable placeholders: _Id_ (id of the report), _Reported_ (reported player name), _Reporter_ (reporter player name, the command is executed for each reporter if they are multiple), _Staff_ (processor staff name) and _Reason_ (reason of the report and therefore not necessarily the name of the default reason) / Données utilisables: _Id_ (identifiant du signalement), _Reported_ (pseudo du joueur signalé), _Reporter_ (pseudo du joueur signaleur, la commande est exécutée pour chaque signaleur s'il y en a plusieurs), _Staff_ (pseudo du membre du staff qui traite le signalement) et _Reason_ (raison du signalement et donc pas forcément le nom de la sanction par défaut)
   Punishments:
     Enabled: yes
     # Open the punishments menu when processing a report as True / Ouvrir le menu des sanctions lors du traitement d'un signalement comme Vrai
@@ -159,7 +159,7 @@ Config:
   #   Examples:    Material-Stone = Stone / Pierre    Material-Wool:2 = Magenta Wool / Laine magenta    Skull-MrTigreroux = Skull of player MrTigreroux / Tête du joueur MrTigreroux
   # PunishCommands:    List of commands to execute when punishing / Liste des commandes à exécuter lors d'une sanction.
   #                    Set '-CONSOLE' at the beginning of a command to execute it with the console (and not the staff member) / Mettre "-CONSOLE" au début d'une commande pour l'exécuter avec la console (et non le membre de la modération)
-  #                    Usable placeholders: _Id_ (id of the report), _Reported_ (reported player name), _Reporter_ (reporter player name, the command is executed for each reporter if they are multiple) and _Staff_ (processor staff name) / Données utilisables: _Id_ (identifiant du signalement), _Reported_ (pseudo du joueur signalé), _Reporter_ (pseudo du joueur signaleur, la commande est exécutée pour chaque signaleur s'il y en a plusieurs) et _Staff_ (pseudo du membre du staff qui traite le signalement)
+  #                    Usable placeholders: _Id_ (id of the report), _Reported_ (reported player name), _Reporter_ (reporter player name, the command is executed for each reporter if they are multiple), _Staff_ (processor staff name) and _Reason_ (reason of the report and not the name of the punishment) / Données utilisables: _Id_ (identifiant du signalement), _Reported_ (pseudo du joueur signalé), _Reporter_ (pseudo du joueur signaleur, la commande est exécutée pour chaque signaleur s'il y en a plusieurs), _Staff_ (pseudo du membre du staff qui traite le signalement) et _Reason_ (raison du signalement et non le nom de la sanction)
 BungeeCord:
   Enabled: yes
   # Interact with the BungeeCord network / Intéragir avec le réseau BungeeCord
