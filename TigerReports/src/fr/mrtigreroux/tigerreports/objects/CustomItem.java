@@ -12,6 +12,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
+import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
+import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.VersionUtils;
 
 /**
@@ -117,7 +119,7 @@ public class CustomItem {
 	public ItemStack create() {
 		ItemStack item = new ItemStack(getMaterial(), getAmount(), getDamage());
 
-		if (skullOwner != null) {
+		if (skullOwner != null && ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.CollectSkulls")) {
 			SkullMeta skullM = (SkullMeta) item.getItemMeta();
 			skullM.setOwner(skullOwner);
 			item.setItemMeta(skullM);

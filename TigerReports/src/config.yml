@@ -67,6 +67,8 @@ Config:
   # Set 'none' to disable the sound / Mettre "none" pour désactiver le son
   CustomReasons: yes
   # Allow custom reasons / Autoriser les raisons personnalisées
+  CollectSkulls: yes
+  # Collect player's skull from Mojang. If disabled the skulls will have no skin. / Collecter les têtes de joueurs depuis Mojang. Si désactivé, les têtes n'auront pas d'apparence (skin).
   DefaultReasons:
     Reason1:
       Name: "Fly"
