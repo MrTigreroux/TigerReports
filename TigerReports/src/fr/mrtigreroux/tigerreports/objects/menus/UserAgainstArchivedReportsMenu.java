@@ -14,15 +14,15 @@ import fr.mrtigreroux.tigerreports.utils.ReportUtils;
  * @author MrTigreroux
  */
 
-public class UserArchivedReportsMenu extends UserManagerMenu implements UpdatedMenu {
+public class UserAgainstArchivedReportsMenu extends UserManagerMenu implements UpdatedMenu {
 
-	public UserArchivedReportsMenu(OnlineUser u, int page, User tu) {
-		super("Menus.User-archived-reports", u, page, tu);
+	public UserAgainstArchivedReportsMenu(OnlineUser u, int page, User tu) {
+		super("Menus.User-against-archived-reports", u, page, tu);
 	}
 
 	@Override
 	public void onUpdate(Inventory inv) {
-		ReportUtils.addReports(tu.getUniqueId(), null, true, inv, page, Message.REPORT_RESTORE_ACTION.get()+(Permission.STAFF_DELETE.isOwned(u)
+		ReportUtils.addReports(null, tu.getUniqueId(), true, inv, page, Message.REPORT_RESTORE_ACTION.get()+(Permission.STAFF_DELETE.isOwned(u)
 																																				? Message.REPORT_DELETE_ACTION
 																																						.get()
 																																				: ""),
@@ -31,7 +31,7 @@ public class UserArchivedReportsMenu extends UserManagerMenu implements UpdatedM
 
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
-		onClickArchivedReports(true, item, slot, click);
+		onClickArchivedReports(false, item, slot, click);
 	}
 
 }

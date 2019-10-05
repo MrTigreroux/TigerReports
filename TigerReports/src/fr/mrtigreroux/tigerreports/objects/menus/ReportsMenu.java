@@ -36,7 +36,7 @@ public class ReportsMenu extends Menu implements UpdatedMenu {
 
 	@Override
 	public void onUpdate(Inventory inv) {
-		ReportUtils.addReports(null, false, inv, page, Message.REPORT_SHOW_ACTION.get(), Permission.STAFF_ARCHIVE.isOwned(u), Permission.STAFF_DELETE
+		ReportUtils.addReports(null, null, false, inv, page, Message.REPORT_SHOW_ACTION.get(), Permission.STAFF_ARCHIVE.isOwned(u), Permission.STAFF_DELETE
 				.isOwned(u) ? Message.REPORT_DELETE_ACTION.get() : "");
 	}
 

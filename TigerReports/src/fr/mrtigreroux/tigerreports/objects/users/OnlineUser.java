@@ -111,6 +111,14 @@ public class OnlineUser extends User {
 		new UserArchivedReportsMenu(this, page, tu).open(true);
 	}
 
+	public void openUserAgainstReportsMenu(User tu, int page) {
+		new UserAgainstReportsMenu(this, page, tu).open(true);
+	}
+
+	public void openUserAgainstArchivedReportsMenu(User tu, int page) {
+		new UserAgainstArchivedReportsMenu(this, page, tu).open(true);
+	}
+
 	public void setOpenedMenu(Menu menu) {
 		openedMenu = menu;
 	}

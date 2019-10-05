@@ -67,7 +67,8 @@ public class ReportUtils {
 				"date"), (String) result.get("reported_uuid"), (String) result.get("reporter_uuid"), (String) result.get("reason"));
 	}
 
-	public static void addReports(String reporter, boolean archived, Inventory inv, int page, String actionsBefore, boolean archiveAction, String actionsAfter) {
+	public static void addReports(String reporter, String reported, boolean archived, Inventory inv, int page, String actionsBefore,
+			boolean archiveAction, String actionsAfter) {
 		int size = inv.getSize();
 		int firstReport = 1;
 		if (page >= 2) {
@@ -82,10 +83,10 @@ public class ReportUtils {
 			@Override
 			public void run() {
 				List<Map<String, Object>> results = tr.getDb()
-						.query("SELECT report_id,status,appreciation,date,reported_uuid,reporter_uuid,reason FROM tigerreports_reports WHERE archived = ? "
-								+(reporter != null ? "AND reporter_uuid LIKE '%"+reporter+"%'" : "")+"LIMIT 28 OFFSET ?", Arrays.asList(archived	? 1
-																																					: 0,
-										first))
+						.query("SELECT report_id,status,appreciation,date,reported_uuid,reporter_uuid,reason FROM tigerreports_reports WHERE archived = ?"
+								+(reporter != null	? " AND reporter_uuid LIKE '%"+reporter+"%'"
+													: reported != null ? " AND reported_uuid = '"+reported+"'" : "")+" LIMIT 28 OFFSET ?", Arrays.asList(
+															archived ? 1 : 0, first))
 						.getResultList();
 
 				Bukkit.getScheduler().runTask(tr, new Runnable() {
@@ -102,7 +103,8 @@ public class ReportUtils {
 									inv.setItem(slot, null);
 									index = -1;
 								} else {
-									inv.setItem(slot, r.getItem(actionsBefore+(archiveAction && (r.getStatus() == Status.DONE || !ReportUtils.onlyDoneArchives()) ? Message.REPORT_ARCHIVE_ACTION.get() : "")+actionsAfter));
+									inv.setItem(slot, r.getItem(actionsBefore+(archiveAction && (r.getStatus() == Status.DONE || !ReportUtils
+											.onlyDoneArchives()) ? Message.REPORT_ARCHIVE_ACTION.get() : "")+actionsAfter));
 									index++;
 								}
 							}

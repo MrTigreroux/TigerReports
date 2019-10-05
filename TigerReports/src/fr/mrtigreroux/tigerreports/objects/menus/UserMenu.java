@@ -37,18 +37,19 @@ public class UserMenu extends Menu implements UpdatedMenu {
 
 		inv.setItem(4, new CustomItem().skullOwner(name).name(Message.USER.get().replace("_Target_", name)).create());
 
-		String tag = "Menus.User-reports";
-		inv.setItem(27, new CustomItem().type(Material.BOOKSHELF)
-				.name(Message.get(tag).replace("_Target_", name))
-				.lore(Message.get(tag+"-details").replace("_Target_", name).split(ConfigUtils.getLineBreakSymbol()))
-				.create());
-		tag = "Menus.User-archived-reports";
-		inv.setItem(35, new CustomItem().type(Material.BOOKSHELF)
-				.name(Message.get(tag).replace("_Target_", name))
-				.lore(Message.get(tag+"-details").replace("_Target_", name).split(ConfigUtils.getLineBreakSymbol()))
-				.create());
+		setReportsItem(inv, "Menus.User-reports", 18, name);
+		setReportsItem(inv, "Menus.User-archived-reports", 36, name);
+		setReportsItem(inv, "Menus.User-against-reports", 26, name);
+		setReportsItem(inv, "Menus.User-against-archived-reports", 44, name);
 
 		return inv;
+	}
+
+	private void setReportsItem(Inventory inv, String tag, int slot, String name) {
+		inv.setItem(slot, new CustomItem().type(Material.BOOKSHELF)
+				.name(Message.get(tag).replace("_Target_", name))
+				.lore(Message.get(tag+"-details").replace("_Target_", name).split(ConfigUtils.getLineBreakSymbol()))
+				.create());
 	}
 
 	@Override
@@ -92,22 +93,35 @@ public class UserMenu extends Menu implements UpdatedMenu {
 
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
-		if (slot == 8) {
-			if (tu.getCooldown() != null) {
-				tu.stopCooldown(p.getName(), false);
-				update(false);
-			}
-		} else if (slot == 27) {
-			u.openUserReportsMenu(tu, 1);
-		} else if (slot == 35) {
-			u.openUserArchivedReportsMenu(tu, 1);
-		} else if (slot != 4 && Permission.MANAGE.isOwned(u)) {
-			String stat = "";
-			for (Statistic statistics : Statistic.values())
-				if (statistics.getPosition() == slot)
-					stat = statistics.getConfigName();
-			tu.changeStatistic(stat, click.toString().contains("RIGHT") ? -1 : 1);
-			update(true);
+		switch (slot) {
+			case 8:
+				if (tu.getCooldown() != null) {
+					tu.stopCooldown(p.getName(), false);
+					update(false);
+				}
+				break;
+			case 18:
+				u.openUserReportsMenu(tu, 1);
+				break;
+			case 26:
+				u.openUserAgainstReportsMenu(tu, 1);
+				break;
+			case 36:
+				u.openUserArchivedReportsMenu(tu, 1);
+				break;
+			case 44:
+				u.openUserAgainstArchivedReportsMenu(tu, 1);
+				break;
+			default:
+				if (slot != 4 && Permission.MANAGE.isOwned(u)) {
+					String stat = "";
+					for (Statistic statistics : Statistic.values())
+						if (statistics.getPosition() == slot)
+							stat = statistics.getConfigName();
+					tu.changeStatistic(stat, click.toString().contains("RIGHT") ? -1 : 1);
+					update(true);
+				}
+				break;
 		}
 	}
 
