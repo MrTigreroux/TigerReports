@@ -8,6 +8,7 @@ import net.md_5.bungee.api.chat.*;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -23,6 +24,7 @@ import org.bukkit.event.server.ServerCommandEvent;
 import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.commands.HelpCommand;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
+import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
 import fr.mrtigreroux.tigerreports.objects.Comment;
@@ -138,6 +140,16 @@ public class PlayerListener implements Listener {
 			return;
 		}
 		u.updateLastMessages(e.getMessage());
+
+		ConfigurationSection config = ConfigFile.CONFIG.get();
+		String path = "Config.ChatReport.";
+		if(ConfigUtils.isEnabled(config, path+"Enabled")) {
+			TextComponent message = (TextComponent) MessageUtils.getAdvancedMessage(Message.formatMessage(config.getString(path+"Message")).replace("_DisplayName_", u.getPlayer().getDisplayName()).replace("_Name_", u.getPlayer().getName()).replace("_Message_", e.getMessage()), "_ReportButton_", Message.formatMessage(config.getString(path+"ReportButton.Text")), Message.formatMessage(config.getString(path+"ReportButton.Hover")).replace("_Player_", u.getPlayer().getName()), "/tigerreports:report "+u.getPlayer().getName()+" "+config.getString(path+"ReportButton.Reason"));
+			for (Player p : Bukkit.getOnlinePlayers())
+				p.spigot().sendMessage(message);
+			MessageUtils.sendConsoleMessage(((TextComponent) message).toLegacyText());
+			e.setCancelled(true);
+		}
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST)

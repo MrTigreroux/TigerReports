@@ -217,5 +217,9 @@ public enum Message {
 		return ChatColor.translateAlternateColorCodes(ConfigUtils.getColorCharacter(), StringEscapeUtils.unescapeJava(ConfigFile.MESSAGES.get()
 				.getString(path)));
 	}
+	
+	public static String formatMessage(String message) {
+		return ChatColor.translateAlternateColorCodes(ConfigUtils.getColorCharacter(), StringEscapeUtils.unescapeJava(message));
+	}
 
 }
