@@ -1,5 +1,6 @@
 package fr.mrtigreroux.tigerreports.managers;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -24,8 +25,22 @@ public class UsersManager {
 	private final Map<String, User> users = new HashMap<>();
 	private final Map<String, String> lastNameFound = new HashMap<>();
 	private final Map<String, String> lastUniqueIdFound = new HashMap<>();
+	private final List<String> exemptedPlayers = new ArrayList<>();
 
 	public UsersManager() {}
+
+	public void addExemptedPlayer(String name) {
+		if (name != null && !exemptedPlayers.contains(name))
+			exemptedPlayers.add(name);
+	}
+
+	public void removeExemptedPlayer(String name) {
+		exemptedPlayers.remove(name);
+	}
+
+	public List<String> getExemptedPlayers() {
+		return exemptedPlayers;
+	}
 
 	public void saveUser(User u) {
 		users.put(u.getUniqueId(), u);

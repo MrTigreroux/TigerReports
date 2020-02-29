@@ -135,7 +135,7 @@ public class ReportsCommand implements TabExecutor {
 			case 1:
 				return StringUtil.copyPartialMatches(args[0], ACTIONS, new ArrayList<>());
 			case 2:
-				return USER_ACTIONS.contains(args[0].toLowerCase()) ? StringUtil.copyPartialMatches(args[1], UserUtils.getOnlinePlayers(),
+				return USER_ACTIONS.contains(args[0].toLowerCase()) ? StringUtil.copyPartialMatches(args[1], UserUtils.getOnlinePlayers(false),
 						new ArrayList<>()) : new ArrayList<>();
 			default:
 				return new ArrayList<>();

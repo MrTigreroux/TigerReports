@@ -44,12 +44,16 @@ public abstract class User {
 	public void updateImmunity(String immunity, boolean bungee) {
 		this.immunity = immunity;
 		if (!bungee) {
-			TigerReports.getInstance()
-					.getBungeeManager()
-					.sendPluginNotification((immunity != null ? immunity.replace(" ", "_") : "null")+" new_immunity user "+uuid);
-			Database db = TigerReports.getInstance().getDb();
+			TigerReports tg = TigerReports.getInstance();
+			tg.getBungeeManager().sendPluginNotification((immunity != null ? immunity.replace(" ", "_") : "null")+" new_immunity user "+uuid);
+			Database db = tg.getDb();
 			if (db != null)
 				db.updateAsynchronously("UPDATE tigerreports_users SET immunity = ? WHERE uuid = ?", Arrays.asList(immunity, uuid));
+			
+			if (immunity == "always")
+				tg.getUsersManager().addExemptedPlayer(name);
+			else
+				tg.getUsersManager().removeExemptedPlayer(name);
 		}
 	}
 

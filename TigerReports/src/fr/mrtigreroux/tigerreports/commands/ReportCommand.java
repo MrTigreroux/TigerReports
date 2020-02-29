@@ -243,7 +243,7 @@ public class ReportCommand implements TabExecutor {
 
 	@Override
 	public List<String> onTabComplete(CommandSender s, Command cmd, String label, String[] args) {
-		return args.length == 1 ? StringUtil.copyPartialMatches(args[0], UserUtils.getOnlinePlayers(), new ArrayList<>()) : new ArrayList<>();
+		return args.length == 1 ? StringUtil.copyPartialMatches(args[0], UserUtils.getOnlinePlayers(true), new ArrayList<>()) : new ArrayList<>();
 	}
 
 }
