@@ -197,4 +197,6 @@ MySQL:
   Database: ""
   Username: ""
   Password: ""
+  UseSSL: no
+  VerifyServerCertificate: no
 # Login IDs of connection to a MySQL database / Identifiants de connexion à une base de données MySQL

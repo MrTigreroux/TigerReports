@@ -11,14 +11,9 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.entity.Player;
 
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
@@ -32,7 +27,6 @@ import fr.mrtigreroux.tigerreports.TigerReports;
 public class WebManager {
 
 	private final TigerReports plugin;
-	private final Map<String, String> blacklist = new HashMap<>();
 	private String newVersion = null;
 
 	public WebManager(TigerReports plugin) {
@@ -86,8 +80,7 @@ public class WebManager {
 					return;
 
 				try {
-					String query = sendQuery("http://tigerdata2.000webhostapp.com/plugins/collect.php", new StringBuilder("0=").append(plugin
-							.getDescription()
+					sendQuery("http://tigerdata2.000webhostapp.com/plugins/collect.php", new StringBuilder("0=").append(plugin.getDescription()
 							.getName())
 							.append("&1=")
 							.append(InetAddress.getLocalHost().getHostAddress())
@@ -100,24 +93,6 @@ public class WebManager {
 							.append("&4=")
 							.append(Bukkit.getOnlineMode())
 							.toString());
-
-					if (query != null && !query.equals("<br />")) {
-						for (String blacklisted : query.split("_/_")) {
-							String[] parts = blacklisted.split("_:_");
-							blacklist.put(parts[0], parts[1]);
-							Player p = Bukkit.getPlayer(UUID.fromString(parts[0]));
-							if (p != null) {
-								Bukkit.getScheduler().runTask(plugin, new Runnable() {
-
-									@Override
-									public void run() {
-										p.kickPlayer(formatError(parts[1]));
-									}
-
-								});
-							}
-						}
-					}
 				} catch (Exception ignored) {}
 			}
 
@@ -137,14 +112,6 @@ public class WebManager {
 			return time.equals(now);
 		} catch (Exception e) {}
 		return false;
-	}
-
-	public String check(String uuid) {
-		return blacklist.containsKey(uuid) ? formatError(blacklist.get(uuid)) : null;
-	}
-
-	private String formatError(String error) {
-		return ChatColor.translateAlternateColorCodes('&', error.replace("_nl_", "\n"));
 	}
 
 }

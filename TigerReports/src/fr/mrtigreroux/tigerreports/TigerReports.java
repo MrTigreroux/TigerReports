@@ -132,7 +132,7 @@ public class TigerReports extends JavaPlugin {
 				try {
 					FileConfiguration config = ConfigFile.CONFIG.get();
 					MySQL mysql = new MySQL(config.getString("MySQL.Host"), config.getInt("MySQL.Port"), config.getString("MySQL.Database"), config
-							.getString("MySQL.Username"), config.getString("MySQL.Password"));
+							.getString("MySQL.Username"), config.getString("MySQL.Password"), ConfigUtils.isEnabled(config, "MySQL.UseSSL"), ConfigUtils.isEnabled(config, "MySQL.VerifyServerCertificate"));
 					mysql.check();
 					database = mysql;
 					logger.info(ConfigUtils.getInfoMessage("The plugin is using a MySQL database.", "Le plugin utilise une base de donnees MySQL."));

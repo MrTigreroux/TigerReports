@@ -16,9 +16,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerLoginEvent.Result;
 import org.bukkit.event.server.ServerCommandEvent;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
@@ -29,9 +27,7 @@ import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
 import fr.mrtigreroux.tigerreports.objects.Comment;
 import fr.mrtigreroux.tigerreports.objects.Report;
-import fr.mrtigreroux.tigerreports.objects.users.OfflineUser;
-import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
-import fr.mrtigreroux.tigerreports.objects.users.User;
+import fr.mrtigreroux.tigerreports.objects.users.*;
 import fr.mrtigreroux.tigerreports.runnables.ReportsNotifier;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
@@ -110,13 +106,6 @@ public class PlayerListener implements Listener {
 		}
 
 		TigerReports.getInstance().getBungeeManager().processPlayerDisconnection(p.getName());
-	}
-
-	@EventHandler(priority = EventPriority.MONITOR)
-	private void onPlayerLogin(PlayerLoginEvent e) {
-		String error = TigerReports.getInstance().getWebManager().check(e.getPlayer().getUniqueId().toString());
-		if (error != null)
-			e.disallow(Result.KICK_OTHER, error);
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)

@@ -17,13 +17,16 @@ public class MySQL extends Database {
 
 	private String host, database, username, password;
 	private int port;
+	private boolean useSsl, verifyServerCertificate;
 
-	public MySQL(String host, int port, String database, String username, String password) {
+	public MySQL(String host, int port, String database, String username, String password, boolean useSsl, boolean verifyServerCertificate) {
 		this.host = host;
 		this.port = port;
 		this.database = database;
 		this.username = username;
 		this.password = password;
+		this.useSsl = useSsl;
+		this.verifyServerCertificate = verifyServerCertificate;
 	}
 
 	public void check() throws SQLException {
@@ -38,7 +41,7 @@ public class MySQL extends Database {
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
 			connection = DriverManager.getConnection("jdbc:mysql://"+host+":"+port+"/"+database
-					+"?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&useSSL=false", username, password);
+					+"?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&verifyServerCertificate="+(verifyServerCertificate ? "true" : "false")+"&useSSL="+(useSsl ? "true" : "false"), username, password);
 		} catch (ClassNotFoundException missing) {
 			logError(ConfigUtils.getInfoMessage("MySQL is missing.", "MySQL n'est pas installe."), null);
 		} catch (SQLException ex) {
