@@ -90,13 +90,13 @@ public class BungeeManager implements PluginMessageListener {
 			}
 
 		}, 5);
-
 	}
 
 	public void processPlayerDisconnection(String name) {
 		if (!initialized)
 			return;
 
+		
 		if (Bukkit.getOnlinePlayers().size() > 1) {
 			updatePlayerStatus(name, false);
 		} else {
