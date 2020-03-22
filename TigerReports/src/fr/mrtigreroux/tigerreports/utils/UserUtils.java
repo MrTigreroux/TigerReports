@@ -73,14 +73,16 @@ public class UserUtils {
 
 	public static List<String> getOnlinePlayers(boolean hideExempted) {
 		List<String> players = TigerReports.getInstance().getBungeeManager().getOnlinePlayers();
+
 		if (players == null) {
 			players = new ArrayList<>();
 			for (Player p : Bukkit.getOnlinePlayers())
 				players.add(p.getName());
 		}
-		
+
 		if (hideExempted)
 			players.removeAll(TigerReports.getInstance().getUsersManager().getExemptedPlayers());
+
 		return players;
 	}
 

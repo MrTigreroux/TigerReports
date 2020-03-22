@@ -327,7 +327,7 @@ public class BungeeManager implements PluginMessageListener {
 	}
 
 	public List<String> getOnlinePlayers() {
-		return onlinePlayersCollected ? onlinePlayers : null;
+		return onlinePlayersCollected ? new ArrayList<>(onlinePlayers) : null;
 	}
 
 	private void setPlayerStatus(String name, boolean online) {

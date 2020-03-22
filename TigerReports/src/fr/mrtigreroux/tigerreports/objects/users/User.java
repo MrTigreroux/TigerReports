@@ -45,10 +45,10 @@ public abstract class User {
 		this.immunity = immunity;
 
 		TigerReports tg = TigerReports.getInstance();
-		if (immunity == "always")
-			tg.getUsersManager().addExemptedPlayer(name);
+		if (immunity.equals("always"))
+			tg.getUsersManager().addExemptedPlayer(getName());
 		else
-			tg.getUsersManager().removeExemptedPlayer(name);
+			tg.getUsersManager().removeExemptedPlayer(getName());
 
 		if (!bungee) {
 			tg.getBungeeManager().sendPluginNotification((immunity != null ? immunity.replace(" ", "_") : "null")+" new_immunity user "+uuid);
