@@ -45,7 +45,7 @@ public abstract class User {
 		this.immunity = immunity;
 
 		TigerReports tg = TigerReports.getInstance();
-		if (immunity.equals("always"))
+		if (immunity != null && immunity.equals("always"))
 			tg.getUsersManager().addExemptedPlayer(getName());
 		else
 			tg.getUsersManager().removeExemptedPlayer(getName());
