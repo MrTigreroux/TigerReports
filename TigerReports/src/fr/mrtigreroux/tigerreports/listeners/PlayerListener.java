@@ -89,9 +89,10 @@ public class PlayerListener implements Listener {
 
 	@EventHandler(priority = EventPriority.LOWEST)
 	private void onPlayerQuit(PlayerQuitEvent e) {
+		TigerReports tr = TigerReports.getInstance();
 		Player p = e.getPlayer();
 		String uuid = p.getUniqueId().toString();
-		UsersManager userManager = TigerReports.getInstance().getUsersManager();
+		UsersManager userManager = tr.getUsersManager();
 		User u = userManager.getSavedUser(uuid);
 
 		if (u != null) {
@@ -105,10 +106,10 @@ public class PlayerListener implements Listener {
 			}
 		}
 
-		TigerReports.getInstance().getBungeeManager().processPlayerDisconnection(p.getName());
+		tr.getBungeeManager().processPlayerDisconnection(p.getName());
 	}
 
-	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.LOWEST)
 	private void onPlayerChat(AsyncPlayerChatEvent e) {
 		OnlineUser u = TigerReports.getInstance().getUsersManager().getOnlineUser(e.getPlayer());
 		Comment c = u.getEditingComment();
@@ -128,12 +129,22 @@ public class PlayerListener implements Listener {
 			e.setCancelled(true);
 			return;
 		}
+	}
+
+	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	private void onPlayerChat2(AsyncPlayerChatEvent e) {
+		OnlineUser u = TigerReports.getInstance().getUsersManager().getOnlineUser(e.getPlayer());
 		u.updateLastMessages(e.getMessage());
 
 		ConfigurationSection config = ConfigFile.CONFIG.get();
 		String path = "Config.ChatReport.";
-		if(ConfigUtils.isEnabled(config, path+"Enabled")) {
-			TextComponent message = (TextComponent) MessageUtils.getAdvancedMessage(Message.formatMessage(config.getString(path+"Message")).replace("_DisplayName_", u.getPlayer().getDisplayName()).replace("_Name_", u.getPlayer().getName()).replace("_Message_", e.getMessage()), "_ReportButton_", Message.formatMessage(config.getString(path+"ReportButton.Text")), Message.formatMessage(config.getString(path+"ReportButton.Hover")).replace("_Player_", u.getPlayer().getName()), "/tigerreports:report "+u.getPlayer().getName()+" "+config.getString(path+"ReportButton.Reason"));
+		if (ConfigUtils.isEnabled(config, path+"Enabled")) {
+			TextComponent message = (TextComponent) MessageUtils.getAdvancedMessage(Message.formatMessage(config.getString(path+"Message"))
+					.replace("_DisplayName_", u.getPlayer().getDisplayName())
+					.replace("_Name_", u.getPlayer().getName())
+					.replace("_Message_", e.getMessage()), "_ReportButton_", Message.formatMessage(config.getString(path+"ReportButton.Text")),
+					Message.formatMessage(config.getString(path+"ReportButton.Hover")).replace("_Player_", u.getPlayer().getName()),
+					"/tigerreports:report "+u.getPlayer().getName()+" "+config.getString(path+"ReportButton.Reason"));
 			for (Player p : Bukkit.getOnlinePlayers())
 				p.spigot().sendMessage(message);
 			MessageUtils.sendConsoleMessage(((TextComponent) message).toLegacyText());
