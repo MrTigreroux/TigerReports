@@ -12,7 +12,7 @@
   Staff-process: "&7[&6Reports&7] &a_Player_ &ehas &bprocessed _Report_ &eas _Appreciation_&e."
   Staff-process-auto: "&7[&6Reports&7] &a_Player_ &ehas &bprocessed &ethe _Report_ &eas _Appreciation_ &eand &8archived &eit."
   Staff-process-punish: "&7[&6Reports&7] &a_Player_ &ehas &bprocessed _Report_ &eas &aTrue &eand &eapplied &7_Punishment_ &epunishment &eon &c_Reported_&e."
-  Staff-process-punish-auto: "&7[&6Reports&7] &a_Player_ &ehas &bprocessed _Report_ &eas &aTrue&e, &eapplied &7_Punishment_ &epunishment &eon &c_Reported_ &eand &8archived&e."
+  Staff-process-punish-auto: "&7[&6Reports&7] &a_Player_ &ehas &bprocessed _Report_ &eas &aTrue&e, &8archived &eit &eand &eapplied &7_Punishment_ &epunishment &eon &c_Reported_&e."
   Staff-archive: "&7[&6Reports&7] &a_Player_ &ehas &8archived _Report_&e."
   Staff-archiveall: "&7[&6Reports&7] &a_Player_ &ehas &8archived &eall done reports."
   Staff-deleteall: "&7[&6Reports&7] &a_Player_ &ehas &cdeleted &eall archived reports."
