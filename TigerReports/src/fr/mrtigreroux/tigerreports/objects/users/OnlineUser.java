@@ -183,16 +183,18 @@ public class OnlineUser extends User {
 
 						@Override
 						public void run() {
-							Report r = TigerReports.getInstance().getReportsManager().getReportById(Integer.parseInt(parts[0]), false);
-							Comment c = r.getCommentById(Integer.parseInt(parts[1]));
-							Bukkit.getScheduler().runTask(tr, new Runnable() {
+							try {
+								Report r = TigerReports.getInstance().getReportsManager().getReportById(Integer.parseInt(parts[0]), false);
+								Comment c = r.getCommentById(Integer.parseInt(parts[1]));
+								Bukkit.getScheduler().runTask(tr, new Runnable() {
 
-								@Override
-								public void run() {
-									sendCommentNotification(r, c, false);
-								}
+									@Override
+									public void run() {
+										sendCommentNotification(r, c, false);
+									}
 
-							});
+								});
+							} catch (Exception invalidNotification) {}
 						}
 
 					});
@@ -201,15 +203,17 @@ public class OnlineUser extends User {
 
 						@Override
 						public void run() {
-							Report r = TigerReports.getInstance().getReportsManager().getReportById(Integer.parseInt(notification), false);
-							Bukkit.getScheduler().runTask(tr, new Runnable() {
+							try {
+								Report r = TigerReports.getInstance().getReportsManager().getReportById(Integer.parseInt(notification), false);
+								Bukkit.getScheduler().runTask(tr, new Runnable() {
 
-								@Override
-								public void run() {
-									sendReportNotification(r, false);
-								}
+									@Override
+									public void run() {
+										sendReportNotification(r, false);
+									}
 
-							});
+								});
+							} catch (Exception invalidNotification) {}
 						}
 
 					});
@@ -271,7 +275,7 @@ public class OnlineUser extends User {
 	public Comment getEditingComment() {
 		return editingComment;
 	}
-	
+
 	public boolean canArchive(Report r) {
 		return Permission.STAFF_ARCHIVE.isOwned(this) && (r.getStatus() == Status.DONE || !ReportUtils.onlyDoneArchives());
 	}

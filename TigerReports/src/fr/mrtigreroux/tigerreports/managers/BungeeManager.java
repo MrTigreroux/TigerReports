@@ -79,14 +79,17 @@ public class BungeeManager implements PluginMessageListener {
 
 			@Override
 			public void run() {
-				collectServerName();
-				if (!onlinePlayersCollected)
-					collectOnlinePlayers();
-				if (playerToRemove != null && playerToRemove != name) {
-					sendPluginNotification(playerToRemove+" player_status false");
-					playerToRemove = null;
+				if (UserUtils.getPlayer(name) != null) {
+					collectServerName();
+					if (!onlinePlayersCollected)
+						collectOnlinePlayers();
+					if (playerToRemove != null) {
+						if (playerToRemove != name)
+							sendPluginNotification(playerToRemove+" player_status false");
+						playerToRemove = null;
+					}
+					updatePlayerStatus(name, true);
 				}
-				updatePlayerStatus(name, true);
 			}
 
 		}, 5);
@@ -95,7 +98,7 @@ public class BungeeManager implements PluginMessageListener {
 	public void processPlayerDisconnection(String name) {
 		if (!initialized)
 			return;
-		
+
 		if (Bukkit.getOnlinePlayers().size() > 1) {
 			updatePlayerStatus(name, false);
 		} else {
