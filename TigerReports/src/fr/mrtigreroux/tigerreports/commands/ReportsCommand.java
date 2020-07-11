@@ -19,6 +19,7 @@ import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.objects.users.User;
 import fr.mrtigreroux.tigerreports.runnables.MenuUpdater;
+import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
@@ -86,12 +87,6 @@ public class ReportsCommand implements TabExecutor {
 						if (Permission.STAFF_ARCHIVE.check(s))
 							u.openArchivedReportsMenu(1, true);
 						return true;
-					case "deleteall":
-						if (Permission.STAFF_DELETE.check(s)) {
-							tr.getDb().updateAsynchronously("DELETE FROM tigerreports_reports WHERE archived = ?", Collections.singletonList(1));
-							MessageUtils.sendStaffMessage(Message.STAFF_DELETEALL.get().replace("_Player_", p.getName()), ConfigSound.STAFF.get());
-						}
-						return true;
 					default:
 						try {
 							u.openReportMenu(Integer.parseInt(args[0].replace("#", "")));
@@ -101,31 +96,45 @@ public class ReportsCommand implements TabExecutor {
 						return true;
 				}
 			case 2:
-				String tuuid = UserUtils.getUniqueId(args[1]);
-				User tu = tr.getUsersManager().getUser(tuuid);
-				if (tu == null || !UserUtils.isValid(tuuid)) {
-					MessageUtils.sendErrorMessage(s, Message.INVALID_PLAYER.get().replace("_Player_", args[1]));
-					return true;
-				}
+				if (args[0].equalsIgnoreCase("deleteall")) {
+					String reportsType = args[1];
+					boolean unarchived = reportsType != null && reportsType.equalsIgnoreCase("unarchived");
+					if ((unarchived || reportsType.equalsIgnoreCase("archived")) && Permission.STAFF_DELETE.check(s)) {
+						tr.getDb()
+								.updateAsynchronously("DELETE FROM tigerreports_reports WHERE archived = ?", Collections.singletonList(unarchived	? 0
+																																					: 1));
+						MessageUtils.sendStaffMessage(Message.get("Messages.Staff-deleteall-"+(unarchived ? "un" : "")+"archived")
+								.replace("_Player_", p.getName()), ConfigSound.STAFF.get());
+						return true;
+					}
+				} else {
+					String tuuid = UserUtils.getUniqueId(args[1]);
+					User tu = tr.getUsersManager().getUser(tuuid);
+					if (tu == null || !UserUtils.isValid(tuuid)) {
+						MessageUtils.sendErrorMessage(s, Message.INVALID_PLAYER.get().replace("_Player_", args[1]));
+						return true;
+					}
 
-				switch (args[0].toLowerCase()) {
-					case "user":
-					case "u":
-						u.openUserMenu(tu);
-						return true;
-					case "stopcooldown":
-					case "sc":
-						tu.stopCooldown(p.getName(), false);
-						return true;
-					default:
-						break;
+					switch (args[0].toLowerCase()) {
+						case "user":
+						case "u":
+							u.openUserMenu(tu);
+							return true;
+						case "stopcooldown":
+						case "sc":
+							tu.stopCooldown(p.getName(), false);
+							return true;
+						default:
+							break;
+					}
 				}
 				break;
 			default:
 				break;
 		}
-
-		s.sendMessage(Message.INVALID_SYNTAX.get().replace("_Command_", "/"+label+" "+Message.REPORTS_SYNTAX.get()));
+		String syntax = Message.get("ErrorMessages.Invalid-syntax-reports");
+		for(String line : syntax.split(ConfigUtils.getLineBreakSymbol()))
+			s.sendMessage(line);
 		return true;
 	}
 
@@ -135,6 +144,9 @@ public class ReportsCommand implements TabExecutor {
 			case 1:
 				return StringUtil.copyPartialMatches(args[0], ACTIONS, new ArrayList<>());
 			case 2:
+				if (args[0].equalsIgnoreCase("deleteall")) {
+					return StringUtil.copyPartialMatches(args[1], Arrays.asList("archived", "unarchived"), new ArrayList<>());
+				}
 				return USER_ACTIONS.contains(args[0].toLowerCase()) ? StringUtil.copyPartialMatches(args[1], UserUtils.getOnlinePlayers(false),
 						new ArrayList<>()) : new ArrayList<>();
 			default:

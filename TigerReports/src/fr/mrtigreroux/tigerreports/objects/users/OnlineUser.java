@@ -73,6 +73,16 @@ public class OnlineUser extends User {
 	}
 
 	public void openPunishmentMenu(int page, Report r) {
+		String command = ConfigFile.CONFIG.get().getString("Config.Punishments.PunishmentsCommand");
+		if (command != null && !command.equalsIgnoreCase("none")) {
+			r.process(p.getUniqueId().toString(), p.getName(), "True", false, Permission.STAFF_ARCHIVE_AUTO.isOwned(this), true);
+
+			Bukkit.dispatchCommand(p, command.replace("_Reported_", r.getPlayerName("Reported", false, false))
+					.replace("_Staff_", p.getName())
+					.replace("_Id_", Integer.toString(r.getId()))
+					.replace("_Reason_", r.getReason(false))
+					.replace("_Reporter_", r.getPlayerName("Reporter", false, false)));
+		}
 		new PunishmentMenu(this, page, r.getId()).open(true);
 	}
 

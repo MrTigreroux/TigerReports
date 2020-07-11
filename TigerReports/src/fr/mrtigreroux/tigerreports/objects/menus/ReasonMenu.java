@@ -43,8 +43,12 @@ public class ReasonMenu extends Menu {
 			String path = "Config.DefaultReasons.Reason"+reasonIndex;
 			if (!ConfigUtils.exist(ConfigFile.CONFIG.get(), path))
 				break;
+			if (ConfigFile.CONFIG.get().getString(path).equals("blank"))
+				continue;
+
 			Material material = ConfigUtils.getMaterial(ConfigFile.CONFIG.get(), path+".Item");
 			String reason = ConfigFile.CONFIG.get().getString(path+".Name");
+			String lore = ConfigFile.CONFIG.get().getString(path+".Lore");
 			inv.setItem(reasonIndex-firstReason+18, new CustomItem().type(material != null ? material : Material.PAPER)
 					.damage(ConfigUtils.getDamage(ConfigFile.CONFIG.get(), path+".Item"))
 					.skullOwner(ConfigUtils.getSkull(ConfigFile.CONFIG.get(), path+".Item"))
@@ -52,8 +56,7 @@ public class ReasonMenu extends Menu {
 					.lore(Message.REASON_DETAILS.get()
 							.replace("_Player_", tu.getName())
 							.replace("_Reason_", reason)
-							.replace("_Lore_", ChatColor.translateAlternateColorCodes(ConfigUtils.getColorCharacter(), ConfigFile.CONFIG.get()
-									.getString(path+".Lore")))
+							.replace("_Lore_", ChatColor.translateAlternateColorCodes(ConfigUtils.getColorCharacter(), lore != null ? lore : ""))
 							.split(ConfigUtils.getLineBreakSymbol()))
 					.hideFlags(true)
 					.create());

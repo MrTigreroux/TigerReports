@@ -68,7 +68,7 @@ Config:
   CustomReasons: yes
   # Allow custom reasons / Autoriser les raisons personnalisées
   CollectSkulls: yes
-  # Collect player's skull from Mojang. If disabled the skulls will have no skin. / Collecter les têtes de joueurs depuis Mojang. Si désactivé, les têtes n'auront pas d'apparence (skin).
+  # Collect player's skull from Mojang. If disabled the skulls will have no skin / Collecter les têtes de joueurs depuis Mojang. Si désactivé, les têtes n'auront pas d'apparence (skin).
   DefaultReasons:
     Reason1:
       Name: "Fly"
@@ -81,6 +81,7 @@ Config:
   #    - '-CONSOLE title @a subtitle ["",{"text":"_Reported_","color":"red"},{"text":" a \u00e9t\u00e9 banni pour: ","color":"gray"},{"text":"Fly","color":"yellow"}]'
   #    - '-CONSOLE tellraw _Staff_ {"text":"Vous avez sanctionn\u00e9 le joueur _Reported_"}'
   #    - '-CONSOLE eco give _Reporter_ 5'
+      PunishCommandsPermission: punishment.fly
     Reason2:
       Name: "Speed"
       Lore: "&7Le joueur se d\xe9place anormalement//&7vite."
@@ -116,20 +117,14 @@ Config:
       Item: Material-Fishing_rod
       PunishCommands:
       - "ban _Reported_ 7d NoKnockback"
-    Reason7:
+    Reason7: blank
+    Reason8:
       Name: "Grief"
       Lore: "&7Le joueur a d\xe9grad\xe9 une de//&7mes constructions."
       # "&7The player griefed one of my construction."
       Item: Material-TNT
       PunishCommands:
       - "ban _Reported_ 2d Grief"
-    Reason8:
-      Name: "Vol"
-      Lore: "&7Le joueur m'a vol\xe9 des ressources."
-      # "&7The player has stolen my resources."
-      Item: Material-Chest
-      PunishCommands:
-      - "ban _Reported_ 1d Vol"
     Reason9:
       Name: "Insultes"
       Lore: "&7Le joueur est irrespectueux."
@@ -138,6 +133,7 @@ Config:
       PunishCommands:
       - "mute _Reported_ 2h Insultes"
   # Default reasons displayed in a menu / Raisons par défaut affichées dans un menu
+  # Put 'blank' to create an empty reason (to add a space in the menu) / Mettre "blank" pour créer une raison vide (pour ajouter un espace dans le menu)
   # Name:    Reason of the report / Raison du signalement
   # Lore:    Description of the report / Description du signalement
   # Item:    Material-<item_type>(:damage) or/ou Skull-<pseudo>
@@ -145,12 +141,16 @@ Config:
   # PunishCommands:    List of commands to execute when punishing / Liste des commandes à exécuter lors d'une sanction.
   #                    Set '-CONSOLE' at the beginning of a command to execute it with the console (and not the staff member) / Mettre "-CONSOLE" au début d'une commande pour l'exécuter avec la console (et non le membre de la modération)
   #                    Usable placeholders: _Id_ (id of the report), _Reported_ (reported player name), _Reporter_ (reporter player name, the command is executed for each reporter if they are multiple), _Staff_ (processor staff name) and _Reason_ (reason of the report and therefore not necessarily the name of the default reason) / Données utilisables: _Id_ (identifiant du signalement), _Reported_ (pseudo du joueur signalé), _Reporter_ (pseudo du joueur signaleur, la commande est exécutée pour chaque signaleur s'il y en a plusieurs), _Staff_ (pseudo du membre du staff qui traite le signalement) et _Reason_ (raison du signalement et donc pas forcément le nom de la sanction par défaut)
+  # PunishCommandsPermission:    Permission required to execute the punish commands listed under PunishCommands / Permission requise pour exécuter les commandes de sanction listées dans PunishCommands
   Punishments:
     Enabled: yes
-    # Open the punishments menu when processing a report as True / Ouvrir le menu des sanctions lors du traitement d'un signalement comme Vrai
+    # Open the punishments menu or execute the command below when processing a report as True / Ouvrir le menu des sanctions ou exécuter la commande ci-dessous lors du traitement d'un signalement comme Vrai
+    PunishmentsCommand: none
+    # Replace the punishments menu with a command executed by the staff who process the report / Remplacer le menu des sanctions par une commande exécutée par le membre de l'équipe qui traite le signalement
+    # Note that the _Reporter_ placeholder will be replaced by the first reporter, not all to avoid a spam of commands / A noter que le placeholder _Reporter_ sera remplacé par le premier signaleur, et non tous pour éviter d'exécuter plusieurs commandes
     DefaultReasons: yes
-    # Use defaults reasons as punishments / Utiliser les raisons par défaut comme des sanctions.
-    # "PunishCommands:" property must be added below each default reason / La propriété "PunishCommands:" doit être ajoutée en-dessous de chaque raison par défaut.
+    # Use defaults reasons as punishments / Utiliser les raisons par défaut comme des sanctions
+    # "PunishCommands:" property must be added below each default reason / La propriété "PunishCommands:" doit être ajoutée en-dessous de chaque raison par défaut
     Punishment1:
       Name: "R\xe9cidive de triche"
       Lore: "&7Le joueur r\xe9utilise un hack."
@@ -165,7 +165,7 @@ Config:
       Item: Material-Pumpkin
       PunishCommands:
       - "ban _Reported_ 7d Harc\u00E8lement"
-  # Punishments available after processing a report as True / Sanctions disponibles après avoir traité un signalement comme vrai.
+  # Punishments available after processing a report as True / Sanctions disponibles après avoir traité un signalement comme vrai
   # Name:    Name of the punsihment / Nom de la sanction
   # Lore:    Description of the punishment / Description de la sanction
   # Item:    Material-<item_type>(:damage) or/ou Skull-<pseudo>
@@ -175,16 +175,16 @@ Config:
   #                    Usable placeholders: _Id_ (id of the report), _Reported_ (reported player name), _Reporter_ (reporter player name, the command is executed for each reporter if they are multiple), _Staff_ (processor staff name) and _Reason_ (reason of the report and not the name of the punishment) / Données utilisables: _Id_ (identifiant du signalement), _Reported_ (pseudo du joueur signalé), _Reporter_ (pseudo du joueur signaleur, la commande est exécutée pour chaque signaleur s'il y en a plusieurs), _Staff_ (pseudo du membre du staff qui traite le signalement) et _Reason_ (raison du signalement et non le nom de la sanction)
   ChatReport:
     Enabled: no
-    # Use the format configured below for all player chat messages. This feature isn't compatible with any other chat manager plugin. / Utiliser le format de messages configuré ci-dessous. Cette fonctionnalité n'est compatible avec aucun autre plugin de gestion du chat.
+    # Use the format configured below for all player chat messages. This feature isn't compatible with any other chat manager plugin. / Utiliser le format de messages configuré ci-dessous. Cette fonctionnalité n'est compatible avec aucun autre plugin de gestion du chat
     Message: "_ReportButton_ _DisplayName_&7: _Message_"
-    # Chat messages format / Format des messages du chat.
+    # Chat messages format / Format des messages du chat
     ReportButton:
       Text: "&7[&c&l!&7]"
-      # Report button display in chat / Apparence du bouton de signalement.
+      # Report button display in chat / Apparence du bouton de signalement
       Hover: "&6Clic gauche &7pour signaler le message du joueur &e_Player_&7."
-      # Message displayed when hovering the report button / Message affiché en survolant le bouton de signalement.
+      # Message displayed when hovering the report button / Message affiché en survolant le bouton de signalement
       Reason: "Message inapproprié"
-      # Report reason when using the report button / Raison du signalement envoyé lorsque le bouton de signalement est utilisé.
+      # Report reason when using the report button / Raison du signalement envoyé lorsque le bouton de signalement est utilisé
 BungeeCord:
   Enabled: yes
   # Interact with the BungeeCord network / Intéragir avec le réseau BungeeCord

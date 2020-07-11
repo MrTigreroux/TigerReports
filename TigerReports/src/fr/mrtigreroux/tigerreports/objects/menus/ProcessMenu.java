@@ -74,7 +74,7 @@ public class ProcessMenu extends ReportManagerMenu {
 	}
 
 	private void process(String appreciation) {
-		r.process(p.getUniqueId().toString(), p.getName(), appreciation, false, Permission.STAFF_ARCHIVE_AUTO.isOwned(u));
+		r.process(p.getUniqueId().toString(), p.getName(), appreciation, false, Permission.STAFF_ARCHIVE_AUTO.isOwned(u), true);
 		u.openDelayedlyReportsMenu();
 	}
 

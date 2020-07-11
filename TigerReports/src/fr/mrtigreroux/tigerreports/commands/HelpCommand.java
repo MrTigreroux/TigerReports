@@ -17,10 +17,10 @@ public class HelpCommand {
 			s.sendMessage("\u00A7r                         \u00A76TigerReports \u00A77> \u00A7eHelp");
 			s.sendMessage(line);
 			s.sendMessage("\u00A77Commands:");
-			s.sendMessage("\u00A77- \u00A7b/report <player> <reason> \u00A77: \u00A7eReports a player.");
+			s.sendMessage("\u00A77- \u00A7b/report <player> (reason) \u00A77: \u00A7eReports a player.");
 			s.sendMessage("\u00A77- \u00A7b/reports reload \u00A77: \u00A7eReloads the plugin.");
 			s.sendMessage("\u00A77- \u00A7b/reports \u00A77: \u00A7eDisplays all reports.");
-			s.sendMessage("\u00A77- \u00A7b/reports #<report id> \u00A77: \u00A7eDisplays a specific report.");
+			s.sendMessage("\u00A77- \u00A7b/reports <report id> \u00A77: \u00A7eDisplays a specific report.");
 			s.sendMessage("\u00A77- \u00A7b/reports user <player> \u00A77: \u00A7eManages data of an user.");
 			s.sendMessage("\u00A77- \u00A7b/reports stopcooldown <player> \u00A77: \u00A7eRemoves cooldown from a player.");
 			s.sendMessage("\u00A77- \u00A7b/reports notify \u00A77: \u00A7eEnables or disables reports notifications.");
@@ -34,10 +34,10 @@ public class HelpCommand {
 			s.sendMessage("\u00A7r                         \u00A76TigerReports \u00A77> \u00A7eAide");
 			s.sendMessage(line);
 			s.sendMessage("\u00A77Commandes:");
-			s.sendMessage("\u00A77- \u00A7b/report <joueur> <raison> \u00A77: \u00A7eSignale un joueur.");
+			s.sendMessage("\u00A77- \u00A7b/report <joueur> (raison) \u00A77: \u00A7eSignale un joueur.");
 			s.sendMessage("\u00A77- \u00A7b/reports reload \u00A77: \u00A7eRecharge le plugin.");
 			s.sendMessage("\u00A77- \u00A7b/reports \u00A77: \u00A7eAffiche l'ensemble des signalements.");
-			s.sendMessage("\u00A77- \u00A7b/reports #<identifiant du signalement> \u00A77: \u00A7eAffiche un signalement.");
+			s.sendMessage("\u00A77- \u00A7b/reports <identifiant du signalement> \u00A77: \u00A7eAffiche un signalement.");
 			s.sendMessage("\u00A77- \u00A7b/reports user <joueur> \u00A77: \u00A7eG\u00E8re les donn\u00E9es d'un joueur.");
 			s.sendMessage("\u00A77- \u00A7b/reports stopcooldown <joueur> \u00A77: \u00A7eAnnule l'attente d'un joueur.");
 			s.sendMessage("\u00A77- \u00A7b/reports notify \u00A77: \u00A7eActive ou d\u00E9sactive les notifications de signalements.");

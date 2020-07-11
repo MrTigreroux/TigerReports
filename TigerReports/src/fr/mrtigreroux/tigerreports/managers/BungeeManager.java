@@ -177,6 +177,10 @@ public class BungeeManager implements PluginMessageListener {
 				message = message.substring(index+1);
 				String[] parts = message.split(" ");
 
+				String[] userParts = new String[0];
+				if (parts[0] != null)
+					userParts = parts[0].split("/");
+
 				switch (parts[1]) {
 					case "new_report":
 						Report r = new Report(Integer.parseInt(parts[0]), Status.WAITING.getConfigWord(), "None", parts[2].replace("_", " "),
@@ -189,13 +193,12 @@ public class BungeeManager implements PluginMessageListener {
 						getReport(parts).setStatus(Status.valueOf(parts[0]), true);
 						break;
 					case "process":
-						getReport(parts).process(parts[0].split("/")[0], notify ? parts[0].split("/")[1] : null, parts[3], true, parts[4].equals(
-								"true"));
+						getReport(parts).process(userParts[0], userParts[1], parts[3], true, parts[4].equals("true"), notify);
 						break;
 					case "process_punish":
 						String p4 = parts[4];
-						getReport(parts).processPunishing(parts[0].split("/")[0], notify ? parts[0].split("/")[1] : null, true, parts[4].equals(
-								"true"), message.substring(message.indexOf(p4)+p4.length()+1));
+						getReport(parts).processPunishing(userParts[0], userParts[1], true, parts[4].equals("true"), message.substring(message
+								.indexOf(p4)+p4.length()+1), notify);
 						break;
 					case "delete":
 						getReport(parts).delete(notify ? parts[0] : null, true);

@@ -214,21 +214,21 @@ public class Report {
 				"");
 	}
 
-	public void process(String uuid, String staff, String appreciation, boolean bungee, boolean auto) {
+	public void process(String uuid, String staff, String appreciation, boolean bungee, boolean auto, boolean notifyStaff) {
 		processing(uuid, staff, appreciation, bungee, auto, (auto ? Message.STAFF_PROCESS_AUTO : Message.STAFF_PROCESS).get()
-				.replace("_Appreciation_", Message.valueOf(appreciation.toUpperCase()).get()), "process");
+				.replace("_Appreciation_", Message.valueOf(appreciation.toUpperCase()).get()), "process", false);
 	}
 
-	public void processPunishing(String uuid, String staff, boolean bungee, boolean auto, String punishment) {
+	public void processPunishing(String uuid, String staff, boolean bungee, boolean auto, String punishment, boolean notifyStaff) {
 		processing(uuid, staff, "True", bungee, auto, (auto ? Message.STAFF_PROCESS_PUNISH_AUTO : Message.STAFF_PROCESS_PUNISH).get()
 				.replace("_Punishment_", punishment)
-				.replace("_Reported_", getPlayerName("Reported", false, false)), "process_punish");
+				.replace("_Reported_", getPlayerName("Reported", false, false)), "process_punish", notifyStaff);
 	}
 
-	private void processing(String uuid, String staff, String appreciation, boolean bungee, boolean auto, String staffMessage, String bungeeAction) {
+	private void processing(String uuid, String staff, String appreciation, boolean bungee, boolean auto, String staffMessage, String bungeeAction, boolean notifyStaff) {
 		this.status = Status.DONE.getConfigWord()+" by "+uuid;
 		this.appreciation = appreciation;
-		if (staff != null) {
+		if (notifyStaff) {
 			MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage(staffMessage.replace("_Player_", staff), "_Report_", getName(), getText(),
 					null), ConfigSound.STAFF.get());
 		}

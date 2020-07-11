@@ -27,7 +27,6 @@ public enum Message {
 	STAFF_PROCESS_PUNISH_AUTO("Messages.Staff-process-punish-auto"),
 	STAFF_ARCHIVE("Messages.Staff-archive"),
 	STAFF_ARCHIVEALL("Messages.Staff-archiveall"),
-	STAFF_DELETEALL("Messages.Staff-deleteall"),
 	STAFF_RESTORE("Messages.Staff-restore"),
 	STAFF_DELETE_ARCHIVE("Messages.Staff-delete-archive"),
 	STAFF_DELETE("Messages.Staff-delete"),
@@ -46,7 +45,6 @@ public enum Message {
 	CANCEL_BUTTON_DETAILS("Messages.Cancel-button-details"),
 	CANCEL_COMMENT("Messages.Cancel-comment"),
 
-	INVALID_SYNTAX("ErrorMessages.Invalid-syntax"),
 	PERMISSION_COMMAND("ErrorMessages.Permission-command"),
 	PERMISSION_REPORT("ErrorMessages.Permission-report"),
 	PERMISSION_ACCESS_DETAILS("ErrorMessages.Permission-access-details"),
@@ -194,9 +192,7 @@ public enum Message {
 	SENT("Words.Sent"),
 	READ("Words.Read"),
 	REPORT_TYPE("Words.Report-type"),
-	REPORTS_TYPE("Words.Reports-type"),
-	REPORT_SYNTAX("Words.Report-syntax"),
-	REPORTS_SYNTAX("Words.Reports-syntax");
+	REPORTS_TYPE("Words.Reports-type");
 
 	private final String path;
 
@@ -212,14 +208,13 @@ public enum Message {
 	public String getPath() {
 		return path;
 	}
-	
-	public static String get(String path) {
-		return ChatColor.translateAlternateColorCodes(ConfigUtils.getColorCharacter(), StringEscapeUtils.unescapeJava(ConfigFile.MESSAGES.get()
-				.getString(path)));
-	}
-	
+
 	public static String formatMessage(String message) {
 		return ChatColor.translateAlternateColorCodes(ConfigUtils.getColorCharacter(), StringEscapeUtils.unescapeJava(message));
+	}
+
+	public static String get(String path) {
+		return formatMessage(ConfigFile.MESSAGES.get().getString(path));
 	}
 
 }

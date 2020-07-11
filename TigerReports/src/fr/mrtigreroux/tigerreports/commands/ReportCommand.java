@@ -53,7 +53,7 @@ public class ReportCommand implements TabExecutor {
 		}
 
 		if (args.length == 0 || (args.length == 1 && !ConfigUtils.exist(ConfigFile.CONFIG.get(), "Config.DefaultReasons.Reason1"))) {
-			s.sendMessage(Message.INVALID_SYNTAX.get().replace("_Command_", "/"+label+" "+Message.REPORT_SYNTAX.get()));
+			s.sendMessage(Message.get("ErrorMessages.Invalid-syntax-report"));
 			return true;
 		}
 
