@@ -174,7 +174,6 @@ public enum Message {
 	IN_PROGRESS("Words.In-progress"),
 	IMPORTANT("Words.Important"),
 	DONE("Words.Done"),
-	APPRECIATION_SUFFIX("Words.Appreciation-suffix"),
 	APPRECIATION("Words.Appreciation"),
 	TRUE("Words.True-appreciation"),
 	UNCERTAIN("Words.Uncertain-appreciation"),

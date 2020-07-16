@@ -3,7 +3,6 @@ package fr.mrtigreroux.tigerreports.data.config;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
@@ -45,7 +44,7 @@ public enum ConfigFile {
 			}
 
 			config.setDefaults(defaultConfig);
-		} catch (UnsupportedEncodingException ex) {
+		} catch (Exception ex) {
 			Bukkit.getLogger()
 					.log(Level.SEVERE, ConfigUtils.getInfoMessage("An error has occurred while loading config files:",
 							"Une erreur est survenue en chargeant les fichiers de configuration:"), ex);

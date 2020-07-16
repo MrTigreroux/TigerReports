@@ -104,7 +104,7 @@ public class Report {
 					.updateAsynchronously("UPDATE tigerreports_reports SET status = ? WHERE report_id = ?", Arrays.asList(status.getConfigWord(),
 							reportId));
 		}
-		
+
 		try {
 			Bukkit.getServer().getPluginManager().callEvent(new ReportStatusChangeEvent(this, status.getConfigWord()));
 		} catch (Exception ignored) {}
@@ -119,12 +119,39 @@ public class Report {
 								: Message.NOT_FOUND_FEMALE.get();
 	}
 
+	public String getAppreciation(boolean config) {
+		int pos = appreciation.indexOf('/');
+		String appreciationWord = pos != -1 ? appreciation.substring(0, pos) : appreciation;
+		if (config)
+			return appreciationWord;
+		try {
+			return appreciation != null && !appreciation.equalsIgnoreCase("None")	? Message.valueOf(appreciationWord.toUpperCase()).get()
+																					: Message.NONE_FEMALE.get();
+		} catch (Exception invalidAppreciation) {
+			return Message.NONE_FEMALE.get();
+		}
+	}
+
+	public String getProcessor() {
+		String processor = null;
+		if (status != null && status.startsWith(Status.DONE.getConfigWord()+" by "))
+			processor = UserUtils.getName(status.replaceFirst(Status.DONE.getConfigWord()+" by ", ""));
+		return processor != null ? processor : Message.NOT_FOUND_MALE.get();
+	}
+
+	public String getPunishment() {
+		int pos = appreciation.indexOf('/');
+		return pos != -1 ? appreciation.substring(pos+1) : Message.NONE_MALE.get();
+	}
+
 	public String implementDetails(String message, boolean menu) {
 		Status status = getStatus();
 		String reportersNames = isStackedReport() ? getReportersNames(0) : getPlayerName("Reporter", true, true);
-
-		return message.replace("_Status_", status.equals(Status.DONE) ? status.getWord(getProcessor())+Message.APPRECIATION_SUFFIX.get()
-				.replace("_Appreciation_", getAppreciation(false)) : status.getWord(null))
+		String suffix = getAppreciation(true).equalsIgnoreCase("true")	? Message.get("Words.Done-suffix.True-appreciation")
+				.replace("_Punishment_", getPunishment())
+																		: Message.get("Words.Done-suffix.Other-appreciation")
+																				.replace("_Appreciation_", getAppreciation(false));
+		return message.replace("_Status_", status.equals(Status.DONE) ? status.getWord(getProcessor())+suffix : status.getWord(null))
 				.replace("_Date_", getDate())
 				.replace("_Reporters_", reportersNames)
 				.replace("_Reported_", getPlayerName("Reported", true, true))
@@ -220,14 +247,16 @@ public class Report {
 	}
 
 	public void processPunishing(String uuid, String staff, boolean bungee, boolean auto, String punishment, boolean notifyStaff) {
-		processing(uuid, staff, "True", bungee, auto, (auto ? Message.STAFF_PROCESS_PUNISH_AUTO : Message.STAFF_PROCESS_PUNISH).get()
+		processing(uuid, staff, "True/"+punishment, bungee, auto, (auto ? Message.STAFF_PROCESS_PUNISH_AUTO : Message.STAFF_PROCESS_PUNISH).get()
 				.replace("_Punishment_", punishment)
 				.replace("_Reported_", getPlayerName("Reported", false, false)), "process_punish", notifyStaff);
 	}
 
-	private void processing(String uuid, String staff, String appreciation, boolean bungee, boolean auto, String staffMessage, String bungeeAction, boolean notifyStaff) {
+	private void processing(String uuid, String staff, String appreciation, boolean bungee, boolean auto, String staffMessage, String bungeeAction,
+			boolean notifyStaff) {
 		this.status = Status.DONE.getConfigWord()+" by "+uuid;
 		this.appreciation = appreciation;
+
 		if (notifyStaff) {
 			MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage(staffMessage.replace("_Player_", staff), "_Report_", getName(), getText(),
 					null), ConfigSound.STAFF.get());
@@ -238,7 +267,7 @@ public class Report {
 		BungeeManager bm = plugin.getBungeeManager();
 
 		if (!bungee) {
-			bm.sendPluginNotification(uuid+"/"+staff+" "+bungeeAction+" "+reportId+" "+appreciation+" "+auto);
+			bm.sendPluginNotification(uuid+"/"+staff+" "+bungeeAction+" "+reportId+" "+(auto ? "1" : "0")+" "+appreciation);
 			plugin.getDb()
 					.update("UPDATE tigerreports_reports SET status = ?,appreciation = ?,archived = ? WHERE report_id = ?", Arrays.asList(status,
 							appreciation, auto ? 1 : 0, reportId));
@@ -247,7 +276,7 @@ public class Report {
 
 			for (String ruuid : getReportersUniqueIds()) {
 				User ru = um.getUser(ruuid);
-				ru.changeStatistic(appreciation.toLowerCase()+"_appreciations", 1);
+				ru.changeStatistic(getAppreciation(true).toLowerCase()+"_appreciations", 1);
 
 				if (ConfigUtils.playersNotifications()) {
 					if (ru instanceof OnlineUser) {
@@ -268,28 +297,10 @@ public class Report {
 				}
 			}
 		}
-		
+
 		try {
 			Bukkit.getServer().getPluginManager().callEvent(new ProcessReportEvent(this, staff));
 		} catch (Exception ignored) {}
-	}
-
-	public String getProcessor() {
-		String processor = null;
-		if (status != null && status.startsWith(Status.DONE.getConfigWord()+" by "))
-			processor = UserUtils.getName(status.replaceFirst(Status.DONE.getConfigWord()+" by ", ""));
-		return processor != null ? processor : Message.NOT_FOUND_MALE.get();
-	}
-
-	public String getAppreciation(boolean config) {
-		if (config)
-			return appreciation;
-		try {
-			return appreciation != null && !appreciation.equalsIgnoreCase("None")	? Message.valueOf(appreciation.toUpperCase()).get()
-																					: Message.NONE_FEMALE.get();
-		} catch (Exception invalidAppreciation) {
-			return Message.NONE_FEMALE.get();
-		}
 	}
 
 	public Comment getCommentById(int commentId) {

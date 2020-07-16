@@ -182,7 +182,9 @@ Words:
   In-progress: "&6处理中"
   Important: "&c重要"
   Done: "&b由 _Name_ 完成处理"
-  Appreciation-suffix: " &7(_Appreciation_&7)"
+  Done-suffix:
+    True-appreciation: " &7(&a真实的&7)//&7Punishment applied: &r_Punishment_"
+    Other-appreciation: " &7(_Appreciation_&7)"
   Appreciation: "&7处理结果类型 _Appreciation_"
   True-appreciation: "&a真实的"
   Uncertain-appreciation: "&6不确定的"

@@ -1,4 +1,4 @@
-﻿Messages: # French messages by MrTigreroux. If you are in Minecraft 1.8 or less, encode in ANSI, else encode in UTF-8. / Messages en français par MrTigreroux. Si vous etes en Minecraft 1.8 ou inférieur, encodez en ANSI, sinon encodez en UTF-8.
+﻿Messages: # French messages by MrTigreroux. If you are in Minecraft 1.8 or less, encode in ANSI, else encode in UTF-8. / Messages en français par MrTigreroux. Si vous êtes en Minecraft 1.8 ou inférieur, encodez en ANSI, sinon encodez en UTF-8.
   Reload: "&7[&6TigerReports&7] &eLe plugin a \xe9t\xe9 recharg\xe9."
   Report-sent: "&7[&6Report&7] &eVous avez signal\xe9 le joueur &6_Player_ &epour: &7_Reason_&e."
   Alert: "&7[&cReport &7- &8_Server_&7] &a_Reporter_ &7» &c_Reported_&7: &6_Reason_&7."
@@ -182,7 +182,9 @@ Words:
   In-progress: "&6En cours"
   Important: "&cImportant"
   Done: "&bTrait\xe9 par _Name_"
-  Appreciation-suffix: " &7(_Appreciation_&7)"
+  Done-suffix:
+    True-appreciation: " &7(&aVrai&7)//&7Sanction appliqu\xe9e: &r_Punishment_"
+    Other-appreciation: " &7(_Appreciation_&7)"
   Appreciation: "&7Appr\xe9ciation _Appreciation_"
   True-appreciation: "&aVrai"
   Uncertain-appreciation: "&6Incertain"

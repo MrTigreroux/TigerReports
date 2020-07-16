@@ -193,12 +193,12 @@ public class BungeeManager implements PluginMessageListener {
 						getReport(parts).setStatus(Status.valueOf(parts[0]), true);
 						break;
 					case "process":
-						getReport(parts).process(userParts[0], userParts[1], parts[3], true, parts[4].equals("true"), notify);
+						getReport(parts).process(userParts[0], userParts[1], parts[4], true, parts[3].equals("1"), notify);
 						break;
 					case "process_punish":
-						String p4 = parts[4];
-						getReport(parts).processPunishing(userParts[0], userParts[1], true, parts[4].equals("true"), message.substring(message
-								.indexOf(p4)+p4.length()+1), notify);
+						String auto = parts[3];
+						getReport(parts).processPunishing(userParts[0], userParts[1], true, parts[3].equals("1"), message.substring(message.indexOf(
+								auto)+2), notify);
 						break;
 					case "delete":
 						getReport(parts).delete(notify ? parts[0] : null, true);

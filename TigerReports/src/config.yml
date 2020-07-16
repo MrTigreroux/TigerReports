@@ -5,44 +5,61 @@
 Config:
   ColorCharacter: '&'
   # Character used for colors in messages.yml / Caractère utilisé pour les couleurs dans messages.yml
+  
   LineBreakSymbol: "//"
   # Symbol used to separate lines in messages.yml / Symbole utilisé pour séparer les lignes dans messages.yml
+  
   InfoLanguage: French
   # Language used in info messages of the plugin like warnings in the console and /tigerreports help command / Langue utilisée pour les messages d'information comme les avertissements dans la console et la commande d'aide /tigerreports
   # Only 2 languages available : French and English / Seulement 2 langues disponibles : French et English
+  
   Time: default
   # Time of a city to use (example: "America/Chicago"), list of available cities here: / Temps d'une ville à utiliser (exemple: "Europe/Paris"), la liste des villes possibles est ici:
   # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
   # Set 'default' to use the default server time / Mettre "default" pour utiliser le temps par défaut du serveur
+  
   PermissionRequired: no
   # Permission needed to use /report command / Permission requise pour utiliser la commande /report
+  
   ReportOnline: no
   # Report only online players / Signaler uniquement des joueurs connectés
+  
   MaxReports: 100
   # Maximum amount of saved reports, others are just displayed in the chat / Nombre maximum de signalements sauvegardés, les autres sont simplement affichés dans le chat
+  
   MinCharacters: 3
   # Minimum amount of characters in the reason of a report / Nombre minimum de caractères pour la raison d'un signalement
+  
   ReportCooldown: 300
   # Cooldown in seconds between each report / Temps en secondes d'attente entre chaque signalement
+  
   ReportedImmunity: 120
   # Time in seconds during the reported player cannot be reported again / Temps en secondes durant lequel un joueur signalé ne peut être à nouveau signalé
+  
   AutoCommands: none
   # List of executed commands after a report, set 'none' to don't execute any / Liste des commandes exécutées après chaque signalement, mettre "none" pour aucune
   # Usable placeholders:    _Server_, _Date_, _Reporter_, _Reported_ and _Reason_
+  
   PunishSeconds: 3600
   # Cooldown inflicted for an abusive report / Temps d'attente infligé pour un signalement abusif
+  
   MessagesHistory: 5
   # Amount of saved messages / Nombre de messages sauvegardés
+  
   CommandsHistory: none
   # - msg
   # - tell
   # List of saved commands in messages history, set 'none' to don't save any / Liste des commandes sauvegardées dans l'historique des messages, mettre "none" pour aucune
+  
   StackReports: yes
   # Group reports against the same player for the same reason / Regrouper les signalements contre un même joueur pour une même raison
+  
   NotifyStackedReports: yes
   # Notify staff members of same reports against the same player / Informer les membres de l'équipe des mêmes signalements envoyés contre un même joueur
+  
   UpdateDateOfStackedReports: no
   # Update the report date of stacked reports (against the same player for the same reason) at each new report / Mettre à jour la date des signalements groupés (envoyés contre un même joueur pour une même raison) à chaque nouveau signalement
+  
   Notifications:
     Delay: 2
     # Time in seconds before sending the notification after the connection of the user / Délai en secondes avant d'envoyer la notification après la connexion de l'utilisateur
@@ -50,14 +67,17 @@ Config:
     # Notify players about the decisions made on their reports / Informer les joueurs des décisions prises sur leurs signalements
     Staff:
       Connection: yes
+      # Display at staff connection / Afficher à la connexion d'un membre de l'équipe
       MinutesInterval: 0
+      # Display each x minutes, set 0 to disable / Afficher toutes les x minutes, mettre 0 pour désactiver
     # Notifications about reports to process / Notifications à propos des signalements à traiter
-    # Connection:    Display at staff connection / Afficher à la connexion d'un membre de l'équipe
-    # MinutesInterval:    Display each x minutes, set 0 to disable / Afficher toutes les x minutes, mettre 0 pour désactiver
+  
   OnlyDoneArchives: no
   # Prevent archive of unprocessed reports / Empêcher l'archivage de signalements non traités
+  
   MenuUpdatesInterval: 10
   # Update opened menus each x seconds / Actualiser les menus ouverts toutes les x secondes
+  
   MenuSound: ENTITY_ITEM_PICKUP
   ErrorSound: ENTITY_ITEM_BREAK
   ReportSound: ENTITY_BAT_DEATH
@@ -65,10 +85,13 @@ Config:
   StaffSound: ENTITY_ITEM_PICKUP
   # Bukkit sounds used on specific actions / Sons bukkit utilisés pour certaines actions
   # Set 'none' to disable the sound / Mettre "none" pour désactiver le son
+  
   CustomReasons: yes
   # Allow custom reasons / Autoriser les raisons personnalisées
+  
   CollectSkulls: yes
   # Collect player's skull from Mojang. If disabled the skulls will have no skin / Collecter les têtes de joueurs depuis Mojang. Si désactivé, les têtes n'auront pas d'apparence (skin).
+  
   DefaultReasons:
     Reason1:
       Name: "Fly"
@@ -142,15 +165,19 @@ Config:
   #                    Set '-CONSOLE' at the beginning of a command to execute it with the console (and not the staff member) / Mettre "-CONSOLE" au début d'une commande pour l'exécuter avec la console (et non le membre de la modération)
   #                    Usable placeholders: _Id_ (id of the report), _Reported_ (reported player name), _Reporter_ (reporter player name, the command is executed for each reporter if they are multiple), _Staff_ (processor staff name) and _Reason_ (reason of the report and therefore not necessarily the name of the default reason) / Données utilisables: _Id_ (identifiant du signalement), _Reported_ (pseudo du joueur signalé), _Reporter_ (pseudo du joueur signaleur, la commande est exécutée pour chaque signaleur s'il y en a plusieurs), _Staff_ (pseudo du membre du staff qui traite le signalement) et _Reason_ (raison du signalement et donc pas forcément le nom de la sanction par défaut)
   # PunishCommandsPermission:    Permission required to execute the punish commands listed under PunishCommands / Permission requise pour exécuter les commandes de sanction listées dans PunishCommands
+  
   Punishments:
     Enabled: yes
     # Open the punishments menu or execute the command below when processing a report as True / Ouvrir le menu des sanctions ou exécuter la commande ci-dessous lors du traitement d'un signalement comme Vrai
+    
     PunishmentsCommand: none
     # Replace the punishments menu with a command executed by the staff who process the report / Remplacer le menu des sanctions par une commande exécutée par le membre de l'équipe qui traite le signalement
     # Note that the _Reporter_ placeholder will be replaced by the first reporter, not all to avoid a spam of commands / A noter que le placeholder _Reporter_ sera remplacé par le premier signaleur, et non tous pour éviter d'exécuter plusieurs commandes
+    
     DefaultReasons: yes
     # Use defaults reasons as punishments / Utiliser les raisons par défaut comme des sanctions
     # "PunishCommands:" property must be added below each default reason / La propriété "PunishCommands:" doit être ajoutée en-dessous de chaque raison par défaut
+    
     Punishment1:
       Name: "R\xe9cidive de triche"
       Lore: "&7Le joueur r\xe9utilise un hack."
@@ -173,24 +200,33 @@ Config:
   # PunishCommands:    List of commands to execute when punishing / Liste des commandes à exécuter lors d'une sanction.
   #                    Set '-CONSOLE' at the beginning of a command to execute it with the console (and not the staff member) / Mettre "-CONSOLE" au début d'une commande pour l'exécuter avec la console (et non le membre de la modération)
   #                    Usable placeholders: _Id_ (id of the report), _Reported_ (reported player name), _Reporter_ (reporter player name, the command is executed for each reporter if they are multiple), _Staff_ (processor staff name) and _Reason_ (reason of the report and not the name of the punishment) / Données utilisables: _Id_ (identifiant du signalement), _Reported_ (pseudo du joueur signalé), _Reporter_ (pseudo du joueur signaleur, la commande est exécutée pour chaque signaleur s'il y en a plusieurs), _Staff_ (pseudo du membre du staff qui traite le signalement) et _Reason_ (raison du signalement et non le nom de la sanction)
+  # PunishCommandsPermission:    Permission required to execute the punish commands listed under PunishCommands / Permission requise pour exécuter les commandes de sanction listées dans PunishCommands
+  
   ChatReport:
     Enabled: no
     # Use the format configured below for all player chat messages. This feature isn't compatible with any other chat manager plugin. / Utiliser le format de messages configuré ci-dessous. Cette fonctionnalité n'est compatible avec aucun autre plugin de gestion du chat
+    
     Message: "_ReportButton_ _DisplayName_&7: _Message_"
     # Chat messages format / Format des messages du chat
+    
     ReportButton:
       Text: "&7[&c&l!&7]"
       # Report button display in chat / Apparence du bouton de signalement
+      
       Hover: "&6Clic gauche &7pour signaler le message du joueur &e_Player_&7."
       # Message displayed when hovering the report button / Message affiché en survolant le bouton de signalement
+      
       Reason: "Message inapproprié"
       # Report reason when using the report button / Raison du signalement envoyé lorsque le bouton de signalement est utilisé
+
 BungeeCord:
   Enabled: yes
   # Interact with the BungeeCord network / Intéragir avec le réseau BungeeCord
+  
   Servers:
     server1: "Serveur 1"
   # Custom display name of servers / Nom personnalisé des serveurs
+
 MySQL:
   Host: ""
   Port: 0

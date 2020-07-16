@@ -31,6 +31,7 @@ public class ReportsCommand implements TabExecutor {
 
 	private final List<String> ACTIONS = Arrays.asList("reload", "notify", "archiveall", "archives", "deleteall", "user", "stopcooldown", "#1");
 	private final List<String> USER_ACTIONS = Arrays.asList("user", "u", "stopcooldown", "sc");
+	private final List<String> DELETEALL_ARGS = Arrays.asList("archived", "unarchived");
 
 	@Override
 	public boolean onCommand(CommandSender s, Command cmd, String label, String[] args) {
@@ -132,8 +133,7 @@ public class ReportsCommand implements TabExecutor {
 			default:
 				break;
 		}
-		String syntax = Message.get("ErrorMessages.Invalid-syntax-reports");
-		for(String line : syntax.split(ConfigUtils.getLineBreakSymbol()))
+		for(String line : Message.get("ErrorMessages.Invalid-syntax-reports").split(ConfigUtils.getLineBreakSymbol()))
 			s.sendMessage(line);
 		return true;
 	}
@@ -142,10 +142,10 @@ public class ReportsCommand implements TabExecutor {
 	public List<String> onTabComplete(CommandSender s, Command cmd, String label, String[] args) {
 		switch (args.length) {
 			case 1:
-				return StringUtil.copyPartialMatches(args[0], ACTIONS, new ArrayList<>());
+				return StringUtil.copyPartialMatches(args[0].toLowerCase(), ACTIONS, new ArrayList<>());
 			case 2:
 				if (args[0].equalsIgnoreCase("deleteall")) {
-					return StringUtil.copyPartialMatches(args[1], Arrays.asList("archived", "unarchived"), new ArrayList<>());
+					return StringUtil.copyPartialMatches(args[1].toLowerCase(), DELETEALL_ARGS, new ArrayList<>());
 				}
 				return USER_ACTIONS.contains(args[0].toLowerCase()) ? StringUtil.copyPartialMatches(args[1], UserUtils.getOnlinePlayers(false),
 						new ArrayList<>()) : new ArrayList<>();

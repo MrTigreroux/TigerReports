@@ -182,7 +182,9 @@ Words:
   In-progress: "&6In Arbeit"
   Important: "&cWichtig"
   Done: "&bAbgeschlossen bei _Name_"
-  Appreciation-suffix: " &7(_Appreciation_&7)"
+  Done-suffix:
+    True-appreciation: " &7(&aWahr&7)//&7Punishment applied: &r_Punishment_"
+    Other-appreciation: " &7(_Appreciation_&7)"
   Appreciation: "&7Einstufung _Appreciation_"
   True-appreciation: "&aWahr"
   Uncertain-appreciation: "&6Unsicher"
