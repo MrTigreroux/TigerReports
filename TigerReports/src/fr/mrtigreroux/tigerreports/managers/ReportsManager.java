@@ -1,12 +1,14 @@
 package fr.mrtigreroux.tigerreports.managers;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
+import fr.mrtigreroux.tigerreports.data.constants.Pair;
 import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.utils.ReportUtils;
 
@@ -44,8 +46,16 @@ public class ReportsManager {
 																		.query("SELECT * FROM tigerreports_reports WHERE report_id = ? "+(notArchived
 																																						? "AND archived = 0 "
 																																						: "")
-																				+"LIMIT 1", Arrays.asList(reportId))
+																				+"LIMIT 1", Collections.singletonList(reportId))
 																		.getResult(0));
+	}
+
+	public Pair<Report, Boolean> getReportByIdAndArchiveInfo(int reportId) {
+		Map<String, Object> result = TigerReports.getInstance()
+				.getDb()
+				.query("SELECT * FROM tigerreports_reports WHERE report_id = ? LIMIT 1", Collections.singletonList(reportId))
+				.getResult(0);
+		return reportId <= 0 || result == null ? null : new Pair<Report, Boolean>(formatFullReport(result), (Boolean) result.get("archived"));
 	}
 
 	public Report getReport(boolean archived, int reportIndex) {

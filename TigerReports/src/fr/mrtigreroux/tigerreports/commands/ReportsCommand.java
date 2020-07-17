@@ -14,8 +14,10 @@ import org.bukkit.util.StringUtil;
 import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
+import fr.mrtigreroux.tigerreports.data.constants.Pair;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.managers.BungeeManager;
+import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.objects.users.User;
 import fr.mrtigreroux.tigerreports.runnables.MenuUpdater;
@@ -29,7 +31,8 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 public class ReportsCommand implements TabExecutor {
 
-	private final List<String> ACTIONS = Arrays.asList("reload", "notify", "archiveall", "archives", "deleteall", "user", "stopcooldown", "#1");
+	private final List<String> ACTIONS = Arrays.asList("reload", "notify", "archive", "delete", "archives", "archiveall", "deleteall", "user",
+			"stopcooldown", "#1");
 	private final List<String> USER_ACTIONS = Arrays.asList("user", "u", "stopcooldown", "sc");
 	private final List<String> DELETEALL_ARGS = Arrays.asList("archived", "unarchived");
 
@@ -97,45 +100,81 @@ public class ReportsCommand implements TabExecutor {
 						return true;
 				}
 			case 2:
-				if (args[0].equalsIgnoreCase("deleteall")) {
-					String reportsType = args[1];
-					boolean unarchived = reportsType != null && reportsType.equalsIgnoreCase("unarchived");
-					if ((unarchived || reportsType.equalsIgnoreCase("archived")) && Permission.STAFF_DELETE.check(s)) {
-						tr.getDb()
-								.updateAsynchronously("DELETE FROM tigerreports_reports WHERE archived = ?", Collections.singletonList(unarchived	? 0
-																																					: 1));
-						MessageUtils.sendStaffMessage(Message.get("Messages.Staff-deleteall-"+(unarchived ? "un" : "")+"archived")
-								.replace("_Player_", p.getName()), ConfigSound.STAFF.get());
+				switch (args[0].toLowerCase()) {
+					case "deleteall":
+						String reportsType = args[1];
+						boolean unarchived = reportsType != null && reportsType.equalsIgnoreCase("unarchived");
+						if ((unarchived || reportsType.equalsIgnoreCase("archived"))) {
+							if (Permission.STAFF_DELETE.check(s)) {
+								tr.getDb()
+										.updateAsynchronously("DELETE FROM tigerreports_reports WHERE archived = ?", Collections.singletonList(
+												unarchived ? 0 : 1));
+								MessageUtils.sendStaffMessage(Message.get("Messages.Staff-deleteall-"+(unarchived ? "un" : "")+"archived")
+										.replace("_Player_", p.getName()), ConfigSound.STAFF.get());
+							}
+							return true;
+						}
+						break;
+					case "delete":
+						if (Permission.STAFF_DELETE.check(s)) {
+							Pair<Report, Boolean> info = getReportAndArchiveInfo(args[1], s);
+							if (info == null)
+								return true;
+							if (info.a) {
+								info.r.deleteFromArchives(p.getName(), false);
+							} else {
+								info.r.delete(p.getName(), false);
+							}
+						}
 						return true;
-					}
-				} else {
-					String tuuid = UserUtils.getUniqueId(args[1]);
-					User tu = tr.getUsersManager().getUser(tuuid);
-					if (tu == null || !UserUtils.isValid(tuuid)) {
-						MessageUtils.sendErrorMessage(s, Message.INVALID_PLAYER.get().replace("_Player_", args[1]));
+					case "archive":
+						if (Permission.STAFF_ARCHIVE.check(s)) {
+							Pair<Report, Boolean> info2 = getReportAndArchiveInfo(args[1], s);
+							if (info2 != null && !info2.a)
+								info2.r.archive(p.getName(), false);
+						}
 						return true;
-					}
-
-					switch (args[0].toLowerCase()) {
-						case "user":
-						case "u":
+					case "user":
+					case "u":
+						User tu = getTarget(args[1], s);
+						if (tu != null)
 							u.openUserMenu(tu);
-							return true;
-						case "stopcooldown":
-						case "sc":
-							tu.stopCooldown(p.getName(), false);
-							return true;
-						default:
-							break;
-					}
+						return true;
+					case "stopcooldown":
+					case "sc":
+						User tu2 = getTarget(args[1], s);
+						if (tu2 != null)
+							tu2.stopCooldown(p.getName(), false);
+						return true;
+					default:
+						break;
 				}
 				break;
 			default:
 				break;
 		}
-		for(String line : Message.get("ErrorMessages.Invalid-syntax-reports").split(ConfigUtils.getLineBreakSymbol()))
+		for (String line : Message.get("ErrorMessages.Invalid-syntax-reports").split(ConfigUtils.getLineBreakSymbol()))
 			s.sendMessage(line);
 		return true;
+	}
+
+	private Pair<Report, Boolean> getReportAndArchiveInfo(String reportId, CommandSender s) {
+		try {
+			return TigerReports.getInstance().getReportsManager().getReportByIdAndArchiveInfo(Integer.parseInt(reportId.replace("#", "")));
+		} catch (Exception invalidIndex) {
+			MessageUtils.sendErrorMessage(s, Message.INVALID_REPORT_ID.get().replace("_Id_", reportId));
+			return null;
+		}
+	}
+
+	private User getTarget(String target, CommandSender s) {
+		String tuuid = UserUtils.getUniqueId(target);
+		User tu = TigerReports.getInstance().getUsersManager().getUser(tuuid);
+		if (tu == null || !UserUtils.isValid(tuuid)) {
+			MessageUtils.sendErrorMessage(s, Message.INVALID_PLAYER.get().replace("_Player_", target));
+			return null;
+		}
+		return tu;
 	}
 
 	@Override
@@ -144,11 +183,16 @@ public class ReportsCommand implements TabExecutor {
 			case 1:
 				return StringUtil.copyPartialMatches(args[0].toLowerCase(), ACTIONS, new ArrayList<>());
 			case 2:
-				if (args[0].equalsIgnoreCase("deleteall")) {
-					return StringUtil.copyPartialMatches(args[1].toLowerCase(), DELETEALL_ARGS, new ArrayList<>());
+				switch (args[0].toLowerCase()) {
+					case "deleteall":
+						return StringUtil.copyPartialMatches(args[1].toLowerCase(), DELETEALL_ARGS, new ArrayList<>());
+					case "archive":
+					case "delete":
+						return StringUtil.copyPartialMatches(args[1].toLowerCase(), Collections.singletonList("#1"), new ArrayList<>());
+					default:
+						return USER_ACTIONS.contains(args[0].toLowerCase()) ? StringUtil.copyPartialMatches(args[1], UserUtils.getOnlinePlayers(
+								false), new ArrayList<>()) : new ArrayList<>();
 				}
-				return USER_ACTIONS.contains(args[0].toLowerCase()) ? StringUtil.copyPartialMatches(args[1], UserUtils.getOnlinePlayers(false),
-						new ArrayList<>()) : new ArrayList<>();
 			default:
 				return new ArrayList<>();
 		}

@@ -36,7 +36,7 @@
   Cancel-comment: "&7[&6Reports&7] &eYou &ccancelled &eyour &ecomment &efor _Report_&e. _ReportButton_"
 ErrorMessages:
   Invalid-syntax-report: "&7[&6Reports&7] &ePlease detail your command like: &b/report <player> (reason)&e."
-  Invalid-syntax-reports: "&7[&6Reports&7] &ePlease detail your command like://&7- &b/reports <reload / notify / archiveall / archives>//&7- &b/reports <report id>//&7- &b/reports <user / stopcooldown> <player>//&7- &b/reports deleteall <archived / unarchived>"
+  Invalid-syntax-reports: "&7[&6Reports&7] &ePlease detail your command like://&7- &b/reports <reload / notify / archiveall / archives>//&7- &b/reports <report id>//&7- &b/reports <archive / delete> <report id>//&7- &b/reports <user / stopcooldown> <player>//&7- &b/reports deleteall <archived / unarchived>"
   Permission-command: "&7[&6Reports&7] &cYou don't have access to that command."
   Permission-report: "&7[&6Reports&7] &cYou can't report player &e_Player_&c."
   Permission-access-details: "&7[&6Reports&7] &cYou can't access the details of _Report_&c."

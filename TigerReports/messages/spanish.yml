@@ -36,7 +36,7 @@
   Cancel-comment: "&7[&6Reportes&7] &eHas cancelado el comentario para el _Report_&e. _ReportButton_"
 ErrorMessages:
   Invalid-syntax-report: "&7[&6Reports&7] &eSintaxis incorrecta, usa: &b/report <jugador> (motivo)&e."
-  Invalid-syntax-reports: "&7[&6Reports&7] &eSintaxis incorrecta, usa://&7- &b/reports <reload / notify / archiveall / archives>//&7- &b/reports <report id>//&7- &b/reports <user / stopcooldown> <player>//&7- &b/reports deleteall <archived / unarchived>"
+  Invalid-syntax-reports: "&7[&6Reports&7] &eSintaxis incorrecta, usa://&7- &b/reports <reload / notify / archiveall / archives>//&7- &b/reports <report id>//&7- &b/reports <archive / delete> <report id>//&7- &b/reports <user / stopcooldown> <player>//&7- &b/reports deleteall <archived / unarchived>"
   Permission-command: "&7[&6Reportes&7] &cNo tienes permisos pare ejecutar ese comando."
   Permission-report: "&7[&6Reportes&7] &cNo puedes reportar al jugador &e_Player_&c."
   Permission-access-details: "&7[&6Reportes&7] &cNo puedes ver los detalles de _Report_&c."

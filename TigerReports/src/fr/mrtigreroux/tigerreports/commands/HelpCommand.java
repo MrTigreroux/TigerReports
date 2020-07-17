@@ -24,6 +24,7 @@ public class HelpCommand {
 			s.sendMessage("\u00A77- \u00A7b/reports user <player> \u00A77: \u00A7eManages data of an user.");
 			s.sendMessage("\u00A77- \u00A7b/reports stopcooldown <player> \u00A77: \u00A7eRemoves cooldown from a player.");
 			s.sendMessage("\u00A77- \u00A7b/reports notify \u00A77: \u00A7eEnables or disables reports notifications.");
+			s.sendMessage("\u00A77- \u00A7b/reports <archive / delete> <report id> \u00A77: \u00A7eArchives/deletes the report.");
 			s.sendMessage("\u00A77- \u00A7b/reports archiveall \u00A77: \u00A7eArchives all done reports.");
 			s.sendMessage("\u00A77- \u00A7b/reports archives \u00A77: \u00A7eDisplays all archived reports.");
 			s.sendMessage("\u00A77- \u00A7b/reports deleteall \u00A77: \u00A7eDeletes all archived reports.");
@@ -41,11 +42,11 @@ public class HelpCommand {
 			s.sendMessage("\u00A77- \u00A7b/reports user <joueur> \u00A77: \u00A7eG\u00E8re les donn\u00E9es d'un joueur.");
 			s.sendMessage("\u00A77- \u00A7b/reports stopcooldown <joueur> \u00A77: \u00A7eAnnule l'attente d'un joueur.");
 			s.sendMessage("\u00A77- \u00A7b/reports notify \u00A77: \u00A7eActive ou d\u00E9sactive les notifications de signalements.");
+			s.sendMessage("\u00A77- \u00A7b/reports <archive / delete> <identifiant du signalement> \u00A77: \u00A7eArchive/supprime le signalement.");
 			s.sendMessage("\u00A77- \u00A7b/reports archiveall \u00A77: \u00A7eArchive tous les signalements trait\u00E9s.");
 			s.sendMessage("\u00A77- \u00A7b/reports archives \u00A77: \u00A7eAffiche tous les signalements archiv\u00E9s.");
 			s.sendMessage("\u00A77- \u00A7b/reports deleteall \u00A77: \u00A7eSupprime tous les signalements archiv\u00E9s.");
-			s.sendMessage(
-					"\u00A77Le plugin \u00A76TigerReports \u00A77install\u00E9 sur ce serveur a \u00E9t\u00E9 r\u00E9alis\u00E9 par \u00A7a@MrTigreroux\u00A77.");
+			s.sendMessage("\u00A77Le plugin \u00A76TigerReports \u00A77install\u00E9 sur ce serveur a \u00E9t\u00E9 r\u00E9alis\u00E9 par \u00A7a@MrTigreroux\u00A77.");
 			s.sendMessage(line);
 		}
 	}

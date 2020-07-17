@@ -36,7 +36,7 @@
   Cancel-comment: "&7[&6Reports&7] &eJe hebt je reactie voor _Report_ &cgeannuleerd&e. _ReportButton_"
 ErrorMessages:
   Invalid-syntax-report: "&7[&6Reports&7] &eGelieve het commando te specificeren: &b/report <speler> (reden)&e."
-  Invalid-syntax-reports: "&7[&6Reports&7] &eGelieve het commando te specificeren://&7- &b/reports <reload / notify / archiveall / archives>//&7- &b/reports <report id>//&7- &b/reports <user / stopcooldown> <player>//&7- &b/reports deleteall <archived / unarchived>"
+  Invalid-syntax-reports: "&7[&6Reports&7] &eGelieve het commando te specificeren://&7- &b/reports <reload / notify / archiveall / archives>//&7- &b/reports <report id>//&7- &b/reports <archive / delete> <report id>//&7- &b/reports <user / stopcooldown> <player>//&7- &b/reports deleteall <archived / unarchived>"
   Permission-command: "&7[&6Reports&7] &cJe hebt geen permissie voor dat commando."
   Permission-report: "&7[&6Reports&7] &cJe kan &e_Player_&c niet rapporteren."
   Permission-access-details: "&7[&6Reports&7] &cJe hebt geen permissie om de details te bekijken van _Report_&c."

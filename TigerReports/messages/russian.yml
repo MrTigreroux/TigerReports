@@ -36,7 +36,7 @@
   Cancel-comment: "&7[&6Reports&7] &eВы отменили комментарий для жалобы _Report_&e. _ReportButton_"
 ErrorMessages:
   Invalid-syntax-report: "&7[&6Reports&7] &eПожалуйста детализируйте вашу команду как: &b/report <player> (reason)&e."
-  Invalid-syntax-reports: "&7[&6Reports&7] &eПожалуйста детализируйте вашу команду как://&7- &b/reports <reload / notify / archiveall / archives>//&7- &b/reports <report id>//&7- &b/reports <user / stopcooldown> <player>//&7- &b/reports deleteall <archived / unarchived>"
+  Invalid-syntax-reports: "&7[&6Reports&7] &eПожалуйста детализируйте вашу команду как://&7- &b/reports <reload / notify / archiveall / archives>//&7- &b/reports <report id>//&7- &b/reports <archive / delete> <report id>//&7- &b/reports <user / stopcooldown> <player>//&7- &b/reports deleteall <archived / unarchived>"
   Permission-command: "&7[&6Reports&7] &cУ вас нет прав на выполнение этой команды."
   Permission-report: "&7[&6Reports&7] &cВы не можете отправить жалобу на &e_Player_&c."
   Permission-access-details: "&7[&6Reports&7] &cВы не можете отправить жалобу на &e_Player_&c."
