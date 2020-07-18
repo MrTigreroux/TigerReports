@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -65,11 +66,11 @@ public enum ConfigFile {
 
 	public void reset() {
 		TigerReports.getInstance().saveResource(file.getName(), false);
-		Bukkit.getLogger().warning(MessageUtils.LINE);
-		Bukkit.getLogger()
-				.warning(this != CONFIG && ConfigUtils.getInfoLanguage().equalsIgnoreCase("English") ? "[TigerReports] The file "+file.getName()
-						+" has been reset." : "[TigerReports] Le fichier "+file.getName()+" a ete reinitialise.");
-		Bukkit.getLogger().warning(MessageUtils.LINE);
+		Logger logger = Bukkit.getLogger();
+		logger.warning(MessageUtils.LINE);
+		logger.warning(this != CONFIG && ConfigUtils.getInfoLanguage().equalsIgnoreCase("English") ? "[TigerReports] The file "+file.getName()
+				+" has been reset." : "[TigerReports] Le fichier "+file.getName()+" a ete reinitialise.");
+		logger.warning(MessageUtils.LINE);
 	}
 
 }

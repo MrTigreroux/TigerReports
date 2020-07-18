@@ -47,20 +47,18 @@ public abstract class UserManagerMenu extends Menu {
 	}
 
 	protected Report getReportWhereReporter(boolean archived, int reportIndex) {
-		return TigerReports.getInstance()
-				.getReportsManager()
-				.formatFullReport(TigerReports.getInstance()
-						.getDb()
+		TigerReports tr = TigerReports.getInstance();
+		return tr.getReportsManager()
+				.formatFullReport(tr.getDb()
 						.query("SELECT * FROM tigerreports_reports WHERE archived = ? AND reporter_uuid LIKE '%"+tu.getUniqueId()
 								+"%' LIMIT 1 OFFSET ?", Arrays.asList(archived ? 1 : 0, reportIndex-1))
 						.getResult(0));
 	}
 
 	private Report getReportWhereReported(boolean archived, int reportIndex) {
-		return TigerReports.getInstance()
-				.getReportsManager()
-				.formatFullReport(TigerReports.getInstance()
-						.getDb()
+		TigerReports tr = TigerReports.getInstance();
+		return tr.getReportsManager()
+				.formatFullReport(tr.getDb()
 						.query("SELECT * FROM tigerreports_reports WHERE archived = ? AND reported_uuid = ? LIMIT 1 OFFSET ?", Arrays.asList(archived
 																																						? 1
 																																						: 0,

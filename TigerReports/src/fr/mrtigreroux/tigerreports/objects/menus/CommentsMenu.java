@@ -48,16 +48,16 @@ public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu {
 		}
 
 		int first = firstComment-1;
-		Bukkit.getScheduler().runTaskAsynchronously(TigerReports.getInstance(), new Runnable() {
+		TigerReports tr = TigerReports.getInstance();
+		Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
 
 			@Override
 			public void run() {
-				List<Map<String, Object>> results = TigerReports.getInstance()
-						.getDb()
+				List<Map<String, Object>> results = tr.getDb()
 						.query("SELECT * FROM tigerreports_comments WHERE report_id = ? LIMIT 28 OFFSET ?", Arrays.asList(r.getId(), first))
 						.getResultList();
 
-				Bukkit.getScheduler().runTask(TigerReports.getInstance(), new Runnable() {
+				Bukkit.getScheduler().runTask(tr, new Runnable() {
 
 					@Override
 					public void run() {

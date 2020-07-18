@@ -11,6 +11,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
 
@@ -52,7 +53,8 @@ public class ReportCommand implements TabExecutor {
 			return true;
 		}
 
-		if (args.length == 0 || (args.length == 1 && !ConfigUtils.exist(ConfigFile.CONFIG.get(), "Config.DefaultReasons.Reason1"))) {
+		FileConfiguration configFile = ConfigFile.CONFIG.get();
+		if (args.length == 0 || (args.length == 1 && !ConfigUtils.exist(configFile, "Config.DefaultReasons.Reason1"))) {
 			s.sendMessage(Message.get("ErrorMessages.Invalid-syntax-report"));
 			return true;
 		}
@@ -105,12 +107,13 @@ public class ReportCommand implements TabExecutor {
 			MessageUtils.sendErrorMessage(p, Message.TOO_SHORT_REASON.get().replace("_Reason_", reason));
 			return true;
 		}
-		if (ConfigUtils.getLineBreakSymbol().length() >= 1)
-			reason = reason.replace(ConfigUtils.getLineBreakSymbol(), ConfigUtils.getLineBreakSymbol().substring(0, 1));
+		String lineBreak = ConfigUtils.getLineBreakSymbol();
+		if (lineBreak.length() >= 1)
+			reason = reason.replace(lineBreak, lineBreak.substring(0, 1));
 
-		if (!ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.CustomReasons")) {
+		if (!ConfigUtils.isEnabled(configFile, "Config.CustomReasons")) {
 			for (int reasonNumber = 1; reasonNumber <= 100; reasonNumber++) {
-				String defaultReason = ConfigFile.CONFIG.get().getString("Config.DefaultReasons.Reason"+reasonNumber+".Name");
+				String defaultReason = configFile.getString("Config.DefaultReasons.Reason"+reasonNumber+".Name");
 				if (defaultReason == null) {
 					u.openReasonMenu(1, ru);
 					return true;
@@ -158,7 +161,7 @@ public class ReportCommand implements TabExecutor {
 							r = ReportUtils.formatEssentialOfReport(result);
 							if (r != null) {
 								reportId = r.getId();
-								if (ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.UpdateDateOfStackedReports")) {
+								if (ConfigUtils.isEnabled(configFile, "Config.UpdateDateOfStackedReports")) {
 									db.update("UPDATE tigerreports_reports SET reporter_uuid = ?, date = ? WHERE report_id = ?", Arrays.asList(
 											reporterUuid, date, reportId));
 								} else {
@@ -225,7 +228,7 @@ public class ReportCommand implements TabExecutor {
 
 						String reported = fr.getPlayerName("Reported", false, false);
 
-						for (String command : ConfigFile.CONFIG.get().getStringList("Config.AutoCommands"))
+						for (String command : configFile.getStringList("Config.AutoCommands"))
 							Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("_Server_", server)
 									.replace("_Date_", date)
 									.replace("_Reporter_", p.getName())

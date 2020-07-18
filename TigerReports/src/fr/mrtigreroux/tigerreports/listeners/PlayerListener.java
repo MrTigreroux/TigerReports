@@ -9,6 +9,7 @@ import net.md_5.bungee.api.chat.*;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -45,13 +46,14 @@ public class PlayerListener implements Listener {
 		Player p = e.getPlayer();
 		TigerReports tr = TigerReports.getInstance();
 		OnlineUser u = tr.getUsersManager().getOnlineUser(p);
+		FileConfiguration configFile = ConfigFile.CONFIG.get();
 
 		Bukkit.getScheduler().runTaskLater(tr, new Runnable() {
 
 			@Override
 			public void run() {
 				u.sendNotifications();
-				if (Permission.STAFF.isOwned(u) && ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.Notifications.Staff.Connection")) {
+				if (Permission.STAFF.isOwned(u) && ConfigUtils.isEnabled(configFile, "Config.Notifications.Staff.Connection")) {
 					String reportsNotifications = ReportsNotifier.getReportsNotification();
 					if (reportsNotifications != null)
 						p.sendMessage(reportsNotifications);
@@ -59,7 +61,7 @@ public class PlayerListener implements Listener {
 				tr.getDb().updateUserName(p.getUniqueId().toString(), p.getName());
 			}
 
-		}, ConfigFile.CONFIG.get().getInt("Config.Notifications.Delay", 2)*20);
+		}, configFile.getInt("Config.Notifications.Delay", 2)*20);
 
 		u.updateImmunity(Permission.REPORT_EXEMPT.isOwned(u) ? "always" : null, false);
 
@@ -111,14 +113,14 @@ public class PlayerListener implements Listener {
 
 	@EventHandler(priority = EventPriority.LOWEST)
 	private void onPlayerChat(AsyncPlayerChatEvent e) {
-		OnlineUser u = TigerReports.getInstance().getUsersManager().getOnlineUser(e.getPlayer());
+		TigerReports tr = TigerReports.getInstance();
+		OnlineUser u = tr.getUsersManager().getOnlineUser(e.getPlayer());
 		Comment c = u.getEditingComment();
 		if (c != null) {
 			String message = e.getMessage();
 			Report r = c.getReport();
 			if (c.getId() == null) {
-				TigerReports.getInstance()
-						.getDb()
+				tr.getDb()
 						.insert("INSERT INTO tigerreports_comments (report_id,status,date,author,message) VALUES (?,?,?,?,?);", Arrays.asList(r
 								.getId(), "Private", MessageUtils.getNowDate(), u.getPlayer().getDisplayName(), message));
 			} else {
@@ -139,15 +141,21 @@ public class PlayerListener implements Listener {
 		ConfigurationSection config = ConfigFile.CONFIG.get();
 		String path = "Config.ChatReport.";
 		if (ConfigUtils.isEnabled(config, path+"Enabled")) {
-			TextComponent message = (TextComponent) MessageUtils.getAdvancedMessage(Message.formatMessage(config.getString(path+"Message"))
+			Object message = MessageUtils.getAdvancedMessage(Message.formatMessage(config.getString(path+"Message"))
 					.replace("_DisplayName_", u.getPlayer().getDisplayName())
 					.replace("_Name_", u.getPlayer().getName())
 					.replace("_Message_", e.getMessage()), "_ReportButton_", Message.formatMessage(config.getString(path+"ReportButton.Text")),
 					Message.formatMessage(config.getString(path+"ReportButton.Hover")).replace("_Player_", u.getPlayer().getName()),
 					"/tigerreports:report "+u.getPlayer().getName()+" "+config.getString(path+"ReportButton.Reason"));
-			for (Player p : Bukkit.getOnlinePlayers())
-				p.spigot().sendMessage(message);
-			MessageUtils.sendConsoleMessage(((TextComponent) message).toLegacyText());
+			boolean isTextComponent = message instanceof TextComponent;
+			for (Player p : Bukkit.getOnlinePlayers()) {
+				if (isTextComponent) {
+					p.spigot().sendMessage((TextComponent) message);
+				} else {
+					p.sendMessage((String) message);
+				}
+			}
+			MessageUtils.sendConsoleMessage(isTextComponent ? ((TextComponent) message).toLegacyText() : (String) message);
 			e.setCancelled(true);
 		}
 	}

@@ -47,11 +47,12 @@ public class InventoryListener implements Listener {
 
 	@EventHandler(priority = EventPriority.LOW)
 	private void onInventoryClose(InventoryCloseEvent e) {
-		OnlineUser u = TigerReports.getInstance().getUsersManager().getOnlineUser((Player) e.getPlayer());
+		TigerReports tr = TigerReports.getInstance();
+		OnlineUser u = tr.getUsersManager().getOnlineUser((Player) e.getPlayer());
 		MenuUpdater.removeUser(u);
 		u.setOpenedMenu(null);
 		try {
-			TigerReports.getInstance().getDb().startClosing();
+			tr.getDb().startClosing();
 		} catch (Exception ignored) {}
 	}
 

@@ -65,23 +65,23 @@ public class UserMenu extends Menu implements UpdatedMenu {
 
 					@Override
 					public void run() {
+						String lineBreak = ConfigUtils.getLineBreakSymbol();
 						inv.setItem(8, new CustomItem().type(Material.GOLD_AXE)
 								.hideFlags(true)
 								.name(Message.COOLDOWN_STATUS.get().replace("_Time_", cooldown != null ? cooldown : Message.NONE_FEMALE.get()))
-								.lore(cooldown != null ? Message.COOLDOWN_STATUS_DETAILS.get()
-										.replace("_Player_", tu.getName())
-										.split(ConfigUtils.getLineBreakSymbol()) : null)
+								.lore(cooldown != null	? Message.COOLDOWN_STATUS_DETAILS.get().replace("_Player_", tu.getName()).split(lineBreak)
+														: null)
 								.create());
 
+						boolean hasManagePerm = Permission.MANAGE.isOwned(u);
+						String userStatMessage = Message.USER_STATISTIC.get();
+						String[] userStatDetails = Message.USER_STATISTIC_DETAILS.get().split(lineBreak);
 						for (Statistic stat : Statistic.values()) {
 							int value = statistics.get(stat.getConfigName());
 							inv.setItem(stat.getPosition(), stat.getCustomItem()
 									.amount(value)
-									.name(Message.USER_STATISTIC.get()
-											.replace("_Statistic_", stat.getName())
-											.replace("_Amount_", Integer.toString(value)))
-									.lore(Permission.MANAGE.isOwned(u)	? Message.USER_STATISTIC_DETAILS.get().split(ConfigUtils.getLineBreakSymbol())
-																		: null)
+									.name(userStatMessage.replace("_Statistic_", stat.getName()).replace("_Amount_", Integer.toString(value)))
+									.lore(hasManagePerm ? userStatDetails : null)
 									.create());
 						}
 					}

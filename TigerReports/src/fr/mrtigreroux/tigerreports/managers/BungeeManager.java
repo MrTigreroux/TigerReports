@@ -247,9 +247,10 @@ public class BungeeManager implements PluginMessageListener {
 						Player rp = UserUtils.getPlayer(parts[3]);
 						if (rp == null)
 							break;
-
-						OnlineUser ru = TigerReports.getInstance().getUsersManager().getOnlineUser(rp);
-						Report report = TigerReports.getInstance().getReportsManager().getReportById(Integer.parseInt(parts[0]), false);
+						
+						TigerReports tr = TigerReports.getInstance();
+						OnlineUser ru = tr.getUsersManager().getOnlineUser(rp);
+						Report report = tr.getReportsManager().getReportById(Integer.parseInt(parts[0]), false);
 						Comment c = report.getCommentById(Integer.parseInt(parts[2]));
 						((OnlineUser) ru).sendCommentNotification(report, c, true);
 						break;

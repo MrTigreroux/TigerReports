@@ -44,15 +44,15 @@ public abstract class User {
 	public void updateImmunity(String immunity, boolean bungee) {
 		this.immunity = immunity;
 
-		TigerReports tg = TigerReports.getInstance();
+		TigerReports tr = TigerReports.getInstance();
 		if (immunity != null && immunity.equals("always"))
-			tg.getUsersManager().addExemptedPlayer(getName());
+			tr.getUsersManager().addExemptedPlayer(getName());
 		else
-			tg.getUsersManager().removeExemptedPlayer(getName());
+			tr.getUsersManager().removeExemptedPlayer(getName());
 
 		if (!bungee) {
-			tg.getBungeeManager().sendPluginNotification((immunity != null ? immunity.replace(" ", "_") : "null")+" new_immunity user "+uuid);
-			Database db = tg.getDb();
+			tr.getBungeeManager().sendPluginNotification((immunity != null ? immunity.replace(" ", "_") : "null")+" new_immunity user "+uuid);
+			Database db = tr.getDb();
 			if (db != null)
 				db.updateAsynchronously("UPDATE tigerreports_users SET immunity = ? WHERE uuid = ?", Arrays.asList(immunity, uuid));
 		}
@@ -90,12 +90,9 @@ public abstract class User {
 	public void updateCooldown(String cooldown, boolean bungee) {
 		this.cooldown = cooldown == null ? "|"+System.currentTimeMillis() : cooldown;
 		if (!bungee) {
-			TigerReports.getInstance()
-					.getBungeeManager()
-					.sendPluginNotification((cooldown != null ? cooldown.replace(" ", "_") : "null")+" new_cooldown user "+uuid);
-			TigerReports.getInstance()
-					.getDb()
-					.updateAsynchronously("UPDATE tigerreports_users SET cooldown = ? WHERE uuid = ?", Arrays.asList(cooldown, uuid));
+			TigerReports tr = TigerReports.getInstance();
+			tr.getBungeeManager().sendPluginNotification((cooldown != null ? cooldown.replace(" ", "_") : "null")+" new_cooldown user "+uuid);
+			tr.getDb().updateAsynchronously("UPDATE tigerreports_users SET cooldown = ? WHERE uuid = ?", Arrays.asList(cooldown, uuid));
 		}
 	}
 
@@ -174,10 +171,9 @@ public abstract class User {
 	public void setStatistic(String statistic, int value, boolean bungee) {
 		statistics.put(statistic, value);
 		if (!bungee) {
-			TigerReports.getInstance().getBungeeManager().sendPluginNotification(value+" set_statistic "+statistic+" "+uuid);
-			TigerReports.getInstance()
-					.getDb()
-					.updateAsynchronously("UPDATE tigerreports_users SET "+statistic+" = ? WHERE uuid = ?", Arrays.asList(value, uuid));
+			TigerReports tr = TigerReports.getInstance();
+			tr.getBungeeManager().sendPluginNotification(value+" set_statistic "+statistic+" "+uuid);
+			tr.getDb().updateAsynchronously("UPDATE tigerreports_users SET "+statistic+" = ? WHERE uuid = ?", Arrays.asList(value, uuid));
 		}
 	}
 

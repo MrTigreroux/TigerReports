@@ -28,6 +28,8 @@ import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
+import fr.mrtigreroux.tigerreports.managers.UsersManager;
+import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 
 /**
  * @author MrTigreroux
@@ -47,15 +49,15 @@ public class MessageUtils {
 
 	public static void sendStaffMessage(Object message, Sound sound) {
 		boolean isTextComponent = message instanceof TextComponent;
+		UsersManager um = TigerReports.getInstance().getUsersManager();
 		for (Player p : Bukkit.getOnlinePlayers()) {
-			if (!p.hasPermission(Permission.STAFF.get()) || !TigerReports.getInstance().getUsersManager().getOnlineUser(p).acceptsNotifications())
+			if (!p.hasPermission(Permission.STAFF.get()))
+				continue;
+			OnlineUser u = um.getOnlineUser(p);
+			if (!u.acceptsNotifications())
 				continue;
 
-			if (isTextComponent) {
-				p.spigot().sendMessage((TextComponent) message);
-			} else {
-				p.sendMessage((String) message);
-			}
+			u.sendMessage(message);
 
 			if (sound != null)
 				p.playSound(p.getLocation(), sound, 1, 1);

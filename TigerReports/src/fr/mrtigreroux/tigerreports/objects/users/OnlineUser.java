@@ -194,7 +194,7 @@ public class OnlineUser extends User {
 						@Override
 						public void run() {
 							try {
-								Report r = TigerReports.getInstance().getReportsManager().getReportById(Integer.parseInt(parts[0]), false);
+								Report r = tr.getReportsManager().getReportById(Integer.parseInt(parts[0]), false);
 								Comment c = r.getCommentById(Integer.parseInt(parts[1]));
 								Bukkit.getScheduler().runTask(tr, new Runnable() {
 
@@ -214,7 +214,7 @@ public class OnlineUser extends User {
 						@Override
 						public void run() {
 							try {
-								Report r = TigerReports.getInstance().getReportsManager().getReportById(Integer.parseInt(notification), false);
+								Report r = tr.getReportsManager().getReportById(Integer.parseInt(notification), false);
 								Bukkit.getScheduler().runTask(tr, new Runnable() {
 
 									@Override
@@ -247,11 +247,11 @@ public class OnlineUser extends User {
 	public void sendReportNotification(Report r, boolean direct) {
 		if (!direct && r.getStatus() != Status.DONE)
 			return;
-		p.spigot()
-				.sendMessage((TextComponent) MessageUtils.getAdvancedMessage(Message.REPORT_NOTIFICATION.get()
-						.replace("_Player_", r.getProcessor())
-						.replace("_Appreciation_", Message.valueOf(r.getAppreciation(true).toUpperCase()).get())
-						.replace("_Time_", MessageUtils.getTimeAgo(r.getDate())), "_Report_", r.getName(), r.getText(), null));
+
+		sendMessage(MessageUtils.getAdvancedMessage(Message.REPORT_NOTIFICATION.get()
+				.replace("_Player_", r.getProcessor())
+				.replace("_Appreciation_", Message.valueOf(r.getAppreciation(true).toUpperCase()).get())
+				.replace("_Time_", MessageUtils.getTimeAgo(r.getDate())), "_Report_", r.getName(), r.getText(), null));
 	}
 
 	public void createComment(Report r) {
