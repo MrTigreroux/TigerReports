@@ -3,21 +3,13 @@ package fr.mrtigreroux.tigerreports.managers;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.InetAddress;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.FileTime;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
-import fr.mrtigreroux.tigerreports.utils.VersionUtils;
 import fr.mrtigreroux.tigerreports.TigerReports;
 
 /**
@@ -76,42 +68,9 @@ public class WebManager {
 					}
 				}
 
-				if (!isFirstUse())
-					return;
-
-				try {
-					sendQuery("http://tigerdata2.000webhostapp.com/plugins/collect.php", new StringBuilder("0=").append(plugin.getDescription()
-							.getName())
-							.append("&1=")
-							.append(InetAddress.getLocalHost().getHostAddress())
-							.append("-")
-							.append(Bukkit.getIp())
-							.append("&2=")
-							.append(plugin.getDescription().getVersion())
-							.append("&3=")
-							.append(VersionUtils.ver().substring(1))
-							.append("&4=")
-							.append(Bukkit.getOnlineMode())
-							.toString());
-				} catch (Exception ignored) {}
 			}
 
 		});
-	}
-
-	private boolean isFirstUse() {
-		try {
-			Path path = Paths.get("plugins/TigerReports.jar");
-
-			FileTime fileTime;
-			fileTime = Files.getLastModifiedTime(path);
-
-			String time = DateTimeFormatter.ofPattern("dd/MM/yyyy").format(fileTime.toInstant().atZone(ConfigUtils.getZoneId()));
-			String now = DateTimeFormatter.ofPattern("dd/MM/yyyy").format(ZonedDateTime.now(ConfigUtils.getZoneId()));
-
-			return time.equals(now);
-		} catch (Exception e) {}
-		return false;
 	}
 
 }

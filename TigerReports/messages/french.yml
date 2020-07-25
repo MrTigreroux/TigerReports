@@ -34,6 +34,7 @@
   Cancel-button: "&7[&cA&cn&cn&cu&cl&ce&cr&7]"
   Cancel-button-details: "&6Clic gauche &7pour annuler votre commentaire//&7sur le _Report_&7."
   Cancel-comment: "&7[&6Reports&7] &eVous &eavez &cannul\xe9 &evotre &ecommentaire &esur &ele _Report_&e. _ReportButton_"
+  Help-commands: ""
 ErrorMessages:
   Invalid-syntax-report: "&7[&6Reports&7] &eVeuillez d\xe9tailler votre commande tel que: &b/report <joueur> (raison)&e."
   Invalid-syntax-reports: "&7[&6Reports&7] &eVeuillez d\xe9tailler votre commande tel que://&7- &b/reports <reload / notify / archiveall / archives>//&7- &b/reports <identifiant du signalement>//&7- &b/reports <archive / delete> <identifiant du signalement>//&7- &b/reports <user / stopcooldown> <joueur>//&7- &b/reports deleteall <archived / unarchived>"

@@ -34,6 +34,7 @@
   Cancel-button: "&7[&cLöschen&7]"
   Cancel-button-details: "&6Linksklick &7um den Kommentar wieder zu löschen."
   Cancel-comment: "&7[&6Melden&7] &eDu hast den Kommentar wieder &cgelöscht. _ReportButton_"
+  Help-commands: ""
 ErrorMessages:
   Invalid-syntax-report: "&7[&6Reports&7] &eSei bitte etwas präziser: &b/report <spieler> (grund)&e."
   Invalid-syntax-reports: "&7[&6Reports&7] &eSei bitte etwas präziser://&7- &b/reports <reload / notify / archiveall / archives>//&7- &b/reports <report id>//&7- &b/reports <archive / delete> <report id>//&7- &b/reports <user / stopcooldown> <player>//&7- &b/reports deleteall <archived / unarchived>"

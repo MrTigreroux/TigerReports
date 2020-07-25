@@ -34,6 +34,7 @@
   Cancel-button: "&7[&cО&cт&cм&cе&cн&cа&7]"
   Cancel-button-details: "&6Нажмите ЛКМ, &7чтобы отменить свой комментарий//&7для жалобы _Report_&7."          
   Cancel-comment: "&7[&6Reports&7] &eВы отменили комментарий для жалобы _Report_&e. _ReportButton_"
+  Help-commands: ""
 ErrorMessages:
   Invalid-syntax-report: "&7[&6Reports&7] &eПожалуйста детализируйте вашу команду как: &b/report <player> (reason)&e."
   Invalid-syntax-reports: "&7[&6Reports&7] &eПожалуйста детализируйте вашу команду как://&7- &b/reports <reload / notify / archiveall / archives>//&7- &b/reports <report id>//&7- &b/reports <archive / delete> <report id>//&7- &b/reports <user / stopcooldown> <player>//&7- &b/reports deleteall <archived / unarchived>"
