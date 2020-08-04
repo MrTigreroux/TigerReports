@@ -141,7 +141,7 @@ public class Report {
 
 	public String getPunishment() {
 		int pos = appreciation.indexOf('/');
-		return pos != -1 ? appreciation.substring(pos+1) : Message.NONE_MALE.get();
+		return pos != -1 ? appreciation.substring(pos+1) : Message.NONE_FEMALE.get();
 	}
 
 	public String implementDetails(String message, boolean menu) {

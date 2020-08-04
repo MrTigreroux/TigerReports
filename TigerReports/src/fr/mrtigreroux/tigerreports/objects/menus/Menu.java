@@ -8,6 +8,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 
+import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.MenuItem;
@@ -117,8 +118,15 @@ public abstract class Menu {
 			return;
 
 		if (slot == size-5) {
-			p.closeInventory();
-			ConfigSound.MENU.play(p);
+			Bukkit.getScheduler().runTaskLater(TigerReports.getInstance(), new Runnable() {
+
+				@Override
+				public void run() {
+					p.closeInventory();
+					ConfigSound.MENU.play(p);
+				}
+				
+			}, 3);
 			return;
 		}
 
