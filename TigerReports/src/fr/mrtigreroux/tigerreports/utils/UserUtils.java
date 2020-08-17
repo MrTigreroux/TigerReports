@@ -71,14 +71,24 @@ public class UserUtils {
 		return getPlayer(name) != null ? true : TigerReports.getInstance().getBungeeManager().isOnline(name);
 	}
 
-	public static List<String> getOnlinePlayers(boolean hideExempted) {
+	/**
+	 * Return the players that player p can see (not vanished).
+	 * Doesn't take in consideration the vanished players on a different server,
+	 * who are therefore considered as online for the player p, because no official check
+	 * can be used.
+	 * @param p - Viewer of players
+	 * @param hideExempted - Hide players owing tigerreports.report.exempt permission
+	 */
+	public static List<String> getOnlinePlayersForPlayer(Player p, boolean hideExempted) {
 		TigerReports tr = TigerReports.getInstance();
 		List<String> players = tr.getBungeeManager().getOnlinePlayers();
 
 		if (players == null) {
 			players = new ArrayList<>();
-			for (Player p : Bukkit.getOnlinePlayers())
-				players.add(p.getName());
+			for (Player plr : Bukkit.getOnlinePlayers()) {
+				if (p.canSee(plr))
+					players.add(plr.getName());
+			}
 		}
 
 		if (hideExempted)

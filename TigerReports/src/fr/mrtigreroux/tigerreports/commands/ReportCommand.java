@@ -76,7 +76,7 @@ public class ReportCommand implements TabExecutor {
 			reportedName = rp.getName();
 		}
 
-		if (ReportUtils.onlinePlayerRequired() && !UserUtils.isOnline(reportedName)) {
+		if (ReportUtils.onlinePlayerRequired() && (!UserUtils.isOnline(reportedName) || (rp != null && !p.canSee(rp)))) {
 			MessageUtils.sendErrorMessage(p, Message.REPORTED_OFFLINE.get().replace("_Player_", reportedName));
 			return true;
 		}
@@ -246,7 +246,8 @@ public class ReportCommand implements TabExecutor {
 
 	@Override
 	public List<String> onTabComplete(CommandSender s, Command cmd, String label, String[] args) {
-		return args.length == 1 ? StringUtil.copyPartialMatches(args[0], UserUtils.getOnlinePlayers(true), new ArrayList<>()) : new ArrayList<>();
+		return args.length == 1 && s instanceof Player ? StringUtil.copyPartialMatches(args[0], UserUtils.getOnlinePlayersForPlayer((Player) s,
+				true), new ArrayList<>()) : new ArrayList<>();
 	}
 
 }

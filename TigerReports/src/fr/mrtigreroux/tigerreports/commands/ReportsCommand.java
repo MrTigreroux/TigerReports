@@ -190,8 +190,8 @@ public class ReportsCommand implements TabExecutor {
 					case "delete":
 						return StringUtil.copyPartialMatches(args[1].toLowerCase(), Collections.singletonList("#1"), new ArrayList<>());
 					default:
-						return USER_ACTIONS.contains(args[0].toLowerCase()) ? StringUtil.copyPartialMatches(args[1], UserUtils.getOnlinePlayers(
-								false), new ArrayList<>()) : new ArrayList<>();
+						return USER_ACTIONS.contains(args[0].toLowerCase()) && s instanceof Player ? StringUtil.copyPartialMatches(args[1], UserUtils
+								.getOnlinePlayersForPlayer((Player) s, false), new ArrayList<>()) : new ArrayList<>();
 				}
 			default:
 				return new ArrayList<>();
