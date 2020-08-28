@@ -296,13 +296,13 @@ public class BungeeManager implements PluginMessageListener {
 			@Override
 			public void run() {
 				Player p = UserUtils.getPlayer(name);
-				if (name != null) {
+				if (p != null) {
 					p.teleport(loc);
 					ConfigSound.TELEPORT.play(p);
 				}
 			}
 
-		}, 5);
+		}, 20);
 	}
 
 	private void implementMissingData(Report r) {
