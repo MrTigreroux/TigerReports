@@ -61,7 +61,8 @@ public class ReportsManager {
 	public Report getReport(boolean archived, int reportIndex) {
 		return formatFullReport(TigerReports.getInstance()
 				.getDb()
-				.query("SELECT * FROM tigerreports_reports WHERE archived = ? LIMIT 1 OFFSET ?", Arrays.asList(archived ? 1 : 0, reportIndex-1))
+				.query("SELECT * FROM tigerreports_reports WHERE archived = ?"+(archived ? " ORDER BY report_id DESC" : "")+" LIMIT 1 OFFSET ?", Arrays
+						.asList(archived ? 1 : 0, reportIndex-1))
 				.getResult(0));
 	}
 

@@ -228,7 +228,7 @@ public class ReportMenu extends ReportManagerMenu {
 				if (!r.isStackedReport()) {
 					long seconds = ReportUtils.getPunishSeconds();
 					TigerReports.getInstance().getUsersManager().getUser(r.getReporterUniqueId()).punish(seconds, p.getName(), false);
-					r.process(p.getUniqueId().toString(), p.getName(), "False", false, false, false);
+					r.process(p.getUniqueId().toString(), p.getName(), "False", false, Permission.STAFF_ARCHIVE_AUTO.isOwned(u), false);
 					u.openReportsMenu(1, false);
 				}
 				break;

@@ -243,7 +243,7 @@ public class Report {
 
 	public void process(String uuid, String staff, String appreciation, boolean bungee, boolean auto, boolean notifyStaff) {
 		processing(uuid, staff, appreciation, bungee, auto, (auto ? Message.STAFF_PROCESS_AUTO : Message.STAFF_PROCESS).get()
-				.replace("_Appreciation_", Message.valueOf(appreciation.toUpperCase()).get()), "process", false);
+				.replace("_Appreciation_", Message.valueOf(appreciation.toUpperCase()).get()), "process", notifyStaff);
 	}
 
 	public void processPunishing(String uuid, String staff, boolean bungee, boolean auto, String punishment, boolean notifyStaff) {

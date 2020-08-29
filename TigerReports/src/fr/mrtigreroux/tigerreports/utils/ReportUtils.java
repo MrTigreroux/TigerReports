@@ -85,7 +85,7 @@ public class ReportUtils {
 				List<Map<String, Object>> results = tr.getDb()
 						.query("SELECT report_id,status,appreciation,date,reported_uuid,reporter_uuid,reason FROM tigerreports_reports WHERE archived = ?"
 								+(reporter != null	? " AND reporter_uuid LIKE '%"+reporter+"%'"
-													: reported != null ? " AND reported_uuid = '"+reported+"'" : "")+" LIMIT 28 OFFSET ?", Arrays.asList(
+													: reported != null ? " AND reported_uuid = '"+reported+"'" : "")+(archived ? " ORDER BY report_id DESC" : "")+" LIMIT 28 OFFSET ?", Arrays.asList(
 															archived ? 1 : 0, first))
 						.getResultList();
 

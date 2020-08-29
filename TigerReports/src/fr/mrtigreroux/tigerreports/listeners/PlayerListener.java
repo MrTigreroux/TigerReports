@@ -162,11 +162,11 @@ public class PlayerListener implements Listener {
 
 	@EventHandler(priority = EventPriority.LOWEST)
 	private void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent e) {
-		String command = e.getMessage();
-		if (checkHelpCommand(command.substring(1), e.getPlayer())) {
+		String command = e.getMessage().substring(1);
+		if (checkHelpCommand(command, e.getPlayer())) {
 			e.setCancelled(true);
 		} else if (ConfigFile.CONFIG.get().getStringList("Config.CommandsHistory").contains(command.split(" ")[0])) {
-			TigerReports.getInstance().getUsersManager().getOnlineUser(e.getPlayer()).updateLastMessages(command);
+			TigerReports.getInstance().getUsersManager().getOnlineUser(e.getPlayer()).updateLastMessages("/"+command);
 		}
 	}
 

@@ -50,8 +50,10 @@ public abstract class UserManagerMenu extends Menu {
 		TigerReports tr = TigerReports.getInstance();
 		return tr.getReportsManager()
 				.formatFullReport(tr.getDb()
-						.query("SELECT * FROM tigerreports_reports WHERE archived = ? AND reporter_uuid LIKE '%"+tu.getUniqueId()
-								+"%' LIMIT 1 OFFSET ?", Arrays.asList(archived ? 1 : 0, reportIndex-1))
+						.query("SELECT * FROM tigerreports_reports WHERE archived = ? AND reporter_uuid LIKE '%"+tu.getUniqueId()+"%'"+(archived
+																																					? " ORDER BY report_id DESC"
+																																					: "")
+								+" LIMIT 1 OFFSET ?", Arrays.asList(archived ? 1 : 0, reportIndex-1))
 						.getResult(0));
 	}
 
@@ -59,10 +61,9 @@ public abstract class UserManagerMenu extends Menu {
 		TigerReports tr = TigerReports.getInstance();
 		return tr.getReportsManager()
 				.formatFullReport(tr.getDb()
-						.query("SELECT * FROM tigerreports_reports WHERE archived = ? AND reported_uuid = ? LIMIT 1 OFFSET ?", Arrays.asList(archived
-																																						? 1
-																																						: 0,
-								tu.getUniqueId(), reportIndex-1))
+						.query("SELECT * FROM tigerreports_reports WHERE archived = ? AND reported_uuid = ?"+(archived	? " ORDER BY report_id DESC"
+																														: "")+" LIMIT 1 OFFSET ?",
+								Arrays.asList(archived ? 1 : 0, tu.getUniqueId(), reportIndex-1))
 						.getResult(0));
 	}
 
