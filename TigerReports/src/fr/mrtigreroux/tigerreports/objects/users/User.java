@@ -18,8 +18,8 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 public abstract class User {
 
-	private final String uuid;
-	private String name = null;
+	protected final String uuid;
+	protected String name = null;
 	private String immunity = null;
 	protected String cooldown = null;
 	private Map<String, Integer> statistics = null;

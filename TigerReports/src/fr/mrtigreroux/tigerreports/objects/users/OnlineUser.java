@@ -32,10 +32,18 @@ public class OnlineUser extends User {
 	public OnlineUser(Player p) {
 		super(p.getUniqueId().toString());
 		this.p = p;
+		this.name = p.getName();
 	}
 
 	public Player getPlayer() {
 		return p;
+	}
+
+	@Override
+	public String getName() {
+		if (name == null)
+			name = p.getName();
+		return name;
 	}
 
 	public void openReasonMenu(int page, User tu) {
@@ -75,10 +83,10 @@ public class OnlineUser extends User {
 	public void openPunishmentMenu(int page, Report r) {
 		String command = ConfigFile.CONFIG.get().getString("Config.Punishments.PunishmentsCommand");
 		if (command != null && !command.equalsIgnoreCase("none")) {
-			r.process(p.getUniqueId().toString(), p.getName(), "True", false, Permission.STAFF_ARCHIVE_AUTO.isOwned(this), true);
+			r.process(uuid, name, "True", false, Permission.STAFF_ARCHIVE_AUTO.isOwned(this), true);
 
 			Bukkit.dispatchCommand(p, command.replace("_Reported_", r.getPlayerName("Reported", false, false))
-					.replace("_Staff_", p.getName())
+					.replace("_Staff_", name)
 					.replace("_Id_", Integer.toString(r.getId()))
 					.replace("_Reason_", r.getReason(false))
 					.replace("_Reporter_", r.getPlayerName("Reporter", false, false)));
