@@ -39,7 +39,8 @@ import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 
 public class PlayerListener implements Listener {
 
-	private final List<String> HELP_COMMANDS = Arrays.asList("tigerreport", "helptigerreport", "reportshelp", "report?", "reports?");
+	private final List<String> HELP_COMMANDS = Arrays.asList("tigerreport", "helptigerreport", "reportshelp", "report?",
+			"reports?");
 
 	@EventHandler
 	private void onPlayerJoin(PlayerJoinEvent e) {
@@ -53,15 +54,14 @@ public class PlayerListener implements Listener {
 			@Override
 			public void run() {
 				u.sendNotifications();
-				if (Permission.STAFF.isOwned(u) && ConfigUtils.isEnabled(configFile, "Config.Notifications.Staff.Connection")) {
-					String reportsNotifications = ReportsNotifier.getReportsNotification();
-					if (reportsNotifications != null)
-						p.sendMessage(reportsNotifications);
+				if (Permission.STAFF.isOwned(u)
+						&& ConfigUtils.isEnabled(configFile, "Config.Notifications.Staff.Connection")) {
+					ReportsNotifier.sendReportsNotification(p);
 				}
 				tr.getDb().updateUserName(p.getUniqueId().toString(), p.getName());
 			}
 
-		}, configFile.getInt("Config.Notifications.Delay", 2)*20);
+		}, configFile.getInt("Config.Notifications.Delay", 2) * 20);
 
 		u.updateImmunity(Permission.REPORT_EXEMPT.isOwned(u) ? "always" : null, false);
 
@@ -69,18 +69,22 @@ public class PlayerListener implements Listener {
 			String newVersion = tr.getWebManager().getNewVersion();
 			if (newVersion != null) {
 				boolean english = ConfigUtils.getInfoLanguage().equalsIgnoreCase("English");
-				p.sendMessage("\u00A77[\u00A76TigerReports\u00A77] "+(english	? "\u00A7eThe plugin \u00A76TigerReports \u00A7ehas been updated."
-																				: "\u00A7eLe plugin \u00A76TigerReports \u00A7ea \u00E9t\u00E9 mis à jour."));
-				BaseComponent updateMessage = new TextComponent(english	? "The new version \u00A77"+newVersion+" \u00A7eis available on: "
-																		: "La nouvelle version \u00A77"+newVersion+" \u00A7eest disponible ici: ");
+				p.sendMessage("\u00A77[\u00A76TigerReports\u00A77] "
+						+ (english ? "\u00A7eThe plugin \u00A76TigerReports \u00A7ehas been updated."
+								: "\u00A7eLe plugin \u00A76TigerReports \u00A7ea \u00E9t\u00E9 mis à jour."));
+				BaseComponent updateMessage = new TextComponent(
+						english ? "The new version \u00A77" + newVersion + " \u00A7eis available on: "
+								: "La nouvelle version \u00A77" + newVersion + " \u00A7eest disponible ici: ");
 				updateMessage.setColor(ChatColor.YELLOW);
-				BaseComponent button = new TextComponent(english ? "\u00A77[\u00A7aOpen page\u00A77]" : "\u00A77[\u00A7aOuvrir la page\u00A77]");
+				BaseComponent button = new TextComponent(
+						english ? "\u00A77[\u00A7aOpen page\u00A77]" : "\u00A77[\u00A7aOuvrir la page\u00A77]");
 				button.setColor(ChatColor.GREEN);
-				button.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder((english
-																												? "\u00A76Left click \u00A77to open the plugin page\n\u00A77of"
-																												: "\u00A76Clic gauche \u00A77pour ouvrir la page\n\u00A77du plugin")
-						+" \u00A7eTigerReports\u00A77.").create()));
-				button.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://www.spigotmc.org/resources/tigerreports.25773/"));
+				button.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+						new ComponentBuilder((english ? "\u00A76Left click \u00A77to open the plugin page\n\u00A77of"
+								: "\u00A76Clic gauche \u00A77pour ouvrir la page\n\u00A77du plugin")
+								+ " \u00A7eTigerReports\u00A77.").create()));
+				button.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL,
+						"https://www.spigotmc.org/resources/tigerreports.25773/"));
 				updateMessage.addExtra(button);
 				p.spigot().sendMessage(updateMessage);
 			}
@@ -120,9 +124,10 @@ public class PlayerListener implements Listener {
 			String message = e.getMessage();
 			Report r = c.getReport();
 			if (c.getId() == null) {
-				tr.getDb()
-						.insert("INSERT INTO tigerreports_comments (report_id,status,date,author,message) VALUES (?,?,?,?,?);", Arrays.asList(r
-								.getId(), "Private", MessageUtils.getNowDate(), u.getPlayer().getDisplayName(), message));
+				tr.getDb().insert(
+						"INSERT INTO tigerreports_comments (report_id,status,date,author,message) VALUES (?,?,?,?,?);",
+						Arrays.asList(r.getId(), "Private", MessageUtils.getNowDate(), u.getPlayer().getDisplayName(),
+								message));
 			} else {
 				c.addMessage(message);
 			}
@@ -140,13 +145,16 @@ public class PlayerListener implements Listener {
 
 		ConfigurationSection config = ConfigFile.CONFIG.get();
 		String path = "Config.ChatReport.";
-		if (ConfigUtils.isEnabled(config, path+"Enabled")) {
-			Object message = MessageUtils.getAdvancedMessage(Message.formatMessage(config.getString(path+"Message"))
-					.replace("_DisplayName_", u.getPlayer().getDisplayName())
-					.replace("_Name_", u.getPlayer().getName())
-					.replace("_Message_", e.getMessage()), "_ReportButton_", Message.formatMessage(config.getString(path+"ReportButton.Text")),
-					Message.formatMessage(config.getString(path+"ReportButton.Hover")).replace("_Player_", u.getPlayer().getName()),
-					"/tigerreports:report "+u.getPlayer().getName()+" "+config.getString(path+"ReportButton.Reason"));
+		if (ConfigUtils.isEnabled(config, path + "Enabled")) {
+			Object message = MessageUtils.getAdvancedMessage(
+					Message.formatMessage(config.getString(path + "Message"))
+							.replace("_DisplayName_", u.getPlayer().getDisplayName())
+							.replace("_Name_", u.getPlayer().getName()).replace("_Message_", e.getMessage()),
+					"_ReportButton_", Message.formatMessage(config.getString(path + "ReportButton.Text")),
+					Message.formatMessage(config.getString(path + "ReportButton.Hover")).replace("_Player_",
+							u.getPlayer().getName()),
+					"/tigerreports:report " + u.getPlayer().getName() + " "
+							+ config.getString(path + "ReportButton.Reason"));
 			boolean isTextComponent = message instanceof TextComponent;
 			for (Player p : Bukkit.getOnlinePlayers()) {
 				if (isTextComponent) {
@@ -155,7 +163,8 @@ public class PlayerListener implements Listener {
 					p.sendMessage((String) message);
 				}
 			}
-			MessageUtils.sendConsoleMessage(isTextComponent ? ((TextComponent) message).toLegacyText() : (String) message);
+			MessageUtils
+					.sendConsoleMessage(isTextComponent ? ((TextComponent) message).toLegacyText() : (String) message);
 			e.setCancelled(true);
 		}
 	}
@@ -166,7 +175,7 @@ public class PlayerListener implements Listener {
 		if (checkHelpCommand(command, e.getPlayer())) {
 			e.setCancelled(true);
 		} else if (ConfigFile.CONFIG.get().getStringList("Config.CommandsHistory").contains(command.split(" ")[0])) {
-			TigerReports.getInstance().getUsersManager().getOnlineUser(e.getPlayer()).updateLastMessages("/"+command);
+			TigerReports.getInstance().getUsersManager().getOnlineUser(e.getPlayer()).updateLastMessages("/" + command);
 		}
 	}
 
