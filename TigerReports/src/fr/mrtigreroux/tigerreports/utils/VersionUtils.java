@@ -26,5 +26,9 @@ public class VersionUtils {
 	public static boolean isOldVersion() {
 		return getVersion() < 18;
 	}
+	
+	public static boolean isVersionLess1_13() {
+		return getVersion() < 113;
+	}
 
 }

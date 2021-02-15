@@ -34,7 +34,7 @@ public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu {
 
 		inv.setItem(0, r.getItem(Message.REPORT_SHOW_ACTION.get()));
 		inv.setItem(4, MenuItem.COMMENTS.get());
-		inv.setItem(8, MenuItem.WRITE_COMMENT.get());
+		inv.setItem(8, MenuItem.WRITE_COMMENT.create());
 
 		return inv;
 	}

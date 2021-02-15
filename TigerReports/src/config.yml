@@ -161,6 +161,10 @@ Config:
   # Lore:    Description of the report / Description du signalement
   # Item:    Material-<item_type>(:damage) or/ou Skull-<pseudo>
   #   Examples:    Material-Stone = Stone / Pierre    Material-Wool:2 = Magenta Wool / Laine magenta    Skull-MrTigreroux = Skull of player MrTigreroux / Tête du joueur MrTigreroux
+  #   Material names (used for <item_type> placeholder) depend on the Spigot version used on your server.
+  #     Spigot 1.8 material names: https://helpch.at/docs/1.8/org/bukkit/Material.html
+  #     Spigot 1.13 material names: https://helpch.at/docs/1.13/org/bukkit/Material.html
+  #     Spigot latest version material names: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Material.html
   # PunishCommands:    List of commands to execute when punishing / Liste des commandes à exécuter lors d'une sanction.
   #                    Set '-CONSOLE' at the beginning of a command to execute it with the console (and not the staff member) / Mettre "-CONSOLE" au début d'une commande pour l'exécuter avec la console (et non le membre de la modération)
   #                    Usable placeholders: _Id_ (id of the report), _Reported_ (reported player name), _Reporter_ (reporter player name, the command is executed for each reporter if they are multiple), _Staff_ (processor staff name) and _Reason_ (reason of the report and therefore not necessarily the name of the default reason) / Données utilisables: _Id_ (identifiant du signalement), _Reported_ (pseudo du joueur signalé), _Reporter_ (pseudo du joueur signaleur, la commande est exécutée pour chaque signaleur s'il y en a plusieurs), _Staff_ (pseudo du membre du staff qui traite le signalement) et _Reason_ (raison du signalement et donc pas forcément le nom de la sanction par défaut)
@@ -197,6 +201,10 @@ Config:
   # Lore:    Description of the punishment / Description de la sanction
   # Item:    Material-<item_type>(:damage) or/ou Skull-<pseudo>
   #   Examples:    Material-Stone = Stone / Pierre    Material-Wool:2 = Magenta Wool / Laine magenta    Skull-MrTigreroux = Skull of player MrTigreroux / Tête du joueur MrTigreroux
+  #   Material names (used for <item_type> placeholder) depend on the Spigot version used on your server.
+  #     Spigot 1.8 material names: https://helpch.at/docs/1.8/org/bukkit/Material.html
+  #     Spigot 1.13 material names: https://helpch.at/docs/1.13/org/bukkit/Material.html
+  #     Spigot latest version material names: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Material.html
   # PunishCommands:    List of commands to execute when punishing / Liste des commandes à exécuter lors d'une sanction.
   #                    Set '-CONSOLE' at the beginning of a command to execute it with the console (and not the staff member) / Mettre "-CONSOLE" au début d'une commande pour l'exécuter avec la console (et non le membre de la modération)
   #                    Usable placeholders: _Id_ (id of the report), _Reported_ (reported player name), _Reporter_ (reporter player name, the command is executed for each reporter if they are multiple), _Staff_ (processor staff name) and _Reason_ (reason of the report and not the name of the punishment) / Données utilisables: _Id_ (identifiant du signalement), _Reported_ (pseudo du joueur signalé), _Reporter_ (pseudo du joueur signaleur, la commande est exécutée pour chaque signaleur s'il y en a plusieurs), _Staff_ (pseudo du membre du staff qui traite le signalement) et _Reason_ (raison du signalement et non le nom de la sanction)

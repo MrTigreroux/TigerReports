@@ -10,6 +10,7 @@ import org.bukkit.inventory.ItemStack;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.Message;
+import fr.mrtigreroux.tigerreports.data.constants.MenuRawItem;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.data.constants.Statistic;
 import fr.mrtigreroux.tigerreports.objects.CustomItem;
@@ -46,10 +47,10 @@ public class UserMenu extends Menu implements UpdatedMenu {
 	}
 
 	private void setReportsItem(Inventory inv, String tag, int slot, String name) {
-		inv.setItem(slot, new CustomItem().type(Material.BOOKSHELF)
-				.name(Message.get(tag).replace("_Target_", name))
-				.lore(Message.get(tag+"-details").replace("_Target_", name).split(ConfigUtils.getLineBreakSymbol()))
-				.create());
+		inv.setItem(slot,
+				new CustomItem().type(Material.BOOKSHELF).name(Message.get(tag).replace("_Target_", name)).lore(
+						Message.get(tag + "-details").replace("_Target_", name).split(ConfigUtils.getLineBreakSymbol()))
+						.create());
 	}
 
 	@Override
@@ -66,23 +67,26 @@ public class UserMenu extends Menu implements UpdatedMenu {
 					@Override
 					public void run() {
 						String lineBreak = ConfigUtils.getLineBreakSymbol();
-						inv.setItem(8, new CustomItem().type(Material.GOLD_AXE)
-								.hideFlags(true)
-								.name(Message.COOLDOWN_STATUS.get().replace("_Time_", cooldown != null ? cooldown : Message.NONE_FEMALE.get()))
-								.lore(cooldown != null	? Message.COOLDOWN_STATUS_DETAILS.get().replace("_Player_", tu.getName()).split(lineBreak)
-														: null)
-								.create());
+						inv.setItem(8,
+								MenuRawItem.GOLDEN_AXE
+										.name(Message.COOLDOWN_STATUS.get().replace("_Time_",
+												cooldown != null ? cooldown : Message.NONE_FEMALE.get()))
+										.lore(cooldown != null
+												? Message.COOLDOWN_STATUS_DETAILS.get()
+														.replace("_Player_", tu.getName()).split(lineBreak)
+												: null)
+										.create());
 
 						boolean hasManagePerm = Permission.MANAGE.isOwned(u);
 						String userStatMessage = Message.USER_STATISTIC.get();
 						String[] userStatDetails = Message.USER_STATISTIC_DETAILS.get().split(lineBreak);
 						for (Statistic stat : Statistic.values()) {
 							int value = statistics.get(stat.getConfigName());
-							inv.setItem(stat.getPosition(), stat.getCustomItem()
-									.amount(value)
-									.name(userStatMessage.replace("_Statistic_", stat.getName()).replace("_Amount_", Integer.toString(value)))
-									.lore(hasManagePerm ? userStatDetails : null)
-									.create());
+							inv.setItem(stat.getPosition(),
+									stat.getCustomItem().amount(value)
+											.name(userStatMessage.replace("_Statistic_", stat.getName())
+													.replace("_Amount_", Integer.toString(value)))
+											.lore(hasManagePerm ? userStatDetails : null).create());
 						}
 					}
 
@@ -94,34 +98,34 @@ public class UserMenu extends Menu implements UpdatedMenu {
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
 		switch (slot) {
-			case 8:
-				if (tu.getCooldown() != null) {
-					tu.stopCooldown(p.getName(), false);
-					update(false);
-				}
-				break;
-			case 18:
-				u.openUserReportsMenu(tu, 1);
-				break;
-			case 26:
-				u.openUserAgainstReportsMenu(tu, 1);
-				break;
-			case 36:
-				u.openUserArchivedReportsMenu(tu, 1);
-				break;
-			case 44:
-				u.openUserAgainstArchivedReportsMenu(tu, 1);
-				break;
-			default:
-				if (slot != 4 && Permission.MANAGE.isOwned(u)) {
-					String stat = "";
-					for (Statistic statistics : Statistic.values())
-						if (statistics.getPosition() == slot)
-							stat = statistics.getConfigName();
-					tu.changeStatistic(stat, click.toString().contains("RIGHT") ? -1 : 1);
-					update(true);
-				}
-				break;
+		case 8:
+			if (tu.getCooldown() != null) {
+				tu.stopCooldown(p.getName(), false);
+				update(false);
+			}
+			break;
+		case 18:
+			u.openUserReportsMenu(tu, 1);
+			break;
+		case 26:
+			u.openUserAgainstReportsMenu(tu, 1);
+			break;
+		case 36:
+			u.openUserArchivedReportsMenu(tu, 1);
+			break;
+		case 44:
+			u.openUserAgainstArchivedReportsMenu(tu, 1);
+			break;
+		default:
+			if (slot != 4 && Permission.MANAGE.isOwned(u)) {
+				String stat = "";
+				for (Statistic statistics : Statistic.values())
+					if (statistics.getPosition() == slot)
+						stat = statistics.getConfigName();
+				tu.changeStatistic(stat, click.toString().contains("RIGHT") ? -1 : 1);
+				update(true);
+			}
+			break;
 		}
 	}
 

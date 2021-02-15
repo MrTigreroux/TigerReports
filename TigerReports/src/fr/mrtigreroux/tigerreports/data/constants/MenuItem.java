@@ -5,7 +5,6 @@ import org.bukkit.inventory.ItemStack;
 
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.objects.CustomItem;
-import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.VersionUtils;
 
 /**
@@ -18,17 +17,13 @@ public enum MenuItem {
 	PAGE_SWITCH_PREVIOUS(Material.FEATHER, Message.PAGE_SWITCH_PREVIOUS),
 	PAGE_SWITCH_NEXT(Material.FEATHER, Message.PAGE_SWITCH_NEXT),
 
-	REASONS(Material.BOOK, Message.REASONS),
-	PUNISHMENTS(Material.GOLD_AXE, Message.PUNISHMENTS, true),
-	REPORTS(Material.BOOKSHELF, Message.REPORTS),
-	ARCHIVED_REPORTS(Material.BOOKSHELF, Message.ARCHIVED_REPORTS),
-	PUNISH_ABUSE(Material.GOLD_AXE, Message.PUNISH_ABUSE, true),
-	DATA(Material.ENCHANTED_BOOK, Message.DATA),
-	ARCHIVE(Material.STAINED_CLAY, (short) 9, Message.ARCHIVE, Message.ARCHIVE_DETAILS.get(), false),
+	REASONS(Material.BOOK, Message.REASONS), REPORTS(Material.BOOKSHELF, Message.REPORTS),
+	ARCHIVED_REPORTS(Material.BOOKSHELF, Message.ARCHIVED_REPORTS), DATA(Material.ENCHANTED_BOOK, Message.DATA),
 	DELETE(Material.FLINT_AND_STEEL, Message.DELETE, Message.DELETE_DETAILS.get(), false),
 	COMMENTS(Material.WRITTEN_BOOK, Message.COMMENTS, true),
-	CANCEL_PROCESS(Material.FEATHER, Message.CANCEL_PROCESS, Message.CANCEL_PROCESS_DETAILS.get(), false),
-	WRITE_COMMENT(Material.BOOK_AND_QUILL, Message.WRITE_COMMENT, Message.WRITE_COMMENT_DETAILS.get(), false);
+	CANCEL_PROCESS(Material.FEATHER, Message.CANCEL_PROCESS, Message.CANCEL_PROCESS_DETAILS.get(), false);
+
+	public static CustomItem ARCHIVE, PUNISHMENTS, PUNISH_ABUSE, WRITE_COMMENT;
 
 	private final Material material;
 	private final short durability;
@@ -56,17 +51,31 @@ public enum MenuItem {
 		this.hideFlags = hideFlags;
 	}
 
+	public CustomItem getCustomItem() {
+		return new CustomItem().type(material).damage(durability).hideFlags(hideFlags);
+	}
+
 	public ItemStack getWithDetails(String details) {
-		return new CustomItem().type(material)
-				.damage(durability)
-				.name(name.get())
-				.lore(details != null ? details.split(ConfigUtils.getLineBreakSymbol()) : null)
-				.hideFlags(hideFlags)
-				.create();
+		return getCustomItem().name(name.get()).details(details).create();
 	}
 
 	public ItemStack get() {
 		return getWithDetails(details);
+	}
+
+	public static void init() {
+		ARCHIVE = getCustomItem(MenuRawItem.BLACK_CLAY, Message.ARCHIVE, Message.ARCHIVE_DETAILS);
+		PUNISHMENTS = getCustomItem(MenuRawItem.GOLDEN_AXE, Message.PUNISHMENTS);
+		PUNISH_ABUSE = getCustomItem(MenuRawItem.GOLDEN_AXE, Message.PUNISH_ABUSE);
+		WRITE_COMMENT = getCustomItem(MenuRawItem.WRITABLE_BOOK, Message.WRITE_COMMENT, Message.WRITE_COMMENT_DETAILS);
+	}
+
+	private static CustomItem getCustomItem(CustomItem rawItem, Message name) {
+		return rawItem.name(name.get()).hideFlags(true);
+	}
+
+	private static CustomItem getCustomItem(CustomItem rawItem, Message name, Message details) {
+		return getCustomItem(rawItem, name).details(details.get());
 	}
 
 }

@@ -12,8 +12,8 @@ import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.MenuItem;
+import fr.mrtigreroux.tigerreports.data.constants.MenuRawItem;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
-import fr.mrtigreroux.tigerreports.objects.CustomItem;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.runnables.MenuUpdater;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
@@ -56,7 +56,7 @@ public abstract class Menu {
 			title = title.substring(0, 29)+"..";
 		Inventory inv = Bukkit.createInventory(null, size, title);
 		if (borders) {
-			ItemStack gui = new CustomItem().type(Material.STAINED_GLASS_PANE).damage((byte) 7).name(" ").create();
+			ItemStack gui = MenuRawItem.GUI.create();
 			int size = inv.getSize();
 			for (int position = 9; position < 18; position++)
 				inv.setItem(position, gui);
@@ -113,7 +113,7 @@ public abstract class Menu {
 	}
 
 	public void click(ItemStack item, int slot, ClickType click) {
-		if (slot == -1 || item == null || item.getType() == Material.AIR || (item.getType() == Material.STAINED_GLASS_PANE && ((slot >= size-9
+		if (slot == -1 || item == null || item.getType() == null || item.getType() == Material.AIR || (item.getType().toString().toUpperCase().contains("STAINED_GLASS_PANE") && ((slot >= size-9
 				&& slot < size) || (slot >= 9 && slot <= 17))) || !check())
 			return;
 

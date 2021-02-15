@@ -305,6 +305,7 @@ public class BungeeManager implements PluginMessageListener {
 		}, 20);
 	}
 
+	@SuppressWarnings("deprecation")
 	private void implementMissingData(Report r) {
 		Player rp = UserUtils.getPlayerFromUniqueId(r.getReportedUniqueId());
 		if (rp == null)

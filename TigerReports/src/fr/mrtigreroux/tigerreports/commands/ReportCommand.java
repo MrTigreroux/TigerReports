@@ -129,6 +129,7 @@ public class ReportCommand implements TabExecutor {
 
 		Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
 
+			@SuppressWarnings("deprecation")
 			@Override
 			public void run() {
 				Database db = tr.getDb();

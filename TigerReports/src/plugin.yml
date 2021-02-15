@@ -1,5 +1,6 @@
 name: TigerReports
-version: 4.11.9
+version: 4.12
+api-version: 1.13
 description: Management of reports / Gestion de signalements.
 author: MrTigreroux
 main: fr.mrtigreroux.tigerreports.TigerReports

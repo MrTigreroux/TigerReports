@@ -12,6 +12,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import fr.mrtigreroux.tigerreports.commands.ReportCommand;
 import fr.mrtigreroux.tigerreports.commands.ReportsCommand;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
+import fr.mrtigreroux.tigerreports.data.constants.MenuItem;
+import fr.mrtigreroux.tigerreports.data.constants.MenuRawItem;
 import fr.mrtigreroux.tigerreports.data.database.Database;
 import fr.mrtigreroux.tigerreports.data.database.MySQL;
 import fr.mrtigreroux.tigerreports.data.database.SQLite;
@@ -45,11 +47,13 @@ public class TigerReports extends JavaPlugin {
 			configFiles.load();
 
 		ReportsNotifier.start();
+		MenuItem.init();
 	}
 
 	@Override
 	public void onEnable() {
 		instance = this;
+		MenuRawItem.init();
 		load();
 
 		PluginManager pm = Bukkit.getServer().getPluginManager();

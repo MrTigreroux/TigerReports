@@ -3,6 +3,7 @@ package fr.mrtigreroux.tigerreports.data.constants;
 import org.bukkit.Material;
 
 import fr.mrtigreroux.tigerreports.data.config.Message;
+import fr.mrtigreroux.tigerreports.objects.CustomItem;
 
 /**
  * @author MrTigreroux
@@ -10,24 +11,30 @@ import fr.mrtigreroux.tigerreports.data.config.Message;
 
 public enum Status {
 
-	WAITING(Message.WAITING, Material.PAPER, (short) 5),
-	IN_PROGRESS(Message.IN_PROGRESS, Material.PAPER, (short) 4),
-	IMPORTANT(Message.IMPORTANT, Material.EMPTY_MAP, (short) 14),
-	DONE(Message.DONE, Material.BOOK, (short) 3);
+	WAITING(Message.WAITING, Material.PAPER, MenuRawItem.GREEN_CLAY),
+	IN_PROGRESS(Message.IN_PROGRESS, Material.PAPER, MenuRawItem.YELLOW_CLAY),
+	IMPORTANT(Message.IMPORTANT, MenuRawItem.EMPTY_MAP, MenuRawItem.RED_CLAY),
+	DONE(Message.DONE, Material.BOOK, MenuRawItem.BLUE_CLAY);
 
 	private final Message word;
-	private final Material material;
-	private final short color;
+	private final Material iconMat;
+	private CustomItem icon;
+	private final CustomItem buttonItem;
 
-	Status(Message word, Material material, short color) {
+	Status(Message word, CustomItem icon, CustomItem buttonItem) {
+		this(word, (Material) null, buttonItem);
+		this.icon = icon;
+	}
+
+	Status(Message word, Material iconMat, CustomItem buttonItem) {
 		this.word = word;
-		this.material = material;
-		this.color = color;
+		this.iconMat = iconMat;
+		this.buttonItem = buttonItem;
 	}
 
 	public String getConfigWord() {
 		String name = toString();
-		return name.charAt(0)+name.substring(1).toLowerCase();
+		return name.charAt(0) + name.substring(1).toLowerCase();
 	}
 
 	public String getWord(String processor) {
@@ -35,19 +42,19 @@ public enum Status {
 		return processor != null ? w.replace("_Name_", processor) : w;
 	}
 
-	public Material getMaterial() {
-		return material;
+	public CustomItem getIcon() {
+		return iconMat != null ? new CustomItem().type(iconMat) : icon;
 	}
 
-	public short getColor() {
-		return color;
+	public CustomItem getButtonItem() {
+		return buttonItem.clone();
 	}
 
 	public static Status getFrom(String status) {
 		try {
-			return status == null	? Status.WAITING
-									: status.startsWith(Status.DONE.getConfigWord())	? Status.DONE
-																						: Status.valueOf(status.toUpperCase().replace(" ", "_"));
+			return status == null ? Status.WAITING
+					: status.startsWith(Status.DONE.getConfigWord()) ? Status.DONE
+							: Status.valueOf(status.toUpperCase().replace(" ", "_"));
 		} catch (Exception invalidStatus) {
 			return Status.WAITING;
 		}

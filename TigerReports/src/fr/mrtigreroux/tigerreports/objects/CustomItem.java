@@ -32,10 +32,27 @@ public class CustomItem {
 	private boolean hideFlags = false;
 	private boolean glow = false;
 
+	public CustomItem(Material material, Integer amount, Short damage, String displayName, List<String> lore,
+			Map<Enchantment, Integer> enchantments, String skullOwner, boolean hideFlags, boolean glow) {
+		this.material = material;
+		this.amount = amount;
+		this.damage = damage;
+		this.displayName = displayName;
+		this.lore = lore;
+		this.enchantments = enchantments;
+		this.skullOwner = skullOwner;
+		this.hideFlags = hideFlags;
+		this.glow = glow;
+	}
+
 	public CustomItem() {}
+	
+	public CustomItem clone() {
+		return new CustomItem(material, amount, damage, displayName, lore, enchantments, skullOwner, hideFlags, glow);
+	}
 
 	public Material getMaterial() {
-		return skullOwner == null ? material : Material.SKULL_ITEM;
+		return skullOwner == null ? material : (VersionUtils.isVersionLess1_13() ? Material.matchMaterial("SKULL_ITEM") : Material.PLAYER_HEAD);
 	}
 
 	public Integer getAmount() {
@@ -88,6 +105,10 @@ public class CustomItem {
 			this.lore = Arrays.asList(strings);
 		return this;
 	}
+	
+	public CustomItem details(String details) {
+		return this.lore(details != null ? details.split(ConfigUtils.getLineBreakSymbol()) : null);
+	}
 
 	public CustomItem skullOwner(String name) {
 		skullOwner = name;
@@ -116,6 +137,7 @@ public class CustomItem {
 		return this;
 	}
 
+	@SuppressWarnings("deprecation")
 	public ItemStack create() {
 		ItemStack item = new ItemStack(getMaterial(), getAmount(), getDamage());
 

@@ -11,9 +11,9 @@ import fr.mrtigreroux.tigerreports.objects.CustomItem;
 
 public enum Statistic {
 
-	TRUE_APPRECIATIONS(20, Message.APPRECIATION, Message.TRUE, Material.STAINED_CLAY, (short) 5),
-	UNCERTAIN_APPRECIATIONS(22, Message.APPRECIATION, Message.UNCERTAIN, Material.STAINED_CLAY, (short) 4),
-	FALSE_APPRECIATIONS(24, Message.APPRECIATION, Message.FALSE, Material.STAINED_CLAY, (short) 14),
+	TRUE_APPRECIATIONS(20, Message.APPRECIATION, Message.TRUE, MenuRawItem.GREEN_CLAY),
+	UNCERTAIN_APPRECIATIONS(22, Message.APPRECIATION, Message.UNCERTAIN, MenuRawItem.YELLOW_CLAY),
+	FALSE_APPRECIATIONS(24, Message.APPRECIATION, Message.FALSE, MenuRawItem.RED_CLAY),
 	REPORTS(38, Message.REPORTS_STATISTIC, Material.PAPER),
 	REPORTED_TIMES(40, Message.REPORTED_TIMES_STATISTIC, Material.BOW),
 	PROCESSED_REPORTS(42, Message.PROCESSED_REPORTS_STATISTIC, Material.BOOK);
@@ -22,9 +22,15 @@ public enum Statistic {
 	private final Message name, appreciation;
 	private final Material material;
 	private final short durability;
+	private CustomItem customItem = null;
 
 	Statistic(int position, Message name, Material material) {
 		this(position, name, null, material, (short) 0);
+	}
+
+	Statistic(int position, Message name, Message appreciation, CustomItem customItem) {
+		this(position, name, null, null, (short) 0);
+		this.customItem = customItem;
 	}
 
 	Statistic(int position, Message name, Message appreciation, Material material, short durability) {
@@ -49,7 +55,7 @@ public enum Statistic {
 	}
 
 	public CustomItem getCustomItem() {
-		return new CustomItem().type(material).damage(durability);
+		return material != null ? new CustomItem().type(material).damage(durability) : customItem.clone();
 	}
 
 }
