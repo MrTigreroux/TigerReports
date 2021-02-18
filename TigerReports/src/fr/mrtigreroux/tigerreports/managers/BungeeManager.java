@@ -254,7 +254,6 @@ public class BungeeManager implements PluginMessageListener {
 						Comment c = report.getCommentById(Integer.parseInt(parts[2]));
 						((OnlineUser) ru).sendCommentNotification(report, c, true);
 						break;
-
 					case "player_status":
 						String name = parts[0];
 						boolean online = parts[2].equals("true");
@@ -264,7 +263,6 @@ public class BungeeManager implements PluginMessageListener {
 							setPlayerStatus(name, online);
 						}
 						break;
-
 					default:
 						break;
 				}

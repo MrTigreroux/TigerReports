@@ -85,11 +85,10 @@ public class OnlineUser extends User {
 		if (command != null && !command.equalsIgnoreCase("none")) {
 			r.process(uuid, name, "True", false, Permission.STAFF_ARCHIVE_AUTO.isOwned(this), true);
 
-			Bukkit.dispatchCommand(p, command.replace("_Reported_", r.getPlayerName("Reported", false, false))
-					.replace("_Staff_", name)
-					.replace("_Id_", Integer.toString(r.getId()))
-					.replace("_Reason_", r.getReason(false))
-					.replace("_Reporter_", r.getPlayerName("Reporter", false, false)));
+			Bukkit.dispatchCommand(p,
+					command.replace("_Reported_", r.getPlayerName("Reported", false, false)).replace("_Staff_", name)
+							.replace("_Id_", Integer.toString(r.getId())).replace("_Reason_", r.getReason(false))
+							.replace("_Reporter_", r.getPlayerName("Reporter", false, false)));
 		}
 		new PunishmentMenu(this, page, r.getId()).open(true);
 	}
@@ -156,7 +155,7 @@ public class OnlineUser extends User {
 
 		if (lastMessages.size() >= lastMessagesAmount)
 			lastMessages.remove(0);
-		lastMessages.add(MessageUtils.getNowDate()+":"+newMessage);
+		lastMessages.add(MessageUtils.getNowDate() + ":" + newMessage);
 	}
 
 	@Override
@@ -171,16 +170,19 @@ public class OnlineUser extends User {
 	public void printInChat(Report r, String[] lines) {
 		String reportName = r.getName();
 		for (String line : lines)
-			sendMessage(MessageUtils.getAdvancedMessage(line, "_ReportButton_", Message.REPORT_BUTTON.get().replace("_Report_", reportName),
-					Message.ALERT_DETAILS.get().replace("_Report_", reportName), "/tigerreports:reports #"+r.getId()));
+			sendMessage(MessageUtils.getAdvancedMessage(line, "_ReportButton_",
+					Message.REPORT_BUTTON.get().replace("_Report_", reportName),
+					Message.ALERT_DETAILS.get().replace("_Report_", reportName),
+					"/tigerreports:reports #" + r.getId()));
 		ConfigSound.MENU.play(p);
 		p.closeInventory();
 	}
 
 	public void sendMessageWithReportButton(String message, Report r) {
 		String reportName = r.getName();
-		sendMessage(MessageUtils.getAdvancedMessage(message, "_ReportButton_", Message.REPORT_BUTTON.get().replace("_Report_", reportName),
-				Message.ALERT_DETAILS.get().replace("_Report_", reportName), "/tigerreports:reports #"+r.getId()));
+		sendMessage(MessageUtils.getAdvancedMessage(message, "_ReportButton_",
+				Message.REPORT_BUTTON.get().replace("_Report_", reportName),
+				Message.ALERT_DETAILS.get().replace("_Report_", reportName), "/tigerreports:reports #" + r.getId()));
 	}
 
 	public void setStaffNotifications(boolean state) {
@@ -192,15 +194,15 @@ public class OnlineUser extends User {
 	}
 
 	public void sendNotifications() {
-		for (String notification : getNotifications()) {
-			try {
-				TigerReports tr = TigerReports.getInstance();
-				if (notification.contains(":")) {
-					String[] parts = notification.split(":");
-					Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
+		TigerReports tr = TigerReports.getInstance();
+		Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
 
-						@Override
-						public void run() {
+			@Override
+			public void run() {
+				for (String notification : getNotifications()) {
+					if (notification != null) {
+						if (notification.contains(":")) {
+							String[] parts = notification.split(":");
 							try {
 								Report r = tr.getReportsManager().getReportById(Integer.parseInt(parts[0]), false);
 								Comment c = r.getCommentById(Integer.parseInt(parts[1]));
@@ -212,15 +214,9 @@ public class OnlineUser extends User {
 									}
 
 								});
-							} catch (Exception invalidNotification) {}
-						}
-
-					});
-				} else if (ConfigUtils.playersNotifications()) {
-					Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
-
-						@Override
-						public void run() {
+							} catch (Exception invalidNotification) {
+							}
+						} else if (ConfigUtils.playersNotifications()) {
 							try {
 								Report r = tr.getReportsManager().getReportById(Integer.parseInt(notification), false);
 								Bukkit.getScheduler().runTask(tr, new Runnable() {
@@ -231,35 +227,40 @@ public class OnlineUser extends User {
 									}
 
 								});
-							} catch (Exception invalidNotification) {}
-						}
+							} catch (Exception invalidNotification) {
+							}
 
-					});
+						}
+					}
 				}
-			} catch (Exception invalidNotification) {}
-		}
-		setNotifications(null);
+				setNotifications(null);
+			}
+
+		});
+
 	}
 
 	public void sendCommentNotification(Report r, Comment c, boolean direct) {
 		if (!direct && !c.getStatus(true).equals("Sent"))
 			return;
-		p.sendMessage(Message.COMMENT_NOTIFICATION.get()
-				.replace("_Player_", c.getAuthor())
+		p.sendMessage(Message.COMMENT_NOTIFICATION.get().replace("_Player_", c.getAuthor())
 				.replace("_Reported_", r.getPlayerName("Reported", false, true))
-				.replace("_Time_", MessageUtils.getTimeAgo(r.getDate()))
-				.replace("_Message_", c.getMessage()));
-		c.setStatus("Read "+MessageUtils.getNowDate());
+				.replace("_Time_", MessageUtils.getTimeAgo(r.getDate())).replace("_Message_", c.getMessage()));
+		c.setStatus("Read " + MessageUtils.getNowDate());
 	}
 
 	public void sendReportNotification(Report r, boolean direct) {
 		if (!direct && r.getStatus() != Status.DONE)
 			return;
 
-		sendMessage(MessageUtils.getAdvancedMessage(Message.REPORT_NOTIFICATION.get()
-				.replace("_Player_", r.getProcessor())
-				.replace("_Appreciation_", Message.valueOf(r.getAppreciation(true).toUpperCase()).get())
-				.replace("_Time_", MessageUtils.getTimeAgo(r.getDate())), "_Report_", r.getName(), r.getText(), null));
+		sendMessage(
+				MessageUtils
+						.getAdvancedMessage(
+								Message.REPORT_NOTIFICATION.get().replace("_Player_", r.getProcessor())
+										.replace("_Appreciation_",
+												Message.valueOf(r.getAppreciation(true).toUpperCase()).get())
+										.replace("_Time_", MessageUtils.getTimeAgo(r.getDate())),
+								"_Report_", r.getName(), r.getText(), null));
 	}
 
 	public void createComment(Report r) {
@@ -281,9 +282,11 @@ public class OnlineUser extends User {
 		}
 		editingComment = c;
 		p.closeInventory();
-		sendMessage(MessageUtils.getAdvancedMessage(Message.EDIT_COMMENT.get().replace("_Report_", c.getReport().getName()), "_CancelButton_",
-				Message.CANCEL_BUTTON.get(), Message.CANCEL_BUTTON_DETAILS.get().replace("_Report_", c.getReport().getName()),
-				"/tigerreports:reports canceledit"));
+		sendMessage(
+				MessageUtils.getAdvancedMessage(Message.EDIT_COMMENT.get().replace("_Report_", c.getReport().getName()),
+						"_CancelButton_", Message.CANCEL_BUTTON.get(),
+						Message.CANCEL_BUTTON_DETAILS.get().replace("_Report_", c.getReport().getName()),
+						"/tigerreports:reports canceledit"));
 	}
 
 	public void setEditingComment(Comment c) {
@@ -295,7 +298,8 @@ public class OnlineUser extends User {
 	}
 
 	public boolean canArchive(Report r) {
-		return Permission.STAFF_ARCHIVE.isOwned(this) && (r.getStatus() == Status.DONE || !ReportUtils.onlyDoneArchives());
+		return Permission.STAFF_ARCHIVE.isOwned(this)
+				&& (r.getStatus() == Status.DONE || !ReportUtils.onlyDoneArchives());
 	}
 
 }

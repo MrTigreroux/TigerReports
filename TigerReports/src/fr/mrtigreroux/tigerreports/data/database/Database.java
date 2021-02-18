@@ -118,6 +118,17 @@ public abstract class Database {
 			return -1;
 		}
 	}
+	
+	public void insertAsynchronously(final String query, final List<Object> parameters) {
+		Bukkit.getScheduler().runTaskAsynchronously(TigerReports.getInstance(), new Runnable() {
+			
+			@Override
+			public void run() {
+				insert(query, parameters);
+			}
+			
+		});
+	}
 
 	private void close(ResultSet rs) {
 		if (rs != null)

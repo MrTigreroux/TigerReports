@@ -43,18 +43,19 @@ public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu {
 	public void onUpdate(Inventory inv) {
 		int firstComment = 1;
 		if (page >= 2) {
-			inv.setItem(size-7, MenuItem.PAGE_SWITCH_PREVIOUS.get());
-			firstComment += (page-1)*27;
+			inv.setItem(size - 7, MenuItem.PAGE_SWITCH_PREVIOUS.get());
+			firstComment += (page - 1) * 27;
 		}
 
-		int first = firstComment-1;
+		int first = firstComment - 1;
 		TigerReports tr = TigerReports.getInstance();
 		Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
 
 			@Override
 			public void run() {
 				List<Map<String, Object>> results = tr.getDb()
-						.query("SELECT * FROM tigerreports_comments WHERE report_id = ? LIMIT 28 OFFSET ?", Arrays.asList(r.getId(), first))
+						.query("SELECT * FROM tigerreports_comments WHERE report_id = ? LIMIT 28 OFFSET ?",
+								Arrays.asList(r.getId(), first))
 						.getResultList();
 
 				Bukkit.getScheduler().runTask(tr, new Runnable() {
@@ -79,7 +80,7 @@ public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu {
 						}
 
 						if (results.size() == 28)
-							inv.setItem(size-3, MenuItem.PAGE_SWITCH_NEXT.get());
+							inv.setItem(size - 3, MenuItem.PAGE_SWITCH_NEXT.get());
 					}
 
 				});
@@ -95,7 +96,7 @@ public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu {
 			u.openReportMenu(r.getId());
 		} else if (slot == 8) {
 			u.createComment(r);
-		} else if (slot >= 18 && slot <= size-9) {
+		} else if (slot >= 18 && slot <= size - 9) {
 			TigerReports tr = TigerReports.getInstance();
 			Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
 
@@ -108,42 +109,50 @@ public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu {
 						public void run() {
 							if (c != null) {
 								switch (click) {
-									case LEFT:
-									case SHIFT_LEFT:
-										u.editComment(c);
-										return;
-									case RIGHT:
-									case SHIFT_RIGHT:
-										int reportId = r.getId();
-										int commentId = c.getId();
-										String notification = reportId+":"+commentId;
-										User ru = tr.getUsersManager().getUser(r.getReporterUniqueId());
-										boolean isPrivate = c.getStatus(true).equals("Private");
-										if (isPrivate && ru instanceof OnlineUser) {
-											((OnlineUser) ru).sendCommentNotification(r, c, true);
-										} else if (isPrivate && UserUtils.isOnline(ru.getName())) {
-											tr.getBungeeManager().sendPluginNotification(reportId+" comment "+commentId+" "+ru.getName());
-										} else {
-											List<String> notifications = ru.getNotifications();
-											if (isPrivate) {
-												c.setStatus("Sent");
-												notifications.add(notification);
-											} else {
-												c.setStatus("Private");
-												notifications.remove(notification);
+								case LEFT:
+								case SHIFT_LEFT:
+									u.editComment(c);
+									return;
+								case RIGHT:
+								case SHIFT_RIGHT:
+									int reportId = r.getId();
+									int commentId = c.getId();
+									String notification = reportId + ":" + commentId;
+									User ru = tr.getUsersManager().getUser(r.getReporterUniqueId());
+									boolean isPrivate = c.getStatus(true).equals("Private");
+									if (isPrivate && ru instanceof OnlineUser) {
+										((OnlineUser) ru).sendCommentNotification(r, c, true);
+									} else if (isPrivate && UserUtils.isOnline(ru.getName())) {
+										tr.getBungeeManager().sendPluginNotification(
+												reportId + " comment " + commentId + " " + ru.getName());
+									} else {
+										Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
+
+											@Override
+											public void run() {
+												List<String> notifications = ru.getNotifications();
+												if (isPrivate) {
+													c.setStatus("Sent");
+													notifications.add(notification);
+												} else {
+													c.setStatus("Private");
+													notifications.remove(notification);
+												}
+												ru.setNotifications(notifications);
 											}
-											ru.setNotifications(notifications);
-										}
-										break;
-									case DROP:
-										if (Permission.STAFF_DELETE.isOwned(u)) {
-											c.delete();
-										} else {
-											return;
-										}
-										break;
-									default:
-										break;
+											
+										});
+									}
+									break;
+								case DROP:
+									if (Permission.STAFF_DELETE.isOwned(u)) {
+										c.delete();
+									} else {
+										return;
+									}
+									break;
+								default:
+									break;
 								}
 							}
 							Bukkit.getScheduler().runTaskLater(tr, new Runnable() {

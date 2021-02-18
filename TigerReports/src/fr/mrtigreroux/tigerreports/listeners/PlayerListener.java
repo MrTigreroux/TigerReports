@@ -124,7 +124,7 @@ public class PlayerListener implements Listener {
 			String message = e.getMessage();
 			Report r = c.getReport();
 			if (c.getId() == null) {
-				tr.getDb().insert(
+				tr.getDb().insertAsynchronously(
 						"INSERT INTO tigerreports_comments (report_id,status,date,author,message) VALUES (?,?,?,?,?);",
 						Arrays.asList(r.getId(), "Private", MessageUtils.getNowDate(), u.getPlayer().getDisplayName(),
 								message));

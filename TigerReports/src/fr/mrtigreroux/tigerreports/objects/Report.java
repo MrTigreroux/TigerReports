@@ -275,14 +275,14 @@ public class Report {
 					"_Report_", getName(), getText(), null), ConfigSound.STAFF.get());
 		}
 
-		TigerReports plugin = TigerReports.getInstance();
-		UsersManager um = plugin.getUsersManager();
-		BungeeManager bm = plugin.getBungeeManager();
+		TigerReports tr = TigerReports.getInstance();
+		UsersManager um = tr.getUsersManager();
+		BungeeManager bm = tr.getBungeeManager();
 
 		if (!bungee) {
 			bm.sendPluginNotification(uuid + "/" + staff + " " + bungeeAction + " " + reportId + " "
 					+ (auto ? "1" : "0") + " " + appreciation);
-			plugin.getDb().update(
+			tr.getDb().update(
 					"UPDATE tigerreports_reports SET status = ?,appreciation = ?,archived = ? WHERE report_id = ?",
 					Arrays.asList(status, appreciation, auto ? 1 : 0, reportId));
 
@@ -296,9 +296,16 @@ public class Report {
 					if (ru instanceof OnlineUser) {
 						((OnlineUser) ru).sendReportNotification(this, true);
 					} else if (!bm.isOnline(ru.getName())) {
-						List<String> notifications = ru.getNotifications();
-						notifications.add(Integer.toString(getId()));
-						ru.setNotifications(notifications);
+						Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
+
+							@Override
+							public void run() {
+								List<String> notifications = ru.getNotifications();
+								notifications.add(Integer.toString(getId()));
+								ru.setNotifications(notifications);
+							}
+
+						});
 					}
 				}
 			}
