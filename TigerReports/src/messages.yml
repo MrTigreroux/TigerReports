@@ -181,6 +181,7 @@ Words:
   Years: "ann\xe9es"
   Waiting: "&aEn attente"
   In-progress: "&6En cours"
+  In-progress-detailed: "&6En cours &7(&b_Name_&7)"
   Important: "&cImportant"
   Done: "&bTrait\xe9 par _Name_"
   Done-suffix:

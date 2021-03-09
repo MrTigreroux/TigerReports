@@ -99,13 +99,13 @@ public class Report {
 		return date != null ? date : Message.NOT_FOUND_FEMALE.get();
 	}
 
-	public void setStatus(Status status, boolean bungee) {
+	public void setStatus(Status status, String staffUuid, boolean bungee) {
 		TigerReports tr = TigerReports.getInstance();
-		this.status = status.getConfigWord();
+		this.status = status.getConfigWord() + (status == Status.IN_PROGRESS ? "-" + staffUuid : "");
 		if (!bungee) {
 			tr.getBungeeManager().sendPluginNotification(status + " new_status " + reportId);
 			tr.getDb().updateAsynchronously("UPDATE tigerreports_reports SET status = ? WHERE report_id = ?",
-					Arrays.asList(status.getConfigWord(), reportId));
+					Arrays.asList(this.status, reportId));
 		}
 
 		try {
@@ -138,11 +138,19 @@ public class Report {
 		}
 	}
 
+	public String getStaffOfStatus(String prefix) {
+		String staff = null;
+		if (status != null && status.startsWith(prefix))
+			staff = UserUtils.getName(status.replaceFirst(prefix, ""));
+		return staff != null ? staff : Message.NOT_FOUND_MALE.get();
+	}
+
 	public String getProcessor() {
-		String processor = null;
-		if (status != null && status.startsWith(Status.DONE.getConfigWord() + " by "))
-			processor = UserUtils.getName(status.replaceFirst(Status.DONE.getConfigWord() + " by ", ""));
-		return processor != null ? processor : Message.NOT_FOUND_MALE.get();
+		return getStaffOfStatus(Status.DONE.getConfigWord() + " by ");
+	}
+
+	public String getProcessingStaff() {
+		return getStaffOfStatus(Status.IN_PROGRESS.getConfigWord() + "-");
 	}
 
 	public String getPunishment() {
@@ -158,7 +166,9 @@ public class Report {
 				: Message.get("Words.Done-suffix.Other-appreciation").replace("_Appreciation_", getAppreciation(false));
 		return message
 				.replace("_Status_",
-						status.equals(Status.DONE) ? status.getWord(getProcessor()) + suffix : status.getWord(null))
+						status.equals(Status.DONE) ? status.getWord(getProcessor()) + suffix
+								: status.equals(Status.IN_PROGRESS) ? status.getWord(getProcessingStaff(), true)
+										: status.getWord(null))
 				.replace("_Date_", getDate()).replace("_Reporters_", reportersNames)
 				.replace("_Reported_", getPlayerName("Reported", true, true)).replace("_Reason_", getReason(menu));
 	}

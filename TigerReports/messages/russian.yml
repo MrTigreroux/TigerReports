@@ -181,6 +181,7 @@ Words:
   Years: "г"
   Waiting: "&aОжидание"
   In-progress: "&6Рассмотрение"
+  In-progress-detailed: "&6Рассмотрение &7(&b_Name_&7)"
   Important: "&cВажно"
   Done: "&bЗавершено _Name_"
   Done-suffix:

@@ -181,6 +181,7 @@ Words:
   Years: "years"
   Waiting: "&aWaiting"
   In-progress: "&6In progress"
+  In-progress-detailed: "&6In progress &7(&b_Name_&7)"
   Important: "&cImportant"
   Done: "&bDone by _Name_"
   Done-suffix:

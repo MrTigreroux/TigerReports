@@ -37,9 +37,13 @@ public enum Status {
 		return name.charAt(0) + name.substring(1).toLowerCase();
 	}
 
-	public String getWord(String processor) {
-		String w = word.get();
-		return processor != null ? w.replace("_Name_", processor) : w;
+	public String getWord(String staffName) {
+		return getWord(staffName, false);
+	}
+
+	public String getWord(String staffName, boolean detailed) {
+		String w = detailed && this == Status.IN_PROGRESS ? Message.get("Words.In-progress-detailed") : word.get();
+		return staffName != null ? w.replace("_Name_", staffName) : w;
 	}
 
 	public CustomItem getIcon() {
@@ -54,7 +58,8 @@ public enum Status {
 		try {
 			return status == null ? Status.WAITING
 					: status.startsWith(Status.DONE.getConfigWord()) ? Status.DONE
-							: Status.valueOf(status.toUpperCase().replace(" ", "_"));
+							: status.startsWith(Status.IN_PROGRESS.getConfigWord()) ? Status.IN_PROGRESS
+									: Status.valueOf(status.toUpperCase().replace(" ", "_"));
 		} catch (Exception invalidStatus) {
 			return Status.WAITING;
 		}

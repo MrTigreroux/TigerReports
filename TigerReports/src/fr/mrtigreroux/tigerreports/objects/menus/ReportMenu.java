@@ -283,7 +283,7 @@ public class ReportMenu extends ReportManagerMenu {
 			case 29:
 			case 30:
 			case 31:
-				r.setStatus(Arrays.asList(Status.values()).get(slot - 29), false);
+				r.setStatus(Arrays.asList(Status.values()).get(slot - 29), p.getUniqueId().toString(), false);
 				if (slot == 31 && !Permission.STAFF_ADVANCED.isOwned(u)) {
 					u.openReportsMenu(1, true);
 				} else {

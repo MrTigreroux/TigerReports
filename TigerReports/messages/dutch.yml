@@ -181,6 +181,7 @@ Words:
   Years: "jaren"
   Waiting: "&aWachten"
   In-progress: "&6Bezig"
+  In-progress-detailed: "&6Bezig &7(&b_Name_&7)"
   Important: "&cBelangrijk"
   Done: "&bGedaan door _Name_"
   Done-suffix:

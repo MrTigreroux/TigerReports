@@ -60,9 +60,11 @@ public class BungeeManager implements PluginMessageListener {
 			messenger.registerOutgoingPluginChannel(plugin, "BungeeCord");
 			messenger.registerIncomingPluginChannel(plugin, "BungeeCord", this);
 			initialized = true;
-			Bukkit.getLogger().info(ConfigUtils.getInfoMessage("The plugin is using BungeeCord.", "Le plugin utilise BungeeCord."));
+			Bukkit.getLogger().info(
+					ConfigUtils.getInfoMessage("The plugin is using BungeeCord.", "Le plugin utilise BungeeCord."));
 		} else {
-			Bukkit.getLogger().info(ConfigUtils.getInfoMessage("The plugin is not using BungeeCord.", "Le plugin n'utilise pas BungeeCord."));
+			Bukkit.getLogger().info(ConfigUtils.getInfoMessage("The plugin is not using BungeeCord.",
+					"Le plugin n'utilise pas BungeeCord."));
 		}
 	}
 
@@ -85,7 +87,7 @@ public class BungeeManager implements PluginMessageListener {
 						collectOnlinePlayers();
 					if (playerToRemove != null) {
 						if (playerToRemove != name)
-							sendPluginNotification(playerToRemove+" player_status false");
+							sendPluginNotification(playerToRemove + " player_status false");
 						playerToRemove = null;
 					}
 					updatePlayerStatus(name, true);
@@ -135,11 +137,12 @@ public class BungeeManager implements PluginMessageListener {
 			out.write(messageBytes);
 
 			p.sendPluginMessage(plugin, "BungeeCord", out.toByteArray());
-		} catch (IOException ignored) {}
+		} catch (IOException ignored) {
+		}
 	}
 
 	public void sendPluginNotification(String message) {
-		sendServerPluginNotification("ALL", System.currentTimeMillis()+" "+message);
+		sendServerPluginNotification("ALL", System.currentTimeMillis() + " " + message);
 	}
 
 	public void sendPluginMessage(String... message) {
@@ -172,9 +175,9 @@ public class BungeeManager implements PluginMessageListener {
 				String message = messageStream.readUTF();
 				int index = message.indexOf(' ');
 				long sendTime = Long.parseLong(message.substring(0, index));
-				boolean notify = System.currentTimeMillis()-sendTime < 20000;
+				boolean notify = System.currentTimeMillis() - sendTime < 20000;
 
-				message = message.substring(index+1);
+				message = message.substring(index + 1);
 				String[] parts = message.split(" ");
 
 				String[] userParts = new String[0];
@@ -182,91 +185,93 @@ public class BungeeManager implements PluginMessageListener {
 					userParts = parts[0].split("/");
 
 				switch (parts[1]) {
-					case "new_report":
-						Report r = new Report(Integer.parseInt(parts[0]), Status.WAITING.getConfigWord(), "None", parts[2].replace("_", " "),
-								parts[3], parts[4], parts[5].replace("_", " "));
-						ReportUtils.sendReport(r, parts[6], notify);
-						if (notify && parts[7].equals("true"))
-							implementMissingData(r);
-						break;
-					case "new_status":
-						getReport(parts).setStatus(Status.valueOf(parts[0]), true);
-						break;
-					case "process":
-						getReport(parts).process(userParts[0], userParts[1], parts[4], true, parts[3].equals("1"), notify);
-						break;
-					case "process_punish":
-						String auto = parts[3];
-						getReport(parts).processPunishing(userParts[0], userParts[1], true, parts[3].equals("1"), message.substring(message.indexOf(
-								auto)+2), notify);
-						break;
-					case "delete":
-						getReport(parts).delete(notify ? parts[0] : null, true);
-						break;
-					case "archive":
-						getReport(parts).archive(notify ? parts[0] : null, true);
-						break;
-					case "unarchive":
-						getReport(parts).unarchive(notify ? parts[0] : null, true);
-						break;
-					case "delete_archive":
-						getReport(parts).deleteFromArchives(notify ? parts[0] : null, true);
+				case "new_report":
+					Report r = new Report(Integer.parseInt(parts[0]), Status.WAITING.getConfigWord(), "None",
+							parts[2].replace("_", " "), parts[3], parts[4], parts[5].replace("_", " "));
+					ReportUtils.sendReport(r, parts[6], notify);
+					if (notify && parts[7].equals("true"))
+						implementMissingData(r);
+					break;
+				case "new_status":
+					String[] statusParts = parts[0].split("-");
+					getReport(parts).setStatus(Status.valueOf(statusParts[0]), statusParts[1], true);
+					break;
+				case "process":
+					getReport(parts).process(userParts[0], userParts[1], parts[4], true, parts[3].equals("1"), notify);
+					break;
+				case "process_punish":
+					String auto = parts[3];
+					getReport(parts).processPunishing(userParts[0], userParts[1], true, parts[3].equals("1"),
+							message.substring(message.indexOf(auto) + 2), notify);
+					break;
+				case "delete":
+					getReport(parts).delete(notify ? parts[0] : null, true);
+					break;
+				case "archive":
+					getReport(parts).archive(notify ? parts[0] : null, true);
+					break;
+				case "unarchive":
+					getReport(parts).unarchive(notify ? parts[0] : null, true);
+					break;
+				case "delete_archive":
+					getReport(parts).deleteFromArchives(notify ? parts[0] : null, true);
+					break;
+
+				case "new_immunity":
+					getUser(parts).updateImmunity(parts[0].equals("null") ? null : parts[0].replace("_", " "), true);
+					break;
+				case "new_cooldown":
+					getUser(parts).updateCooldown(parts[0].equals("null") ? null : parts[0].replace("_", " "), true);
+					break;
+				case "punish":
+					getUser(parts).punish(Double.parseDouble(parts[4]), notify ? parts[0] : null, true);
+					break;
+				case "stop_cooldown":
+					getUser(parts).stopCooldown(notify ? parts[0] : null, true);
+					break;
+				case "set_statistic":
+					getUser(parts).setStatistic(parts[2], Integer.parseInt(parts[0]), true);
+					break;
+				case "tp_loc":
+					teleportDelayedly(parts[0], MessageUtils.getLocation(parts[2]));
+					break;
+				case "tp_player":
+					if (!notify)
 						break;
 
-					case "new_immunity":
-						getUser(parts).updateImmunity(parts[0].equals("null") ? null : parts[0].replace("_", " "), true);
+					String target = parts[2];
+					Player t = UserUtils.getPlayer(target);
+					if (t != null) {
+						String staff = parts[0];
+						sendPluginMessage("ConnectOther", staff, serverName);
+						teleportDelayedly(staff, t.getLocation());
+					}
+					break;
+				case "comment":
+					Player rp = UserUtils.getPlayer(parts[3]);
+					if (rp == null)
 						break;
-					case "new_cooldown":
-						getUser(parts).updateCooldown(parts[0].equals("null") ? null : parts[0].replace("_", " "), true);
-						break;
-					case "punish":
-						getUser(parts).punish(Double.parseDouble(parts[4]), notify ? parts[0] : null, true);
-						break;
-					case "stop_cooldown":
-						getUser(parts).stopCooldown(notify ? parts[0] : null, true);
-						break;
-					case "set_statistic":
-						getUser(parts).setStatistic(parts[2], Integer.parseInt(parts[0]), true);
-						break;
-					case "tp_loc":
-						teleportDelayedly(parts[0], MessageUtils.getLocation(parts[2]));
-						break;
-					case "tp_player":
-						if (!notify)
-							break;
 
-						String target = parts[2];
-						Player t = UserUtils.getPlayer(target);
-						if (t != null) {
-							String staff = parts[0];
-							sendPluginMessage("ConnectOther", staff, serverName);
-							teleportDelayedly(staff, t.getLocation());
-						}
-						break;
-					case "comment":
-						Player rp = UserUtils.getPlayer(parts[3]);
-						if (rp == null)
-							break;
-						
-						TigerReports tr = TigerReports.getInstance();
-						OnlineUser ru = tr.getUsersManager().getOnlineUser(rp);
-						Report report = tr.getReportsManager().getReportById(Integer.parseInt(parts[0]), false);
-						Comment c = report.getCommentById(Integer.parseInt(parts[2]));
-						((OnlineUser) ru).sendCommentNotification(report, c, true);
-						break;
-					case "player_status":
-						String name = parts[0];
-						boolean online = parts[2].equals("true");
-						if (!online && UserUtils.getPlayer(name) != null) {
-							updatePlayerStatus(name, true);
-						} else {
-							setPlayerStatus(name, online);
-						}
-						break;
-					default:
-						break;
+					TigerReports tr = TigerReports.getInstance();
+					OnlineUser ru = tr.getUsersManager().getOnlineUser(rp);
+					Report report = tr.getReportsManager().getReportById(Integer.parseInt(parts[0]), false);
+					Comment c = report.getCommentById(Integer.parseInt(parts[2]));
+					((OnlineUser) ru).sendCommentNotification(report, c, true);
+					break;
+				case "player_status":
+					String name = parts[0];
+					boolean online = parts[2].equals("true");
+					if (!online && UserUtils.getPlayer(name) != null) {
+						updatePlayerStatus(name, true);
+					} else {
+						setPlayerStatus(name, online);
+					}
+					break;
+				default:
+					break;
 				}
-			} catch (Exception ignored) {}
+			} catch (Exception ignored) {
+			}
 		} else if (subchannel.equals("GetServer")) {
 			serverName = in.readUTF();
 		} else if (subchannel.equals("PlayerList")) {
@@ -309,17 +314,15 @@ public class BungeeManager implements PluginMessageListener {
 		if (rp == null)
 			return;
 		OnlineUser ru = plugin.getUsersManager().getOnlineUser(rp);
-		plugin.getDb()
-				.updateAsynchronously(
-						"UPDATE tigerreports_reports SET reported_ip=?,reported_location=?,reported_messages=?,reported_gamemode=?,reported_on_ground=?,reported_sneak=?,reported_sprint=?,reported_health=?,reported_food=?,reported_effects=? WHERE report_id=?",
-						Arrays.asList(rp.getAddress().getAddress().toString(), MessageUtils.formatConfigLocation(rp.getLocation()), ru
-								.getLastMessages(), rp.getGameMode().toString().toLowerCase(), !rp.getLocation()
-										.getBlock()
-										.getRelative(BlockFace.DOWN)
-										.getType()
-										.equals(Material.AIR), rp.isSneaking(), rp.isSprinting(), (int) Math.round(rp.getHealth())+"/"+(int) Math
-												.round(rp.getMaxHealth()), rp.getFoodLevel(), MessageUtils.formatConfigEffects(rp
-														.getActivePotionEffects()), r.getId()));
+		plugin.getDb().updateAsynchronously(
+				"UPDATE tigerreports_reports SET reported_ip=?,reported_location=?,reported_messages=?,reported_gamemode=?,reported_on_ground=?,reported_sneak=?,reported_sprint=?,reported_health=?,reported_food=?,reported_effects=? WHERE report_id=?",
+				Arrays.asList(rp.getAddress().getAddress().toString(),
+						MessageUtils.formatConfigLocation(rp.getLocation()), ru.getLastMessages(),
+						rp.getGameMode().toString().toLowerCase(),
+						!rp.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().equals(Material.AIR),
+						rp.isSneaking(), rp.isSprinting(),
+						(int) Math.round(rp.getHealth()) + "/" + (int) Math.round(rp.getMaxHealth()), rp.getFoodLevel(),
+						MessageUtils.formatConfigEffects(rp.getActivePotionEffects()), r.getId()));
 	}
 
 	public void collectOnlinePlayers() {
@@ -349,7 +352,7 @@ public class BungeeManager implements PluginMessageListener {
 			return;
 
 		setPlayerStatus(name, online);
-		sendPluginNotification(name+" player_status "+online);
+		sendPluginNotification(name + " player_status " + online);
 	}
 
 }

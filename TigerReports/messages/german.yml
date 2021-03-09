@@ -181,6 +181,7 @@ Words:
   Years: "Jahre"
   Waiting: "&aUnbearbeitet"
   In-progress: "&6In Arbeit"
+  In-progress-detailed: "&6In Arbeit &7(&b_Name_&7)"
   Important: "&cWichtig"
   Done: "&bAbgeschlossen bei _Name_"
   Done-suffix:

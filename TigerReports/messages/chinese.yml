@@ -181,6 +181,7 @@ Words:
   Years: "年"
   Waiting: "&a等待中"
   In-progress: "&6处理中"
+  In-progress-detailed: "&6处理中 &7(&b_Name_&7)"
   Important: "&c重要"
   Done: "&b由 _Name_ 完成处理"
   Done-suffix:

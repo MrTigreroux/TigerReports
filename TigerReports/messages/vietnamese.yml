@@ -181,6 +181,7 @@ Words:
   Years: "năm"
   Waiting: "&aĐang chờ xem xét"
   In-progress: "&6Đang xử lý"
+  In-progress-detailed: "&6Đang xử lý &7(&b_Name_&7)"
   Important: "&cCần chú ý!"
   Done: "&bĐã được duyệt bởi: _Name_"
   Done-suffix:

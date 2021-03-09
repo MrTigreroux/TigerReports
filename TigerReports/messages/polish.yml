@@ -181,6 +181,7 @@ Words:
   Years: "lat"
   Waiting: "&aOczekujące"
   In-progress: "&6W trakcie"
+  In-progress-detailed: "&6W trakcie &7(&b_Name_&7)"
   Important: "&cWażne"
   Done: "&bRozwiązane przez _Name_"
   Done-suffix:
