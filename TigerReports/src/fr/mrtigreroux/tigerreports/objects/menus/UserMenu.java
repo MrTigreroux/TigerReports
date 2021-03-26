@@ -34,23 +34,28 @@ public class UserMenu extends Menu implements UpdatedMenu {
 	@Override
 	public Inventory onOpen() {
 		String name = tu.getName();
+		String displayName = tu.getDisplayName(false);
 		Inventory inv = getInventory(Message.USER_TITLE.get().replace("_Target_", name), true);
 
-		inv.setItem(4, new CustomItem().skullOwner(name).name(Message.USER.get().replace("_Target_", name)).create());
+		inv.setItem(4,
+		        new CustomItem().skullOwner(name).name(Message.USER.get().replace("_Target_", displayName)).create());
 
-		setReportsItem(inv, "Menus.User-reports", 18, name);
-		setReportsItem(inv, "Menus.User-archived-reports", 36, name);
-		setReportsItem(inv, "Menus.User-against-reports", 26, name);
-		setReportsItem(inv, "Menus.User-against-archived-reports", 44, name);
+		setReportsItem(inv, "Menus.User-reports", 18, displayName);
+		setReportsItem(inv, "Menus.User-archived-reports", 36, displayName);
+		setReportsItem(inv, "Menus.User-against-reports", 26, displayName);
+		setReportsItem(inv, "Menus.User-against-archived-reports", 44, displayName);
 
 		return inv;
 	}
 
-	private void setReportsItem(Inventory inv, String tag, int slot, String name) {
+	private void setReportsItem(Inventory inv, String tag, int slot, String displayName) {
 		inv.setItem(slot,
-				new CustomItem().type(Material.BOOKSHELF).name(Message.get(tag).replace("_Target_", name)).lore(
-						Message.get(tag + "-details").replace("_Target_", name).split(ConfigUtils.getLineBreakSymbol()))
-						.create());
+		        new CustomItem().type(Material.BOOKSHELF)
+		                .name(Message.get(tag).replace("_Target_", displayName))
+		                .lore(Message.get(tag + "-details")
+		                        .replace("_Target_", displayName)
+		                        .split(ConfigUtils.getLineBreakSymbol()))
+		                .create());
 	}
 
 	@Override
@@ -67,15 +72,15 @@ public class UserMenu extends Menu implements UpdatedMenu {
 					@Override
 					public void run() {
 						String lineBreak = ConfigUtils.getLineBreakSymbol();
-						inv.setItem(8,
-								MenuRawItem.GOLDEN_AXE
-										.name(Message.COOLDOWN_STATUS.get().replace("_Time_",
-												cooldown != null ? cooldown : Message.NONE_FEMALE.get()))
-										.lore(cooldown != null
-												? Message.COOLDOWN_STATUS_DETAILS.get()
-														.replace("_Player_", tu.getName()).split(lineBreak)
-												: null)
-										.create());
+						inv.setItem(8, MenuRawItem.GOLDEN_AXE.clone()
+						        .name(Message.COOLDOWN_STATUS.get()
+						                .replace("_Time_", cooldown != null ? cooldown : Message.NONE_FEMALE.get()))
+						        .lore(cooldown != null
+						                ? Message.COOLDOWN_STATUS_DETAILS.get()
+						                        .replace("_Player_", tu.getDisplayName(false))
+						                        .split(lineBreak)
+						                : null)
+						        .create());
 
 						boolean hasManagePerm = Permission.MANAGE.isOwned(u);
 						String userStatMessage = Message.USER_STATISTIC.get();
@@ -83,10 +88,12 @@ public class UserMenu extends Menu implements UpdatedMenu {
 						for (Statistic stat : Statistic.values()) {
 							int value = statistics.get(stat.getConfigName());
 							inv.setItem(stat.getPosition(),
-									stat.getCustomItem().amount(value)
-											.name(userStatMessage.replace("_Statistic_", stat.getName())
-													.replace("_Amount_", Integer.toString(value)))
-											.lore(hasManagePerm ? userStatDetails : null).create());
+							        stat.getCustomItem()
+							                .amount(value)
+							                .name(userStatMessage.replace("_Statistic_", stat.getName())
+							                        .replace("_Amount_", Integer.toString(value)))
+							                .lore(hasManagePerm ? userStatDetails : null)
+							                .create());
 						}
 					}
 
@@ -100,7 +107,7 @@ public class UserMenu extends Menu implements UpdatedMenu {
 		switch (slot) {
 		case 8:
 			if (tu.getCooldown() != null) {
-				tu.stopCooldown(p.getName(), false);
+				tu.stopCooldown(p.getUniqueId().toString(), false);
 				update(false);
 			}
 			break;

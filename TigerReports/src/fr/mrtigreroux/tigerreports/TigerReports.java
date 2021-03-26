@@ -26,8 +26,7 @@ import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 
 /**
- * @author MrTigreroux
- * Published on: 30/06/2016
+ * @author MrTigreroux Published on: 30/06/2016
  */
 
 public class TigerReports extends JavaPlugin {
@@ -39,8 +38,10 @@ public class TigerReports extends JavaPlugin {
 	private BungeeManager bungeeManager;
 	private UsersManager usersManager;
 	private ReportsManager reportsManager;
+	private VaultManager vaultManager = null;
 
-	public TigerReports() {}
+	public TigerReports() {
+	}
 
 	public void load() {
 		for (ConfigFile configFiles : ConfigFile.values())
@@ -48,6 +49,8 @@ public class TigerReports extends JavaPlugin {
 
 		ReportsNotifier.start();
 		MenuItem.init();
+		if (vaultManager != null)
+			vaultManager.load();
 	}
 
 	@Override
@@ -66,9 +69,11 @@ public class TigerReports extends JavaPlugin {
 		webManager = new WebManager(this);
 
 		PluginDescriptionFile desc = getDescription();
-		if (!desc.getName().equals("TigerReports") || desc.getAuthors().size() != 1 || !desc.getAuthors().contains("MrTigreroux")) {
-			MessageUtils.logSevere(ConfigUtils.getInfoMessage("The file plugin.yml has been edited without authorization.",
-					"Le fichier plugin.yml a ete modifie sans autorisation."));
+		if (!desc.getName().equals("TigerReports") || desc.getAuthors().size() != 1
+		        || !desc.getAuthors().contains("MrTigreroux")) {
+			MessageUtils
+			        .logSevere(ConfigUtils.getInfoMessage("The file plugin.yml has been edited without authorization.",
+			                "Le fichier plugin.yml a ete modifie sans autorisation."));
 			Bukkit.shutdown();
 			return;
 		}
@@ -76,6 +81,7 @@ public class TigerReports extends JavaPlugin {
 		usersManager = new UsersManager();
 		reportsManager = new ReportsManager();
 		bungeeManager = new BungeeManager(this);
+		vaultManager = new VaultManager(pm.getPlugin("Vault") != null);
 
 		initializeDatabase();
 	}
@@ -127,6 +133,10 @@ public class TigerReports extends JavaPlugin {
 		return reportsManager;
 	}
 
+	public VaultManager getVaultManager() {
+		return vaultManager;
+	}
+
 	public void initializeDatabase() {
 		Bukkit.getScheduler().runTaskAsynchronously(instance, new Runnable() {
 
@@ -135,15 +145,18 @@ public class TigerReports extends JavaPlugin {
 				Logger logger = Bukkit.getLogger();
 				try {
 					FileConfiguration config = ConfigFile.CONFIG.get();
-					MySQL mysql = new MySQL(config.getString("MySQL.Host"), config.getInt("MySQL.Port"), config.getString("MySQL.Database"), config
-							.getString("MySQL.Username"), config.getString("MySQL.Password"), ConfigUtils.isEnabled(config, "MySQL.UseSSL"), ConfigUtils.isEnabled(config, "MySQL.VerifyServerCertificate"));
+					MySQL mysql = new MySQL(config.getString("MySQL.Host"), config.getInt("MySQL.Port"),
+					        config.getString("MySQL.Database"), config.getString("MySQL.Username"),
+					        config.getString("MySQL.Password"), ConfigUtils.isEnabled(config, "MySQL.UseSSL"),
+					        ConfigUtils.isEnabled(config, "MySQL.VerifyServerCertificate"));
 					mysql.check();
 					database = mysql;
-					logger.info(ConfigUtils.getInfoMessage("The plugin is using a MySQL database.", "Le plugin utilise une base de donnees MySQL."));
+					logger.info(ConfigUtils.getInfoMessage("The plugin is using a MySQL database.",
+					        "Le plugin utilise une base de donnees MySQL."));
 				} catch (Exception invalidMySQL) {
 					database = new SQLite();
 					logger.info(ConfigUtils.getInfoMessage("The plugin is using the SQLite (default) database.",
-							"Le plugin utilise la base de donnees SQLite (par defaut)."));
+					        "Le plugin utilise la base de donnees SQLite (par defaut)."));
 				}
 				database.initialize();
 			}

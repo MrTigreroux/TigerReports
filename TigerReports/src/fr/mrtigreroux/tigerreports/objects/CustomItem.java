@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.bukkit.Material;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -33,7 +34,7 @@ public class CustomItem {
 	private boolean glow = false;
 
 	public CustomItem(Material material, Integer amount, Short damage, String displayName, List<String> lore,
-			Map<Enchantment, Integer> enchantments, String skullOwner, boolean hideFlags, boolean glow) {
+	        Map<Enchantment, Integer> enchantments, String skullOwner, boolean hideFlags, boolean glow) {
 		this.material = material;
 		this.amount = amount;
 		this.damage = damage;
@@ -45,14 +46,24 @@ public class CustomItem {
 		this.glow = glow;
 	}
 
-	public CustomItem() {}
-	
+	public CustomItem() {
+	}
+
 	public CustomItem clone() {
 		return new CustomItem(material, amount, damage, displayName, lore, enchantments, skullOwner, hideFlags, glow);
 	}
 
+	public CustomItem fromConfig(FileConfiguration configFile, String path) {
+		Material material = ConfigUtils.getMaterial(configFile, path);
+		this.material = material != null ? material : Material.PAPER;
+		this.damage = ConfigUtils.getDamage(configFile, path);
+		this.skullOwner = ConfigUtils.getSkull(configFile, path);
+		return this;
+	}
+
 	public Material getMaterial() {
-		return skullOwner == null ? material : (VersionUtils.isVersionLess1_13() ? Material.matchMaterial("SKULL_ITEM") : Material.PLAYER_HEAD);
+		return skullOwner == null ? material
+		        : (VersionUtils.isVersionLess1_13() ? Material.matchMaterial("SKULL_ITEM") : Material.PLAYER_HEAD);
 	}
 
 	public Integer getAmount() {
@@ -105,7 +116,7 @@ public class CustomItem {
 			this.lore = Arrays.asList(strings);
 		return this;
 	}
-	
+
 	public CustomItem details(String details) {
 		return this.lore(details != null ? details.split(ConfigUtils.getLineBreakSymbol()) : null);
 	}
@@ -150,8 +161,8 @@ public class CustomItem {
 		if (displayName != null || lore != null || hideFlags) {
 			ItemMeta itemM = item.getItemMeta();
 			if (hideFlags && !VersionUtils.isOldVersion())
-				itemM.addItemFlags(ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_POTION_EFFECTS, ItemFlag.HIDE_UNBREAKABLE,
-						ItemFlag.HIDE_DESTROYS, ItemFlag.HIDE_PLACED_ON);
+				itemM.addItemFlags(ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_POTION_EFFECTS,
+				        ItemFlag.HIDE_UNBREAKABLE, ItemFlag.HIDE_DESTROYS, ItemFlag.HIDE_PLACED_ON);
 			if (glow) {
 				if (enchantments == null || enchantments.size() == 0)
 					enchant(Enchantment.WATER_WORKER, 1);

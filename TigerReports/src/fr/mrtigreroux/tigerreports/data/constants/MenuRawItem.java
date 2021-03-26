@@ -7,7 +7,8 @@ import fr.mrtigreroux.tigerreports.utils.VersionUtils;
 
 public class MenuRawItem {
 
-	public static CustomItem GUI, GREEN_CLAY, RED_CLAY, YELLOW_CLAY, BLUE_CLAY, BLACK_CLAY, GOLDEN_AXE, WRITABLE_BOOK, EMPTY_MAP;
+	public static CustomItem GUI, GREEN_CLAY, RED_CLAY, YELLOW_CLAY, BLUE_CLAY, BLACK_CLAY, GOLDEN_AXE, WRITABLE_BOOK,
+	        EMPTY_MAP;
 
 	public static void init() {
 		if (VersionUtils.isVersionLess1_13()) {

@@ -11,9 +11,9 @@ import fr.mrtigreroux.tigerreports.objects.CustomItem;
 
 public enum Status {
 
-	WAITING(Message.WAITING, Material.PAPER, MenuRawItem.GREEN_CLAY),
-	IN_PROGRESS(Message.IN_PROGRESS, Material.PAPER, MenuRawItem.YELLOW_CLAY),
-	IMPORTANT(Message.IMPORTANT, MenuRawItem.EMPTY_MAP, MenuRawItem.RED_CLAY),
+	WAITING(Message.WAITING, Material.PAPER, MenuRawItem.GREEN_CLAY.clone()),
+	IN_PROGRESS(Message.IN_PROGRESS, Material.PAPER, MenuRawItem.YELLOW_CLAY.clone()),
+	IMPORTANT(Message.IMPORTANT, MenuRawItem.EMPTY_MAP.clone(), MenuRawItem.RED_CLAY.clone()),
 	DONE(Message.DONE, Material.BOOK, MenuRawItem.BLUE_CLAY);
 
 	private final Message word;

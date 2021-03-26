@@ -54,9 +54,9 @@ public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu {
 			@Override
 			public void run() {
 				List<Map<String, Object>> results = tr.getDb()
-						.query("SELECT * FROM tigerreports_comments WHERE report_id = ? LIMIT 28 OFFSET ?",
-								Arrays.asList(r.getId(), first))
-						.getResultList();
+				        .query("SELECT * FROM tigerreports_comments WHERE report_id = ? LIMIT 28 OFFSET ?",
+				                Arrays.asList(r.getId(), first))
+				        .getResultList();
 
 				Bukkit.getScheduler().runTask(tr, new Runnable() {
 
@@ -124,7 +124,7 @@ public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu {
 										((OnlineUser) ru).sendCommentNotification(r, c, true);
 									} else if (isPrivate && UserUtils.isOnline(ru.getName())) {
 										tr.getBungeeManager().sendPluginNotification(
-												reportId + " comment " + commentId + " " + ru.getName());
+										        reportId + " comment " + commentId + " " + ru.getName());
 									} else {
 										Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
 
@@ -140,7 +140,7 @@ public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu {
 												}
 												ru.setNotifications(notifications);
 											}
-											
+
 										});
 									}
 									break;

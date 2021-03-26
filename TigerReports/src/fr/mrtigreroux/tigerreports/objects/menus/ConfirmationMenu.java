@@ -35,12 +35,12 @@ public class ConfirmationMenu extends ReportManagerMenu {
 			inv.setItem(position, gui);
 
 		inv.setItem(11,
-				MenuRawItem.GREEN_CLAY.name(Message.valueOf("CONFIRM_" + actionDisplayed).get())
+				MenuRawItem.GREEN_CLAY.clone().name(Message.valueOf("CONFIRM_" + actionDisplayed).get())
 						.lore(Message.valueOf("CONFIRM_" + actionDisplayed + "_DETAILS").get()
 								.replace("_Report_", report).split(ConfigUtils.getLineBreakSymbol()))
 						.create());
 		inv.setItem(13, r.getItem(null));
-		inv.setItem(15, MenuRawItem.RED_CLAY.name(Message.valueOf("CANCEL_" + actionDisplayed).get()).lore(
+		inv.setItem(15, MenuRawItem.RED_CLAY.clone().name(Message.valueOf("CANCEL_" + actionDisplayed).get()).lore(
 				Message.valueOf("CANCEL_" + actionDisplayed + "_DETAILS").get().split(ConfigUtils.getLineBreakSymbol()))
 				.create());
 
@@ -57,13 +57,13 @@ public class ConfirmationMenu extends ReportManagerMenu {
 
 			switch (action) {
 			case "DELETE":
-				r.delete(p.getName(), false);
+				r.delete(p.getUniqueId().toString(), false);
 				break;
 			case "DELETE_ARCHIVE":
-				r.deleteFromArchives(p.getName(), false);
+				r.deleteFromArchives(p.getUniqueId().toString(), false);
 				break;
 			default:
-				r.archive(p.getName(), false);
+				r.archive(p.getUniqueId().toString(), false);
 				break;
 			}
 			u.openDelayedlyReportsMenu();

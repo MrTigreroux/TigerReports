@@ -17,8 +17,10 @@ public enum MenuItem {
 	PAGE_SWITCH_PREVIOUS(Material.FEATHER, Message.PAGE_SWITCH_PREVIOUS),
 	PAGE_SWITCH_NEXT(Material.FEATHER, Message.PAGE_SWITCH_NEXT),
 
-	REASONS(Material.BOOK, Message.REASONS), REPORTS(Material.BOOKSHELF, Message.REPORTS),
-	ARCHIVED_REPORTS(Material.BOOKSHELF, Message.ARCHIVED_REPORTS), DATA(Material.ENCHANTED_BOOK, Message.DATA),
+	REASONS(Material.BOOK, Message.REASONS),
+	REPORTS(Material.BOOKSHELF, Message.REPORTS),
+	ARCHIVED_REPORTS(Material.BOOKSHELF, Message.ARCHIVED_REPORTS),
+	DATA(Material.ENCHANTED_BOOK, Message.DATA),
 	DELETE(Material.FLINT_AND_STEEL, Message.DELETE, Message.DELETE_DETAILS.get(), false),
 	COMMENTS(Material.WRITTEN_BOOK, Message.COMMENTS, true),
 	CANCEL_PROCESS(Material.FEATHER, Message.CANCEL_PROCESS, Message.CANCEL_PROCESS_DETAILS.get(), false);
@@ -64,10 +66,11 @@ public enum MenuItem {
 	}
 
 	public static void init() {
-		ARCHIVE = getCustomItem(MenuRawItem.BLACK_CLAY, Message.ARCHIVE, Message.ARCHIVE_DETAILS);
-		PUNISHMENTS = getCustomItem(MenuRawItem.GOLDEN_AXE, Message.PUNISHMENTS);
-		PUNISH_ABUSE = getCustomItem(MenuRawItem.GOLDEN_AXE, Message.PUNISH_ABUSE);
-		WRITE_COMMENT = getCustomItem(MenuRawItem.WRITABLE_BOOK, Message.WRITE_COMMENT, Message.WRITE_COMMENT_DETAILS);
+		ARCHIVE = getCustomItem(MenuRawItem.BLACK_CLAY.clone(), Message.ARCHIVE, Message.ARCHIVE_DETAILS);
+		PUNISHMENTS = getCustomItem(MenuRawItem.GOLDEN_AXE.clone(), Message.PUNISHMENTS);
+		PUNISH_ABUSE = getCustomItem(MenuRawItem.GOLDEN_AXE.clone(), Message.PUNISH_ABUSE);
+		WRITE_COMMENT = getCustomItem(MenuRawItem.WRITABLE_BOOK.clone(), Message.WRITE_COMMENT,
+		        Message.WRITE_COMMENT_DETAILS);
 	}
 
 	private static CustomItem getCustomItem(CustomItem rawItem, Message name) {

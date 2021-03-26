@@ -29,7 +29,7 @@ public enum Statistic {
 	}
 
 	Statistic(int position, Message name, Message appreciation, CustomItem customItem) {
-		this(position, name, null, null, (short) 0);
+		this(position, name, appreciation, null, (short) 0);
 		this.customItem = customItem;
 	}
 

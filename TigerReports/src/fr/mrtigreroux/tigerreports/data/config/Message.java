@@ -1,9 +1,6 @@
 package fr.mrtigreroux.tigerreports.data.config;
 
-import org.apache.commons.lang.StringEscapeUtils;
-import org.bukkit.ChatColor;
-
-import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
+import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 
 /**
  * @author MrTigreroux
@@ -200,20 +197,15 @@ public enum Message {
 	}
 
 	public String get() {
-		return ChatColor.translateAlternateColorCodes(ConfigUtils.getColorCharacter(), StringEscapeUtils.unescapeJava(ConfigFile.MESSAGES.get()
-				.getString(path)));
+		return MessageUtils.translateColorCodes(ConfigFile.MESSAGES.get().getString(path));
 	}
 
 	public String getPath() {
 		return path;
 	}
 
-	public static String formatMessage(String message) {
-		return ChatColor.translateAlternateColorCodes(ConfigUtils.getColorCharacter(), StringEscapeUtils.unescapeJava(message));
-	}
-
 	public static String get(String path) {
-		return formatMessage(ConfigFile.MESSAGES.get().getString(path));
+		return MessageUtils.translateColorCodes(ConfigFile.MESSAGES.get().getString(path));
 	}
 
 }

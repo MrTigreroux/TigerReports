@@ -61,10 +61,10 @@ public class BungeeManager implements PluginMessageListener {
 			messenger.registerIncomingPluginChannel(plugin, "BungeeCord", this);
 			initialized = true;
 			Bukkit.getLogger().info(
-					ConfigUtils.getInfoMessage("The plugin is using BungeeCord.", "Le plugin utilise BungeeCord."));
+			        ConfigUtils.getInfoMessage("The plugin is using BungeeCord.", "Le plugin utilise BungeeCord."));
 		} else {
 			Bukkit.getLogger().info(ConfigUtils.getInfoMessage("The plugin is not using BungeeCord.",
-					"Le plugin n'utilise pas BungeeCord."));
+			        "Le plugin n'utilise pas BungeeCord."));
 		}
 	}
 
@@ -180,29 +180,24 @@ public class BungeeManager implements PluginMessageListener {
 				message = message.substring(index + 1);
 				String[] parts = message.split(" ");
 
-				String[] userParts = new String[0];
-				if (parts[0] != null)
-					userParts = parts[0].split("/");
-
 				switch (parts[1]) {
 				case "new_report":
 					Report r = new Report(Integer.parseInt(parts[0]), Status.WAITING.getConfigWord(), "None",
-							parts[2].replace("_", " "), parts[3], parts[4], parts[5].replace("_", " "));
+					        parts[2].replace("_", " "), parts[3], parts[4], parts[5].replace("_", " "));
 					ReportUtils.sendReport(r, parts[6], notify);
 					if (notify && parts[7].equals("true"))
 						implementMissingData(r);
 					break;
 				case "new_status":
-					String[] statusParts = parts[0].split("-");
-					getReport(parts).setStatus(Status.valueOf(statusParts[0]), statusParts[1], true);
+					getReport(parts).setStatus(Status.valueOf(parts[0]), parts[3], true);
 					break;
 				case "process":
-					getReport(parts).process(userParts[0], userParts[1], parts[4], true, parts[3].equals("1"), notify);
+					getReport(parts).process(parts[0], parts[4], true, parts[3].equals("1"), notify);
 					break;
 				case "process_punish":
 					String auto = parts[3];
-					getReport(parts).processPunishing(userParts[0], userParts[1], true, parts[3].equals("1"),
-							message.substring(message.indexOf(auto) + 2), notify);
+					getReport(parts).processPunishing(parts[0], true, parts[3].equals("1"),
+					        message.substring(message.indexOf(auto) + 2), notify);
 					break;
 				case "delete":
 					getReport(parts).delete(notify ? parts[0] : null, true);
@@ -315,14 +310,14 @@ public class BungeeManager implements PluginMessageListener {
 			return;
 		OnlineUser ru = plugin.getUsersManager().getOnlineUser(rp);
 		plugin.getDb().updateAsynchronously(
-				"UPDATE tigerreports_reports SET reported_ip=?,reported_location=?,reported_messages=?,reported_gamemode=?,reported_on_ground=?,reported_sneak=?,reported_sprint=?,reported_health=?,reported_food=?,reported_effects=? WHERE report_id=?",
-				Arrays.asList(rp.getAddress().getAddress().toString(),
-						MessageUtils.formatConfigLocation(rp.getLocation()), ru.getLastMessages(),
-						rp.getGameMode().toString().toLowerCase(),
-						!rp.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().equals(Material.AIR),
-						rp.isSneaking(), rp.isSprinting(),
-						(int) Math.round(rp.getHealth()) + "/" + (int) Math.round(rp.getMaxHealth()), rp.getFoodLevel(),
-						MessageUtils.formatConfigEffects(rp.getActivePotionEffects()), r.getId()));
+		        "UPDATE tigerreports_reports SET reported_ip=?,reported_location=?,reported_messages=?,reported_gamemode=?,reported_on_ground=?,reported_sneak=?,reported_sprint=?,reported_health=?,reported_food=?,reported_effects=? WHERE report_id=?",
+		        Arrays.asList(rp.getAddress().getAddress().toString(),
+		                MessageUtils.formatConfigLocation(rp.getLocation()), ru.getLastMessages(),
+		                rp.getGameMode().toString().toLowerCase(),
+		                !rp.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().equals(Material.AIR),
+		                rp.isSneaking(), rp.isSprinting(),
+		                (int) Math.round(rp.getHealth()) + "/" + (int) Math.round(rp.getMaxHealth()), rp.getFoodLevel(),
+		                MessageUtils.formatConfigEffects(rp.getActivePotionEffects()), r.getId()));
 	}
 
 	public void collectOnlinePlayers() {

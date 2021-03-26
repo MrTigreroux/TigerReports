@@ -27,7 +27,8 @@ public class UsersManager {
 	private final Map<String, String> lastUniqueIdFound = new HashMap<>();
 	private final List<String> exemptedPlayers = new ArrayList<>();
 
-	public UsersManager() {}
+	public UsersManager() {
+	}
 
 	public void addExemptedPlayer(String name) {
 		if (name != null && !exemptedPlayers.contains(name))
@@ -103,36 +104,53 @@ public class UsersManager {
 			lastUniqueIdFound.put(name, uuid);
 			return uuid;
 		}
-		Bukkit.getLogger()
-				.warning(ConfigUtils.getInfoMessage("The UUID of the name <"+name+"> was not found.", "L'UUID du pseudo <"+name
-						+"> n'a pas ete trouve."));
+		Bukkit.getLogger().warning(ConfigUtils.getInfoMessage("The UUID of the name <" + name + "> was not found.",
+		        "L'UUID du pseudo <" + name + "> n'a pas ete trouve."));
 		return null;
 	}
 
 	public String getName(String uuid, UUID uniqueId) {
+		return getName(uuid, uniqueId, null);
+	}
+
+	public String getName(String uuid, UUID uniqueId, OfflinePlayer p) {
 		if (uniqueId != null) {
 			String name = lastNameFound.get(uuid);
 			if (name == null) {
-				OfflinePlayer p = Bukkit.getOfflinePlayer(uniqueId);
-				if (p != null)
+				if (p == null) {
+					p = Bukkit.getOfflinePlayer(uniqueId);
+				}
+				if (p != null) {
 					name = p.getName();
+				}
 			}
 			if (name == null)
 				try {
-					name = (String) TigerReports.getInstance()
-							.getDb()
-							.query("SELECT name FROM tigerreports_users WHERE uuid = ?", Arrays.asList(uuid))
-							.getResult(0, "name");
-				} catch (Exception nameNotFound) {}
+					name = (String) TigerReports.getInstance().getDb()
+					        .query("SELECT name FROM tigerreports_users WHERE uuid = ?", Arrays.asList(uuid))
+					        .getResult(0, "name");
+				} catch (Exception nameNotFound) {
+				}
 			if (name != null) {
 				lastNameFound.put(uuid, name);
 				return name;
 			}
 		}
-		Bukkit.getLogger()
-				.warning(ConfigUtils.getInfoMessage("The name of the UUID <"+uuid+"> was not found.", "Le pseudo de l'UUID <"+uuid
-						+"> n'a pas ete trouve."));
+		Bukkit.getLogger().warning(ConfigUtils.getInfoMessage("The name of the UUID <" + uuid + "> was not found.",
+		        "Le pseudo de l'UUID <" + uuid + "> n'a pas ete trouve."));
 		return null;
+	}
+
+	public String getDisplayName(String uuid, UUID uniqueId, boolean staff) {
+		String name = null;
+		OfflinePlayer p = null;
+		if (uniqueId != null) {
+			p = Bukkit.getOfflinePlayer(uniqueId);
+			if (p != null) {
+				name = TigerReports.getInstance().getVaultManager().getPlayerDisplayName(p, staff);
+			}
+		}
+		return name != null ? name : getName(uuid, uniqueId, p);
 	}
 
 }

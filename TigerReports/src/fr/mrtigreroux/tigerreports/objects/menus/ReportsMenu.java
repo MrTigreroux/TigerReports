@@ -36,15 +36,16 @@ public class ReportsMenu extends Menu implements UpdatedMenu {
 
 	@Override
 	public void onUpdate(Inventory inv) {
-		ReportUtils.addReports(null, null, false, inv, page, Message.REPORT_SHOW_ACTION.get(), Permission.STAFF_ARCHIVE.isOwned(u), Permission.STAFF_DELETE
-				.isOwned(u) ? Message.REPORT_DELETE_ACTION.get() : "");
+		ReportUtils.addReports(null, null, false, inv, page, Message.REPORT_SHOW_ACTION.get(),
+		        Permission.STAFF_ARCHIVE.isOwned(u),
+		        Permission.STAFF_DELETE.isOwned(u) ? Message.REPORT_DELETE_ACTION.get() : "");
 	}
 
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
 		if (slot == 8 && Permission.STAFF_ARCHIVE.isOwned(u)) {
 			u.openArchivedReportsMenu(1, true);
-		} else if (slot >= 18 && slot <= size-9) {
+		} else if (slot >= 18 && slot <= size - 9) {
 			TigerReports tr = TigerReports.getInstance();
 			Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
 

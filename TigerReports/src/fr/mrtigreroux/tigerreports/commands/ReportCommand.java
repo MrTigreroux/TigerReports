@@ -76,7 +76,8 @@ public class ReportCommand implements TabExecutor {
 			reportedName = rp.getName();
 		}
 
-		if (ReportUtils.onlinePlayerRequired() && (!UserUtils.isOnline(reportedName) || (rp != null && !p.canSee(rp)))) {
+		if (ReportUtils.onlinePlayerRequired()
+		        && (!UserUtils.isOnline(reportedName) || (rp != null && !p.canSee(rp)))) {
 			MessageUtils.sendErrorMessage(p, Message.REPORTED_OFFLINE.get().replace("_Player_", reportedName));
 			return true;
 		}
@@ -87,9 +88,8 @@ public class ReportCommand implements TabExecutor {
 			if (reportedImmunity.equals("always")) {
 				MessageUtils.sendErrorMessage(p, Message.PERMISSION_REPORT.get().replace("_Player_", reportedName));
 			} else {
-				MessageUtils.sendErrorMessage(p, Message.PLAYER_ALREADY_REPORTED.get()
-						.replace("_Player_", reportedName)
-						.replace("_Time_", reportedImmunity));
+				MessageUtils.sendErrorMessage(p, Message.PLAYER_ALREADY_REPORTED.get().replace("_Player_", reportedName)
+				        .replace("_Time_", reportedImmunity));
 			}
 			return true;
 		}
@@ -113,7 +113,7 @@ public class ReportCommand implements TabExecutor {
 
 		if (!ConfigUtils.isEnabled(configFile, "Config.CustomReasons")) {
 			for (int reasonNumber = 1; reasonNumber <= 100; reasonNumber++) {
-				String defaultReason = configFile.getString("Config.DefaultReasons.Reason"+reasonNumber+".Name");
+				String defaultReason = configFile.getString("Config.DefaultReasons.Reason" + reasonNumber + ".Name");
 				if (defaultReason == null) {
 					u.openReasonMenu(1, ru);
 					return true;
@@ -138,8 +138,8 @@ public class ReportCommand implements TabExecutor {
 				Report r = null;
 				if (ReportUtils.stackReports()) {
 					Map<String, Object> result = db.query(
-							"SELECT report_id,status,appreciation,date,reported_uuid,reporter_uuid,reason FROM tigerreports_reports WHERE status NOT LIKE ? AND reported_uuid = ? AND archived = ? AND LOWER(reason) = LOWER(?) LIMIT 1",
-							Arrays.asList(Status.DONE.getConfigWord()+"%", ruuid, 0, freason)).getResult(0);
+					        "SELECT report_id,status,appreciation,date,reported_uuid,reporter_uuid,reason FROM tigerreports_reports WHERE status NOT LIKE ? AND reported_uuid = ? AND archived = ? AND LOWER(reason) = LOWER(?) LIMIT 1",
+					        Arrays.asList(Status.DONE.getConfigWord() + "%", ruuid, 0, freason)).getResult(0);
 					if (result != null) {
 						try {
 							String reporterUuid = (String) result.get("reporter_uuid");
@@ -148,58 +148,65 @@ public class ReportCommand implements TabExecutor {
 
 									@Override
 									public void run() {
-										MessageUtils.sendErrorMessage(p, Message.get("ErrorMessages.Player-already-reported-by-you")
-												.replace("_Player_", freportedName)
-												.replace("_Reason_", freason));
+										MessageUtils.sendErrorMessage(p,
+										        Message.get("ErrorMessages.Player-already-reported-by-you")
+										                .replace("_Player_", freportedName)
+										                .replace("_Reason_", freason));
 									}
 
 								});
 								return;
 							}
 
-							reporterUuid += ","+uuid;
+							reporterUuid += "," + uuid;
 							result.put("reporter_uuid", reporterUuid);
 							r = ReportUtils.formatEssentialOfReport(result);
 							if (r != null) {
 								reportId = r.getId();
 								if (ConfigUtils.isEnabled(configFile, "Config.UpdateDateOfStackedReports")) {
-									db.update("UPDATE tigerreports_reports SET reporter_uuid = ?, date = ? WHERE report_id = ?", Arrays.asList(
-											reporterUuid, date, reportId));
+									db.update(
+									        "UPDATE tigerreports_reports SET reporter_uuid = ?, date = ? WHERE report_id = ?",
+									        Arrays.asList(reporterUuid, date, reportId));
 								} else {
-									db.update("UPDATE tigerreports_reports SET reporter_uuid = ? WHERE report_id = ?", Arrays.asList(reporterUuid,
-											reportId));
+									db.update("UPDATE tigerreports_reports SET reporter_uuid = ? WHERE report_id = ?",
+									        Arrays.asList(reporterUuid, reportId));
 								}
 							}
 
-						} catch (Exception invalidReport) {}
+						} catch (Exception invalidReport) {
+						}
 					}
 				}
 
 				boolean missingData = false;
 				if (r == null) {
-					reportId = (reportId = ReportUtils.getTotalReports()+1) <= ReportUtils.getMaxReports() ? reportId : -1;
+					reportId = (reportId = ReportUtils.getTotalReports() + 1) <= ReportUtils.getMaxReports() ? reportId
+					        : -1;
 
 					if (reportId != -1) {
 						List<Object> parameters;
 						if (rp != null) {
-							parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", date, ruuid, uuid, freason, rp.getAddress()
-									.getAddress()
-									.toString(), MessageUtils.formatConfigLocation(rp.getLocation()), ru.getLastMessages(), rp.getGameMode()
-											.toString()
-											.toLowerCase(), !rp.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().equals(Material.AIR),
-									rp.isSneaking(), rp.isSprinting(), (int) Math.round(rp.getHealth())+"/"+(int) Math.round(rp.getMaxHealth()), rp
-											.getFoodLevel(), MessageUtils.formatConfigEffects(rp.getActivePotionEffects()), p.getAddress()
-													.getAddress()
-													.toString(), MessageUtils.formatConfigLocation(p.getLocation()), u.getLastMessages());
+							parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", date, ruuid, uuid,
+							        freason, rp.getAddress().getAddress().toString(),
+							        MessageUtils.formatConfigLocation(rp.getLocation()), ru.getLastMessages(),
+							        rp.getGameMode().toString().toLowerCase(),
+							        !rp.getLocation().getBlock().getRelative(BlockFace.DOWN).getType()
+							                .equals(Material.AIR),
+							        rp.isSneaking(), rp.isSprinting(),
+							        (int) Math.round(rp.getHealth()) + "/" + (int) Math.round(rp.getMaxHealth()),
+							        rp.getFoodLevel(), MessageUtils.formatConfigEffects(rp.getActivePotionEffects()),
+							        p.getAddress().getAddress().toString(),
+							        MessageUtils.formatConfigLocation(p.getLocation()), u.getLastMessages());
 						} else {
 							missingData = true;
-							parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", date, ruuid, uuid, freason, null, null, ru
-									.getLastMessages(), null, null, null, null, null, null, null, p.getAddress().toString(), MessageUtils
-											.formatConfigLocation(p.getLocation()), u.getLastMessages());
+							parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", date, ruuid, uuid,
+							        freason, null, null, ru.getLastMessages(), null, null, null, null, null, null, null,
+							        p.getAddress().toString(), MessageUtils.formatConfigLocation(p.getLocation()),
+							        u.getLastMessages());
 						}
 						reportId = db.insert(
-								"INSERT INTO tigerreports_reports (status,appreciation,date,reported_uuid,reporter_uuid,reason,reported_ip,reported_location,reported_messages,reported_gamemode,reported_on_ground,reported_sneak,reported_sprint,reported_health,reported_food,reported_effects,reporter_ip,reporter_location,reporter_messages) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);",
-								parameters);
+						        "INSERT INTO tigerreports_reports (status,appreciation,date,reported_uuid,reporter_uuid,reason,reported_ip,reported_location,reported_messages,reported_gamemode,reported_on_ground,reported_sneak,reported_sprint,reported_health,reported_food,reported_effects,reporter_ip,reporter_location,reporter_messages) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);",
+						        parameters);
 					}
 
 					r = new Report(reportId, Status.WAITING.getConfigWord(), "None", date, ruuid, uuid, freason);
@@ -216,11 +223,12 @@ public class ReportCommand implements TabExecutor {
 						String server = bm.getServerName();
 
 						ReportUtils.sendReport(fr, server, true);
-						s.sendMessage(Message.REPORT_SENT.get()
-								.replace("_Player_", fr.getPlayerName("Reported", false, false))
-								.replace("_Reason_", freason));
-						bm.sendPluginNotification(fr.getId()+" new_report "+date.replace(" ", "_")+" "+ruuid+" "+fr.getLastReporterUniqueId()+" "
-								+freason.replace(" ", "_")+" "+server+" "+fmissingData);
+						s.sendMessage(
+						        Message.REPORT_SENT.get().replace("_Player_", fr.getPlayerName("Reported", false, true))
+						                .replace("_Reason_", freason));
+						bm.sendPluginNotification(fr.getId() + " new_report " + date.replace(" ", "_") + " " + ruuid
+						        + " " + fr.getLastReporterUniqueId() + " " + freason.replace(" ", "_") + " " + server
+						        + " " + fmissingData);
 
 						u.startCooldown(ReportUtils.getCooldown(), false);
 						ru.startImmunity(false);
@@ -230,11 +238,10 @@ public class ReportCommand implements TabExecutor {
 						String reported = fr.getPlayerName("Reported", false, false);
 
 						for (String command : configFile.getStringList("Config.AutoCommands"))
-							Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("_Server_", server)
-									.replace("_Date_", date)
-									.replace("_Reporter_", p.getName())
-									.replace("_Reported_", reported)
-									.replace("_Reason_", freason));
+							Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
+							        command.replace("_Server_", server).replace("_Date_", date)
+							                .replace("_Reporter_", p.getName()).replace("_Reported_", reported)
+							                .replace("_Reason_", freason));
 					}
 				});
 
@@ -247,8 +254,10 @@ public class ReportCommand implements TabExecutor {
 
 	@Override
 	public List<String> onTabComplete(CommandSender s, Command cmd, String label, String[] args) {
-		return args.length == 1 && s instanceof Player ? StringUtil.copyPartialMatches(args[0], UserUtils.getOnlinePlayersForPlayer((Player) s,
-				true), new ArrayList<>()) : new ArrayList<>();
+		return args.length == 1 && s instanceof Player
+		        ? StringUtil.copyPartialMatches(args[0], UserUtils.getOnlinePlayersForPlayer((Player) s, true),
+		                new ArrayList<>())
+		        : new ArrayList<>();
 	}
 
 }

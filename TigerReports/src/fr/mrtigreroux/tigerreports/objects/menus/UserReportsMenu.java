@@ -22,8 +22,9 @@ public class UserReportsMenu extends UserManagerMenu implements UpdatedMenu {
 
 	@Override
 	public void onUpdate(Inventory inv) {
-		ReportUtils.addReports(tu.getUniqueId(), null, false, inv, page, Message.REPORT_SHOW_ACTION.get(), Permission.STAFF_ARCHIVE.isOwned(u),
-				Permission.STAFF_DELETE.isOwned(u) ? Message.REPORT_DELETE_ACTION.get() : "");
+		ReportUtils.addReports(tu.getUniqueId(), null, false, inv, page, Message.REPORT_SHOW_ACTION.get(),
+		        Permission.STAFF_ARCHIVE.isOwned(u),
+		        Permission.STAFF_DELETE.isOwned(u) ? Message.REPORT_DELETE_ACTION.get() : "");
 	}
 
 	@Override

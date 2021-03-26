@@ -34,7 +34,7 @@ public class Report {
 	private Map<String, String> advancedData = null;
 
 	public Report(int reportId, String status, String appreciation, String date, String reportedUniqueId,
-			String reporterUniqueId, String reason) {
+	        String reporterUniqueId, String reason) {
 		this.reportId = reportId;
 		this.status = status;
 		this.appreciation = appreciation;
@@ -73,17 +73,21 @@ public class Report {
 		return reporterUniqueId.contains(",");
 	}
 
-	public String getPlayerName(String type, boolean suffix, boolean color) {
-		return getPlayerName(type.equals("Reported") ? reportedUniqueId : getReportersUniqueIds()[0], type, suffix,
-				color);
+	public String getPlayerName(String type, boolean onlineSuffix, boolean color) {
+		return getPlayerName(type.equals("Reported") ? reportedUniqueId : getReportersUniqueIds()[0], type,
+		        onlineSuffix, color);
 	}
 
-	public String getPlayerName(String uuid, String type, boolean suffix, boolean color) {
+	public String getPlayerName(String uuid, String type, boolean onlineSuffix, boolean color) {
 		String name = UserUtils.getName(uuid);
-		return name != null ? (color ? Message.valueOf(type.toUpperCase() + "_NAME").get().replace("_Player_", name)
-				: name)
-				+ (suffix ? Message.valueOf((UserUtils.isOnline(name) ? "ONLINE" : "OFFLINE") + "_SUFFIX").get() : "")
-				: Message.NOT_FOUND_MALE.get();
+		return name != null ? (color
+		        ? Message.valueOf(type.toUpperCase() + "_NAME")
+		                .get()
+		                .replace("_Player_", UserUtils.getDisplayName(uuid, false))
+		        : name)
+		        + (onlineSuffix ? Message.valueOf((UserUtils.isOnline(name) ? "ONLINE" : "OFFLINE") + "_SUFFIX").get()
+		                : "")
+		        : Message.NOT_FOUND_MALE.get();
 	}
 
 	public String getReportersNames(int first) {
@@ -103,15 +107,15 @@ public class Report {
 		TigerReports tr = TigerReports.getInstance();
 		this.status = status.getConfigWord() + (status == Status.IN_PROGRESS ? "-" + staffUuid : "");
 		if (!bungee) {
-			tr.getBungeeManager().sendPluginNotification(status + " new_status " + reportId);
-			tr.getDb().updateAsynchronously("UPDATE tigerreports_reports SET status = ? WHERE report_id = ?",
-					Arrays.asList(this.status, reportId));
+			tr.getBungeeManager().sendPluginNotification(status + " new_status " + reportId + " " + staffUuid);
+			tr.getDb()
+			        .updateAsynchronously("UPDATE tigerreports_reports SET status = ? WHERE report_id = ?",
+			                Arrays.asList(this.status, reportId));
 		}
 
 		try {
 			Bukkit.getServer().getPluginManager().callEvent(new ReportStatusChangeEvent(this, status.getConfigWord()));
-		} catch (Exception ignored) {
-		}
+		} catch (Exception ignored) {}
 	}
 
 	public Status getStatus() {
@@ -120,8 +124,8 @@ public class Report {
 
 	public String getReason(boolean menu) {
 		return reason != null
-				? menu ? MessageUtils.getMenuSentence(reason, Message.REPORT_DETAILS, "_Reason_", true) : reason
-				: Message.NOT_FOUND_FEMALE.get();
+		        ? menu ? MessageUtils.getMenuSentence(reason, Message.REPORT_DETAILS, "_Reason_", true) : reason
+		        : Message.NOT_FOUND_FEMALE.get();
 	}
 
 	public String getAppreciation(boolean config) {
@@ -131,8 +135,8 @@ public class Report {
 			return appreciationWord;
 		try {
 			return appreciation != null && !appreciation.equalsIgnoreCase("None")
-					? Message.valueOf(appreciationWord.toUpperCase()).get()
-					: Message.NONE_FEMALE.get();
+			        ? Message.valueOf(appreciationWord.toUpperCase()).get()
+			        : Message.NONE_FEMALE.get();
 		} catch (Exception invalidAppreciation) {
 			return Message.NONE_FEMALE.get();
 		}
@@ -141,7 +145,7 @@ public class Report {
 	public String getStaffOfStatus(String prefix) {
 		String staff = null;
 		if (status != null && status.startsWith(prefix))
-			staff = UserUtils.getName(status.replaceFirst(prefix, ""));
+			staff = UserUtils.getDisplayName(status.replaceFirst(prefix, ""), true);
 		return staff != null ? staff : Message.NOT_FOUND_MALE.get();
 	}
 
@@ -162,15 +166,17 @@ public class Report {
 		Status status = getStatus();
 		String reportersNames = isStackedReport() ? getReportersNames(0) : getPlayerName("Reporter", true, true);
 		String suffix = getAppreciation(true).equalsIgnoreCase("true")
-				? Message.get("Words.Done-suffix.True-appreciation").replace("_Punishment_", getPunishment())
-				: Message.get("Words.Done-suffix.Other-appreciation").replace("_Appreciation_", getAppreciation(false));
+		        ? Message.get("Words.Done-suffix.True-appreciation").replace("_Punishment_", getPunishment())
+		        : Message.get("Words.Done-suffix.Other-appreciation").replace("_Appreciation_", getAppreciation(false));
 		return message
-				.replace("_Status_",
-						status.equals(Status.DONE) ? status.getWord(getProcessor()) + suffix
-								: status.equals(Status.IN_PROGRESS) ? status.getWord(getProcessingStaff(), true)
-										: status.getWord(null))
-				.replace("_Date_", getDate()).replace("_Reporters_", reportersNames)
-				.replace("_Reported_", getPlayerName("Reported", true, true)).replace("_Reason_", getReason(menu));
+		        .replace("_Status_",
+		                status.equals(Status.DONE) ? status.getWord(getProcessor()) + suffix
+		                        : status.equals(Status.IN_PROGRESS) ? status.getWord(getProcessingStaff(), true)
+		                                : status.getWord(null))
+		        .replace("_Date_", getDate())
+		        .replace("_Reporters_", reportersNames)
+		        .replace("_Reported_", getPlayerName("Reported", true, true))
+		        .replace("_Reason_", getReason(menu));
 	}
 
 	public void setAdvancedData(Map<String, String> advancedData) {
@@ -191,46 +197,49 @@ public class Report {
 				for (String effect : effectsList.split(",")) {
 					String type = effect.split(":")[0].replace("_", " ");
 					String duration = effect.split("/")[1];
-					effectsLines.append(
-							Message.EFFECT.get().replace("_Type_", type.charAt(0) + type.substring(1).toLowerCase())
-									.replace("_Amplifier_", effect.split(":")[1].replace("/" + duration, ""))
-									.replace("_Duration_", Long.toString(Long.parseLong(duration) / 20)));
+					effectsLines.append(Message.EFFECT.get()
+					        .replace("_Type_", type.charAt(0) + type.substring(1).toLowerCase())
+					        .replace("_Amplifier_", effect.split(":")[1].replace("/" + duration, ""))
+					        .replace("_Duration_", Long.toString(Long.parseLong(duration) / 20)));
 				}
 				effects = effectsLines.toString();
 			} else {
 				effects = Message.NONE_MALE.get();
 			}
 			defaultData = Message.DEFAULT_DATA.get()
-					.replace("_Gamemode_", MessageUtils.getGamemodeWord(advancedData.get("reported_gamemode")))
-					.replace("_OnGround_",
-							(advancedData.get("reported_on_ground").equals("1") ? Message.YES : Message.NO).get())
-					.replace("_Sneak_",
-							(advancedData.get("reported_sneak").equals("1") ? Message.YES : Message.NO).get())
-					.replace("_Sprint_",
-							(advancedData.get("reported_sprint").equals("1") ? Message.YES : Message.NO).get())
-					.replace("_Health_", advancedData.get("reported_health"))
-					.replace("_Food_", advancedData.get("reported_food")).replace("_Effects_", effects);
+			        .replace("_Gamemode_", MessageUtils.getGamemodeWord(advancedData.get("reported_gamemode")))
+			        .replace("_OnGround_",
+			                (advancedData.get("reported_on_ground").equals("1") ? Message.YES : Message.NO).get())
+			        .replace("_Sneak_",
+			                (advancedData.get("reported_sneak").equals("1") ? Message.YES : Message.NO).get())
+			        .replace("_Sprint_",
+			                (advancedData.get("reported_sprint").equals("1") ? Message.YES : Message.NO).get())
+			        .replace("_Health_", advancedData.get("reported_health"))
+			        .replace("_Food_", advancedData.get("reported_food"))
+			        .replace("_Effects_", effects);
 			reportedAdvancedData = !advanced ? ""
-					: Message.ADVANCED_DATA_REPORTED.get()
-							.replace("_UUID_", MessageUtils.getMenuSentence(reportedUniqueId,
-									Message.ADVANCED_DATA_REPORTED, "_UUID_", false))
-							.replace("_IP_", advancedData.get("reported_ip"));
+			        : Message.ADVANCED_DATA_REPORTED.get()
+			                .replace("_UUID_",
+			                        MessageUtils.getMenuSentence(reportedUniqueId, Message.ADVANCED_DATA_REPORTED,
+			                                "_UUID_", false))
+			                .replace("_IP_", advancedData.get("reported_ip"));
 		} catch (Exception dataNotFound) {
 			defaultData = Message.PLAYER_WAS_OFFLINE.get();
 		}
 
 		return message.replace("_Reported_", getPlayerName("Reported", true, true))
-				.replace("_DefaultData_", defaultData).replace("_AdvancedData_",
-						!advanced ? ""
-								: reportedAdvancedData + Message.ADVANCED_DATA_REPORTER.get()
-										.replace("_Player_", getPlayerName("Reporter", true, true))
-										.replace("_UUID_",
-												MessageUtils.getMenuSentence(reporterUniqueId,
-														Message.ADVANCED_DATA_REPORTER, "_UUID_", false))
-										.replace("_IP_",
-												advancedData.get("reporter_ip") != null
-														? advancedData.get("reporter_ip")
-														: Message.NOT_FOUND_FEMALE.get()));
+		        .replace("_DefaultData_", defaultData)
+		        .replace("_AdvancedData_",
+		                !advanced ? ""
+		                        : reportedAdvancedData + Message.ADVANCED_DATA_REPORTER.get()
+		                                .replace("_Player_", getPlayerName("Reporter", true, true))
+		                                .replace("_UUID_",
+		                                        MessageUtils.getMenuSentence(reporterUniqueId,
+		                                                Message.ADVANCED_DATA_REPORTER, "_UUID_", false))
+		                                .replace("_IP_",
+		                                        advancedData.get("reporter_ip") != null
+		                                                ? advancedData.get("reporter_ip")
+		                                                : Message.NOT_FOUND_FEMALE.get()));
 	}
 
 	public String getOldLocation(String type) {
@@ -246,43 +255,47 @@ public class Report {
 
 	public ItemStack getItem(String actions) {
 		Status status = getStatus();
-		return status.getIcon().amount(getReportersUniqueIds().length).hideFlags(true)
-				.glow(status.equals(Status.WAITING)).name(Message.REPORT.get().replace("_Report_", getName()))
-				.lore(implementDetails(Message.REPORT_DETAILS.get(), true)
-						.replace("_Actions_", actions != null ? actions : "").split(ConfigUtils.getLineBreakSymbol()))
-				.create();
+		return status.getIcon()
+		        .amount(getReportersUniqueIds().length)
+		        .hideFlags(true)
+		        .glow(status.equals(Status.WAITING))
+		        .name(Message.REPORT.get().replace("_Report_", getName()))
+		        .lore(implementDetails(Message.REPORT_DETAILS.get(), true)
+		                .replace("_Actions_", actions != null ? actions : "")
+		                .split(ConfigUtils.getLineBreakSymbol()))
+		        .create();
 	}
 
 	public String getText() {
 		return Message.REPORT.get().replace("_Report_", getName()) + "\n"
-				+ implementDetails(Message.REPORT_DETAILS.get(), false).replace("_Actions_", "");
+		        + implementDetails(Message.REPORT_DETAILS.get(), false).replace("_Actions_", "");
 	}
 
-	public void process(String uuid, String staff, String appreciation, boolean bungee, boolean auto,
-			boolean notifyStaff) {
-		processing(
-				uuid, staff, appreciation, bungee, auto, (auto ? Message.STAFF_PROCESS_AUTO : Message.STAFF_PROCESS)
-						.get().replace("_Appreciation_", Message.valueOf(appreciation.toUpperCase()).get()),
-				"process", notifyStaff);
+	public void process(String staffUuid, String appreciation, boolean bungee, boolean auto, boolean notifyStaff) {
+		processing(staffUuid, appreciation, bungee, auto,
+		        (auto ? Message.STAFF_PROCESS_AUTO : Message.STAFF_PROCESS).get()
+		                .replace("_Appreciation_", Message.valueOf(appreciation.toUpperCase()).get()),
+		        "process", notifyStaff);
 	}
 
-	public void processPunishing(String uuid, String staff, boolean bungee, boolean auto, String punishment,
-			boolean notifyStaff) {
-		processing(uuid, staff, "True/" + punishment, bungee, auto,
-				(auto ? Message.STAFF_PROCESS_PUNISH_AUTO : Message.STAFF_PROCESS_PUNISH).get()
-						.replace("_Punishment_", punishment)
-						.replace("_Reported_", getPlayerName("Reported", false, false)),
-				"process_punish", notifyStaff);
+	public void processPunishing(String staffUuid, boolean bungee, boolean auto, String punishment,
+	        boolean notifyStaff) {
+		processing(staffUuid, "True/" + punishment, bungee, auto,
+		        (auto ? Message.STAFF_PROCESS_PUNISH_AUTO : Message.STAFF_PROCESS_PUNISH).get()
+		                .replace("_Punishment_", punishment)
+		                .replace("_Reported_", getPlayerName("Reported", false, true)),
+		        "process_punish", notifyStaff);
 	}
 
-	private void processing(String uuid, String staff, String appreciation, boolean bungee, boolean auto,
-			String staffMessage, String bungeeAction, boolean notifyStaff) {
-		this.status = Status.DONE.getConfigWord() + " by " + uuid;
+	private void processing(String staffUuid, String appreciation, boolean bungee, boolean auto, String staffMessage,
+	        String bungeeAction, boolean notifyStaff) {
+		this.status = Status.DONE.getConfigWord() + " by " + staffUuid;
 		this.appreciation = appreciation;
 
 		if (notifyStaff) {
-			MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage(staffMessage.replace("_Player_", staff),
-					"_Report_", getName(), getText(), null), ConfigSound.STAFF.get());
+			MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage(
+			        staffMessage.replace("_Player_", UserUtils.getDisplayName(staffUuid, true)), "_Report_", getName(),
+			        getText(), null), ConfigSound.STAFF.get());
 		}
 
 		TigerReports tr = TigerReports.getInstance();
@@ -290,13 +303,13 @@ public class Report {
 		BungeeManager bm = tr.getBungeeManager();
 
 		if (!bungee) {
-			bm.sendPluginNotification(uuid + "/" + staff + " " + bungeeAction + " " + reportId + " "
-					+ (auto ? "1" : "0") + " " + appreciation);
-			tr.getDb().update(
-					"UPDATE tigerreports_reports SET status = ?,appreciation = ?,archived = ? WHERE report_id = ?",
-					Arrays.asList(status, appreciation, auto ? 1 : 0, reportId));
+			bm.sendPluginNotification(
+			        String.join(" ", staffUuid, bungeeAction, "" + reportId, auto ? "1" : "0", appreciation));
+			tr.getDb()
+			        .update("UPDATE tigerreports_reports SET status = ?,appreciation = ?,archived = ? WHERE report_id = ?",
+			                Arrays.asList(status, appreciation, auto ? 1 : 0, reportId));
 
-			um.getUser(uuid).changeStatistic("processed_reports", 1);
+			um.getUser(staffUuid).changeStatistic("processed_reports", 1);
 
 			for (String ruuid : getReportersUniqueIds()) {
 				User ru = um.getUser(ruuid);
@@ -330,86 +343,88 @@ public class Report {
 		}
 
 		try {
-			Bukkit.getServer().getPluginManager().callEvent(new ProcessReportEvent(this, staff));
-		} catch (Exception ignored) {
-		}
+			Bukkit.getServer().getPluginManager().callEvent(new ProcessReportEvent(this, UserUtils.getName(staffUuid)));
+		} catch (Exception ignored) {}
 	}
 
 	public Comment getCommentById(int commentId) {
-		return formatComment(TigerReports.getInstance().getDb()
-				.query("SELECT * FROM tigerreports_comments WHERE report_id = ? AND comment_id = ?",
-						Arrays.asList(reportId, commentId))
-				.getResult(0));
+		return formatComment(TigerReports.getInstance()
+		        .getDb()
+		        .query("SELECT * FROM tigerreports_comments WHERE report_id = ? AND comment_id = ?",
+		                Arrays.asList(reportId, commentId))
+		        .getResult(0));
 	}
 
 	public Comment getComment(int commentIndex) {
-		return formatComment(TigerReports.getInstance().getDb()
-				.query("SELECT * FROM tigerreports_comments WHERE report_id = ? LIMIT 1 OFFSET ?",
-						Arrays.asList(reportId, commentIndex - 1))
-				.getResult(0));
+		return formatComment(TigerReports.getInstance()
+		        .getDb()
+		        .query("SELECT * FROM tigerreports_comments WHERE report_id = ? LIMIT 1 OFFSET ?",
+		                Arrays.asList(reportId, commentIndex - 1))
+		        .getResult(0));
 	}
 
 	public Comment formatComment(Map<String, Object> result) {
 		return new Comment(this, (int) result.get("comment_id"), (String) result.get("status"),
-				(String) result.get("date"), (String) result.get("author"), (String) result.get("message"));
+		        (String) result.get("date"), (String) result.get("author"), (String) result.get("message"));
 	}
 
-	public void delete(String staff, boolean bungee) {
+	public void delete(String staffUuid, boolean bungee) {
 		TigerReports tr = TigerReports.getInstance();
 		tr.getReportsManager().removeReport(reportId);
-		if (staff != null)
-			MessageUtils.sendStaffMessage(
-					MessageUtils.getAdvancedMessage(Message.STAFF_DELETE.get().replace("_Player_", staff), "_Report_",
-							getName(), getText(), null),
-					ConfigSound.STAFF.get());
+		if (staffUuid != null)
+			MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage(
+			        Message.STAFF_DELETE.get().replace("_Player_", UserUtils.getDisplayName(staffUuid, true)),
+			        "_Report_", getName(), getText(), null), ConfigSound.STAFF.get());
 		if (!bungee) {
-			tr.getBungeeManager().sendPluginNotification(staff + " delete " + reportId);
-			tr.getDb().updateAsynchronously("DELETE FROM tigerreports_reports WHERE report_id = ?",
-					Collections.singletonList(reportId));
-			tr.getDb().updateAsynchronously("DELETE FROM tigerreports_comments WHERE report_id = ?",
-					Collections.singletonList(reportId));
+			tr.getBungeeManager().sendPluginNotification(staffUuid + " delete " + reportId);
+			tr.getDb()
+			        .updateAsynchronously("DELETE FROM tigerreports_reports WHERE report_id = ?",
+			                Collections.singletonList(reportId));
+			tr.getDb()
+			        .updateAsynchronously("DELETE FROM tigerreports_comments WHERE report_id = ?",
+			                Collections.singletonList(reportId));
 		}
 	}
 
-	public void archive(String staff, boolean bungee) {
+	public void archive(String staffUuid, boolean bungee) {
 		TigerReports tr = TigerReports.getInstance();
-		if (staff != null)
-			MessageUtils.sendStaffMessage(
-					MessageUtils.getAdvancedMessage(Message.STAFF_ARCHIVE.get().replace("_Player_", staff), "_Report_",
-							getName(), getText(), null),
-					ConfigSound.STAFF.get());
+		if (staffUuid != null)
+			MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage(
+			        Message.STAFF_ARCHIVE.get().replace("_Player_", UserUtils.getDisplayName(staffUuid, true)),
+			        "_Report_", getName(), getText(), null), ConfigSound.STAFF.get());
 		if (!bungee) {
-			tr.getBungeeManager().sendPluginNotification(staff + " archive " + reportId);
-			tr.getDb().updateAsynchronously("UPDATE tigerreports_reports SET archived = ? WHERE report_id = ?",
-					Arrays.asList(1, reportId));
+			tr.getBungeeManager().sendPluginNotification(staffUuid + " archive " + reportId);
+			tr.getDb()
+			        .updateAsynchronously("UPDATE tigerreports_reports SET archived = ? WHERE report_id = ?",
+			                Arrays.asList(1, reportId));
 		}
 	}
 
-	public void unarchive(String staff, boolean bungee) {
+	public void unarchive(String staffUuid, boolean bungee) {
 		TigerReports tr = TigerReports.getInstance();
-		if (staff != null)
-			MessageUtils.sendStaffMessage(
-					MessageUtils.getAdvancedMessage(Message.STAFF_RESTORE.get().replace("_Player_", staff), "_Report_",
-							getName(), getText(), null),
-					ConfigSound.STAFF.get());
+		if (staffUuid != null)
+			MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage(
+			        Message.STAFF_RESTORE.get().replace("_Player_", UserUtils.getDisplayName(staffUuid, true)),
+			        "_Report_", getName(), getText(), null), ConfigSound.STAFF.get());
 		if (!bungee) {
-			tr.getBungeeManager().sendPluginNotification(staff + " unarchive " + reportId);
-			tr.getDb().updateAsynchronously("UPDATE tigerreports_reports SET archived = ? WHERE report_id = ?",
-					Arrays.asList(0, reportId));
+			tr.getBungeeManager().sendPluginNotification(staffUuid + " unarchive " + reportId);
+			tr.getDb()
+			        .updateAsynchronously("UPDATE tigerreports_reports SET archived = ? WHERE report_id = ?",
+			                Arrays.asList(0, reportId));
 		}
 	}
 
-	public void deleteFromArchives(String staff, boolean bungee) {
+	public void deleteFromArchives(String staffUuid, boolean bungee) {
 		TigerReports tr = TigerReports.getInstance();
-		if (staff != null)
-			MessageUtils.sendStaffMessage(
-					MessageUtils.getAdvancedMessage(Message.STAFF_DELETE_ARCHIVE.get().replace("_Player_", staff),
-							"_Report_", getName(), getText(), null),
-					ConfigSound.STAFF.get());
+		if (staffUuid != null)
+			MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage(
+			        Message.STAFF_DELETE_ARCHIVE.get().replace("_Player_", UserUtils.getDisplayName(staffUuid, true)),
+			        "_Report_", getName(), getText(), null), ConfigSound.STAFF.get());
 		if (!bungee) {
-			tr.getBungeeManager().sendPluginNotification(staff + " delete_archive " + reportId);
-			tr.getDb().updateAsynchronously("DELETE FROM tigerreports_reports WHERE report_id = ?",
-					Collections.singletonList(reportId));
+			tr.getBungeeManager().sendPluginNotification(staffUuid + " delete_archive " + reportId);
+			tr.getDb()
+			        .updateAsynchronously("DELETE FROM tigerreports_reports WHERE report_id = ?",
+			                Collections.singletonList(reportId));
 		}
 	}
 

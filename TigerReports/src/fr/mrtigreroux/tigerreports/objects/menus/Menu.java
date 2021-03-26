@@ -39,9 +39,8 @@ public abstract class Menu {
 	}
 
 	boolean check() {
-		String error = permission != null && !permission.isOwned(u)	? Message.PERMISSION_COMMAND.get()
-																	: this instanceof ReportManagerMenu	? ((ReportManagerMenu) this).checkReport()
-																										: null;
+		String error = permission != null && !permission.isOwned(u) ? Message.PERMISSION_COMMAND.get()
+		        : this instanceof ReportManagerMenu ? ((ReportManagerMenu) this).checkReport() : null;
 		if (error != null) {
 			MessageUtils.sendErrorMessage(p, error);
 			p.closeInventory();
@@ -53,16 +52,16 @@ public abstract class Menu {
 
 	Inventory getInventory(String title, boolean borders) {
 		if (title.length() > 32)
-			title = title.substring(0, 29)+"..";
+			title = title.substring(0, 29) + "..";
 		Inventory inv = Bukkit.createInventory(null, size, title);
 		if (borders) {
 			ItemStack gui = MenuRawItem.GUI.create();
 			int size = inv.getSize();
 			for (int position = 9; position < 18; position++)
 				inv.setItem(position, gui);
-			for (int position = size-9; position < size; position++)
+			for (int position = size - 9; position < size; position++)
 				inv.setItem(position, gui);
-			inv.setItem(size-5, MenuItem.CLOSE.get());
+			inv.setItem(size - 5, MenuItem.CLOSE.get());
 		}
 		return inv;
 	}
@@ -113,11 +112,13 @@ public abstract class Menu {
 	}
 
 	public void click(ItemStack item, int slot, ClickType click) {
-		if (slot == -1 || item == null || item.getType() == null || item.getType() == Material.AIR || (item.getType().toString().toUpperCase().contains("STAINED_GLASS_PANE") && ((slot >= size-9
-				&& slot < size) || (slot >= 9 && slot <= 17))) || !check())
+		if (slot == -1 || item == null || item.getType() == null || item.getType() == Material.AIR
+		        || (item.getType().toString().toUpperCase().contains("STAINED_GLASS_PANE")
+		                && ((slot >= size - 9 && slot < size) || (slot >= 9 && slot <= 17)))
+		        || !check())
 			return;
 
-		if (slot == size-5) {
+		if (slot == size - 5) {
 			Bukkit.getScheduler().runTaskLater(TigerReports.getInstance(), new Runnable() {
 
 				@Override
@@ -125,13 +126,13 @@ public abstract class Menu {
 					p.closeInventory();
 					ConfigSound.MENU.play(p);
 				}
-				
+
 			}, 3);
 			return;
 		}
 
 		if (page != 0) {
-			int newPage = page-(slot == size-7 ? 1 : slot == size-3 ? -1 : page);
+			int newPage = page - (slot == size - 7 ? 1 : slot == size - 3 ? -1 : page);
 			if (newPage != 0) {
 				page = newPage;
 				open(true);
@@ -145,7 +146,7 @@ public abstract class Menu {
 	abstract void onClick(ItemStack item, int slot, ClickType click);
 
 	int getConfigIndex(int slot) {
-		return slot-17+((page-1)*27);
+		return slot - 17 + ((page - 1) * 27);
 	}
 
 }

@@ -28,10 +28,19 @@ public class UserUtils {
 
 	public static String getName(String uuid) {
 		UUID uniqueId = UUID.fromString(uuid);
+		Player p = Bukkit.getPlayer(uniqueId);
+		return p != null ? p.getName() : TigerReports.getInstance().getUsersManager().getName(uuid, uniqueId);
+	}
+
+	public static String getDisplayName(String uuid, boolean staff) {
 		try {
-			return Bukkit.getPlayer(uniqueId).getName();
-		} catch (Exception offlinePlayer) {
-			return TigerReports.getInstance().getUsersManager().getName(uuid, uniqueId);
+			UUID uniqueId = UUID.fromString(uuid);
+			Player p = Bukkit.getPlayer(uniqueId);
+			return p != null ? TigerReports.getInstance().getVaultManager().getPlayerDisplayName(p, staff)
+			        : TigerReports.getInstance().getUsersManager().getDisplayName(uuid, uniqueId, staff);
+		} catch (Exception invalidUniqueId) {
+			return uuid; // Allows to display old author display name of comments (now author saved is
+			             // its uuid and not its display name)
 		}
 	}
 
@@ -62,9 +71,9 @@ public class UserUtils {
 
 	public static boolean isValid(String uuid) {
 		return TigerReports.getInstance()
-				.getDb()
-				.query("SELECT uuid FROM tigerreports_users WHERE uuid = ?", Collections.singletonList(uuid))
-				.getResult(0, "uuid") != null;
+		        .getDb()
+		        .query("SELECT uuid FROM tigerreports_users WHERE uuid = ?", Collections.singletonList(uuid))
+		        .getResult(0, "uuid") != null;
 	}
 
 	public static boolean isOnline(String name) {
@@ -72,12 +81,13 @@ public class UserUtils {
 	}
 
 	/**
-	 * Return the players that player p can see (not vanished).
-	 * Doesn't take in consideration the vanished players on a different server,
-	 * who are therefore considered as online for the player p, because no official check
-	 * can be used.
-	 * @param p - Viewer of players
-	 * @param hideExempted - Hide players owing tigerreports.report.exempt permission
+	 * Return the players that player p can see (not vanished). Doesn't take in
+	 * consideration the vanished players on a different server, who are therefore
+	 * considered as online for the player p, because no official check can be used.
+	 * 
+	 * @param p            - Viewer of players
+	 * @param hideExempted - Hide players owing tigerreports.report.exempt
+	 *                     permission
 	 */
 	public static List<String> getOnlinePlayersForPlayer(Player p, boolean hideExempted) {
 		TigerReports tr = TigerReports.getInstance();

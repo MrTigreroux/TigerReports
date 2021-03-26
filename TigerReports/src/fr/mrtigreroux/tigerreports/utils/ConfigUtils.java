@@ -15,7 +15,8 @@ import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 
 public class ConfigUtils {
 
-	private final static List<String> ACTIVATION_WORDS = Arrays.asList("true", "t", "on", "enabled", "yes", "y", "activated", "a");
+	private final static List<String> ACTIVATION_WORDS = Arrays.asList("true", "t", "on", "enabled", "yes", "y",
+	        "activated", "a");
 
 	public static boolean isEnabled(ConfigurationSection config, String path) {
 		return config.get(path) != null && ACTIVATION_WORDS.contains(config.getString(path));
@@ -34,7 +35,7 @@ public class ConfigUtils {
 	}
 
 	public static String getInfoMessage(String english, String french) {
-		return "[TigerReports] "+(getInfoLanguage().equalsIgnoreCase("English") ? english : french);
+		return "[TigerReports] " + (getInfoLanguage().equalsIgnoreCase("English") ? english : french);
 	}
 
 	public static boolean exist(ConfigurationSection config, String path) {
@@ -43,14 +44,17 @@ public class ConfigUtils {
 
 	public static Material getMaterial(ConfigurationSection config, String path) {
 		String icon = config.getString(path);
-		return icon != null && icon.startsWith("Material-") ? Material.matchMaterial(icon.split("-")[1].toUpperCase()
-				.replace(":"+getDamage(config, path), "")) : null;
+		return icon != null && icon.startsWith("Material-")
+		        ? Material.matchMaterial(icon.split("-")[1].toUpperCase().replace(":" + getDamage(config, path), ""))
+		        : null;
 	}
 
 	public static short getDamage(ConfigurationSection config, String path) {
 		try {
 			String icon = config.getString(path);
-			return icon != null && icon.startsWith("Material-") && icon.contains(":") ? Short.parseShort(icon.split(":")[1]) : 0;
+			return icon != null && icon.startsWith("Material-") && icon.contains(":")
+			        ? Short.parseShort(icon.split(":")[1])
+			        : 0;
 		} catch (Exception noDamage) {
 			return 0;
 		}
@@ -70,7 +74,8 @@ public class ConfigUtils {
 		if (!time.equals("default")) {
 			try {
 				return ZoneId.of(time);
-			} catch (Exception ex) {}
+			} catch (Exception ex) {
+			}
 		}
 		return ZoneId.systemDefault();
 	}

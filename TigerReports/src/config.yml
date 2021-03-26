@@ -244,3 +244,13 @@ MySQL:
   UseSSL: no
   VerifyServerCertificate: no
 # Login IDs of connection to a MySQL database / Identifiants de connexion à une base de données MySQL
+
+VaultChat:
+  Enabled: yes
+  # Use prefixes and suffixes from the chat of Vault plugin to display player names / Utiliser les préfixes et suffixes du chat du plugin Vault pour afficher les noms des joueurs
+  
+  DisplayForStaff: yes
+  # Use prefixes and suffixes from the chat of Vault plugin to display staff names / Utiliser les préfixes et suffixes du chat du plugin Vault pour afficher les noms des membres de l'équipe (staff)
+  
+  DisplayForPlayers: no
+  # Use prefixes and suffixes from the chat of Vault plugin to display reported and reporters names / Utiliser les préfixes et suffixes du chat du plugin Vault pour afficher les noms des joueurs signalés et signaleurs

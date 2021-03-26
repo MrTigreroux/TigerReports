@@ -38,12 +38,13 @@ public class ProcessMenu extends ReportManagerMenu {
 			String appreciationWord = Message.valueOf(appreciation).get();
 
 			inv.setItem(appreciation.equals("TRUE") ? 11 : appreciation.equals("UNCERTAIN") ? 13 : 15,
-					(appreciation.equals("TRUE") ? MenuRawItem.GREEN_CLAY
-							: appreciation.equals("UNCERTAIN") ? MenuRawItem.YELLOW_CLAY : MenuRawItem.RED_CLAY)
-									.name(Message.PROCESS.get().replace("_Appreciation_", appreciationWord))
-									.lore(Message.PROCESS_DETAILS.get().replace("_Appreciation_", appreciationWord)
-											.split(ConfigUtils.getLineBreakSymbol()))
-									.create());
+			        (appreciation.equals("TRUE") ? MenuRawItem.GREEN_CLAY
+			                : appreciation.equals("UNCERTAIN") ? MenuRawItem.YELLOW_CLAY : MenuRawItem.RED_CLAY).clone()
+			                        .name(Message.PROCESS.get().replace("_Appreciation_", appreciationWord))
+			                        .lore(Message.PROCESS_DETAILS.get()
+			                                .replace("_Appreciation_", appreciationWord)
+			                                .split(ConfigUtils.getLineBreakSymbol()))
+			                        .create());
 		}
 
 		inv.setItem(18, MenuItem.CANCEL_PROCESS.get());
@@ -76,8 +77,7 @@ public class ProcessMenu extends ReportManagerMenu {
 	}
 
 	private void process(String appreciation) {
-		r.process(p.getUniqueId().toString(), p.getName(), appreciation, false,
-				Permission.STAFF_ARCHIVE_AUTO.isOwned(u), true);
+		r.process(p.getUniqueId().toString(), appreciation, false, Permission.STAFF_ARCHIVE_AUTO.isOwned(u), true);
 		u.openDelayedlyReportsMenu();
 	}
 

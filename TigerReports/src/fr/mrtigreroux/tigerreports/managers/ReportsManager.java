@@ -20,7 +20,8 @@ public class ReportsManager {
 
 	private final Map<Integer, Report> reports = new HashMap<>();
 
-	public ReportsManager() {}
+	public ReportsManager() {
+	}
 
 	public void saveReport(Report r) {
 		reports.put(r.getId(), r);
@@ -39,31 +40,30 @@ public class ReportsManager {
 	}
 
 	public Report getReportById(int reportId, boolean notArchived) {
-		return reportId <= 0	? null
-								: reports.containsKey(reportId)	? reports.get(reportId)
-																: formatFullReport(TigerReports.getInstance()
-																		.getDb()
-																		.query("SELECT * FROM tigerreports_reports WHERE report_id = ? "+(notArchived
-																																						? "AND archived = 0 "
-																																						: "")
-																				+"LIMIT 1", Collections.singletonList(reportId))
-																		.getResult(0));
+		return reportId <= 0 ? null
+		        : reports.containsKey(reportId) ? reports.get(reportId)
+		                : formatFullReport(TigerReports.getInstance().getDb()
+		                        .query("SELECT * FROM tigerreports_reports WHERE report_id = ? "
+		                                + (notArchived ? "AND archived = 0 " : "") + "LIMIT 1",
+		                                Collections.singletonList(reportId))
+		                        .getResult(0));
 	}
 
 	public Pair<Report, Boolean> getReportByIdAndArchiveInfo(int reportId) {
-		Map<String, Object> result = TigerReports.getInstance()
-				.getDb()
-				.query("SELECT * FROM tigerreports_reports WHERE report_id = ? LIMIT 1", Collections.singletonList(reportId))
-				.getResult(0);
-		return reportId <= 0 || result == null ? null : new Pair<Report, Boolean>(formatFullReport(result), (Boolean) result.get("archived"));
+		Map<String, Object> result = TigerReports.getInstance().getDb()
+		        .query("SELECT * FROM tigerreports_reports WHERE report_id = ? LIMIT 1",
+		                Collections.singletonList(reportId))
+		        .getResult(0);
+		return reportId <= 0 || result == null ? null
+		        : new Pair<Report, Boolean>(formatFullReport(result), (Boolean) result.get("archived"));
 	}
 
 	public Report getReport(boolean archived, int reportIndex) {
-		return formatFullReport(TigerReports.getInstance()
-				.getDb()
-				.query("SELECT * FROM tigerreports_reports WHERE archived = ?"+(archived ? " ORDER BY report_id DESC" : "")+" LIMIT 1 OFFSET ?", Arrays
-						.asList(archived ? 1 : 0, reportIndex-1))
-				.getResult(0));
+		return formatFullReport(TigerReports.getInstance().getDb()
+		        .query("SELECT * FROM tigerreports_reports WHERE archived = ?"
+		                + (archived ? " ORDER BY report_id DESC" : "") + " LIMIT 1 OFFSET ?",
+		                Arrays.asList(archived ? 1 : 0, reportIndex - 1))
+		        .getResult(0));
 	}
 
 	public Report formatFullReport(Map<String, Object> result) {
@@ -74,7 +74,8 @@ public class ReportsManager {
 
 		Map<String, String> advancedData = new HashMap<>();
 		Set<String> advancedKeys = new HashSet<>(result.keySet());
-		advancedKeys.removeAll(Arrays.asList("report_id", "status", "appreciation", "date", "reported_uuid", "reporter_uuid", "reason", "archived"));
+		advancedKeys.removeAll(Arrays.asList("report_id", "status", "appreciation", "date", "reported_uuid",
+		        "reporter_uuid", "reason", "archived"));
 		for (String key : advancedKeys)
 			advancedData.put(key, (String) result.get(key));
 		r.setAdvancedData(advancedData);

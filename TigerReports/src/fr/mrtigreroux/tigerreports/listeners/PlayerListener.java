@@ -23,7 +23,6 @@ import org.bukkit.event.server.ServerCommandEvent;
 import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.commands.HelpCommand;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
-import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
 import fr.mrtigreroux.tigerreports.objects.Comment;
@@ -40,7 +39,7 @@ import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 public class PlayerListener implements Listener {
 
 	private final List<String> HELP_COMMANDS = Arrays.asList("tigerreport", "helptigerreport", "reportshelp", "report?",
-			"reports?");
+	        "reports?");
 
 	@EventHandler
 	private void onPlayerJoin(PlayerJoinEvent e) {
@@ -55,7 +54,7 @@ public class PlayerListener implements Listener {
 			public void run() {
 				u.sendNotifications();
 				if (Permission.STAFF.isOwned(u)
-						&& ConfigUtils.isEnabled(configFile, "Config.Notifications.Staff.Connection")) {
+				        && ConfigUtils.isEnabled(configFile, "Config.Notifications.Staff.Connection")) {
 					ReportsNotifier.sendReportsNotification(p);
 				}
 				tr.getDb().updateUserName(p.getUniqueId().toString(), p.getName());
@@ -70,21 +69,21 @@ public class PlayerListener implements Listener {
 			if (newVersion != null) {
 				boolean english = ConfigUtils.getInfoLanguage().equalsIgnoreCase("English");
 				p.sendMessage("\u00A77[\u00A76TigerReports\u00A77] "
-						+ (english ? "\u00A7eThe plugin \u00A76TigerReports \u00A7ehas been updated."
-								: "\u00A7eLe plugin \u00A76TigerReports \u00A7ea \u00E9t\u00E9 mis à jour."));
+				        + (english ? "\u00A7eThe plugin \u00A76TigerReports \u00A7ehas been updated."
+				                : "\u00A7eLe plugin \u00A76TigerReports \u00A7ea \u00E9t\u00E9 mis à jour."));
 				BaseComponent updateMessage = new TextComponent(
-						english ? "The new version \u00A77" + newVersion + " \u00A7eis available on: "
-								: "La nouvelle version \u00A77" + newVersion + " \u00A7eest disponible ici: ");
+				        english ? "The new version \u00A77" + newVersion + " \u00A7eis available on: "
+				                : "La nouvelle version \u00A77" + newVersion + " \u00A7eest disponible ici: ");
 				updateMessage.setColor(ChatColor.YELLOW);
 				BaseComponent button = new TextComponent(
-						english ? "\u00A77[\u00A7aOpen page\u00A77]" : "\u00A77[\u00A7aOuvrir la page\u00A77]");
+				        english ? "\u00A77[\u00A7aOpen page\u00A77]" : "\u00A77[\u00A7aOuvrir la page\u00A77]");
 				button.setColor(ChatColor.GREEN);
 				button.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-						new ComponentBuilder((english ? "\u00A76Left click \u00A77to open the plugin page\n\u00A77of"
-								: "\u00A76Clic gauche \u00A77pour ouvrir la page\n\u00A77du plugin")
-								+ " \u00A7eTigerReports\u00A77.").create()));
+				        new ComponentBuilder((english ? "\u00A76Left click \u00A77to open the plugin page\n\u00A77of"
+				                : "\u00A76Clic gauche \u00A77pour ouvrir la page\n\u00A77du plugin")
+				                + " \u00A7eTigerReports\u00A77.").create()));
 				button.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL,
-						"https://www.spigotmc.org/resources/tigerreports.25773/"));
+				        "https://www.spigotmc.org/resources/tigerreports.25773/"));
 				updateMessage.addExtra(button);
 				p.spigot().sendMessage(updateMessage);
 			}
@@ -124,10 +123,11 @@ public class PlayerListener implements Listener {
 			String message = e.getMessage();
 			Report r = c.getReport();
 			if (c.getId() == null) {
-				tr.getDb().insertAsynchronously(
-						"INSERT INTO tigerreports_comments (report_id,status,date,author,message) VALUES (?,?,?,?,?);",
-						Arrays.asList(r.getId(), "Private", MessageUtils.getNowDate(), u.getPlayer().getDisplayName(),
-								message));
+				tr.getDb()
+				        .insertAsynchronously(
+				                "INSERT INTO tigerreports_comments (report_id,status,date,author,message) VALUES (?,?,?,?,?)",
+				                Arrays.asList(r.getId(), "Private", MessageUtils.getNowDate(),
+				                        u.getUniqueId().toString(), message));
 			} else {
 				c.addMessage(message);
 			}
@@ -145,16 +145,17 @@ public class PlayerListener implements Listener {
 
 		ConfigurationSection config = ConfigFile.CONFIG.get();
 		String path = "Config.ChatReport.";
+		String playerName = u.getPlayer().getName();
 		if (ConfigUtils.isEnabled(config, path + "Enabled")) {
 			Object message = MessageUtils.getAdvancedMessage(
-					Message.formatMessage(config.getString(path + "Message"))
-							.replace("_DisplayName_", u.getPlayer().getDisplayName())
-							.replace("_Name_", u.getPlayer().getName()).replace("_Message_", e.getMessage()),
-					"_ReportButton_", Message.formatMessage(config.getString(path + "ReportButton.Text")),
-					Message.formatMessage(config.getString(path + "ReportButton.Hover")).replace("_Player_",
-							u.getPlayer().getName()),
-					"/tigerreports:report " + u.getPlayer().getName() + " "
-							+ config.getString(path + "ReportButton.Reason"));
+			        MessageUtils.translateColorCodes(config.getString(path + "Message"))
+			                .replace("_DisplayName_", u.getDisplayName())
+			                .replace("_Name_", playerName)
+			                .replace("_Message_", e.getMessage()),
+			        "_ReportButton_", MessageUtils.translateColorCodes(config.getString(path + "ReportButton.Text")),
+			        MessageUtils.translateColorCodes(config.getString(path + "ReportButton.Hover"))
+			                .replace("_Player_", playerName),
+			        "/tigerreports:report " + playerName + " " + config.getString(path + "ReportButton.Reason"));
 			boolean isTextComponent = message instanceof TextComponent;
 			for (Player p : Bukkit.getOnlinePlayers()) {
 				if (isTextComponent) {
@@ -164,7 +165,7 @@ public class PlayerListener implements Listener {
 				}
 			}
 			MessageUtils
-					.sendConsoleMessage(isTextComponent ? ((TextComponent) message).toLegacyText() : (String) message);
+			        .sendConsoleMessage(isTextComponent ? ((TextComponent) message).toLegacyText() : (String) message);
 			e.setCancelled(true);
 		}
 	}

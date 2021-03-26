@@ -22,8 +22,9 @@ public class UserAgainstReportsMenu extends UserManagerMenu implements UpdatedMe
 
 	@Override
 	public void onUpdate(Inventory inv) {
-		ReportUtils.addReports(null, tu.getUniqueId(), false, inv, page, Message.REPORT_SHOW_ACTION.get(), Permission.STAFF_ARCHIVE.isOwned(u),
-				Permission.STAFF_DELETE.isOwned(u) ? Message.REPORT_DELETE_ACTION.get() : "");
+		ReportUtils.addReports(null, tu.getUniqueId(), false, inv, page, Message.REPORT_SHOW_ACTION.get(),
+		        Permission.STAFF_ARCHIVE.isOwned(u),
+		        Permission.STAFF_DELETE.isOwned(u) ? Message.REPORT_DELETE_ACTION.get() : "");
 	}
 
 	@Override

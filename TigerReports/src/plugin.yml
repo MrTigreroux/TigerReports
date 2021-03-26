@@ -1,9 +1,10 @@
 name: TigerReports
-version: 4.12.2
+version: 4.12.3
 api-version: 1.13
 description: Management of reports / Gestion de signalements.
 author: MrTigreroux
 main: fr.mrtigreroux.tigerreports.TigerReports
+softdepend: [Vault]
 commands:
   tigerreports:
     description: Informations about TigerReports plugin / Informations sur le plugin TigerReports.

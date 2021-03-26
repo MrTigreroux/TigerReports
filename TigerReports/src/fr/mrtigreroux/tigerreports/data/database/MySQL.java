@@ -61,7 +61,7 @@ public class MySQL extends Database {
 						null);
 				update("CREATE TABLE IF NOT EXISTS tigerreports_reports (report_id int(11) NOT NULL AUTO_INCREMENT, status varchar(50) NOT NULL DEFAULT 'Waiting', appreciation varchar(255), date varchar(20) NOT NULL, reported_uuid char(36) NOT NULL, reporter_uuid varchar(255) NOT NULL, reason varchar(255), reported_ip varchar(46), reported_location varchar(60), reported_messages text, reported_gamemode char(10), reported_on_ground char(1), reported_sneak char(1), reported_sprint char(1), reported_health varchar(10), reported_food varchar(10), reported_effects text, reporter_ip varchar(46) NOT NULL, reporter_location varchar(60) NOT NULL, reporter_messages text, archived tinyint(1) NOT NULL DEFAULT 0, PRIMARY KEY (report_id)) ENGINE=InnoDB CHARACTER SET=utf8mb4;",
 						null);
-				update("CREATE TABLE IF NOT EXISTS tigerreports_comments (report_id int(11) NOT NULL, comment_id INT NOT NULL AUTO_INCREMENT, status varchar(25), date varchar(20), author varchar(32), message text, PRIMARY KEY (comment_id)) ENGINE=InnoDB CHARACTER SET=utf8mb4;",
+				update("CREATE TABLE IF NOT EXISTS tigerreports_comments (report_id int(11) NOT NULL, comment_id INT NOT NULL AUTO_INCREMENT, status varchar(25), date varchar(20), author varchar(255), message text, PRIMARY KEY (comment_id)) ENGINE=InnoDB CHARACTER SET=utf8mb4;",
 						null);
 			}
 

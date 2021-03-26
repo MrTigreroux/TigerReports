@@ -32,7 +32,8 @@ public class ReportUtils {
 
 		try {
 			Bukkit.getServer().getPluginManager().callEvent(new NewReportEvent(server, r));
-		} catch (Exception ignored) {}
+		} catch (Exception ignored) {
+		}
 		if (!notify)
 			return;
 
@@ -41,20 +42,19 @@ public class ReportUtils {
 		TextComponent alert = new TextComponent();
 		alert.setColor(ChatColor.valueOf(MessageUtils.getLastColor(Message.ALERT.get(), "_Reason_").name()));
 		if (reportId == -1) {
-			MessageUtils.sendStaffMessage(Message.STAFF_MAX_REPORTS_REACHED.get().replace("_Amount_", Integer.toString(getMaxReports())),
-					ConfigSound.STAFF.get());
+			MessageUtils.sendStaffMessage(
+			        Message.STAFF_MAX_REPORTS_REACHED.get().replace("_Amount_", Integer.toString(getMaxReports())),
+			        ConfigSound.STAFF.get());
 		} else {
-			alert.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/reports #"+reportId));
-			alert.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(Message.ALERT_DETAILS.get()
-					.replace("_Report_", r.getName())).create()));
+			alert.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/reports #" + reportId));
+			alert.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+			        new ComponentBuilder(Message.ALERT_DETAILS.get().replace("_Report_", r.getName())).create()));
 		}
 
-		for (String line : Message.ALERT.get()
-				.replace("_Server_", MessageUtils.getServerName(server))
-				.replace("_Reporter_", r.getPlayerName(r.getLastReporterUniqueId(), "Reporter", false, true))
-				.replace("_Reported_", r.getPlayerName("Reported", !ReportUtils.onlinePlayerRequired(), true))
-				.replace("_Reason_", r.getReason(false))
-				.split(ConfigUtils.getLineBreakSymbol())) {
+		for (String line : Message.ALERT.get().replace("_Server_", MessageUtils.getServerName(server))
+		        .replace("_Reporter_", r.getPlayerName(r.getLastReporterUniqueId(), "Reporter", false, true))
+		        .replace("_Reported_", r.getPlayerName("Reported", !ReportUtils.onlinePlayerRequired(), true))
+		        .replace("_Reason_", r.getReason(false)).split(ConfigUtils.getLineBreakSymbol())) {
 			alert.setText(line);
 			MessageUtils.sendStaffMessage(alert.duplicate(), ConfigSound.REPORT.get());
 		}
@@ -63,31 +63,32 @@ public class ReportUtils {
 	public static Report formatEssentialOfReport(Map<String, Object> result) {
 		if (result == null)
 			return null;
-		return new Report((int) result.get("report_id"), (String) result.get("status"), (String) result.get("appreciation"), (String) result.get(
-				"date"), (String) result.get("reported_uuid"), (String) result.get("reporter_uuid"), (String) result.get("reason"));
+		return new Report((int) result.get("report_id"), (String) result.get("status"),
+		        (String) result.get("appreciation"), (String) result.get("date"), (String) result.get("reported_uuid"),
+		        (String) result.get("reporter_uuid"), (String) result.get("reason"));
 	}
 
-	public static void addReports(String reporter, String reported, boolean archived, Inventory inv, int page, String actionsBefore,
-			boolean archiveAction, String actionsAfter) {
+	public static void addReports(String reporter, String reported, boolean archived, Inventory inv, int page,
+	        String actionsBefore, boolean archiveAction, String actionsAfter) {
 		int size = inv.getSize();
 		int firstReport = 1;
 		if (page >= 2) {
-			inv.setItem(size-7, MenuItem.PAGE_SWITCH_PREVIOUS.get());
-			firstReport += (page-1)*27;
+			inv.setItem(size - 7, MenuItem.PAGE_SWITCH_PREVIOUS.get());
+			firstReport += (page - 1) * 27;
 		}
 
-		int first = firstReport-1;
+		int first = firstReport - 1;
 		TigerReports tr = TigerReports.getInstance();
 		Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
 
 			@Override
 			public void run() {
-				List<Map<String, Object>> results = tr.getDb()
-						.query("SELECT report_id,status,appreciation,date,reported_uuid,reporter_uuid,reason FROM tigerreports_reports WHERE archived = ?"
-								+(reporter != null	? " AND reporter_uuid LIKE '%"+reporter+"%'"
-													: reported != null ? " AND reported_uuid = '"+reported+"'" : "")+(archived ? " ORDER BY report_id DESC" : "")+" LIMIT 28 OFFSET ?", Arrays.asList(
-															archived ? 1 : 0, first))
-						.getResultList();
+				List<Map<String, Object>> results = tr.getDb().query(
+				        "SELECT report_id,status,appreciation,date,reported_uuid,reporter_uuid,reason FROM tigerreports_reports WHERE archived = ?"
+				                + (reporter != null ? " AND reporter_uuid LIKE '%" + reporter + "%'"
+				                        : reported != null ? " AND reported_uuid = '" + reported + "'" : "")
+				                + (archived ? " ORDER BY report_id DESC" : "") + " LIMIT 28 OFFSET ?",
+				        Arrays.asList(archived ? 1 : 0, first)).getResultList();
 
 				Bukkit.getScheduler().runTask(tr, new Runnable() {
 
@@ -103,15 +104,19 @@ public class ReportUtils {
 									inv.setItem(slot, null);
 									index = -1;
 								} else {
-									inv.setItem(slot, r.getItem(actionsBefore+(archiveAction && (r.getStatus() == Status.DONE || !ReportUtils
-											.onlyDoneArchives()) ? Message.REPORT_ARCHIVE_ACTION.get() : "")+actionsAfter));
+									inv.setItem(slot,
+									        r.getItem(actionsBefore + (archiveAction
+									                && (r.getStatus() == Status.DONE || !ReportUtils.onlyDoneArchives())
+									                        ? Message.REPORT_ARCHIVE_ACTION.get()
+									                        : "")
+									                + actionsAfter));
 									index++;
 								}
 							}
 						}
 
 						if (results.size() == 28)
-							inv.setItem(size-3, MenuItem.PAGE_SWITCH_NEXT.get());
+							inv.setItem(size - 3, MenuItem.PAGE_SWITCH_NEXT.get());
 					}
 
 				});
@@ -121,7 +126,8 @@ public class ReportUtils {
 	}
 
 	public static int getTotalReports() {
-		Object o = TigerReports.getInstance().getDb().query("SELECT COUNT(report_id) AS Total FROM tigerreports_reports", null).getResult(0, "Total");
+		Object o = TigerReports.getInstance().getDb()
+		        .query("SELECT COUNT(report_id) AS Total FROM tigerreports_reports", null).getResult(0, "Total");
 		return o instanceof Integer ? (int) o : Ints.checkedCast((long) o);
 	}
 
