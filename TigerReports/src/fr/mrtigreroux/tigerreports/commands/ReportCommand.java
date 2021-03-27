@@ -65,7 +65,7 @@ public class ReportCommand implements TabExecutor {
 			return true;
 		}
 
-		Player rp = UserUtils.getPlayer(reportedName);
+		Player rp = Bukkit.getPlayer(reportedName);
 		String ruuid = UserUtils.getUniqueId(reportedName);
 		if (rp == null) {
 			if (!UserUtils.isValid(ruuid)) {

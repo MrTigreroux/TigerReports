@@ -184,7 +184,7 @@ public class ReportMenu extends ReportManagerMenu {
 				return;
 			String targetType = slot == 21 ? "Reporter" : "Reported";
 			String target = r.getPlayerName(targetType, false, false);
-			Player t = UserUtils.getPlayer(target);
+			Player t = Bukkit.getPlayer(target);
 			String locType;
 			String serverName = null;
 			Location loc = null;

@@ -27,8 +27,7 @@ public class UsersManager {
 	private final Map<String, String> lastUniqueIdFound = new HashMap<>();
 	private final List<String> exemptedPlayers = new ArrayList<>();
 
-	public UsersManager() {
-	}
+	public UsersManager() {}
 
 	public void addExemptedPlayer(String name) {
 		if (name != null && !exemptedPlayers.contains(name))
@@ -104,8 +103,9 @@ public class UsersManager {
 			lastUniqueIdFound.put(name, uuid);
 			return uuid;
 		}
-		Bukkit.getLogger().warning(ConfigUtils.getInfoMessage("The UUID of the name <" + name + "> was not found.",
-		        "L'UUID du pseudo <" + name + "> n'a pas ete trouve."));
+		Bukkit.getLogger()
+		        .warning(ConfigUtils.getInfoMessage("The UUID of the name <" + name + "> was not found.",
+		                "L'UUID du pseudo <" + name + "> n'a pas ete trouve."));
 		return null;
 	}
 
@@ -126,18 +126,19 @@ public class UsersManager {
 			}
 			if (name == null)
 				try {
-					name = (String) TigerReports.getInstance().getDb()
+					name = (String) TigerReports.getInstance()
+					        .getDb()
 					        .query("SELECT name FROM tigerreports_users WHERE uuid = ?", Arrays.asList(uuid))
 					        .getResult(0, "name");
-				} catch (Exception nameNotFound) {
-				}
+				} catch (Exception nameNotFound) {}
 			if (name != null) {
 				lastNameFound.put(uuid, name);
 				return name;
 			}
 		}
-		Bukkit.getLogger().warning(ConfigUtils.getInfoMessage("The name of the UUID <" + uuid + "> was not found.",
-		        "Le pseudo de l'UUID <" + uuid + "> n'a pas ete trouve."));
+		Bukkit.getLogger()
+		        .warning(ConfigUtils.getInfoMessage("The name of the UUID <" + uuid + "> was not found.",
+		                "Le pseudo de l'UUID <" + uuid + "> n'a pas ete trouve."));
 		return null;
 	}
 

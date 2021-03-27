@@ -36,10 +36,11 @@ public class UserUtils {
 		try {
 			UUID uniqueId = UUID.fromString(uuid);
 			Player p = Bukkit.getPlayer(uniqueId);
+
 			return p != null ? TigerReports.getInstance().getVaultManager().getPlayerDisplayName(p, staff)
 			        : TigerReports.getInstance().getUsersManager().getDisplayName(uuid, uniqueId, staff);
 		} catch (Exception invalidUniqueId) {
-			return uuid; // Allows to display old author display name of comments (now author saved is
+			return uuid; // Allows to display old author display name of comments (now saved author is
 			             // its uuid and not its display name)
 		}
 	}
@@ -61,14 +62,6 @@ public class UserUtils {
 		}
 	}
 
-	public static Player getPlayer(String name) {
-		try {
-			return Bukkit.getPlayer(name);
-		} catch (Exception offlinePlayer) {
-			return null;
-		}
-	}
-
 	public static boolean isValid(String uuid) {
 		return TigerReports.getInstance()
 		        .getDb()
@@ -77,7 +70,7 @@ public class UserUtils {
 	}
 
 	public static boolean isOnline(String name) {
-		return getPlayer(name) != null ? true : TigerReports.getInstance().getBungeeManager().isOnline(name);
+		return Bukkit.getPlayer(name) != null ? true : TigerReports.getInstance().getBungeeManager().isOnline(name);
 	}
 
 	/**

@@ -60,11 +60,13 @@ public class BungeeManager implements PluginMessageListener {
 			messenger.registerOutgoingPluginChannel(plugin, "BungeeCord");
 			messenger.registerIncomingPluginChannel(plugin, "BungeeCord", this);
 			initialized = true;
-			Bukkit.getLogger().info(
-			        ConfigUtils.getInfoMessage("The plugin is using BungeeCord.", "Le plugin utilise BungeeCord."));
+			Bukkit.getLogger()
+			        .info(ConfigUtils.getInfoMessage("The plugin is using BungeeCord.",
+			                "Le plugin utilise BungeeCord."));
 		} else {
-			Bukkit.getLogger().info(ConfigUtils.getInfoMessage("The plugin is not using BungeeCord.",
-			        "Le plugin n'utilise pas BungeeCord."));
+			Bukkit.getLogger()
+			        .info(ConfigUtils.getInfoMessage("The plugin is not using BungeeCord.",
+			                "Le plugin n'utilise pas BungeeCord."));
 		}
 	}
 
@@ -81,7 +83,7 @@ public class BungeeManager implements PluginMessageListener {
 
 			@Override
 			public void run() {
-				if (UserUtils.getPlayer(name) != null) {
+				if (Bukkit.getPlayer(name) != null) {
 					collectServerName();
 					if (!onlinePlayersCollected)
 						collectOnlinePlayers();
@@ -137,8 +139,7 @@ public class BungeeManager implements PluginMessageListener {
 			out.write(messageBytes);
 
 			p.sendPluginMessage(plugin, "BungeeCord", out.toByteArray());
-		} catch (IOException ignored) {
-		}
+		} catch (IOException ignored) {}
 	}
 
 	public void sendPluginNotification(String message) {
@@ -235,7 +236,7 @@ public class BungeeManager implements PluginMessageListener {
 						break;
 
 					String target = parts[2];
-					Player t = UserUtils.getPlayer(target);
+					Player t = Bukkit.getPlayer(target);
 					if (t != null) {
 						String staff = parts[0];
 						sendPluginMessage("ConnectOther", staff, serverName);
@@ -243,7 +244,7 @@ public class BungeeManager implements PluginMessageListener {
 					}
 					break;
 				case "comment":
-					Player rp = UserUtils.getPlayer(parts[3]);
+					Player rp = Bukkit.getPlayer(parts[3]);
 					if (rp == null)
 						break;
 
@@ -256,7 +257,7 @@ public class BungeeManager implements PluginMessageListener {
 				case "player_status":
 					String name = parts[0];
 					boolean online = parts[2].equals("true");
-					if (!online && UserUtils.getPlayer(name) != null) {
+					if (!online && Bukkit.getPlayer(name) != null) {
 						updatePlayerStatus(name, true);
 					} else {
 						setPlayerStatus(name, online);
@@ -265,8 +266,7 @@ public class BungeeManager implements PluginMessageListener {
 				default:
 					break;
 				}
-			} catch (Exception ignored) {
-			}
+			} catch (Exception ignored) {}
 		} else if (subchannel.equals("GetServer")) {
 			serverName = in.readUTF();
 		} else if (subchannel.equals("PlayerList")) {
@@ -293,7 +293,7 @@ public class BungeeManager implements PluginMessageListener {
 
 			@Override
 			public void run() {
-				Player p = UserUtils.getPlayer(name);
+				Player p = Bukkit.getPlayer(name);
 				if (p != null) {
 					p.teleport(loc);
 					ConfigSound.TELEPORT.play(p);
@@ -309,15 +309,17 @@ public class BungeeManager implements PluginMessageListener {
 		if (rp == null)
 			return;
 		OnlineUser ru = plugin.getUsersManager().getOnlineUser(rp);
-		plugin.getDb().updateAsynchronously(
-		        "UPDATE tigerreports_reports SET reported_ip=?,reported_location=?,reported_messages=?,reported_gamemode=?,reported_on_ground=?,reported_sneak=?,reported_sprint=?,reported_health=?,reported_food=?,reported_effects=? WHERE report_id=?",
-		        Arrays.asList(rp.getAddress().getAddress().toString(),
-		                MessageUtils.formatConfigLocation(rp.getLocation()), ru.getLastMessages(),
-		                rp.getGameMode().toString().toLowerCase(),
-		                !rp.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().equals(Material.AIR),
-		                rp.isSneaking(), rp.isSprinting(),
-		                (int) Math.round(rp.getHealth()) + "/" + (int) Math.round(rp.getMaxHealth()), rp.getFoodLevel(),
-		                MessageUtils.formatConfigEffects(rp.getActivePotionEffects()), r.getId()));
+		plugin.getDb()
+		        .updateAsynchronously(
+		                "UPDATE tigerreports_reports SET reported_ip=?,reported_location=?,reported_messages=?,reported_gamemode=?,reported_on_ground=?,reported_sneak=?,reported_sprint=?,reported_health=?,reported_food=?,reported_effects=? WHERE report_id=?",
+		                Arrays.asList(rp.getAddress().getAddress().toString(),
+		                        MessageUtils.formatConfigLocation(rp.getLocation()), ru.getLastMessages(),
+		                        rp.getGameMode().toString().toLowerCase(),
+		                        !rp.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().equals(Material.AIR),
+		                        rp.isSneaking(), rp.isSprinting(),
+		                        (int) Math.round(rp.getHealth()) + "/" + (int) Math.round(rp.getMaxHealth()),
+		                        rp.getFoodLevel(), MessageUtils.formatConfigEffects(rp.getActivePotionEffects()),
+		                        r.getId()));
 	}
 
 	public void collectOnlinePlayers() {

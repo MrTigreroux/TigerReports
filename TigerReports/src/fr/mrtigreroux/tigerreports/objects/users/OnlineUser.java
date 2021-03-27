@@ -48,7 +48,7 @@ public class OnlineUser extends User {
 
 	public String getDisplayName() {
 		if (displayName == null)
-			displayName = TigerReports.getInstance().getVaultManager().getPlayerDisplayName(p);
+			displayName = TigerReports.getInstance().getVaultManager().getOnlinePlayerDisplayName(p);
 		return displayName;
 	}
 
