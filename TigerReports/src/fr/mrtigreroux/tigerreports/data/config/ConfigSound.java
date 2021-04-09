@@ -26,11 +26,12 @@ public enum ConfigSound {
 	}
 
 	public String getConfigName() {
-		return name().charAt(0)+name().substring(1).toLowerCase()+"Sound";
+		String name = name();
+		return name.charAt(0) + name.substring(1).toLowerCase() + "Sound";
 	}
 
 	public Sound get() {
-		String path = "Config."+getConfigName();
+		String path = "Config." + getConfigName();
 		String configSound = ConfigFile.CONFIG.get().getString(path);
 		if (configSound != null && !configSound.equalsIgnoreCase("none")) {
 			for (String sound : Arrays.asList(configSound.toUpperCase(), oldSound, newSound)) {

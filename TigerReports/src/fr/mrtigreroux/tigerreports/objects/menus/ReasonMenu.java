@@ -55,12 +55,15 @@ public class ReasonMenu extends Menu {
 
 			String reason = configFile.getString(path + ".Name");
 			String lore = configFile.getString(path + ".Lore");
-			inv.setItem(reasonIndex - firstReason + 18, new CustomItem().fromConfig(configFile, path + ".Item")
-			        .name(REASON_MESSAGE.replace("_Reason_", reason))
-			        .lore(REASON_DETAILS_MESSAGE.replace("_Player_", targetDisplayName).replace("_Reason_", reason)
-			                .replace("_Lore_", MessageUtils.translateColorCodes(lore != null ? lore : ""))
-			                .split(LINE_BREAK_SYMBOL))
-			        .hideFlags(true).create());
+			inv.setItem(reasonIndex - firstReason + 18,
+			        new CustomItem().fromConfig(configFile, path + ".Item")
+			                .name(REASON_MESSAGE.replace("_Reason_", reason))
+			                .lore(REASON_DETAILS_MESSAGE.replace("_Player_", targetDisplayName)
+			                        .replace("_Reason_", reason)
+			                        .replace("_Lore_", MessageUtils.translateColorCodes(lore != null ? lore : ""))
+			                        .split(LINE_BREAK_SYMBOL))
+			                .hideFlags(true)
+			                .create());
 		}
 
 		if (ConfigUtils.exist(configFile, "Config.DefaultReasons.Reason" + (firstReason + 27)))

@@ -60,7 +60,8 @@ public class ReportCommand implements TabExecutor {
 		}
 
 		String reportedName = args[0];
-		if (reportedName.equalsIgnoreCase(p.getName()) && !Permission.MANAGE.isOwned(u)) {
+		boolean reportOneself = reportedName.equalsIgnoreCase(p.getName());
+		if (reportOneself && !Permission.MANAGE.isOwned(u)) {
 			MessageUtils.sendErrorMessage(p, Message.REPORT_ONESELF.get());
 			return true;
 		}
@@ -84,12 +85,14 @@ public class ReportCommand implements TabExecutor {
 
 		User ru = tr.getUsersManager().getUser(ruuid);
 		String reportedImmunity = ru.getImmunity();
-		if (reportedImmunity != null && !reportedName.equalsIgnoreCase(p.getName())) {
+		if (reportedImmunity != null && !reportOneself) {
 			if (reportedImmunity.equals("always")) {
 				MessageUtils.sendErrorMessage(p, Message.PERMISSION_REPORT.get().replace("_Player_", reportedName));
 			} else {
-				MessageUtils.sendErrorMessage(p, Message.PLAYER_ALREADY_REPORTED.get().replace("_Player_", reportedName)
-				        .replace("_Time_", reportedImmunity));
+				MessageUtils.sendErrorMessage(p,
+				        Message.PLAYER_ALREADY_REPORTED.get()
+				                .replace("_Player_", reportedName)
+				                .replace("_Time_", reportedImmunity));
 			}
 			return true;
 		}
@@ -112,8 +115,8 @@ public class ReportCommand implements TabExecutor {
 			reason = reason.replace(lineBreak, lineBreak.substring(0, 1));
 
 		if (!ConfigUtils.isEnabled(configFile, "Config.CustomReasons")) {
-			for (int reasonNumber = 1; reasonNumber <= 100; reasonNumber++) {
-				String defaultReason = configFile.getString("Config.DefaultReasons.Reason" + reasonNumber + ".Name");
+			for (int reasonIndex = 1; reasonIndex <= 100; reasonIndex++) {
+				String defaultReason = configFile.getString("Config.DefaultReasons.Reason" + reasonIndex + ".Name");
 				if (defaultReason == null) {
 					u.openReasonMenu(1, ru);
 					return true;
@@ -173,8 +176,7 @@ public class ReportCommand implements TabExecutor {
 								}
 							}
 
-						} catch (Exception invalidReport) {
-						}
+						} catch (Exception invalidReport) {}
 					}
 				}
 
@@ -190,7 +192,10 @@ public class ReportCommand implements TabExecutor {
 							        freason, rp.getAddress().getAddress().toString(),
 							        MessageUtils.formatConfigLocation(rp.getLocation()), ru.getLastMessages(),
 							        rp.getGameMode().toString().toLowerCase(),
-							        !rp.getLocation().getBlock().getRelative(BlockFace.DOWN).getType()
+							        !rp.getLocation()
+							                .getBlock()
+							                .getRelative(BlockFace.DOWN)
+							                .getType()
 							                .equals(Material.AIR),
 							        rp.isSneaking(), rp.isSprinting(),
 							        (int) Math.round(rp.getHealth()) + "/" + (int) Math.round(rp.getMaxHealth()),
@@ -223,9 +228,9 @@ public class ReportCommand implements TabExecutor {
 						String server = bm.getServerName();
 
 						ReportUtils.sendReport(fr, server, true);
-						s.sendMessage(
-						        Message.REPORT_SENT.get().replace("_Player_", fr.getPlayerName("Reported", false, true))
-						                .replace("_Reason_", freason));
+						s.sendMessage(Message.REPORT_SENT.get()
+						        .replace("_Player_", fr.getPlayerName("Reported", false, true))
+						        .replace("_Reason_", freason));
 						bm.sendPluginNotification(fr.getId() + " new_report " + date.replace(" ", "_") + " " + ruuid
 						        + " " + fr.getLastReporterUniqueId() + " " + freason.replace(" ", "_") + " " + server
 						        + " " + fmissingData);
@@ -239,8 +244,10 @@ public class ReportCommand implements TabExecutor {
 
 						for (String command : configFile.getStringList("Config.AutoCommands"))
 							Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
-							        command.replace("_Server_", server).replace("_Date_", date)
-							                .replace("_Reporter_", p.getName()).replace("_Reported_", reported)
+							        command.replace("_Server_", server)
+							                .replace("_Date_", date)
+							                .replace("_Reporter_", p.getName())
+							                .replace("_Reported_", reported)
 							                .replace("_Reason_", freason));
 					}
 				});

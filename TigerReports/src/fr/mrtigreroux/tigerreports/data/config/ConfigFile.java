@@ -29,13 +29,14 @@ public enum ConfigFile {
 	ConfigFile() {}
 
 	public void load() {
-		file = new File("plugins/TigerReports", toString().toLowerCase()+".yml");
+		file = new File("plugins/TigerReports", toString().toLowerCase() + ".yml");
 		if (!file.exists())
 			reset();
 		config = YamlConfiguration.loadConfiguration(file);
 
 		try {
-			Reader defaultConfigStream = new InputStreamReader(TigerReports.getInstance().getResource(file.getName()), "UTF8");
+			Reader defaultConfigStream = new InputStreamReader(TigerReports.getInstance().getResource(file.getName()),
+			        "UTF8");
 			YamlConfiguration defaultConfig = YamlConfiguration.loadConfiguration(defaultConfigStream);
 			if (this == CONFIG) {
 				defaultConfig.set("Config.DefaultReasons", null);
@@ -47,8 +48,8 @@ public enum ConfigFile {
 			config.setDefaults(defaultConfig);
 		} catch (Exception ex) {
 			Bukkit.getLogger()
-					.log(Level.SEVERE, ConfigUtils.getInfoMessage("An error has occurred while loading config files:",
-							"Une erreur est survenue en chargeant les fichiers de configuration:"), ex);
+			        .log(Level.SEVERE, ConfigUtils.getInfoMessage("An error has occurred while loading config files:",
+			                "Une erreur est survenue en chargeant les fichiers de configuration:"), ex);
 		}
 	}
 
@@ -68,8 +69,9 @@ public enum ConfigFile {
 		TigerReports.getInstance().saveResource(file.getName(), false);
 		Logger logger = Bukkit.getLogger();
 		logger.warning(MessageUtils.LINE);
-		logger.warning(this != CONFIG && ConfigUtils.getInfoLanguage().equalsIgnoreCase("English") ? "[TigerReports] The file "+file.getName()
-				+" has been reset." : "[TigerReports] Le fichier "+file.getName()+" a ete reinitialise.");
+		logger.warning(this != CONFIG && ConfigUtils.getInfoLanguage().equalsIgnoreCase("English")
+		        ? "[TigerReports] The file " + file.getName() + " has been reset."
+		        : "[TigerReports] Le fichier " + file.getName() + " a ete reinitialise.");
 		logger.warning(MessageUtils.LINE);
 	}
 

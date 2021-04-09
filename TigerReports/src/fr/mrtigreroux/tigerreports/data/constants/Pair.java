@@ -13,5 +13,5 @@ public class Pair<R, A> {
 		this.r = r;
 		this.a = a;
 	}
-	
+
 }

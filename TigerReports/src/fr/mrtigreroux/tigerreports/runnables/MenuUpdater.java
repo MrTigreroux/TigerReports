@@ -50,9 +50,10 @@ public class MenuUpdater implements Runnable {
 
 	public static void start() {
 		stop(false);
-		int interval = ConfigFile.CONFIG.get().getInt("Config.MenuUpdatesInterval", 10)*20;
+		int interval = ConfigFile.CONFIG.get().getInt("Config.MenuUpdatesInterval", 10) * 20;
 		if (interval > 0)
-			taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(TigerReports.getInstance(), new MenuUpdater(), interval, interval);
+			taskId = Bukkit.getScheduler()
+			        .scheduleSyncRepeatingTask(TigerReports.getInstance(), new MenuUpdater(), interval, interval);
 	}
 
 	public static void stop(boolean reset) {

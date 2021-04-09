@@ -28,21 +28,28 @@ public class ConfirmationMenu extends ReportManagerMenu {
 		String report = r.getName();
 		String actionDisplayed = action.equals("DELETE_ARCHIVE") ? "DELETE" : action;
 		Inventory inv = getInventory(
-				Message.valueOf("CONFIRM_" + actionDisplayed + "_TITLE").get().replace("_Report_", report), false);
+		        Message.valueOf("CONFIRM_" + actionDisplayed + "_TITLE").get().replace("_Report_", report), false);
 
 		ItemStack gui = MenuRawItem.GUI.create();
 		for (int position : new int[] { 1, 2, 3, 5, 6, 7, 10, 12, 14, 16, 19, 20, 21, 23, 24, 25 })
 			inv.setItem(position, gui);
 
 		inv.setItem(11,
-				MenuRawItem.GREEN_CLAY.clone().name(Message.valueOf("CONFIRM_" + actionDisplayed).get())
-						.lore(Message.valueOf("CONFIRM_" + actionDisplayed + "_DETAILS").get()
-								.replace("_Report_", report).split(ConfigUtils.getLineBreakSymbol()))
-						.create());
+		        MenuRawItem.GREEN_CLAY.clone()
+		                .name(Message.valueOf("CONFIRM_" + actionDisplayed).get())
+		                .lore(Message.valueOf("CONFIRM_" + actionDisplayed + "_DETAILS")
+		                        .get()
+		                        .replace("_Report_", report)
+		                        .split(ConfigUtils.getLineBreakSymbol()))
+		                .create());
 		inv.setItem(13, r.getItem(null));
-		inv.setItem(15, MenuRawItem.RED_CLAY.clone().name(Message.valueOf("CANCEL_" + actionDisplayed).get()).lore(
-				Message.valueOf("CANCEL_" + actionDisplayed + "_DETAILS").get().split(ConfigUtils.getLineBreakSymbol()))
-				.create());
+		inv.setItem(15,
+		        MenuRawItem.RED_CLAY.clone()
+		                .name(Message.valueOf("CANCEL_" + actionDisplayed).get())
+		                .lore(Message.valueOf("CANCEL_" + actionDisplayed + "_DETAILS")
+		                        .get()
+		                        .split(ConfigUtils.getLineBreakSymbol()))
+		                .create());
 
 		return inv;
 	}

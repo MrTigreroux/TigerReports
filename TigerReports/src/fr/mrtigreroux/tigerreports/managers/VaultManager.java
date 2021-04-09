@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
@@ -35,8 +36,9 @@ public class VaultManager {
 
 	public void load() {
 		if (setupChat()) {
-			displayForStaff = ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "VaultChat.DisplayForStaff");
-			displayForPlayers = ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "VaultChat.DisplayForPlayers");
+			FileConfiguration configFile = ConfigFile.CONFIG.get();
+			displayForStaff = ConfigUtils.isEnabled(configFile, "VaultChat.DisplayForStaff");
+			displayForPlayers = ConfigUtils.isEnabled(configFile, "VaultChat.DisplayForPlayers");
 		}
 	}
 
@@ -69,23 +71,26 @@ public class VaultManager {
 	 * Must be accessed asynchronously if player is offline
 	 */
 	private String getVaultDisplayName(OfflinePlayer p) {
+		String name = p.getName();
+		if (name == null)
+			return null;
+
 		String vaultDisplayName = MessageUtils
-		        .translateColorCodes(chat.getPlayerPrefix(null, p) + p.getName() + chat.getPlayerSuffix(null, p));
+		        .translateColorCodes(chat.getPlayerPrefix(null, p) + name + chat.getPlayerSuffix(null, p));
+
 		displayNames.put(p.getUniqueId().toString(), vaultDisplayName);
 		return vaultDisplayName;
 	}
 
 	public String getPlayerDisplayName(OfflinePlayer p, boolean staff) {
-		if (!(((staff && displayForStaff) || (!staff && displayForPlayers)) && setupChat())) {
+		if (!(((staff && displayForStaff) || (!staff && displayForPlayers)) && setupChat()))
 			return p.getName();
-		}
 
 		if (!p.isOnline()) {
 			String uuid = p.getUniqueId().toString();
 			String lastDisplayName = displayNames.get(uuid);
-			if (lastDisplayName != null) {
+			if (lastDisplayName != null)
 				return lastDisplayName;
-			}
 
 			Bukkit.getScheduler().runTaskAsynchronously(TigerReports.getInstance(), new Runnable() {
 

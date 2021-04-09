@@ -48,9 +48,10 @@ public class ReportMenu extends ReportManagerMenu {
 				public void run() {
 					Report upr = r != null ? r : tr.getReportsManager().getReportById(reportId, true);
 					QueryResult upStatisticsQuery = statisticsQuery != null ? statisticsQuery
-					        : upr != null ? tr.getDb().query(
-					                "SELECT uuid,true_appreciations,uncertain_appreciations,false_appreciations,reports,reported_times,processed_reports FROM tigerreports_users WHERE uuid = ? OR uuid = ? LIMIT 2",
-					                Arrays.asList(upr.getReporterUniqueId(), upr.getReportedUniqueId())) : null;
+					        : upr != null ? tr.getDb()
+					                .query("SELECT uuid,true_appreciations,uncertain_appreciations,false_appreciations,reports,reported_times,processed_reports FROM tigerreports_users WHERE uuid = ? OR uuid = ? LIMIT 2",
+					                        Arrays.asList(upr.getReporterUniqueId(), upr.getReportedUniqueId()))
+					                : null;
 					Bukkit.getScheduler().runTask(tr, new Runnable() {
 
 						@Override
@@ -103,9 +104,11 @@ public class ReportMenu extends ReportManagerMenu {
 
 		for (String type : new String[] { "Reporter", "Reported" }) {
 			String name = r.getPlayerName(type, false, false);
-			String details = stackedReport && type.equals("Reporter") ? Message
-			        .get("Menus.Stacked-report-reporters-details").replace("_First_", r.getPlayerName(type, true, true))
-			        .replace("_Others_", r.getReportersNames(1)) : Message.PLAYER_DETAILS.get();
+			String details = stackedReport && type.equals("Reporter")
+			        ? Message.get("Menus.Stacked-report-reporters-details")
+			                .replace("_First_", r.getPlayerName(type, true, true))
+			                .replace("_Others_", r.getReportersNames(1))
+			        : Message.PLAYER_DETAILS.get();
 			Map<String, Object> statistics = type.equals("Reporter") ? reporter_stats : reported_stats;
 
 			for (Statistic stat : Statistic.values()) {
@@ -113,8 +116,7 @@ public class ReportMenu extends ReportManagerMenu {
 				String value = null;
 				try {
 					value = statistics != null ? String.valueOf(statistics.get(statName)) : null;
-				} catch (Exception notFound) {
-				}
+				} catch (Exception notFound) {}
 				if (value == null)
 					value = Message.NOT_FOUND_MALE.get();
 				details = details.replace(
@@ -149,7 +151,8 @@ public class ReportMenu extends ReportManagerMenu {
 		boolean archive = u.canArchive(r);
 		for (Status status : Status.values()) {
 			inv.setItem(statusPosition,
-			        status.getButtonItem().glow(status.equals(r.getStatus()))
+			        status.getButtonItem()
+			                .glow(status.equals(r.getStatus()))
 			                .name(status == Status.DONE ? Message.PROCESS_STATUS.get()
 			                        : Message.CHANGE_STATUS.get().replace("_Status_", status.getWord(null)))
 			                .lore((status == Status.DONE ? Message.PROCESS_STATUS_DETAILS.get()
@@ -175,8 +178,10 @@ public class ReportMenu extends ReportManagerMenu {
 			u.openReportsMenu(1, true);
 			break;
 		case 18:
-			u.printInChat(r, r.implementDetails(Message.REPORT_CHAT_DETAILS.get(), false)
-			        .replace("_Report_", r.getName()).split(ConfigUtils.getLineBreakSymbol()));
+			u.printInChat(r,
+			        r.implementDetails(Message.REPORT_CHAT_DETAILS.get(), false)
+			                .replace("_Report_", r.getName())
+			                .split(ConfigUtils.getLineBreakSymbol()));
 			break;
 		case 21:
 		case 23:
@@ -217,7 +222,8 @@ public class ReportMenu extends ReportManagerMenu {
 			} else {
 				return;
 			}
-			u.sendMessageWithReportButton(Message.valueOf("TELEPORT_" + locType + "_LOCATION").get()
+			u.sendMessageWithReportButton(Message.valueOf("TELEPORT_" + locType + "_LOCATION")
+			        .get()
 			        .replace("_Player_",
 			                Message.valueOf(targetType.toUpperCase() + "_NAME").get().replace("_Player_", target))
 			        .replace("_Report_", r.getName()), r);
@@ -236,24 +242,29 @@ public class ReportMenu extends ReportManagerMenu {
 			if (!r.isStackedReport()) {
 				long seconds = ReportUtils.getPunishSeconds();
 				String uuid = p.getUniqueId().toString();
-				TigerReports.getInstance().getUsersManager().getUser(r.getReporterUniqueId()).punish(seconds, uuid,
-				        false);
+				TigerReports.getInstance()
+				        .getUsersManager()
+				        .getUser(r.getReporterUniqueId())
+				        .punish(seconds, uuid, false);
 				r.process(uuid, "False", false, Permission.STAFF_ARCHIVE_AUTO.isOwned(u), false);
 				u.openReportsMenu(1, false);
 			}
 			break;
 		case 26:
 			if (click == ClickType.LEFT) {
-				u.printInChat(r, r.implementData(Message.REPORT_CHAT_DATA.get(), Permission.STAFF_ADVANCED.isOwned(u))
-				        .replace("_Report_", r.getName()).split(ConfigUtils.getLineBreakSymbol()));
+				u.printInChat(r,
+				        r.implementData(Message.REPORT_CHAT_DATA.get(), Permission.STAFF_ADVANCED.isOwned(u))
+				                .replace("_Report_", r.getName())
+				                .split(ConfigUtils.getLineBreakSymbol()));
 			} else if (click == ClickType.RIGHT) {
-				Map<Double, String> sortedMessages = new TreeMap<Double, String>();
+				Map<Long, String> sortedMessages = new TreeMap<>();
 				for (String type : new String[] { "Reported", "Reporter" }) {
 					for (String message : r.getMessagesHistory(type)) {
 						if (message != null && message.length() >= 20) {
 							String date = message.substring(0, 19);
 							sortedMessages.put(MessageUtils.getSeconds(date),
-							        Message.REPORT_MESSAGE_FORMAT.get().replace("_Date_", date)
+							        Message.REPORT_MESSAGE_FORMAT.get()
+							                .replace("_Date_", date)
 							                .replace("_Player_", r.getPlayerName(type, false, true))
 							                .replace("_Message_", message.substring(20)));
 						}
@@ -263,7 +274,8 @@ public class ReportMenu extends ReportManagerMenu {
 				for (String message : sortedMessages.values())
 					messages.append(message);
 				u.printInChat(r,
-				        Message.REPORT_MESSAGES_HISTORY.get().replace("_Report_", r.getName())
+				        Message.REPORT_MESSAGES_HISTORY.get()
+				                .replace("_Report_", r.getName())
 				                .replace("_Messages_",
 				                        !messages.toString().isEmpty() ? messages.toString() : Message.NONE_MALE.get())
 				                .split(ConfigUtils.getLineBreakSymbol()));

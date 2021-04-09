@@ -123,8 +123,9 @@ public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu {
 									if (isPrivate && ru instanceof OnlineUser) {
 										((OnlineUser) ru).sendCommentNotification(r, c, true);
 									} else if (isPrivate && UserUtils.isOnline(ru.getName())) {
-										tr.getBungeeManager().sendPluginNotification(
-										        reportId + " comment " + commentId + " " + ru.getName());
+										tr.getBungeeManager()
+										        .sendPluginNotification(
+										                reportId + " comment " + commentId + " " + ru.getName());
 									} else {
 										Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
 

@@ -221,10 +221,10 @@ Config:
       Text: "&7[&c&l!&7]"
       # Report button display in chat / Apparence du bouton de signalement
       
-      Hover: "&6Clic gauche &7pour signaler le message du joueur &e_Player_&7."
+      Hover: "&6Clic gauche &7pour signaler le message du joueur &e_Player_&7." # "Left click to report the message of _Player_ player."
       # Message displayed when hovering the report button / Message affiché en survolant le bouton de signalement
       
-      Reason: "Message inapproprié"
+      Reason: "Message inappropri\xe9" # "Inappropriate message"
       # Report reason when using the report button / Raison du signalement envoyé lorsque le bouton de signalement est utilisé
 
 BungeeCord:

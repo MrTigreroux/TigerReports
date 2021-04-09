@@ -142,16 +142,4 @@ public class UsersManager {
 		return null;
 	}
 
-	public String getDisplayName(String uuid, UUID uniqueId, boolean staff) {
-		String name = null;
-		OfflinePlayer p = null;
-		if (uniqueId != null) {
-			p = Bukkit.getOfflinePlayer(uniqueId);
-			if (p != null) {
-				name = TigerReports.getInstance().getVaultManager().getPlayerDisplayName(p, staff);
-			}
-		}
-		return name != null ? name : getName(uuid, uniqueId, p);
-	}
-
 }

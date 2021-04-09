@@ -40,8 +40,7 @@ public class TigerReports extends JavaPlugin {
 	private ReportsManager reportsManager;
 	private VaultManager vaultManager = null;
 
-	public TigerReports() {
-	}
+	public TigerReports() {}
 
 	public void load() {
 		for (ConfigFile configFiles : ConfigFile.values())

@@ -46,8 +46,7 @@ public class CustomItem {
 		this.glow = glow;
 	}
 
-	public CustomItem() {
-	}
+	public CustomItem() {}
 
 	public CustomItem clone() {
 		return new CustomItem(material, amount, damage, displayName, lore, enchantments, skullOwner, hideFlags, glow);

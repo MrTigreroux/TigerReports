@@ -32,8 +32,7 @@ public class ReportUtils {
 
 		try {
 			Bukkit.getServer().getPluginManager().callEvent(new NewReportEvent(server, r));
-		} catch (Exception ignored) {
-		}
+		} catch (Exception ignored) {}
 		if (!notify)
 			return;
 
@@ -51,10 +50,12 @@ public class ReportUtils {
 			        new ComponentBuilder(Message.ALERT_DETAILS.get().replace("_Report_", r.getName())).create()));
 		}
 
-		for (String line : Message.ALERT.get().replace("_Server_", MessageUtils.getServerName(server))
+		for (String line : Message.ALERT.get()
+		        .replace("_Server_", MessageUtils.getServerName(server))
 		        .replace("_Reporter_", r.getPlayerName(r.getLastReporterUniqueId(), "Reporter", false, true))
 		        .replace("_Reported_", r.getPlayerName("Reported", !ReportUtils.onlinePlayerRequired(), true))
-		        .replace("_Reason_", r.getReason(false)).split(ConfigUtils.getLineBreakSymbol())) {
+		        .replace("_Reason_", r.getReason(false))
+		        .split(ConfigUtils.getLineBreakSymbol())) {
 			alert.setText(line);
 			MessageUtils.sendStaffMessage(alert.duplicate(), ConfigSound.REPORT.get());
 		}
@@ -83,12 +84,13 @@ public class ReportUtils {
 
 			@Override
 			public void run() {
-				List<Map<String, Object>> results = tr.getDb().query(
-				        "SELECT report_id,status,appreciation,date,reported_uuid,reporter_uuid,reason FROM tigerreports_reports WHERE archived = ?"
+				List<Map<String, Object>> results = tr.getDb()
+				        .query("SELECT report_id,status,appreciation,date,reported_uuid,reporter_uuid,reason FROM tigerreports_reports WHERE archived = ?"
 				                + (reporter != null ? " AND reporter_uuid LIKE '%" + reporter + "%'"
 				                        : reported != null ? " AND reported_uuid = '" + reported + "'" : "")
 				                + (archived ? " ORDER BY report_id DESC" : "") + " LIMIT 28 OFFSET ?",
-				        Arrays.asList(archived ? 1 : 0, first)).getResultList();
+				                Arrays.asList(archived ? 1 : 0, first))
+				        .getResultList();
 
 				Bukkit.getScheduler().runTask(tr, new Runnable() {
 
@@ -126,8 +128,10 @@ public class ReportUtils {
 	}
 
 	public static int getTotalReports() {
-		Object o = TigerReports.getInstance().getDb()
-		        .query("SELECT COUNT(report_id) AS Total FROM tigerreports_reports", null).getResult(0, "Total");
+		Object o = TigerReports.getInstance()
+		        .getDb()
+		        .query("SELECT COUNT(report_id) AS Total FROM tigerreports_reports", null)
+		        .getResult(0, "Total");
 		return o instanceof Integer ? (int) o : Ints.checkedCast((long) o);
 	}
 
@@ -147,8 +151,8 @@ public class ReportUtils {
 		return ConfigFile.CONFIG.get().getInt("Config.MinCharacters", 4);
 	}
 
-	public static double getCooldown() {
-		return ConfigFile.CONFIG.get().getDouble("Config.ReportCooldown", 300);
+	public static long getCooldown() {
+		return ConfigFile.CONFIG.get().getLong("Config.ReportCooldown", 300);
 	}
 
 	public static long getPunishSeconds() {

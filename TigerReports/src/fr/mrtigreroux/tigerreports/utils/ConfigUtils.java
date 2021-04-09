@@ -74,8 +74,7 @@ public class ConfigUtils {
 		if (!time.equals("default")) {
 			try {
 				return ZoneId.of(time);
-			} catch (Exception ex) {
-			}
+			} catch (Exception ex) {}
 		}
 		return ZoneId.systemDefault();
 	}

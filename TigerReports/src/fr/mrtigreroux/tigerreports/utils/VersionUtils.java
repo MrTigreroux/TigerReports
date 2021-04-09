@@ -18,8 +18,7 @@ public class VersionUtils {
 			ver = ver.substring(ver.indexOf('(') + 5, ver.length() - 1).replaceFirst("\\.", "");
 			try {
 				version = Double.parseDouble(ver + (StringUtils.countMatches(ver, ".") == 0 ? ".0" : ""));
-			} catch (Exception ignored) {
-			}
+			} catch (Exception ignored) {}
 		}
 		return version;
 	}

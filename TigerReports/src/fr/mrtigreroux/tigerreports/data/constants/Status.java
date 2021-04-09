@@ -57,9 +57,9 @@ public enum Status {
 	public static Status getFrom(String status) {
 		try {
 			return status == null ? Status.WAITING
-					: status.startsWith(Status.DONE.getConfigWord()) ? Status.DONE
-							: status.startsWith(Status.IN_PROGRESS.getConfigWord()) ? Status.IN_PROGRESS
-									: Status.valueOf(status.toUpperCase().replace(" ", "_"));
+			        : status.startsWith(Status.DONE.getConfigWord()) ? Status.DONE
+			                : status.startsWith(Status.IN_PROGRESS.getConfigWord()) ? Status.IN_PROGRESS
+			                        : Status.valueOf(status.toUpperCase().replace(" ", "_"));
 		} catch (Exception invalidStatus) {
 			return Status.WAITING;
 		}

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -36,9 +37,23 @@ public class UserUtils {
 		try {
 			UUID uniqueId = UUID.fromString(uuid);
 			Player p = Bukkit.getPlayer(uniqueId);
+			OfflinePlayer offp = null;
 
-			return p != null ? TigerReports.getInstance().getVaultManager().getPlayerDisplayName(p, staff)
-			        : TigerReports.getInstance().getUsersManager().getDisplayName(uuid, uniqueId, staff);
+			TigerReports tr = TigerReports.getInstance();
+			String name = null;
+
+			if (p != null) {
+				name = tr.getVaultManager().getPlayerDisplayName(p, staff);
+				offp = p;
+			} else {
+				if (uniqueId != null) {
+					offp = Bukkit.getOfflinePlayer(uniqueId);
+					if (offp != null) {
+						name = tr.getVaultManager().getPlayerDisplayName(offp, staff);
+					}
+				}
+			}
+			return name != null ? name : tr.getUsersManager().getName(uuid, uniqueId, offp);
 		} catch (Exception invalidUniqueId) {
 			return uuid; // Allows to display old author display name of comments (now saved author is
 			             // its uuid and not its display name)

@@ -220,7 +220,7 @@ public class BungeeManager implements PluginMessageListener {
 					getUser(parts).updateCooldown(parts[0].equals("null") ? null : parts[0].replace("_", " "), true);
 					break;
 				case "punish":
-					getUser(parts).punish(Double.parseDouble(parts[4]), notify ? parts[0] : null, true);
+					getUser(parts).punish(Long.parseLong(parts[4]), notify ? parts[0] : null, true);
 					break;
 				case "stop_cooldown":
 					getUser(parts).stopCooldown(notify ? parts[0] : null, true);

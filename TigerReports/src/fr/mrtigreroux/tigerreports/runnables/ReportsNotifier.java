@@ -36,10 +36,11 @@ public class ReportsNotifier implements Runnable {
 			public void run() {
 				int totalAmount = 0;
 				String reportsNotification = Message.REPORTS_NOTIFICATION.get();
-				for (Map<String, Object> result : TigerReports.getInstance().getDb()
-						.query("SELECT status FROM tigerreports_reports WHERE archived = ?",
-								Collections.singletonList(0))
-						.getResultList()) {
+				for (Map<String, Object> result : TigerReports.getInstance()
+				        .getDb()
+				        .query("SELECT status FROM tigerreports_reports WHERE archived = ?",
+				                Collections.singletonList(0))
+				        .getResultList()) {
 					Status status = Status.getFrom((String) result.get("status"));
 					statusTypes.put(status, (statusTypes.get(status) != null ? statusTypes.get(status) : 0) + 1);
 				}
@@ -50,9 +51,9 @@ public class ReportsNotifier implements Runnable {
 						break;
 					int amount = (statusTypes.get(status) != null ? statusTypes.get(status) : 0);
 					reportsNotification = reportsNotification.replace(statusPlaceHolder,
-							(amount <= 1 ? Message.REPORT_TYPE : Message.REPORTS_TYPE).get()
-									.replace("_Amount_", Integer.toString(amount))
-									.replace("_Type_", status.getWord(null).toLowerCase()));
+					        (amount <= 1 ? Message.REPORT_TYPE : Message.REPORTS_TYPE).get()
+					                .replace("_Amount_", Integer.toString(amount))
+					                .replace("_Type_", status.getWord(null).toLowerCase()));
 					totalAmount += amount;
 				}
 
@@ -80,8 +81,8 @@ public class ReportsNotifier implements Runnable {
 		stop();
 		int interval = ConfigFile.CONFIG.get().getInt("Config.Notifications.Staff.MinutesInterval", 0) * 1200;
 		if (interval > 0)
-			taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(TigerReports.getInstance(), new ReportsNotifier(),
-					interval, interval);
+			taskId = Bukkit.getScheduler()
+			        .scheduleSyncRepeatingTask(TigerReports.getInstance(), new ReportsNotifier(), interval, interval);
 	}
 
 	public static void stop() {

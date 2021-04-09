@@ -77,14 +77,15 @@ public class ReportsCommand implements TabExecutor {
 			case "notify":
 				boolean newState = !u.acceptsNotifications();
 				u.setStaffNotifications(newState);
-				p.sendMessage(Message.STAFF_NOTIFICATIONS.get().replace("_State_",
-				        (newState ? Message.ACTIVATED : Message.DISABLED).get()));
+				p.sendMessage(Message.STAFF_NOTIFICATIONS.get()
+				        .replace("_State_", (newState ? Message.ACTIVATED : Message.DISABLED).get()));
 				return true;
 			case "archiveall":
 				if (Permission.STAFF_ARCHIVE.check(s)) {
-					tr.getDb().updateAsynchronously(
-					        "UPDATE tigerreports_reports SET archived = ? WHERE archived = ? AND status LIKE 'Done%'",
-					        Arrays.asList(1, 0));
+					tr.getDb()
+					        .updateAsynchronously(
+					                "UPDATE tigerreports_reports SET archived = ? WHERE archived = ? AND status LIKE 'Done%'",
+					                Arrays.asList(1, 0));
 					MessageUtils.sendStaffMessage(Message.STAFF_ARCHIVEALL.get().replace("_Player_", p.getName()),
 					        ConfigSound.STAFF.get());
 				}
@@ -108,8 +109,9 @@ public class ReportsCommand implements TabExecutor {
 				boolean unarchived = reportsType != null && reportsType.equalsIgnoreCase("unarchived");
 				if ((unarchived || reportsType.equalsIgnoreCase("archived"))) {
 					if (Permission.STAFF_DELETE.check(s)) {
-						tr.getDb().updateAsynchronously("DELETE FROM tigerreports_reports WHERE archived = ?",
-						        Collections.singletonList(unarchived ? 0 : 1));
+						tr.getDb()
+						        .updateAsynchronously("DELETE FROM tigerreports_reports WHERE archived = ?",
+						                Collections.singletonList(unarchived ? 0 : 1));
 						MessageUtils.sendStaffMessage(
 						        Message.get("Messages.Staff-deleteall-" + (unarchived ? "un" : "") + "archived")
 						                .replace("_Player_", p.getName()),
@@ -163,7 +165,8 @@ public class ReportsCommand implements TabExecutor {
 
 	private Pair<Report, Boolean> getReportAndArchiveInfo(String reportId, CommandSender s) {
 		try {
-			return TigerReports.getInstance().getReportsManager()
+			return TigerReports.getInstance()
+			        .getReportsManager()
 			        .getReportByIdAndArchiveInfo(Integer.parseInt(reportId.replace("#", "")));
 		} catch (Exception invalidIndex) {
 			MessageUtils.sendErrorMessage(s, Message.INVALID_REPORT_ID.get().replace("_Id_", reportId));

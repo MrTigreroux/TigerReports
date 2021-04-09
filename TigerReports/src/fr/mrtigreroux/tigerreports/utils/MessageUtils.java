@@ -1,11 +1,10 @@
 package fr.mrtigreroux.tigerreports.utils;
 
 import java.text.Normalizer;
+import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -38,11 +37,20 @@ import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 
 public class MessageUtils {
 
-	private static final List<String> UNITS = Arrays.asList("YEAR", "MONTH", "WEEK", "DAY", "HOUR", "MINUTE", "SECOND");
-	private static final List<String> COLOR_CODES = Arrays.asList("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a",
-	        "b", "c", "d", "e", "f");
-	public static final String LINE = "------------------------------------------------------";
+	private static final Pattern COLOR_CODES_PATTERN = Pattern.compile("^[0-9a-f]$");
 	private static final Function<String, String> TRANSLATE_COLOR_CODES_METHOD;
+
+	private static final Pattern CONSOLE_PATTERN = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+
+	public static final String LINE = "------------------------------------------------------";
+
+	private static final String[] TIME_UNITS = new String[] { "YEAR", "MONTH", "WEEK", "DAY", "HOUR", "MINUTE",
+	        "SECOND" };
+	private static final int[] SECONDS_IN_UNIT = new int[] { 365 * 24 * 60 * 60, 30 * 24 * 60 * 60, 7 * 24 * 60 * 60,
+	        24 * 60 * 60, 60 * 60, 60 };
+
+	private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
+	        .withZone(ConfigUtils.getZoneId());
 
 	static {
 		if (VersionUtils.isVersionHigher1_16()) {
@@ -80,95 +88,101 @@ public class MessageUtils {
 
 	public static void sendConsoleMessage(String message) {
 		String temp = Normalizer.normalize(message, Normalizer.Form.NFD);
-		Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
-		message = pattern.matcher(temp).replaceAll("");
+
+		message = CONSOLE_PATTERN.matcher(temp).replaceAll("");
 		Bukkit.getConsoleSender().sendMessage(message.replace("»", ">"));
 	}
 
 	public static String getNowDate() {
-		return DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").format(ZonedDateTime.now(ConfigUtils.getZoneId()));
+		try {
+			return ZonedDateTime.now().format(DATE_FORMATTER);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return Message.NOT_FOUND_FEMALE.get();
+		}
 	}
 
-	public static Double getSeconds(String date) {
-		date = date.replace("/", "").replace(":", "").replace("-", "").replace(" ", "");
-		return Double.parseDouble(date.substring(4, 8)) * (365 * 24 * 60 * 60)
-		        + Double.parseDouble(date.substring(0, 2)) * (24 * 60 * 60)
-		        + Double.parseDouble(date.substring(2, 4)) * (30 * 24 * 60 * 60)
-		        + Double.parseDouble(date.substring(8, 10)) * (60 * 60)
-		        + Double.parseDouble(date.substring(10, 12)) * 60 + Double.parseDouble(date.substring(12, 14));
+	public static String getRelativeDate(long secondsToAdd) {
+		try {
+			return ZonedDateTime.now().plusSeconds(secondsToAdd).format(DATE_FORMATTER);
+		} catch (Exception ex) {
+			return Message.NOT_FOUND_FEMALE.get();
+		}
 	}
 
-	public static List<Integer> getValues(double seconds) {
-		List<Integer> values = Arrays.asList(0, 0, 0, 0, 0, 0, 0);
+	public static long getSecondsBetweenNowAndDate(String date) {
+		try {
+			return Duration
+			        .between(ZonedDateTime.now(ConfigUtils.getZoneId()), ZonedDateTime.parse(date, DATE_FORMATTER))
+			        .toSeconds();
+		} catch (Exception invalidDate) {
+			return -1;
+		}
+	}
 
-		while (seconds / (365 * 24 * 60 * 60) >= 1) {
-			values.set(0, values.get(0) + 1);
-			seconds -= (365 * 24 * 60 * 60);
+	public static long getSeconds(String date) {
+		try {
+			return ZonedDateTime.parse(date, DATE_FORMATTER).toEpochSecond();
+		} catch (Exception ex) {
+			return -1;
 		}
-		while (seconds / (30 * 24 * 60 * 60) >= 1) {
-			values.set(1, values.get(1) + 1);
-			seconds -= 30 * 24 * 60 * 60;
+	}
+
+	public static int[] getTimeValues(double seconds) {
+		int[] values = new int[] { 0, 0, 0, 0, 0, 0, 0 };
+
+		for (int unitIndex = 0; unitIndex <= 5; unitIndex++) {
+			int amountForUnit = (int) seconds / SECONDS_IN_UNIT[unitIndex];
+			values[unitIndex] += amountForUnit;
+			seconds -= amountForUnit * SECONDS_IN_UNIT[unitIndex];
 		}
-		while (seconds / (7 * 24 * 60 * 60) >= 1) {
-			values.set(2, values.get(2) + 1);
-			seconds -= 7 * 24 * 60 * 60;
-		}
-		while (seconds / (24 * 60 * 60) >= 1) {
-			values.set(3, values.get(3) + 1);
-			seconds -= 24 * 60 * 60;
-		}
-		while (seconds / (60 * 60) >= 1) {
-			values.set(4, values.get(4) + 1);
-			seconds -= 60 * 60;
-		}
-		while (seconds / 60 >= 1) {
-			values.set(5, values.get(5) + 1);
-			seconds -= 60;
-		}
-		values.set(6, values.get(6) + (int) Math.round(seconds));
+		/*
+		 * int secondsInYear = ; int years = (int) seconds / secondsInYear; values[0] +=
+		 * years; seconds -= years * secondsInYear;
+		 * 
+		 * int secondsInMonth = ; int months = (int) seconds / secondsInMonth; values[1]
+		 * += months; seconds -= months * secondsInMonth;
+		 * 
+		 * int secondsInWeek = ; int weeks = (int) seconds / secondsInWeek; values[2] +=
+		 * weeks; seconds -= weeks * secondsInWeek;
+		 * 
+		 * int secondsInDay = ; int days = (int) seconds / secondsInDay; values[3] +=
+		 * days; seconds -= days * secondsInDay;
+		 * 
+		 * int secondsInHour = ; int hours = (int) seconds / secondsInHour; values[4] +=
+		 * hours; seconds -= hours * secondsInHour;
+		 * 
+		 * int minutes = (int) seconds / 60; values[5] += minutes; seconds -= minutes *
+		 * 60;
+		 */
+
+		values[6] += (int) Math.round(seconds);
 
 		return values;
 	}
 
 	public static String convertToSentence(double seconds) {
-		List<Integer> values = getValues(seconds);
+		int[] values = getTimeValues(seconds);
 
 		StringBuilder sentenceBuilder = new StringBuilder();
-		for (int valueNumber = 0; valueNumber <= 6; valueNumber++) {
-			switch (values.get(valueNumber)) {
-			case 0:
-				break;
-			case 1:
-				sentenceBuilder.append("1").append(" ").append(Message.valueOf(UNITS.get(valueNumber)).get())
-				        .append(" ");
-				break;
-			default:
-				sentenceBuilder.append(values.get(valueNumber)).append(" ")
-				        .append(Message.valueOf(UNITS.get(valueNumber) + "S").get()).append(" ");
-				break;
-			}
+		for (int valueIndex = 0; valueIndex <= 6; valueIndex++) {
+			int value = values[valueIndex];
+			if (value <= 0)
+				continue;
+
+			String valueMessage = TIME_UNITS[valueIndex];
+			if (value > 1)
+				valueMessage += "S";
+			sentenceBuilder.append(value).append(" ").append(Message.valueOf(valueMessage).get()).append(" ");
 		}
 
-		String sentence = sentenceBuilder.toString();
-		return sentence.endsWith(" ") ? sentence.substring(0, sentence.length() - 1) : sentence;
+		int length = sentenceBuilder.length();
+
+		return length > 1 ? sentenceBuilder.deleteCharAt(length - 1).toString() : "0 " + Message.SECOND.get();
 	}
 
 	public static String getTimeAgo(String date) {
-		return convertToSentence(getSeconds(getNowDate()) - getSeconds(date));
-	}
-
-	public static String convertToDate(double seconds) {
-		List<Integer> values = getValues(seconds);
-		values = Arrays.asList(values.get(2) * 7 + values.get(3), values.get(1), values.get(0), values.get(4),
-		        values.get(5), values.get(6));
-		StringBuilder date = new StringBuilder();
-		for (int valueNumber = 0; valueNumber <= 5; valueNumber++) {
-			String value = Integer.toString(values.get(valueNumber));
-			if (value.length() < 2)
-				value = "0" + value;
-			date.append((valueNumber == 0 ? "" : valueNumber <= 2 ? "/" : valueNumber == 3 ? " " : "-")).append(value);
-		}
-		return date.toString();
+		return convertToSentence(-getSecondsBetweenNowAndDate(date));
 	}
 
 	public static ChatColor getLastColor(String text, String lastWord) {
@@ -177,9 +191,10 @@ public class MessageUtils {
 		if (index == -1)
 			return ChatColor.WHITE;
 
-		for (String code : org.bukkit.ChatColor.getLastColors(text.substring(0, index)).split("\u00A7"))
-			if (COLOR_CODES.contains(code))
+		for (String code : org.bukkit.ChatColor.getLastColors(text.substring(0, index)).split("\u00A7")) {
+			if (COLOR_CODES_PATTERN.matcher(code).matches())
 				color = code;
+		}
 
 		if (color == null)
 			color = "f";
@@ -197,10 +212,15 @@ public class MessageUtils {
 		if (wordSeparation) {
 			for (String word : text.split(" ")) {
 				if (word.length() >= 25) {
-					sentence.append(word.substring(0, word.length() / 2)).append(lineBreak).append(lastColor)
-					        .append(word.substring(word.length() / 2, word.length())).append(" ");
+					sentence.append(word.substring(0, word.length() / 2))
+					        .append(lineBreak)
+					        .append(lastColor)
+					        .append(word.substring(word.length() / 2, word.length()))
+					        .append(" ");
 					maxLength += 35;
-				} else if (sentence.toString().replace(lineBreak, "").replace(lastColor.toString(), "")
+				} else if (sentence.toString()
+				        .replace(lineBreak, "")
+				        .replace(lastColor.toString(), "")
 				        .length() >= maxLength) {
 					sentence.append(lineBreak).append(lastColor).append(word).append(" ");
 					maxLength += 35;
@@ -262,8 +282,9 @@ public class MessageUtils {
 	}
 
 	public static String formatConfigLocation(Location loc) {
-		StringBuilder configLoc = new StringBuilder(
-		        TigerReports.getInstance().getBungeeManager().getServerName() + "/" + loc.getWorld().getName());
+		StringBuilder configLoc = new StringBuilder(TigerReports.getInstance().getBungeeManager().getServerName())
+		        .append("/")
+		        .append(loc.getWorld().getName());
 		for (Object coords : new Object[] { loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch() }) {
 			String coord = String.valueOf(coords);
 			int end = (end = coord.indexOf('.') + 3) < coord.length() ? end : coord.length();
@@ -286,10 +307,16 @@ public class MessageUtils {
 
 	public static String formatConfigEffects(Collection<PotionEffect> effects) {
 		StringBuilder configEffects = new StringBuilder();
-		for (PotionEffect effect : effects)
-			configEffects.append(effect.getType().getName()).append(":").append(effect.getAmplifier() + 1).append("/")
-			        .append(effect.getDuration()).append(",");
-		return configEffects.length() > 1 ? configEffects.substring(0, configEffects.length() - 1) : null;
+		for (PotionEffect effect : effects) {
+			configEffects.append(effect.getType().getName())
+			        .append(":")
+			        .append(effect.getAmplifier() + 1)
+			        .append("/")
+			        .append(effect.getDuration())
+			        .append(",");
+		}
+		int length = configEffects.length();
+		return length > 1 ? configEffects.deleteCharAt(length - 1).toString() : null;
 	}
 
 	public static String getServerName(String server) {

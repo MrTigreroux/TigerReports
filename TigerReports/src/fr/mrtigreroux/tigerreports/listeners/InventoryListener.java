@@ -38,8 +38,9 @@ public class InventoryListener implements Listener {
 				e.setCancelled(true);
 				if (e.getCursor().getType() == Material.AIR)
 					u.getOpenedMenu().click(e.getCurrentItem(), e.getSlot(), e.getClick());
-			} else if (inv.getType() == InventoryType.PLAYER && (e.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY || e
-					.getAction() == InventoryAction.COLLECT_TO_CURSOR)) {
+			} else if (inv.getType() == InventoryType.PLAYER
+			        && (e.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY
+			                || e.getAction() == InventoryAction.COLLECT_TO_CURSOR)) {
 				e.setCancelled(true);
 			}
 		}

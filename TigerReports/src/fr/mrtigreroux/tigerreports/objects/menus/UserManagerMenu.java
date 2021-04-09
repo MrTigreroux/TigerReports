@@ -40,23 +40,28 @@ public abstract class UserManagerMenu extends Menu {
 		        Message.get(tag + "-title").replace("_Target_", name).replace("_Page_", Integer.toString(page)), true);
 
 		inv.setItem(0,
-		        new CustomItem().skullOwner(name).name(Message.USER.get().replace("_Target_", displayName))
-		                .lore(Message.get("Menus.User-details").replace("_Target_", displayName)
+		        new CustomItem().skullOwner(name)
+		                .name(Message.USER.get().replace("_Target_", displayName))
+		                .lore(Message.get("Menus.User-details")
+		                        .replace("_Target_", displayName)
 		                        .split(ConfigUtils.getLineBreakSymbol()))
 		                .create());
-		inv.setItem(4, new CustomItem().type(Material.BOOKSHELF).name(Message.get(tag).replace("_Target_", displayName))
-		        .create());
+		inv.setItem(4,
+		        new CustomItem().type(Material.BOOKSHELF)
+		                .name(Message.get(tag).replace("_Target_", displayName))
+		                .create());
 
 		return inv;
 	}
 
 	protected Report getReportWhereReporter(boolean archived, int reportIndex) {
 		TigerReports tr = TigerReports.getInstance();
-		return tr.getReportsManager().formatFullReport(tr.getDb()
-		        .query("SELECT * FROM tigerreports_reports WHERE archived = ? AND reporter_uuid LIKE '%"
-		                + tu.getUniqueId() + "%'" + (archived ? " ORDER BY report_id DESC" : "") + " LIMIT 1 OFFSET ?",
-		                Arrays.asList(archived ? 1 : 0, reportIndex - 1))
-		        .getResult(0));
+		return tr.getReportsManager()
+		        .formatFullReport(tr.getDb()
+		                .query("SELECT * FROM tigerreports_reports WHERE archived = ? AND reporter_uuid LIKE '%"
+		                        + tu.getUniqueId() + "%'" + (archived ? " ORDER BY report_id DESC" : "")
+		                        + " LIMIT 1 OFFSET ?", Arrays.asList(archived ? 1 : 0, reportIndex - 1))
+		                .getResult(0));
 	}
 
 	private Report getReportWhereReported(boolean archived, int reportIndex) {

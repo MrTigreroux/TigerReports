@@ -20,8 +20,7 @@ public class ReportsManager {
 
 	private final Map<Integer, Report> reports = new HashMap<>();
 
-	public ReportsManager() {
-	}
+	public ReportsManager() {}
 
 	public void saveReport(Report r) {
 		reports.put(r.getId(), r);
@@ -42,7 +41,8 @@ public class ReportsManager {
 	public Report getReportById(int reportId, boolean notArchived) {
 		return reportId <= 0 ? null
 		        : reports.containsKey(reportId) ? reports.get(reportId)
-		                : formatFullReport(TigerReports.getInstance().getDb()
+		                : formatFullReport(TigerReports.getInstance()
+		                        .getDb()
 		                        .query("SELECT * FROM tigerreports_reports WHERE report_id = ? "
 		                                + (notArchived ? "AND archived = 0 " : "") + "LIMIT 1",
 		                                Collections.singletonList(reportId))
@@ -50,7 +50,8 @@ public class ReportsManager {
 	}
 
 	public Pair<Report, Boolean> getReportByIdAndArchiveInfo(int reportId) {
-		Map<String, Object> result = TigerReports.getInstance().getDb()
+		Map<String, Object> result = TigerReports.getInstance()
+		        .getDb()
 		        .query("SELECT * FROM tigerreports_reports WHERE report_id = ? LIMIT 1",
 		                Collections.singletonList(reportId))
 		        .getResult(0);
@@ -59,7 +60,8 @@ public class ReportsManager {
 	}
 
 	public Report getReport(boolean archived, int reportIndex) {
-		return formatFullReport(TigerReports.getInstance().getDb()
+		return formatFullReport(TigerReports.getInstance()
+		        .getDb()
 		        .query("SELECT * FROM tigerreports_reports WHERE archived = ?"
 		                + (archived ? " ORDER BY report_id DESC" : "") + " LIMIT 1 OFFSET ?",
 		                Arrays.asList(archived ? 1 : 0, reportIndex - 1))

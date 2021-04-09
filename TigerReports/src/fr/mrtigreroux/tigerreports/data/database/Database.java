@@ -45,7 +45,7 @@ public abstract class Database {
 	private PreparedStatement prepare(PreparedStatement ps, final List<Object> parameters) throws SQLException {
 		if (parameters != null) {
 			for (int i = 1; i <= parameters.size(); i++) {
-				final Object parameter = parameters.get(i-1);
+				final Object parameter = parameters.get(i - 1);
 				ps.setObject(i, parameter);
 			}
 		}
@@ -118,15 +118,15 @@ public abstract class Database {
 			return -1;
 		}
 	}
-	
+
 	public void insertAsynchronously(final String query, final List<Object> parameters) {
 		Bukkit.getScheduler().runTaskAsynchronously(TigerReports.getInstance(), new Runnable() {
-			
+
 			@Override
 			public void run() {
 				insert(query, parameters);
 			}
-			
+
 		});
 	}
 
@@ -170,7 +170,8 @@ public abstract class Database {
 	}
 
 	private void logDatabaseError(Exception ex) {
-		logError(ConfigUtils.getInfoMessage("An error has occurred with the database:", "Une erreur est survenue avec la base de donnees:"), ex);
+		logError(ConfigUtils.getInfoMessage("An error has occurred with the database:",
+		        "Une erreur est survenue avec la base de donnees:"), ex);
 	}
 
 	void logError(String message, Exception ex) {
