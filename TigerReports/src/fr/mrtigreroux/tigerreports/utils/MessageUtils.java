@@ -114,7 +114,7 @@ public class MessageUtils {
 		try {
 			return Duration
 			        .between(ZonedDateTime.now(ConfigUtils.getZoneId()), ZonedDateTime.parse(date, DATE_FORMATTER))
-			        .toSeconds();
+			        .getSeconds();
 		} catch (Exception invalidDate) {
 			return -1;
 		}
@@ -136,25 +136,6 @@ public class MessageUtils {
 			values[unitIndex] += amountForUnit;
 			seconds -= amountForUnit * SECONDS_IN_UNIT[unitIndex];
 		}
-		/*
-		 * int secondsInYear = ; int years = (int) seconds / secondsInYear; values[0] +=
-		 * years; seconds -= years * secondsInYear;
-		 * 
-		 * int secondsInMonth = ; int months = (int) seconds / secondsInMonth; values[1]
-		 * += months; seconds -= months * secondsInMonth;
-		 * 
-		 * int secondsInWeek = ; int weeks = (int) seconds / secondsInWeek; values[2] +=
-		 * weeks; seconds -= weeks * secondsInWeek;
-		 * 
-		 * int secondsInDay = ; int days = (int) seconds / secondsInDay; values[3] +=
-		 * days; seconds -= days * secondsInDay;
-		 * 
-		 * int secondsInHour = ; int hours = (int) seconds / secondsInHour; values[4] +=
-		 * hours; seconds -= hours * secondsInHour;
-		 * 
-		 * int minutes = (int) seconds / 60; values[5] += minutes; seconds -= minutes *
-		 * 60;
-		 */
 
 		values[6] += (int) Math.round(seconds);
 
