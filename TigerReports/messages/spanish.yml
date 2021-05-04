@@ -34,6 +34,7 @@
   Cancel-button: "&7[&cCancelar&7]"
   Cancel-button-details: "&6Haz click izquierdo &7para cancelar tu comentario//&7para el _Report_&7."
   Cancel-comment: "&7[&6Reportes&7] &eHas cancelado el comentario para el _Report_&e. _ReportButton_"
+  Report-details: "_Report_// //&7Estado: _Status_//&7Fecha: &e_Date_// //&7Reportador(es): &a_Reporters_//&7Reportado: &c_Reported_//&7Motivo: &6_Reason_"
   Help-commands: ""
 ErrorMessages:
   Invalid-syntax-report: "&7[&6Reports&7] &eSintaxis incorrecta, usa: &b/report <jugador> (motivo)&e."

@@ -34,6 +34,7 @@
   Cancel-button: "&7[&cA&cn&cn&cu&cl&cl&ce&ce&cr&7]"
   Cancel-button-details: "&6Linkermuisknop &7om jouw reactie te annuleren//&7fvoor _Report_&7."
   Cancel-comment: "&7[&6Reports&7] &eJe hebt je reactie voor _Report_ &cgeannuleerd&e. _ReportButton_"
+  Report-details: "_Report_// //&7Status: _Status_//&7Date: &e_Date_// //&7Rapporteerder(s): &a_Reporters_//&7Rapporteerde: &c_Reported_//&7Reden: &6_Reason_"
   Help-commands: ""
 ErrorMessages:
   Invalid-syntax-report: "&7[&6Reports&7] &eGelieve het commando te specificeren: &b/report <speler> (reden)&e."

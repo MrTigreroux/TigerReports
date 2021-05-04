@@ -34,6 +34,7 @@
   Cancel-button: "&7[&cA&cn&cu&cl&cu&cj&7]"
   Cancel-button-details: "&6LPM&7, żeby anulować swój komentarz//&7dla zgłoszenia _Report_&7."
   Cancel-comment: "&7[&6Zgłoszenia&7] &cAnulowałeś &eswój &ekomentarz &edla zgłoszenia _Report_&e. _ReportButton_"
+  Report-details: "_Report_// //&7Status: _Status_//&7Data: &e_Date_// //&7Zgłaszający: &a_Reporters_//&7Zgłoszony: &c_Reported_//&7Powód: &6_Reason_"
   Help-commands: ""
 ErrorMessages:
   Invalid-syntax-report: "&7[&6Zgłoszenia&7] &eUzupełnij swoją komendę, jak w przykładzie: &b/report <gracz> (powód)&e."

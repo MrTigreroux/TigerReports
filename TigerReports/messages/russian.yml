@@ -34,6 +34,7 @@
   Cancel-button: "&7[&cО&cт&cм&cе&cн&cа&7]"
   Cancel-button-details: "&6Нажмите ЛКМ, &7чтобы отменить свой комментарий//&7для жалобы _Report_&7."          
   Cancel-comment: "&7[&6Reports&7] &eВы отменили комментарий для жалобы _Report_&e. _ReportButton_"
+  Report-details: "_Report_// //&7Статус: _Status_//&7Дата: &e_Date_// //&7Автор жалобы: &a_Reporters_//&7Нарушитель: &c_Reported_//&7Причина: &6_Reason_"
   Help-commands: ""
 ErrorMessages:
   Invalid-syntax-report: "&7[&6Reports&7] &eПожалуйста детализируйте вашу команду как: &b/report <player> (reason)&e."

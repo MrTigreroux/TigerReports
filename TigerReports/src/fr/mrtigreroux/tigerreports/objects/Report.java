@@ -267,8 +267,8 @@ public class Report {
 	}
 
 	public String getText() {
-		return Message.REPORT.get().replace("_Report_", getName()) + "\n"
-		        + implementDetails(Message.REPORT_DETAILS.get(), false).replace("_Actions_", "");
+		return implementDetails(Message.get("Messages.Report-details")
+		        .replace("_Report_", Message.REPORT.get().replace("_Report_", getName())), false);
 	}
 
 	public void process(String staffUuid, String appreciation, boolean bungee, boolean auto, boolean notifyStaff) {

@@ -34,6 +34,7 @@
   Cancel-button: "&7[&cC&ca&cn&cc&ce&cl&7]"
   Cancel-button-details: "&6Left click &7to cancel your comment//&7for _Report_&7."
   Cancel-comment: "&7[&6Reports&7] &eYou &ccancelled &eyour &ecomment &efor _Report_&e. _ReportButton_"
+  Report-details: "_Report_// //&7Status: _Status_//&7Date: &e_Date_// //&7Reporter(s): &a_Reporters_//&7Reported: &c_Reported_//&7Reason: &6_Reason_"
   Help-commands: ""
 ErrorMessages:
   Invalid-syntax-report: "&7[&6Reports&7] &ePlease detail your command like: &b/report <player> (reason)&e."

@@ -34,6 +34,7 @@
   Cancel-button: "&7[&cLöschen&7]"
   Cancel-button-details: "&6Linksklick &7um den Kommentar wieder zu löschen."
   Cancel-comment: "&7[&6Melden&7] &eDu hast den Kommentar wieder &cgelöscht. _ReportButton_"
+  Report-details: "_Report_// //&7Status: _Status_//&7Datum: &e_Date_// //&7Melder: &a_Reporters_//&7Gemeldeter: &c_Reported_//&7Grund: &6_Reason_"
   Help-commands: ""
 ErrorMessages:
   Invalid-syntax-report: "&7[&6Reports&7] &eSei bitte etwas präziser: &b/report <spieler> (grund)&e."

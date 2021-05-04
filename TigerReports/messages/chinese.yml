@@ -34,6 +34,7 @@
   Cancel-button: "&7[&c取消&7]"
   Cancel-button-details: "&6左击 &7以取消你的注释//&7为举报 _Report_&7."
   Cancel-comment: "&7[&6举报&7] &e你 &c取消了 &e你的 &e注释 &e为举报 _Report_&e. _ReportButton_"
+  Report-details: "_Report_// //&7状态: _Status_//&7日期: &e_Date_// //&7举报者: &a_Reporters_//&7被举报者: &c_Reported_//&7理由: &6_Reason_"
   Help-commands: ""
 ErrorMessages:
   Invalid-syntax-report: "&7[&6Reports&7] &eP请检查你的命令格式 正确用法: &b/report <玩家> (理由)&e."
