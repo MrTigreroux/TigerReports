@@ -17,6 +17,7 @@ import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.runnables.MenuUpdater;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
+import fr.mrtigreroux.tigerreports.utils.VersionUtils;
 
 /**
  * @author MrTigreroux
@@ -51,7 +52,7 @@ public abstract class Menu {
 	}
 
 	Inventory getInventory(String title, boolean borders) {
-		if (title.length() > 32)
+		if (title.length() > 32 && VersionUtils.isVersionLower1_9())
 			title = title.substring(0, 29) + "..";
 		Inventory inv = Bukkit.createInventory(null, size, title);
 		if (borders) {

@@ -26,6 +26,7 @@ import fr.mrtigreroux.tigerreports.objects.Report;
 
 public class ReportUtils {
 
+	@SuppressWarnings("deprecation")
 	public static void sendReport(Report r, String server, boolean notify) {
 		if (!ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.NotifyStackedReports"))
 			return;
@@ -57,7 +58,7 @@ public class ReportUtils {
 		        .replace("_Reason_", r.getReason(false))
 		        .split(ConfigUtils.getLineBreakSymbol())) {
 			alert.setText(line);
-			MessageUtils.sendStaffMessage(alert.duplicate(), ConfigSound.REPORT.get());
+			MessageUtils.sendStaffMessage(new TextComponent(alert), ConfigSound.REPORT.get());
 		}
 	}
 

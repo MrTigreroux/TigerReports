@@ -27,11 +27,15 @@ public class VersionUtils {
 		return getVersion() < 18;
 	}
 
-	public static boolean isVersionLess1_13() {
+	public static boolean isVersionLower1_9() {
+		return getVersion() < 19;
+	}
+
+	public static boolean isVersionLower1_13() {
 		return getVersion() < 113;
 	}
 
-	public static boolean isVersionHigher1_16() {
+	public static boolean isVersionAtLeast1_16() {
 		return getVersion() >= 116;
 	}
 

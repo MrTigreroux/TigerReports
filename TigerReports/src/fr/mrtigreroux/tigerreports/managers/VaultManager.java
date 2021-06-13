@@ -53,18 +53,21 @@ public class VaultManager {
 			return true;
 
 		RegisteredServiceProvider<Chat> rsp = Bukkit.getServer().getServicesManager().getRegistration(Chat.class);
-		chat = rsp.getProvider();
-		if (chat == null) {
-			MessageUtils.logSevere(ConfigUtils.getInfoMessage("The Chat of Vault plugin could not be used.",
-			        "Le chat du plugin Vault n'a pas pu etre utilise."));
-			return false;
+
+		if (rsp != null) {
+			chat = rsp.getProvider();
+			if (chat != null) {
+				Bukkit.getLogger()
+				        .info(ConfigUtils.getInfoMessage(
+				                "The plugin is using the prefixes and suffixes from the chat of Vault plugin to display player names.",
+				                "Le plugin utilise les prefixes et suffixes du chat du plugin Vault pour afficher les noms des joueurs."));
+				return true;
+			}
 		}
 
-		Bukkit.getLogger()
-		        .info(ConfigUtils.getInfoMessage(
-		                "The plugin is using the prefixes and suffixes from the chat of Vault plugin to display player names.",
-		                "Le plugin utilise les prefixes et suffixes du chat du plugin Vault pour afficher les noms des joueurs."));
-		return true;
+		MessageUtils.logSevere(ConfigUtils.getInfoMessage("The Chat of Vault plugin could not be used.",
+		        "Le chat du plugin Vault n'a pas pu etre utilise."));
+		return false;
 	}
 
 	/**

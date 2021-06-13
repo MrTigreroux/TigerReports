@@ -11,7 +11,7 @@ public class MenuRawItem {
 	        EMPTY_MAP;
 
 	public static void init() {
-		if (VersionUtils.isVersionLess1_13()) {
+		if (VersionUtils.isVersionLower1_13()) {
 			GUI = getCustomItem("STAINED_GLASS_PANE", 7).name(" ");
 			GREEN_CLAY = getCustomItem("STAINED_CLAY", 5);
 			RED_CLAY = getCustomItem("STAINED_CLAY", 14);

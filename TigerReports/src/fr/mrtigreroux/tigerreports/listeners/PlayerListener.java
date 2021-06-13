@@ -41,6 +41,7 @@ public class PlayerListener implements Listener {
 	private final List<String> HELP_COMMANDS = Arrays.asList("tigerreport", "helptigerreport", "reportshelp", "report?",
 	        "reports?");
 
+	@SuppressWarnings("deprecation")
 	@EventHandler
 	private void onPlayerJoin(PlayerJoinEvent e) {
 		Player p = e.getPlayer();

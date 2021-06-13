@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.function.Function;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import net.md_5.bungee.api.ChatColor;
@@ -52,8 +53,10 @@ public class MessageUtils {
 	private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
 	        .withZone(ConfigUtils.getZoneId());
 
+	private static final Pattern HEX_PATTERN = Pattern.compile("&#[a-fA-F0-9]{6}");
+
 	static {
-		if (VersionUtils.isVersionHigher1_16()) {
+		if (VersionUtils.isVersionAtLeast1_16()) {
 			TRANSLATE_COLOR_CODES_METHOD = string -> net.md_5.bungee.api.ChatColor
 			        .translateAlternateColorCodes(ConfigUtils.getColorCharacter(), string);
 		} else {
@@ -244,6 +247,7 @@ public class MessageUtils {
 		return advancedLine;
 	}
 
+	@SuppressWarnings("deprecation")
 	public static BaseComponent getAdvancedText(String replacement, String hover, String command) {
 		BaseComponent advancedText = new TextComponent(replacement);
 		advancedText.setColor(ChatColor.valueOf(MessageUtils.getLastColor(replacement, null).name()));
@@ -313,6 +317,16 @@ public class MessageUtils {
 	}
 
 	public static String translateColorCodes(String message) {
+		if (VersionUtils.isVersionAtLeast1_16()) {
+			Matcher matcher = HEX_PATTERN.matcher(message);
+
+			while (matcher.find()) {
+				String color = message.substring(matcher.start() + 1, matcher.end());
+				message = message.replace("&" + color, ChatColor.of(color) + "");
+				matcher = HEX_PATTERN.matcher(message);
+			}
+		}
+
 		return TRANSLATE_COLOR_CODES_METHOD.apply(message);
 	}
 

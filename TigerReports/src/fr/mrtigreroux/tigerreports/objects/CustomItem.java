@@ -62,7 +62,7 @@ public class CustomItem {
 
 	public Material getMaterial() {
 		return skullOwner == null ? material
-		        : (VersionUtils.isVersionLess1_13() ? Material.matchMaterial("SKULL_ITEM") : Material.PLAYER_HEAD);
+		        : (VersionUtils.isVersionLower1_13() ? Material.matchMaterial("SKULL_ITEM") : Material.PLAYER_HEAD);
 	}
 
 	public Integer getAmount() {

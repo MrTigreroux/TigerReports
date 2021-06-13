@@ -186,7 +186,7 @@ Words:
   Important: "&cImportant"
   Done: "&bTrait\xe9 par _Name_"
   Done-suffix:
-    True-appreciation: " &7(&aVrai&7)//&7Sanction appliqu\xe9e: &r_Punishment_"
+    True-appreciation: " &7(&aVrai&7)//&7Sanction appliqu\xe9e: &f_Punishment_"
     Other-appreciation: " &7(_Appreciation_&7)"
   Appreciation: "&7Appr\xe9ciation _Appreciation_"
   True-appreciation: "&aVrai"
