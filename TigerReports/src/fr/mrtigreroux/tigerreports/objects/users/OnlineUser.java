@@ -90,13 +90,15 @@ public class OnlineUser extends User {
 		String command = ConfigFile.CONFIG.get().getString("Config.Punishments.PunishmentsCommand");
 		if (command != null && !command.equalsIgnoreCase("none")) {
 			r.process(uuid, "True", false, Permission.STAFF_ARCHIVE_AUTO.isOwned(this), true);
-
-			Bukkit.dispatchCommand(p,
-			        command.replace("_Reported_", r.getPlayerName("Reported", false, false))
-			                .replace("_Staff_", name)
-			                .replace("_Id_", Integer.toString(r.getId()))
-			                .replace("_Reason_", r.getReason(false))
-			                .replace("_Reporter_", r.getPlayerName("Reporter", false, false)));
+			try {
+				Bukkit.dispatchCommand(p,
+				        command.replace("_Reported_", r.getPlayerName("Reported", false, false))
+				                .replace("_Staff_", name)
+				                .replace("_Id_", Integer.toString(r.getId()))
+				                .replace("_Reason_", r.getReason(false))
+				                .replace("_Reporter_", r.getPlayerName("Reporter", false, false)));
+				return;
+			} catch (Exception ignored) {}
 		}
 		new PunishmentMenu(this, page, r.getId()).open(true);
 	}
