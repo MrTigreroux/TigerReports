@@ -46,7 +46,7 @@ public enum Statistic {
 	}
 
 	public String getConfigName() {
-		return toString().toLowerCase();
+		return name().toLowerCase();
 	}
 
 	public String getName() {

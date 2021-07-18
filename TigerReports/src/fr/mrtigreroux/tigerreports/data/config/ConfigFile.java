@@ -29,7 +29,7 @@ public enum ConfigFile {
 	ConfigFile() {}
 
 	public void load() {
-		file = new File("plugins/TigerReports", toString().toLowerCase() + ".yml");
+		file = new File("plugins/TigerReports", name().toLowerCase() + ".yml");
 		if (!file.exists())
 			reset();
 		config = YamlConfiguration.loadConfiguration(file);

@@ -11,6 +11,7 @@ import org.bukkit.inventory.ItemStack;
 import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
+import fr.mrtigreroux.tigerreports.data.constants.Statistic;
 import fr.mrtigreroux.tigerreports.data.constants.Status;
 import fr.mrtigreroux.tigerreports.events.ProcessReportEvent;
 import fr.mrtigreroux.tigerreports.events.ReportStatusChangeEvent;
@@ -309,7 +310,7 @@ public class Report {
 			        .update("UPDATE tigerreports_reports SET status = ?,appreciation = ?,archived = ? WHERE report_id = ?",
 			                Arrays.asList(status, appreciation, auto ? 1 : 0, reportId));
 
-			um.getUser(staffUuid).changeStatistic("processed_reports", 1);
+			um.getUser(staffUuid).changeStatistic(Statistic.PROCESSED_REPORTS, 1);
 
 			for (String ruuid : getReportersUniqueIds()) {
 				User ru = um.getUser(ruuid);

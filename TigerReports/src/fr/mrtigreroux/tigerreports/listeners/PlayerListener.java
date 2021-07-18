@@ -53,17 +53,24 @@ public class PlayerListener implements Listener {
 
 			@Override
 			public void run() {
+				tr.getDb().updateUserName(p.getUniqueId().toString(), p.getName());
+				u.updateImmunity(Permission.REPORT_EXEMPT.isOwned(u) ? "always" : null, false);
+			}
+
+		}, 20);
+
+		Bukkit.getScheduler().runTaskLater(tr, new Runnable() {
+
+			@Override
+			public void run() {
 				u.sendNotifications();
 				if (Permission.STAFF.isOwned(u)
 				        && ConfigUtils.isEnabled(configFile, "Config.Notifications.Staff.Connection")) {
 					ReportsNotifier.sendReportsNotification(p);
 				}
-				tr.getDb().updateUserName(p.getUniqueId().toString(), p.getName());
 			}
 
 		}, configFile.getInt("Config.Notifications.Delay", 2) * 20);
-
-		u.updateImmunity(Permission.REPORT_EXEMPT.isOwned(u) ? "always" : null, false);
 
 		if (Permission.MANAGE.isOwned(u)) {
 			String newVersion = tr.getWebManager().getNewVersion();

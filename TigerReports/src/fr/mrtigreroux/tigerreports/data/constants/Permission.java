@@ -23,7 +23,7 @@ public enum Permission {
 	MANAGE;
 
 	public String get() {
-		return "tigerreports." + toString().toLowerCase().replace("_", ".");
+		return "tigerreports." + name().toLowerCase().replace("_", ".");
 	}
 
 	public boolean isOwned(OnlineUser u) {

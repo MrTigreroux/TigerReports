@@ -19,6 +19,7 @@ import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
+import fr.mrtigreroux.tigerreports.data.constants.Statistic;
 import fr.mrtigreroux.tigerreports.data.constants.Status;
 import fr.mrtigreroux.tigerreports.data.database.Database;
 import fr.mrtigreroux.tigerreports.managers.BungeeManager;
@@ -237,8 +238,8 @@ public class ReportCommand implements TabExecutor {
 
 						u.startCooldown(ReportUtils.getCooldown(), false);
 						ru.startImmunity(false);
-						u.changeStatistic("reports", 1);
-						ru.changeStatistic("reported_times", 1);
+						u.changeStatistic(Statistic.REPORTS, 1);
+						ru.changeStatistic(Statistic.REPORTED_TIMES, 1);
 
 						String reported = fr.getPlayerName("Reported", false, false);
 

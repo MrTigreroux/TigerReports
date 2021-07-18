@@ -180,20 +180,25 @@ public abstract class User {
 		return statistics;
 	}
 
-	public void changeStatistic(String statistic, int relativeValue) {
-		if (statistics == null)
-			getStatistics();
-		setStatistic(statistic, (statistics.get(statistic) != null ? statistics.get(statistic) : 0) + relativeValue,
-		        false);
+	public void changeStatistic(Statistic statistic, int relativeValue) {
+		changeStatistic(statistic.getConfigName(), relativeValue);
 	}
 
-	public void setStatistic(String statistic, int value, boolean bungee) {
-		statistics.put(statistic, value);
+	public void changeStatistic(String statisticConfigName, int relativeValue) {
+		if (statistics == null)
+			getStatistics();
+		Integer statisticValue = statistics.get(statisticConfigName);
+		setStatistic(statisticConfigName, (statisticValue != null ? statisticValue : 0) + relativeValue, false);
+	}
+
+	public void setStatistic(String statisticConfigName, int value, boolean bungee) {
+		statistics.put(statisticConfigName, value);
 		if (!bungee) {
 			TigerReports tr = TigerReports.getInstance();
-			tr.getBungeeManager().sendPluginNotification(value + " set_statistic " + statistic + " " + uuid);
+			tr.getBungeeManager().sendPluginNotification(value + " set_statistic " + statisticConfigName + " " + uuid);
 			tr.getDb()
-			        .updateAsynchronously("UPDATE tigerreports_users SET " + statistic + " = ? WHERE uuid = ?",
+			        .updateAsynchronously(
+			                "UPDATE tigerreports_users SET " + statisticConfigName + " = ? WHERE uuid = ?",
 			                Arrays.asList(value, uuid));
 		}
 	}

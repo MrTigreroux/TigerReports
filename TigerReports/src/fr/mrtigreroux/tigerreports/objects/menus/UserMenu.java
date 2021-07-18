@@ -125,10 +125,13 @@ public class UserMenu extends Menu implements UpdatedMenu {
 			break;
 		default:
 			if (slot != 4 && Permission.MANAGE.isOwned(u)) {
-				String stat = "";
-				for (Statistic statistics : Statistic.values())
-					if (statistics.getPosition() == slot)
-						stat = statistics.getConfigName();
+				Statistic stat = null;
+				for (Statistic statistics : Statistic.values()) {
+					if (statistics.getPosition() == slot) {
+						stat = statistics;
+						break;
+					}
+				}
 				tu.changeStatistic(stat, click.toString().contains("RIGHT") ? -1 : 1);
 				update(true);
 			}
