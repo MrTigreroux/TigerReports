@@ -26,6 +26,7 @@ import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.constants.Status;
+import fr.mrtigreroux.tigerreports.data.database.Database;
 import fr.mrtigreroux.tigerreports.objects.Comment;
 import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
@@ -41,24 +42,24 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 public class BungeeManager implements PluginMessageListener {
 
-	private TigerReports plugin;
+	private TigerReports tr;
 	private boolean initialized = false;
 	private String serverName = null;
 	private List<String> onlinePlayers = new ArrayList<>();
 	private boolean onlinePlayersCollected = false;
 	private String playerToRemove = null;
 
-	public BungeeManager(TigerReports plugin) {
-		this.plugin = plugin;
+	public BungeeManager(TigerReports tr) {
+		this.tr = tr;
 		initialize();
 		collectServerName();
 	}
 
 	public void initialize() {
 		if (ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "BungeeCord.Enabled")) {
-			Messenger messenger = plugin.getServer().getMessenger();
-			messenger.registerOutgoingPluginChannel(plugin, "BungeeCord");
-			messenger.registerIncomingPluginChannel(plugin, "BungeeCord", this);
+			Messenger messenger = tr.getServer().getMessenger();
+			messenger.registerOutgoingPluginChannel(tr, "BungeeCord");
+			messenger.registerIncomingPluginChannel(tr, "BungeeCord", this);
 			initialized = true;
 			Bukkit.getLogger()
 			        .info(ConfigUtils.getInfoMessage("The plugin is using BungeeCord.",
@@ -79,7 +80,7 @@ public class BungeeManager implements PluginMessageListener {
 		if (!initialized)
 			return;
 
-		Bukkit.getScheduler().runTaskLater(TigerReports.getInstance(), new Runnable() {
+		Bukkit.getScheduler().runTaskLater(tr, new Runnable() {
 
 			@Override
 			public void run() {
@@ -138,7 +139,7 @@ public class BungeeManager implements PluginMessageListener {
 			out.writeShort(messageBytes.length);
 			out.write(messageBytes);
 
-			p.sendPluginMessage(plugin, "BungeeCord", out.toByteArray());
+			p.sendPluginMessage(tr, "BungeeCord", out.toByteArray());
 		} catch (IOException ignored) {}
 	}
 
@@ -157,7 +158,7 @@ public class BungeeManager implements PluginMessageListener {
 		ByteArrayDataOutput out = ByteStreams.newDataOutput();
 		for (String part : message)
 			out.writeUTF(part);
-		p.sendPluginMessage(plugin, "BungeeCord", out.toByteArray());
+		p.sendPluginMessage(tr, "BungeeCord", out.toByteArray());
 	}
 
 	@Override
@@ -180,6 +181,8 @@ public class BungeeManager implements PluginMessageListener {
 
 				message = message.substring(index + 1);
 				String[] parts = message.split(" ");
+
+				Database db = tr.getDb();
 
 				switch (parts[1]) {
 				case "new_report":
@@ -226,7 +229,7 @@ public class BungeeManager implements PluginMessageListener {
 					getUser(parts).stopCooldown(notify ? parts[0] : null, true);
 					break;
 				case "set_statistic":
-					getUser(parts).setStatistic(parts[2], Integer.parseInt(parts[0]), true);
+					getUser(parts).setStatistic(parts[2], Integer.parseInt(parts[0]), true, db);
 					break;
 				case "tp_loc":
 					teleportDelayedly(parts[0], MessageUtils.getLocation(parts[2]));
@@ -248,7 +251,6 @@ public class BungeeManager implements PluginMessageListener {
 					if (rp == null)
 						break;
 
-					TigerReports tr = TigerReports.getInstance();
 					OnlineUser ru = tr.getUsersManager().getOnlineUser(rp);
 					Report report = tr.getReportsManager().getReportById(Integer.parseInt(parts[0]), false);
 					Comment c = report.getCommentById(Integer.parseInt(parts[2]));
@@ -281,15 +283,15 @@ public class BungeeManager implements PluginMessageListener {
 	}
 
 	private Report getReport(String[] parts) {
-		return TigerReports.getInstance().getReportsManager().getReportById(Integer.parseInt(parts[2]), false);
+		return tr.getReportsManager().getReportById(Integer.parseInt(parts[2]), false);
 	}
 
 	private User getUser(String[] parts) {
-		return TigerReports.getInstance().getUsersManager().getUser(parts[3]);
+		return tr.getUsersManager().getUser(parts[3]);
 	}
 
 	private void teleportDelayedly(String name, Location loc) {
-		Bukkit.getScheduler().runTaskLater(TigerReports.getInstance(), new Runnable() {
+		Bukkit.getScheduler().runTaskLater(tr, new Runnable() {
 
 			@Override
 			public void run() {
@@ -308,8 +310,8 @@ public class BungeeManager implements PluginMessageListener {
 		Player rp = UserUtils.getPlayerFromUniqueId(r.getReportedUniqueId());
 		if (rp == null)
 			return;
-		OnlineUser ru = plugin.getUsersManager().getOnlineUser(rp);
-		plugin.getDb()
+		OnlineUser ru = tr.getUsersManager().getOnlineUser(rp);
+		tr.getDb()
 		        .updateAsynchronously(
 		                "UPDATE tigerreports_reports SET reported_ip=?,reported_location=?,reported_messages=?,reported_gamemode=?,reported_on_ground=?,reported_sneak=?,reported_sprint=?,reported_health=?,reported_food=?,reported_effects=? WHERE report_id=?",
 		                Arrays.asList(rp.getAddress().getAddress().toString(),

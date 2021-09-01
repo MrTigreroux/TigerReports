@@ -13,6 +13,7 @@ import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Statistic;
 import fr.mrtigreroux.tigerreports.data.constants.Status;
+import fr.mrtigreroux.tigerreports.data.database.Database;
 import fr.mrtigreroux.tigerreports.events.ProcessReportEvent;
 import fr.mrtigreroux.tigerreports.events.ReportStatusChangeEvent;
 import fr.mrtigreroux.tigerreports.managers.BungeeManager;
@@ -302,19 +303,19 @@ public class Report {
 		TigerReports tr = TigerReports.getInstance();
 		UsersManager um = tr.getUsersManager();
 		BungeeManager bm = tr.getBungeeManager();
+		Database db = tr.getDb();
 
 		if (!bungee) {
 			bm.sendPluginNotification(
 			        String.join(" ", staffUuid, bungeeAction, "" + reportId, auto ? "1" : "0", appreciation));
-			tr.getDb()
-			        .update("UPDATE tigerreports_reports SET status = ?,appreciation = ?,archived = ? WHERE report_id = ?",
-			                Arrays.asList(status, appreciation, auto ? 1 : 0, reportId));
+			db.update("UPDATE tigerreports_reports SET status = ?,appreciation = ?,archived = ? WHERE report_id = ?",
+			        Arrays.asList(status, appreciation, auto ? 1 : 0, reportId));
 
-			um.getUser(staffUuid).changeStatistic(Statistic.PROCESSED_REPORTS, 1);
+			um.getUser(staffUuid).changeStatistic(Statistic.PROCESSED_REPORTS, 1, db);
 
 			for (String ruuid : getReportersUniqueIds()) {
 				User ru = um.getUser(ruuid);
-				ru.changeStatistic(getAppreciation(true).toLowerCase() + "_appreciations", 1);
+				ru.changeStatistic(getAppreciation(true).toLowerCase() + "_appreciations", 1, db);
 
 				if (ConfigUtils.playersNotifications()) {
 					if (ru instanceof OnlineUser) {

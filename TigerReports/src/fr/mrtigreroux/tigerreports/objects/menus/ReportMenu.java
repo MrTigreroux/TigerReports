@@ -178,10 +178,9 @@ public class ReportMenu extends ReportManagerMenu {
 			u.openReportsMenu(1, true);
 			break;
 		case 18:
-			u.printInChat(r,
-			        r.implementDetails(Message.REPORT_CHAT_DETAILS.get(), false)
-			                .replace("_Report_", r.getName())
-			                .split(ConfigUtils.getLineBreakSymbol()));
+			u.sendLinesWithReportButton(r.implementDetails(Message.REPORT_CHAT_DETAILS.get(), false)
+			        .replace("_Report_", r.getName())
+			        .split(ConfigUtils.getLineBreakSymbol()), r);
 			break;
 		case 21:
 		case 23:
@@ -252,10 +251,11 @@ public class ReportMenu extends ReportManagerMenu {
 			break;
 		case 26:
 			if (click == ClickType.LEFT) {
-				u.printInChat(r,
+				u.sendLinesWithReportButton(
 				        r.implementData(Message.REPORT_CHAT_DATA.get(), Permission.STAFF_ADVANCED.isOwned(u))
 				                .replace("_Report_", r.getName())
-				                .split(ConfigUtils.getLineBreakSymbol()));
+				                .split(ConfigUtils.getLineBreakSymbol()),
+				        r);
 			} else if (click == ClickType.RIGHT) {
 				Map<Long, String> sortedMessages = new TreeMap<>();
 				for (String type : new String[] { "Reported", "Reporter" }) {
@@ -273,12 +273,11 @@ public class ReportMenu extends ReportManagerMenu {
 				StringBuilder messages = new StringBuilder();
 				for (String message : sortedMessages.values())
 					messages.append(message);
-				u.printInChat(r,
-				        Message.REPORT_MESSAGES_HISTORY.get()
-				                .replace("_Report_", r.getName())
-				                .replace("_Messages_",
-				                        !messages.toString().isEmpty() ? messages.toString() : Message.NONE_MALE.get())
-				                .split(ConfigUtils.getLineBreakSymbol()));
+				u.sendLinesWithReportButton(Message.REPORT_MESSAGES_HISTORY.get()
+				        .replace("_Report_", r.getName())
+				        .replace("_Messages_",
+				                !messages.toString().isEmpty() ? messages.toString() : Message.NONE_MALE.get())
+				        .split(ConfigUtils.getLineBreakSymbol()), r);
 			}
 			break;
 		case 36:

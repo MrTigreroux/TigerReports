@@ -128,11 +128,10 @@ public abstract class User {
 		startCooldown(seconds, bungee);
 	}
 
-	public String getCooldown() {
+	public String getCooldown(Database db) {
 		if (cooldown == null || (cooldown.startsWith("|")
 		        && System.currentTimeMillis() - Long.parseLong(cooldown.replace("|", "")) > 300000))
-			cooldown = (String) TigerReports.getInstance()
-			        .getDb()
+			cooldown = (String) db
 			        .query("SELECT cooldown FROM tigerreports_users WHERE uuid = ?", Collections.singletonList(uuid))
 			        .getResult(0, "cooldown");
 
@@ -164,15 +163,13 @@ public abstract class User {
 		}
 	}
 
-	public Map<String, Integer> getStatistics() {
+	public Map<String, Integer> getStatistics(Database db) {
 		if (statistics != null)
 			return statistics;
 		statistics = new HashMap<>();
-		Map<String, Object> result = TigerReports.getInstance()
-		        .getDb()
-		        .query("SELECT true_appreciations,uncertain_appreciations,false_appreciations,reports,reported_times,processed_reports FROM tigerreports_users WHERE uuid = ?",
-		                Collections.singletonList(uuid))
-		        .getResult(0);
+		Map<String, Object> result = db.query(
+		        "SELECT true_appreciations,uncertain_appreciations,false_appreciations,reports,reported_times,processed_reports FROM tigerreports_users WHERE uuid = ?",
+		        Collections.singletonList(uuid)).getResult(0);
 		for (Statistic statistic : Statistic.values()) {
 			String statName = statistic.getConfigName();
 			statistics.put(statName, result != null ? (Integer) result.get(statName) : 0);
@@ -180,26 +177,24 @@ public abstract class User {
 		return statistics;
 	}
 
-	public void changeStatistic(Statistic statistic, int relativeValue) {
-		changeStatistic(statistic.getConfigName(), relativeValue);
+	public void changeStatistic(Statistic statistic, int relativeValue, Database db) {
+		changeStatistic(statistic.getConfigName(), relativeValue, db);
 	}
 
-	public void changeStatistic(String statisticConfigName, int relativeValue) {
+	public void changeStatistic(String statisticConfigName, int relativeValue, Database db) {
 		if (statistics == null)
-			getStatistics();
+			getStatistics(db);
 		Integer statisticValue = statistics.get(statisticConfigName);
-		setStatistic(statisticConfigName, (statisticValue != null ? statisticValue : 0) + relativeValue, false);
+		setStatistic(statisticConfigName, (statisticValue != null ? statisticValue : 0) + relativeValue, false, db);
 	}
 
-	public void setStatistic(String statisticConfigName, int value, boolean bungee) {
+	public void setStatistic(String statisticConfigName, int value, boolean bungee, Database db) {
 		statistics.put(statisticConfigName, value);
 		if (!bungee) {
 			TigerReports tr = TigerReports.getInstance();
 			tr.getBungeeManager().sendPluginNotification(value + " set_statistic " + statisticConfigName + " " + uuid);
-			tr.getDb()
-			        .updateAsynchronously(
-			                "UPDATE tigerreports_users SET " + statisticConfigName + " = ? WHERE uuid = ?",
-			                Arrays.asList(value, uuid));
+			db.updateAsynchronously("UPDATE tigerreports_users SET " + statisticConfigName + " = ? WHERE uuid = ?",
+			        Arrays.asList(value, uuid));
 		}
 	}
 

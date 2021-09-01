@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.Message;
+import fr.mrtigreroux.tigerreports.data.database.Database;
 
 /**
  * @author MrTigreroux
@@ -77,10 +78,8 @@ public class UserUtils {
 		}
 	}
 
-	public static boolean isValid(String uuid) {
-		return TigerReports.getInstance()
-		        .getDb()
-		        .query("SELECT uuid FROM tigerreports_users WHERE uuid = ?", Collections.singletonList(uuid))
+	public static boolean isValid(String uuid, Database db) {
+		return db.query("SELECT uuid FROM tigerreports_users WHERE uuid = ?", Collections.singletonList(uuid))
 		        .getResult(0, "uuid") != null;
 	}
 

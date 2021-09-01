@@ -43,45 +43,86 @@ public class ReportCommand implements TabExecutor {
 			return true;
 
 		TigerReports tr = TigerReports.getInstance();
+		Database db = tr.getDb();
 
 		Player p = (Player) s;
 		OnlineUser u = tr.getUsersManager().getOnlineUser(p);
-		String uuid = p.getUniqueId().toString();
 
-		String cooldown = u.getCooldown();
-		if (cooldown != null) {
-			MessageUtils.sendErrorMessage(p, Message.COOLDOWN.get().replace("_Time_", cooldown));
-			return true;
-		}
+		Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
 
-		FileConfiguration configFile = ConfigFile.CONFIG.get();
-		if (args.length == 0 || (args.length == 1 && !ConfigUtils.exist(configFile, "Config.DefaultReasons.Reason1"))) {
-			s.sendMessage(Message.get("ErrorMessages.Invalid-syntax-report"));
-			return true;
-		}
+			@Override
+			public void run() {
+				String cooldown = u.getCooldown(db);
+				Bukkit.getScheduler().runTask(tr, new Runnable() {
 
-		String reportedName = args[0];
-		boolean reportOneself = reportedName.equalsIgnoreCase(p.getName());
-		if (reportOneself && !Permission.MANAGE.isOwned(u)) {
-			MessageUtils.sendErrorMessage(p, Message.REPORT_ONESELF.get());
-			return true;
-		}
+					@Override
+					public void run() {
+						if (cooldown != null) {
+							MessageUtils.sendErrorMessage(p, Message.COOLDOWN.get().replace("_Time_", cooldown));
+							return;
+						}
 
-		Player rp = Bukkit.getPlayer(reportedName);
-		String ruuid = UserUtils.getUniqueId(reportedName);
-		if (rp == null) {
-			if (!UserUtils.isValid(ruuid)) {
-				MessageUtils.sendErrorMessage(p, Message.INVALID_PLAYER.get().replace("_Player_", reportedName));
-				return true;
+						String uuid = p.getUniqueId().toString();
+
+						FileConfiguration configFile = ConfigFile.CONFIG.get();
+						if (args.length == 0 || (args.length == 1
+						        && !ConfigUtils.exist(configFile, "Config.DefaultReasons.Reason1"))) {
+							s.sendMessage(Message.get("ErrorMessages.Invalid-syntax-report"));
+							return;
+						}
+
+						final String reportedName = args[0];
+						boolean reportOneself = reportedName.equalsIgnoreCase(p.getName());
+						if (reportOneself && !Permission.MANAGE.isOwned(u)) {
+							MessageUtils.sendErrorMessage(p, Message.REPORT_ONESELF.get());
+							return;
+						}
+
+						Player rp = Bukkit.getPlayer(reportedName);
+						String ruuid = UserUtils.getUniqueId(reportedName);
+						if (rp == null) {
+							Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
+
+								@Override
+								public void run() {
+									boolean reportedIsValid = UserUtils.isValid(ruuid, db);
+									Bukkit.getScheduler().runTask(tr, new Runnable() {
+
+										@Override
+										public void run() {
+											if (reportedIsValid) {
+												processReportCommand(args, p, u, uuid, rp, ruuid, reportOneself,
+												        reportedName, configFile, tr);
+											} else {
+												MessageUtils.sendErrorMessage(p,
+												        Message.INVALID_PLAYER.get().replace("_Player_", reportedName));
+											}
+										}
+
+									});
+								}
+
+							});
+						} else {
+							processReportCommand(args, p, u, uuid, rp, ruuid, reportOneself, rp.getName(), configFile,
+							        tr);
+						}
+						return;
+					}
+
+				});
 			}
-		} else {
-			reportedName = rp.getName();
-		}
 
+		});
+		return true;
+	}
+
+	private void processReportCommand(String[] args, Player p, OnlineUser u, String uuid, Player rp, String ruuid,
+	        boolean reportOneself, String reportedName, FileConfiguration configFile, TigerReports tr) {
 		if (ReportUtils.onlinePlayerRequired()
 		        && (!UserUtils.isOnline(reportedName) || (rp != null && !p.canSee(rp)))) {
 			MessageUtils.sendErrorMessage(p, Message.REPORTED_OFFLINE.get().replace("_Player_", reportedName));
-			return true;
+			return;
 		}
 
 		User ru = tr.getUsersManager().getUser(ruuid);
@@ -95,12 +136,12 @@ public class ReportCommand implements TabExecutor {
 				                .replace("_Player_", reportedName)
 				                .replace("_Time_", reportedImmunity));
 			}
-			return true;
+			return;
 		}
 
 		if (args.length == 1) {
 			u.openReasonMenu(1, ru);
-			return true;
+			return;
 		}
 
 		StringBuilder sb = new StringBuilder();
@@ -109,7 +150,7 @@ public class ReportCommand implements TabExecutor {
 		String reason = sb.toString().trim();
 		if (reason.length() < ReportUtils.getMinCharacters()) {
 			MessageUtils.sendErrorMessage(p, Message.TOO_SHORT_REASON.get().replace("_Reason_", reason));
-			return true;
+			return;
 		}
 		String lineBreak = ConfigUtils.getLineBreakSymbol();
 		if (lineBreak.length() >= 1)
@@ -120,7 +161,7 @@ public class ReportCommand implements TabExecutor {
 				String defaultReason = configFile.getString("Config.DefaultReasons.Reason" + reasonIndex + ".Name");
 				if (defaultReason == null) {
 					u.openReasonMenu(1, ru);
-					return true;
+					return;
 				} else if (reason.equals(defaultReason)) {
 					break;
 				}
@@ -229,7 +270,7 @@ public class ReportCommand implements TabExecutor {
 						String server = bm.getServerName();
 
 						ReportUtils.sendReport(fr, server, true);
-						s.sendMessage(Message.REPORT_SENT.get()
+						p.sendMessage(Message.REPORT_SENT.get()
 						        .replace("_Player_", fr.getPlayerName("Reported", false, true))
 						        .replace("_Reason_", freason));
 						bm.sendPluginNotification(fr.getId() + " new_report " + date.replace(" ", "_") + " " + ruuid
@@ -238,14 +279,15 @@ public class ReportCommand implements TabExecutor {
 
 						u.startCooldown(ReportUtils.getCooldown(), false);
 						ru.startImmunity(false);
-						u.changeStatistic(Statistic.REPORTS, 1);
-						ru.changeStatistic(Statistic.REPORTED_TIMES, 1);
+						u.changeStatistic(Statistic.REPORTS, 1, db);
+						ru.changeStatistic(Statistic.REPORTED_TIMES, 1, db);
 
 						String reported = fr.getPlayerName("Reported", false, false);
 
 						for (String command : configFile.getStringList("Config.AutoCommands"))
 							Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
-							        command.replace("_Server_", server)
+							        command.replace("_Id_", Integer.toString(fr.getId()))
+							                .replace("_Server_", server)
 							                .replace("_Date_", date)
 							                .replace("_Reporter_", p.getName())
 							                .replace("_Reported_", reported)
@@ -257,7 +299,7 @@ public class ReportCommand implements TabExecutor {
 
 		});
 
-		return true;
+		return;
 	}
 
 	@Override

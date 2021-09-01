@@ -177,22 +177,26 @@ public class OnlineUser extends User {
 		}
 	}
 
-	public void printInChat(Report r, String[] lines) {
+	public void sendLinesWithReportButton(String[] lines, Report r) {
 		String reportName = r.getName();
-		for (String line : lines)
-			sendMessage(MessageUtils.getAdvancedMessage(line, "_ReportButton_",
-			        Message.REPORT_BUTTON.get().replace("_Report_", reportName),
-			        Message.ALERT_DETAILS.get().replace("_Report_", reportName),
-			        "/tigerreports:reports #" + r.getId()));
+		String reportButtonMsg = Message.REPORT_BUTTON.get().replace("_Report_", reportName);
+		String alertDetailsMsg = Message.ALERT_DETAILS.get().replace("_Report_", reportName);
+		for (String line : lines) {
+			sendMessageWithReportButton(line, r, reportButtonMsg, alertDetailsMsg);
+		}
 		ConfigSound.MENU.play(p);
 		p.closeInventory();
 	}
 
 	public void sendMessageWithReportButton(String message, Report r) {
 		String reportName = r.getName();
-		sendMessage(MessageUtils.getAdvancedMessage(message, "_ReportButton_",
-		        Message.REPORT_BUTTON.get().replace("_Report_", reportName),
-		        Message.ALERT_DETAILS.get().replace("_Report_", reportName), "/tigerreports:reports #" + r.getId()));
+		sendMessageWithReportButton(message, r, Message.REPORT_BUTTON.get().replace("_Report_", reportName),
+		        Message.ALERT_DETAILS.get().replace("_Report_", reportName));
+	}
+
+	private void sendMessageWithReportButton(String message, Report r, String reportButtonMsg, String alertDetailsMsg) {
+		sendMessage(MessageUtils.getAdvancedMessage(message, "_ReportButton_", reportButtonMsg, alertDetailsMsg,
+		        "/tigerreports:reports #" + r.getId()));
 	}
 
 	public void setStaffNotifications(boolean state) {

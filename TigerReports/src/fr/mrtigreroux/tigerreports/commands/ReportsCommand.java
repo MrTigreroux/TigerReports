@@ -31,10 +31,10 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 public class ReportsCommand implements TabExecutor {
 
-	private final List<String> ACTIONS = Arrays.asList("reload", "notify", "archive", "delete", "archives",
+	private static final List<String> ACTIONS = Arrays.asList("reload", "notify", "archive", "delete", "archives",
 	        "archiveall", "deleteall", "user", "stopcooldown", "#1");
-	private final List<String> USER_ACTIONS = Arrays.asList("user", "u", "stopcooldown", "sc");
-	private final List<String> DELETEALL_ARGS = Arrays.asList("archived", "unarchived");
+	private static final List<String> USER_ACTIONS = Arrays.asList("user", "u", "stopcooldown", "sc");
+	private static final List<String> DELETEALL_ARGS = Arrays.asList("archived", "unarchived");
 
 	@Override
 	public boolean onCommand(CommandSender s, Command cmd, String label, String[] args) {
@@ -176,8 +176,9 @@ public class ReportsCommand implements TabExecutor {
 
 	private User getTarget(String target, CommandSender s) {
 		String tuuid = UserUtils.getUniqueId(target);
-		User tu = TigerReports.getInstance().getUsersManager().getUser(tuuid);
-		if (tu == null || !UserUtils.isValid(tuuid)) {
+		TigerReports tr = TigerReports.getInstance();
+		User tu = tr.getUsersManager().getUser(tuuid);
+		if (tu == null || !UserUtils.isValid(tuuid, tr.getDb())) {
 			MessageUtils.sendErrorMessage(s, Message.INVALID_PLAYER.get().replace("_Player_", target));
 			return null;
 		}

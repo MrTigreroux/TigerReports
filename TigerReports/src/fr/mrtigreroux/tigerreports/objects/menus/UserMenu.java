@@ -13,6 +13,7 @@ import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.MenuRawItem;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.data.constants.Statistic;
+import fr.mrtigreroux.tigerreports.data.database.Database;
 import fr.mrtigreroux.tigerreports.objects.CustomItem;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.objects.users.User;
@@ -61,12 +62,13 @@ public class UserMenu extends Menu implements UpdatedMenu {
 	@Override
 	public void onUpdate(Inventory inv) {
 		TigerReports tr = TigerReports.getInstance();
+		Database db = tr.getDb();
 		Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
 
 			@Override
 			public void run() {
-				String cooldown = tu.getCooldown();
-				Map<String, Integer> statistics = tu.getStatistics();
+				String cooldown = tu.getCooldown(db);
+				Map<String, Integer> statistics = tu.getStatistics(db);
 				Bukkit.getScheduler().runTask(tr, new Runnable() {
 
 					@Override
@@ -104,9 +106,10 @@ public class UserMenu extends Menu implements UpdatedMenu {
 
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
+		Database db = TigerReports.getInstance().getDb();
 		switch (slot) {
 		case 8:
-			if (tu.getCooldown() != null) {
+			if (tu.getCooldown(db) != null) {
 				tu.stopCooldown(p.getUniqueId().toString(), false);
 				update(false);
 			}
@@ -132,7 +135,7 @@ public class UserMenu extends Menu implements UpdatedMenu {
 						break;
 					}
 				}
-				tu.changeStatistic(stat, click.toString().contains("RIGHT") ? -1 : 1);
+				tu.changeStatistic(stat, click.toString().contains("RIGHT") ? -1 : 1, db);
 				update(true);
 			}
 			break;
