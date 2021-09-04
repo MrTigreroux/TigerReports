@@ -3,6 +3,9 @@ package fr.mrtigreroux.tigerreports.utils;
 import java.util.*;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
 import net.md_5.bungee.api.ChatColor;
@@ -17,8 +20,10 @@ import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.*;
 import fr.mrtigreroux.tigerreports.data.constants.MenuItem;
 import fr.mrtigreroux.tigerreports.data.constants.Status;
+import fr.mrtigreroux.tigerreports.data.database.Database;
 import fr.mrtigreroux.tigerreports.events.NewReportEvent;
 import fr.mrtigreroux.tigerreports.objects.Report;
+import fr.mrtigreroux.tigerreports.objects.users.User;
 
 /**
  * @author MrTigreroux
@@ -26,9 +31,25 @@ import fr.mrtigreroux.tigerreports.objects.Report;
 
 public class ReportUtils {
 
+	/**
+	 * @param rp the reported player instance
+	 * @param ru the reported user instance
+	 * @return fixed size list of reported user data
+	 */
+	@SuppressWarnings("deprecation")
+	public static List<Object> collectReportedData(Player rp, User ru) {
+		return Arrays.asList(rp.getAddress().getAddress().toString(),
+		        MessageUtils.formatConfigLocation(rp.getLocation()), ru.getLastMessages(),
+		        rp.getGameMode().toString().toLowerCase(),
+		        !rp.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().equals(Material.AIR),
+		        rp.isSneaking(), rp.isSprinting(),
+		        (int) Math.round(rp.getHealth()) + "/" + (int) Math.round(rp.getMaxHealth()), rp.getFoodLevel(),
+		        MessageUtils.formatConfigEffects(rp.getActivePotionEffects()));
+	}
+
 	@SuppressWarnings("deprecation")
 	public static void sendReport(Report r, String server, boolean notify) {
-		if (!ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.NotifyStackedReports"))
+		if (!ConfigUtils.isEnabled("Config.NotifyStackedReports"))
 			return;
 
 		try {
@@ -62,7 +83,7 @@ public class ReportUtils {
 		}
 	}
 
-	public static Report formatEssentialOfReport(Map<String, Object> result) {
+	public static Report getEssentialOfReport(Map<String, Object> result) {
 		if (result == null)
 			return null;
 		return new Report((int) result.get("report_id"), (String) result.get("status"),
@@ -102,7 +123,7 @@ public class ReportUtils {
 							if (index == -1) {
 								inv.setItem(slot, null);
 							} else {
-								Report r = formatEssentialOfReport(index < results.size() ? results.get(index) : null);
+								Report r = getEssentialOfReport(index < results.size() ? results.get(index) : null);
 								if (r == null) {
 									inv.setItem(slot, null);
 									index = -1;
@@ -128,11 +149,8 @@ public class ReportUtils {
 		});
 	}
 
-	public static int getTotalReports() {
-		Object o = TigerReports.getInstance()
-		        .getDb()
-		        .query("SELECT COUNT(report_id) AS Total FROM tigerreports_reports", null)
-		        .getResult(0, "Total");
+	public static int getTotalReports(Database db) {
+		Object o = db.query("SELECT COUNT(report_id) AS Total FROM tigerreports_reports", null).getResult(0, "Total");
 		return o instanceof Integer ? (int) o : Ints.checkedCast((long) o);
 	}
 
@@ -141,11 +159,11 @@ public class ReportUtils {
 	}
 
 	public static boolean permissionRequired() {
-		return ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.PermissionRequired");
+		return ConfigUtils.isEnabled("Config.PermissionRequired");
 	}
 
 	public static boolean onlinePlayerRequired() {
-		return ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.ReportOnline");
+		return ConfigUtils.isEnabled("Config.ReportOnline");
 	}
 
 	public static int getMinCharacters() {
@@ -161,15 +179,15 @@ public class ReportUtils {
 	}
 
 	public static boolean onlyDoneArchives() {
-		return ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.OnlyDoneArchives");
+		return ConfigUtils.isEnabled("Config.OnlyDoneArchives");
 	}
 
 	public static boolean stackReports() {
-		return ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.StackReports");
+		return ConfigUtils.isEnabled("Config.StackReports");
 	}
 
 	public static boolean punishmentsEnabled() {
-		return ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.Punishments.Enabled");
+		return ConfigUtils.isEnabled("Config.Punishments.Enabled");
 	}
 
 }

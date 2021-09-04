@@ -41,7 +41,7 @@ public class ReportsManager {
 	public Report getReportById(int reportId, boolean notArchived) {
 		return reportId <= 0 ? null
 		        : reports.containsKey(reportId) ? reports.get(reportId)
-		                : formatFullReport(TigerReports.getInstance()
+		                : getFullReport(TigerReports.getInstance()
 		                        .getDb()
 		                        .query("SELECT * FROM tigerreports_reports WHERE report_id = ? "
 		                                + (notArchived ? "AND archived = 0 " : "") + "LIMIT 1",
@@ -56,11 +56,11 @@ public class ReportsManager {
 		                Collections.singletonList(reportId))
 		        .getResult(0);
 		return reportId <= 0 || result == null ? null
-		        : new Pair<Report, Boolean>(formatFullReport(result), (Boolean) result.get("archived"));
+		        : new Pair<Report, Boolean>(getFullReport(result), (Boolean) result.get("archived"));
 	}
 
 	public Report getReport(boolean archived, int reportIndex) {
-		return formatFullReport(TigerReports.getInstance()
+		return getFullReport(TigerReports.getInstance()
 		        .getDb()
 		        .query("SELECT * FROM tigerreports_reports WHERE archived = ?"
 		                + (archived ? " ORDER BY report_id DESC" : "") + " LIMIT 1 OFFSET ?",
@@ -68,11 +68,11 @@ public class ReportsManager {
 		        .getResult(0));
 	}
 
-	public Report formatFullReport(Map<String, Object> result) {
+	public Report getFullReport(Map<String, Object> result) {
 		if (result == null)
 			return null;
 
-		Report r = ReportUtils.formatEssentialOfReport(result);
+		Report r = ReportUtils.getEssentialOfReport(result);
 
 		Map<String, String> advancedData = new HashMap<>();
 		Set<String> advancedKeys = new HashSet<>(result.keySet());

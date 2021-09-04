@@ -11,8 +11,6 @@ import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.Messenger;
 import org.bukkit.plugin.messaging.PluginMessageListener;
@@ -23,7 +21,6 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
-import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.constants.Status;
 import fr.mrtigreroux.tigerreports.data.database.Database;
@@ -56,7 +53,7 @@ public class BungeeManager implements PluginMessageListener {
 	}
 
 	public void initialize() {
-		if (ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "BungeeCord.Enabled")) {
+		if (ConfigUtils.isEnabled("BungeeCord.Enabled")) {
 			Messenger messenger = tr.getServer().getMessenger();
 			messenger.registerOutgoingPluginChannel(tr, "BungeeCord");
 			messenger.registerIncomingPluginChannel(tr, "BungeeCord", this);
@@ -305,23 +302,17 @@ public class BungeeManager implements PluginMessageListener {
 		}, 20);
 	}
 
-	@SuppressWarnings("deprecation")
 	private void implementMissingData(Report r) {
 		Player rp = UserUtils.getPlayerFromUniqueId(r.getReportedUniqueId());
 		if (rp == null)
 			return;
 		OnlineUser ru = tr.getUsersManager().getOnlineUser(rp);
+		List<Object> queryParams = new ArrayList<>(ReportUtils.collectReportedData(rp, ru));
+		queryParams.add(r.getId());
 		tr.getDb()
 		        .updateAsynchronously(
 		                "UPDATE tigerreports_reports SET reported_ip=?,reported_location=?,reported_messages=?,reported_gamemode=?,reported_on_ground=?,reported_sneak=?,reported_sprint=?,reported_health=?,reported_food=?,reported_effects=? WHERE report_id=?",
-		                Arrays.asList(rp.getAddress().getAddress().toString(),
-		                        MessageUtils.formatConfigLocation(rp.getLocation()), ru.getLastMessages(),
-		                        rp.getGameMode().toString().toLowerCase(),
-		                        !rp.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().equals(Material.AIR),
-		                        rp.isSneaking(), rp.isSprinting(),
-		                        (int) Math.round(rp.getHealth()) + "/" + (int) Math.round(rp.getMaxHealth()),
-		                        rp.getFoodLevel(), MessageUtils.formatConfigEffects(rp.getActivePotionEffects()),
-		                        r.getId()));
+		                queryParams);
 	}
 
 	public void collectOnlinePlayers() {

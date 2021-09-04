@@ -42,6 +42,8 @@ public class HelpCommand {
 				s.sendMessage(
 				        "\u00A77- \u00A7b/reports <archive / delete> <identifiant du signalement> \u00A77: \u00A7eArchive/supprime le signalement.");
 				s.sendMessage(
+				        "\u00A77- \u00A7b/reports comment <identifiant du signalement> <commentaire>\u00A77: \u00A7eAjoute le commentaire au signalement.");
+				s.sendMessage(
 				        "\u00A77- \u00A7b/reports archiveall \u00A77: \u00A7eArchive tous les signalements trait\u00E9s.");
 				s.sendMessage(
 				        "\u00A77- \u00A7b/reports archives \u00A77: \u00A7eAffiche tous les signalements archiv\u00E9s.");
@@ -72,6 +74,8 @@ public class HelpCommand {
 				        "\u00A77- \u00A7b/reports notify \u00A77: \u00A7eEnables or disables reports notifications.");
 				s.sendMessage(
 				        "\u00A77- \u00A7b/reports <archive / delete> <report id> \u00A77: \u00A7eArchives/deletes the report.");
+				s.sendMessage(
+				        "\u00A77- \u00A7b/reports comment <report id> <comment> \u00A77: \u00A7eAdds the comment to the report.");
 				s.sendMessage("\u00A77- \u00A7b/reports archiveall \u00A77: \u00A7eArchives all done reports.");
 				s.sendMessage("\u00A77- \u00A7b/reports archives \u00A77: \u00A7eDisplays all archived reports.");
 				s.sendMessage("\u00A77- \u00A7b/reports deleteall \u00A77: \u00A7eDeletes all archived reports.");

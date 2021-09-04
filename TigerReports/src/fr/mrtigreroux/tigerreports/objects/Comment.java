@@ -7,6 +7,7 @@ import org.bukkit.inventory.ItemStack;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.Message;
+import fr.mrtigreroux.tigerreports.data.database.Database;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 import fr.mrtigreroux.tigerreports.utils.UserUtils;
@@ -74,13 +75,10 @@ public class Comment {
 		return message;
 	}
 
-	public void addMessage(String message) {
+	public void addMessage(String message, Database db) {
 		this.message += " " + message;
-		TigerReports.getInstance()
-		        .getDb()
-		        .updateAsynchronously(
-		                "UPDATE tigerreports_comments SET message = ? WHERE report_id = ? AND comment_id = ?",
-		                Arrays.asList(this.message, r.getId(), commentId));
+		db.updateAsynchronously("UPDATE tigerreports_comments SET message = ? WHERE report_id = ? AND comment_id = ?",
+		        Arrays.asList(this.message, r.getId(), commentId));
 	}
 
 	public ItemStack getItem(boolean deletePermission) {

@@ -1,7 +1,5 @@
 package fr.mrtigreroux.tigerreports.data.config;
 
-import java.util.Arrays;
-
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
@@ -34,7 +32,7 @@ public enum ConfigSound {
 		String path = "Config." + getConfigName();
 		String configSound = ConfigFile.CONFIG.get().getString(path);
 		if (configSound != null && !configSound.equalsIgnoreCase("none")) {
-			for (String sound : Arrays.asList(configSound.toUpperCase(), oldSound, newSound)) {
+			for (String sound : new String[] { configSound.toUpperCase(), oldSound, newSound }) {
 				try {
 					return Sound.valueOf(sound);
 				} catch (Exception invalidSound) {}

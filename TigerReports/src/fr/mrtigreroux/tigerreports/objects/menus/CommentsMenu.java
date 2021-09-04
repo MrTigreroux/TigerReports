@@ -68,7 +68,7 @@ public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu {
 							if (index == -1) {
 								inv.setItem(slot, null);
 							} else {
-								Comment c = index < results.size() ? r.formatComment(results.get(index)) : null;
+								Comment c = index < results.size() ? r.getCommentFrom(results.get(index)) : null;
 								if (c == null) {
 									inv.setItem(slot, null);
 									index = -1;

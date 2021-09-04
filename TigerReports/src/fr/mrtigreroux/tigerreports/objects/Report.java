@@ -349,8 +349,18 @@ public class Report {
 		} catch (Exception ignored) {}
 	}
 
+	public void addComment(User u, String message, Database db) {
+		addComment(u.getUniqueId().toString(), message, db);
+	}
+
+	public void addComment(String author, String message, Database db) {
+		db.insertAsynchronously(
+		        "INSERT INTO tigerreports_comments (report_id,status,date,author,message) VALUES (?,?,?,?,?)",
+		        Arrays.asList(reportId, "Private", MessageUtils.getNowDate(), author, message));
+	}
+
 	public Comment getCommentById(int commentId) {
-		return formatComment(TigerReports.getInstance()
+		return getCommentFrom(TigerReports.getInstance()
 		        .getDb()
 		        .query("SELECT * FROM tigerreports_comments WHERE report_id = ? AND comment_id = ?",
 		                Arrays.asList(reportId, commentId))
@@ -358,14 +368,14 @@ public class Report {
 	}
 
 	public Comment getComment(int commentIndex) {
-		return formatComment(TigerReports.getInstance()
+		return getCommentFrom(TigerReports.getInstance()
 		        .getDb()
 		        .query("SELECT * FROM tigerreports_comments WHERE report_id = ? LIMIT 1 OFFSET ?",
 		                Arrays.asList(reportId, commentIndex - 1))
 		        .getResult(0));
 	}
 
-	public Comment formatComment(Map<String, Object> result) {
+	public Comment getCommentFrom(Map<String, Object> result) {
 		return new Comment(this, (int) result.get("comment_id"), (String) result.get("status"),
 		        (String) result.get("date"), (String) result.get("author"), (String) result.get("message"));
 	}

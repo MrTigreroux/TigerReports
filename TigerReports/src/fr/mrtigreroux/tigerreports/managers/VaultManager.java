@@ -43,7 +43,7 @@ public class VaultManager {
 	}
 
 	private boolean isEnabled() {
-		return isVaultInstalled && ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "VaultChat.Enabled");
+		return isVaultInstalled && ConfigUtils.isEnabled("VaultChat.Enabled");
 	}
 
 	private boolean setupChat() {

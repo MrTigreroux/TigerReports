@@ -21,6 +21,10 @@ public class ConfigUtils {
 	public static boolean isEnabled(ConfigurationSection config, String path) {
 		return config.get(path) != null && ACTIVATION_WORDS.contains(config.getString(path));
 	}
+	
+	public static boolean isEnabled(String path) {
+		return isEnabled(ConfigFile.CONFIG.get(), path);
+	}
 
 	public static char getColorCharacter() {
 		return ConfigFile.CONFIG.get().getString("Config.ColorCharacter", "&").charAt(0);

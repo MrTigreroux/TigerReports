@@ -38,7 +38,7 @@ Config:
   
   AutoCommands: none
   # List of executed commands after a report, set 'none' to don't execute any / Liste des commandes exécutées après chaque signalement, mettre "none" pour aucune
-  # Usable placeholders:    _Server_, _Date_, _Reporter_, _Reported_ and _Reason_
+  # Usable placeholders:    _Id_, _Server_, _Date_, _Reporter_, _Reported_ and _Reason_
   
   PunishSeconds: 3600
   # Cooldown inflicted for an abusive report / Temps d'attente infligé pour un signalement abusif

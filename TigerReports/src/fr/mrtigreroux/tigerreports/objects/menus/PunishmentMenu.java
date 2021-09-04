@@ -55,7 +55,7 @@ public class PunishmentMenu extends ReportManagerMenu {
 			firstPunishment += (page - 1) * 27;
 		}
 
-		int slot = ConfigUtils.isEnabled(ConfigFile.CONFIG.get(), "Config.Punishments.DefaultReasons")
+		int slot = ConfigUtils.isEnabled("Config.Punishments.DefaultReasons")
 		        ? implement(inv, "Config.DefaultReasons.Reason", firstPunishment, 18)
 		        : 18;
 		if (slot < 44)

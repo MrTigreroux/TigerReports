@@ -23,6 +23,12 @@ import fr.mrtigreroux.tigerreports.runnables.MenuUpdater;
 
 public class InventoryListener implements Listener {
 
+	private TigerReports tr;
+
+	public InventoryListener(TigerReports tr) {
+		this.tr = tr;
+	}
+
 	@EventHandler(priority = EventPriority.LOW)
 	private void onInventoryDrag(InventoryDragEvent e) {
 		if (checkMenuAction(e.getWhoClicked(), e.getInventory()) != null)
@@ -48,7 +54,6 @@ public class InventoryListener implements Listener {
 
 	@EventHandler(priority = EventPriority.LOW)
 	private void onInventoryClose(InventoryCloseEvent e) {
-		TigerReports tr = TigerReports.getInstance();
 		OnlineUser u = tr.getUsersManager().getOnlineUser((Player) e.getPlayer());
 		MenuUpdater.removeUser(u);
 		u.setOpenedMenu(null);
@@ -60,7 +65,7 @@ public class InventoryListener implements Listener {
 	private OnlineUser checkMenuAction(HumanEntity whoClicked, Inventory inv) {
 		if (!(whoClicked instanceof Player) || inv == null)
 			return null;
-		OnlineUser u = TigerReports.getInstance().getUsersManager().getOnlineUser((Player) whoClicked);
+		OnlineUser u = tr.getUsersManager().getOnlineUser((Player) whoClicked);
 		return u.getOpenedMenu() != null ? u : null;
 	}
 

@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -31,14 +32,19 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 public class ReportsCommand implements TabExecutor {
 
-	private static final List<String> ACTIONS = Arrays.asList("reload", "notify", "archive", "delete", "archives",
-	        "archiveall", "deleteall", "user", "stopcooldown", "#1");
+	private static final List<String> ACTIONS = Arrays.asList("reload", "notify", "archive", "delete", "comment",
+	        "archives", "archiveall", "deleteall", "user", "stopcooldown", "#1");
 	private static final List<String> USER_ACTIONS = Arrays.asList("user", "u", "stopcooldown", "sc");
 	private static final List<String> DELETEALL_ARGS = Arrays.asList("archived", "unarchived");
 
+	private TigerReports tr;
+
+	public ReportsCommand(TigerReports tr) {
+		this.tr = tr;
+	}
+
 	@Override
 	public boolean onCommand(CommandSender s, Command cmd, String label, String[] args) {
-		TigerReports tr = TigerReports.getInstance();
 		if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
 			if (Permission.MANAGE.check(s)) {
 				MenuUpdater.stop(true);
@@ -56,6 +62,28 @@ public class ReportsCommand implements TabExecutor {
 				} else {
 					MessageUtils.sendConsoleMessage(Message.RELOAD.get());
 				}
+			}
+			return true;
+		}
+
+		if (args.length > 2 && args[0].equalsIgnoreCase("comment") && Permission.STAFF.check(s)) {
+			String reportId = args[1];
+			Report r = tr.getReportsManager().getReportById(getReportId(reportId), false);
+			if (r == null) {
+				MessageUtils.sendErrorMessage(s, Message.INVALID_REPORT_ID.get().replace("_Id_", reportId));
+				return true;
+			}
+
+			Player p = s instanceof Player ? (Player) s : null;
+			String author = p != null ? p.getUniqueId().toString() : s.getName();
+			StringBuilder sb = new StringBuilder();
+			for (int argIndex = 2; argIndex < args.length; argIndex++)
+				sb.append(args[argIndex]).append(" ");
+			String message = sb.toString().trim();
+
+			r.addComment(author, message, tr.getDb());
+			if (p != null) {
+				tr.getUsersManager().getOnlineUser(p).openDelayedlyCommentsMenu(r);
 			}
 			return true;
 		}
@@ -96,7 +124,7 @@ public class ReportsCommand implements TabExecutor {
 				return true;
 			default:
 				try {
-					u.openReportMenu(Integer.parseInt(args[0].replace("#", "")));
+					u.openReportMenu(getReportId(args[0]));
 				} catch (Exception invalidIndex) {
 					MessageUtils.sendErrorMessage(s, Message.INVALID_REPORT_ID.get().replace("_Id_", args[0]));
 				}
@@ -141,15 +169,11 @@ public class ReportsCommand implements TabExecutor {
 				return true;
 			case "user":
 			case "u":
-				User tu = getTarget(args[1], s);
-				if (tu != null)
-					u.openUserMenu(tu);
+				processCommandWithTarget(u, args[1], "user");
 				return true;
 			case "stopcooldown":
 			case "sc":
-				User tu2 = getTarget(args[1], s);
-				if (tu2 != null)
-					tu2.stopCooldown(p.getUniqueId().toString(), false);
+				processCommandWithTarget(u, args[1], "stopcooldown");
 				return true;
 			default:
 				break;
@@ -163,26 +187,51 @@ public class ReportsCommand implements TabExecutor {
 		return true;
 	}
 
+	private int getReportId(String reportId) {
+		return Integer.parseInt(reportId.replace("#", ""));
+	}
+
 	private Pair<Report, Boolean> getReportAndArchiveInfo(String reportId, CommandSender s) {
 		try {
-			return TigerReports.getInstance()
-			        .getReportsManager()
-			        .getReportByIdAndArchiveInfo(Integer.parseInt(reportId.replace("#", "")));
+			return tr.getReportsManager().getReportByIdAndArchiveInfo(getReportId(reportId));
 		} catch (Exception invalidIndex) {
 			MessageUtils.sendErrorMessage(s, Message.INVALID_REPORT_ID.get().replace("_Id_", reportId));
 			return null;
 		}
 	}
 
-	private User getTarget(String target, CommandSender s) {
-		String tuuid = UserUtils.getUniqueId(target);
-		TigerReports tr = TigerReports.getInstance();
-		User tu = tr.getUsersManager().getUser(tuuid);
-		if (tu == null || !UserUtils.isValid(tuuid, tr.getDb())) {
-			MessageUtils.sendErrorMessage(s, Message.INVALID_PLAYER.get().replace("_Player_", target));
-			return null;
-		}
-		return tu;
+	private void processCommandWithTarget(OnlineUser u, String target, String command) {
+		Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
+
+			@Override
+			public void run() {
+				String tuuid = UserUtils.getUniqueId(target);
+				User tu = tr.getUsersManager().getUser(tuuid);
+				boolean invalidTarget = tu == null || !UserUtils.isValid(tuuid, tr.getDb());
+				Bukkit.getScheduler().runTask(tr, new Runnable() {
+
+					@Override
+					public void run() {
+						if (invalidTarget) {
+							MessageUtils.sendErrorMessage(u.getPlayer(),
+							        Message.INVALID_PLAYER.get().replace("_Player_", target));
+							return;
+						}
+
+						if (tu != null) {
+							if (command.equalsIgnoreCase("stopcooldown")) {
+								tu.stopCooldown(u.getUniqueId().toString(), false);
+							} else {
+								u.openUserMenu(tu);
+							}
+						}
+					}
+
+				});
+			}
+
+		});
+		return;
 	}
 
 	@Override

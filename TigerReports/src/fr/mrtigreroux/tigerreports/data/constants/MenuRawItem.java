@@ -12,34 +12,34 @@ public class MenuRawItem {
 
 	public static void init() {
 		if (VersionUtils.isVersionLower1_13()) {
-			GUI = getCustomItem("STAINED_GLASS_PANE", 7).name(" ");
-			GREEN_CLAY = getCustomItem("STAINED_CLAY", 5);
-			RED_CLAY = getCustomItem("STAINED_CLAY", 14);
-			YELLOW_CLAY = getCustomItem("STAINED_CLAY", 4);
-			BLUE_CLAY = getCustomItem("STAINED_CLAY", 3);
-			BLACK_CLAY = getCustomItem("STAINED_CLAY", 9);
-			GOLDEN_AXE = getCustomItem("GOLD_AXE", 0);
-			WRITABLE_BOOK = getCustomItem("BOOK_AND_QUILL", 0);
-			EMPTY_MAP = getCustomItem("EMPTY_MAP", 0);
+			GUI = createCustomItem("STAINED_GLASS_PANE", 7).name(" ");
+			GREEN_CLAY = createCustomItem("STAINED_CLAY", 5);
+			RED_CLAY = createCustomItem("STAINED_CLAY", 14);
+			YELLOW_CLAY = createCustomItem("STAINED_CLAY", 4);
+			BLUE_CLAY = createCustomItem("STAINED_CLAY", 3);
+			BLACK_CLAY = createCustomItem("STAINED_CLAY", 9);
+			GOLDEN_AXE = createCustomItem("GOLD_AXE", 0);
+			WRITABLE_BOOK = createCustomItem("BOOK_AND_QUILL", 0);
+			EMPTY_MAP = createCustomItem("EMPTY_MAP", 0);
 		} else {
-			GUI = getCustomItem(Material.GRAY_STAINED_GLASS_PANE).name(" ");
-			GREEN_CLAY = getCustomItem(Material.LIME_TERRACOTTA);
-			RED_CLAY = getCustomItem(Material.RED_TERRACOTTA);
-			YELLOW_CLAY = getCustomItem(Material.YELLOW_TERRACOTTA);
-			BLUE_CLAY = getCustomItem(Material.LIGHT_BLUE_TERRACOTTA);
-			BLACK_CLAY = getCustomItem(Material.CYAN_TERRACOTTA);
-			GOLDEN_AXE = getCustomItem(Material.GOLDEN_AXE);
-			WRITABLE_BOOK = getCustomItem(Material.WRITABLE_BOOK);
-			EMPTY_MAP = getCustomItem(Material.FILLED_MAP);
+			GUI = createCustomItem(Material.GRAY_STAINED_GLASS_PANE).name(" ");
+			GREEN_CLAY = createCustomItem(Material.LIME_TERRACOTTA);
+			RED_CLAY = createCustomItem(Material.RED_TERRACOTTA);
+			YELLOW_CLAY = createCustomItem(Material.YELLOW_TERRACOTTA);
+			BLUE_CLAY = createCustomItem(Material.LIGHT_BLUE_TERRACOTTA);
+			BLACK_CLAY = createCustomItem(Material.CYAN_TERRACOTTA);
+			GOLDEN_AXE = createCustomItem(Material.GOLDEN_AXE);
+			WRITABLE_BOOK = createCustomItem(Material.WRITABLE_BOOK);
+			EMPTY_MAP = createCustomItem(Material.FILLED_MAP);
 		}
 
 	}
 
-	private static CustomItem getCustomItem(String oldMaterialName, int damage) {
+	private static CustomItem createCustomItem(String oldMaterialName, int damage) {
 		return new CustomItem().type(Material.matchMaterial(oldMaterialName)).damage((short) damage).hideFlags(true);
 	}
 
-	private static CustomItem getCustomItem(Material material) {
+	private static CustomItem createCustomItem(Material material) {
 		return new CustomItem().type(material).hideFlags(true);
 	}
 

@@ -24,6 +24,7 @@ import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.commands.HelpCommand;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
+import fr.mrtigreroux.tigerreports.data.database.Database;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
 import fr.mrtigreroux.tigerreports.objects.Comment;
 import fr.mrtigreroux.tigerreports.objects.Report;
@@ -41,11 +42,16 @@ public class PlayerListener implements Listener {
 	private final List<String> HELP_COMMANDS = Arrays.asList("tigerreport", "helptigerreport", "reportshelp", "report?",
 	        "reports?");
 
+	private TigerReports tr;
+
+	public PlayerListener(TigerReports tr) {
+		this.tr = tr;
+	}
+
 	@SuppressWarnings("deprecation")
 	@EventHandler
 	private void onPlayerJoin(PlayerJoinEvent e) {
 		Player p = e.getPlayer();
-		TigerReports tr = TigerReports.getInstance();
 		OnlineUser u = tr.getUsersManager().getOnlineUser(p);
 		FileConfiguration configFile = ConfigFile.CONFIG.get();
 
@@ -102,7 +108,6 @@ public class PlayerListener implements Listener {
 
 	@EventHandler(priority = EventPriority.LOWEST)
 	private void onPlayerQuit(PlayerQuitEvent e) {
-		TigerReports tr = TigerReports.getInstance();
 		Player p = e.getPlayer();
 		String uuid = p.getUniqueId().toString();
 		UsersManager userManager = tr.getUsersManager();
@@ -124,20 +129,16 @@ public class PlayerListener implements Listener {
 
 	@EventHandler(priority = EventPriority.LOWEST)
 	private void onPlayerChat(AsyncPlayerChatEvent e) {
-		TigerReports tr = TigerReports.getInstance();
 		OnlineUser u = tr.getUsersManager().getOnlineUser(e.getPlayer());
 		Comment c = u.getEditingComment();
 		if (c != null) {
 			String message = e.getMessage();
 			Report r = c.getReport();
+			Database db = tr.getDb();
 			if (c.getId() == null) {
-				tr.getDb()
-				        .insertAsynchronously(
-				                "INSERT INTO tigerreports_comments (report_id,status,date,author,message) VALUES (?,?,?,?,?)",
-				                Arrays.asList(r.getId(), "Private", MessageUtils.getNowDate(),
-				                        u.getUniqueId().toString(), message));
+				r.addComment(u, message, db);
 			} else {
-				c.addMessage(message);
+				c.addMessage(message, db);
 			}
 			u.setEditingComment(null);
 			u.openDelayedlyCommentsMenu(r);
@@ -148,7 +149,7 @@ public class PlayerListener implements Listener {
 
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	private void onPlayerChat2(AsyncPlayerChatEvent e) {
-		OnlineUser u = TigerReports.getInstance().getUsersManager().getOnlineUser(e.getPlayer());
+		OnlineUser u = tr.getUsersManager().getOnlineUser(e.getPlayer());
 		u.updateLastMessages(e.getMessage());
 
 		ConfigurationSection config = ConfigFile.CONFIG.get();
@@ -184,7 +185,7 @@ public class PlayerListener implements Listener {
 		if (checkHelpCommand(command, e.getPlayer())) {
 			e.setCancelled(true);
 		} else if (ConfigFile.CONFIG.get().getStringList("Config.CommandsHistory").contains(command.split(" ")[0])) {
-			TigerReports.getInstance().getUsersManager().getOnlineUser(e.getPlayer()).updateLastMessages("/" + command);
+			tr.getUsersManager().getOnlineUser(e.getPlayer()).updateLastMessages("/" + command);
 		}
 	}
 

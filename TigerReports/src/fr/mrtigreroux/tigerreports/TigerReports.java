@@ -59,11 +59,11 @@ public class TigerReports extends JavaPlugin {
 		load();
 
 		PluginManager pm = Bukkit.getServer().getPluginManager();
-		pm.registerEvents(new InventoryListener(), this);
-		pm.registerEvents(new PlayerListener(), this);
+		pm.registerEvents(new InventoryListener(this), this);
+		pm.registerEvents(new PlayerListener(this), this);
 
-		getCommand("report").setExecutor(new ReportCommand());
-		getCommand("reports").setExecutor(new ReportsCommand());
+		getCommand("report").setExecutor(new ReportCommand(this));
+		getCommand("reports").setExecutor(new ReportsCommand(this));
 
 		webManager = new WebManager(this);
 

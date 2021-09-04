@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -37,12 +35,17 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 public class ReportCommand implements TabExecutor {
 
+	private TigerReports tr;
+
+	public ReportCommand(TigerReports tr) {
+		this.tr = tr;
+	}
+
 	@Override
 	public boolean onCommand(CommandSender s, Command cmd, String label, String[] args) {
 		if (!UserUtils.checkPlayer(s) || (ReportUtils.permissionRequired() && !Permission.REPORT.check(s)))
 			return true;
 
-		TigerReports tr = TigerReports.getInstance();
 		Database db = tr.getDb();
 
 		Player p = (Player) s;
@@ -79,34 +82,36 @@ public class ReportCommand implements TabExecutor {
 						}
 
 						Player rp = Bukkit.getPlayer(reportedName);
-						String ruuid = UserUtils.getUniqueId(reportedName);
-						if (rp == null) {
-							Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
 
-								@Override
-								public void run() {
-									boolean reportedIsValid = UserUtils.isValid(ruuid, db);
-									Bukkit.getScheduler().runTask(tr, new Runnable() {
+						Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
 
-										@Override
-										public void run() {
+							@Override
+							public void run() {
+								String ruuid = UserUtils.getUniqueId(reportedName);
+								boolean reportedIsValid = rp == null && UserUtils.isValid(ruuid, db); // rp == null prevents useless call to db
+								Bukkit.getScheduler().runTask(tr, new Runnable() {
+
+									@Override
+									public void run() {
+										if (rp == null) {
 											if (reportedIsValid) {
 												processReportCommand(args, p, u, uuid, rp, ruuid, reportOneself,
-												        reportedName, configFile, tr);
+												        reportedName, configFile, db);
 											} else {
 												MessageUtils.sendErrorMessage(p,
 												        Message.INVALID_PLAYER.get().replace("_Player_", reportedName));
 											}
+										} else {
+											processReportCommand(args, p, u, uuid, rp, ruuid, reportOneself,
+											        rp.getName(), configFile, db);
 										}
+									}
 
-									});
-								}
+								});
+							}
 
-							});
-						} else {
-							processReportCommand(args, p, u, uuid, rp, ruuid, reportOneself, rp.getName(), configFile,
-							        tr);
-						}
+						});
+
 						return;
 					}
 
@@ -118,7 +123,7 @@ public class ReportCommand implements TabExecutor {
 	}
 
 	private void processReportCommand(String[] args, Player p, OnlineUser u, String uuid, Player rp, String ruuid,
-	        boolean reportOneself, String reportedName, FileConfiguration configFile, TigerReports tr) {
+	        boolean reportOneself, String reportedName, FileConfiguration configFile, Database db) {
 		if (ReportUtils.onlinePlayerRequired()
 		        && (!UserUtils.isOnline(reportedName) || (rp != null && !p.canSee(rp)))) {
 			MessageUtils.sendErrorMessage(p, Message.REPORTED_OFFLINE.get().replace("_Player_", reportedName));
@@ -145,8 +150,8 @@ public class ReportCommand implements TabExecutor {
 		}
 
 		StringBuilder sb = new StringBuilder();
-		for (int argNumber = 1; argNumber < args.length; argNumber++)
-			sb.append(args[argNumber]).append(" ");
+		for (int argIndex = 1; argIndex < args.length; argIndex++)
+			sb.append(args[argIndex]).append(" ");
 		String reason = sb.toString().trim();
 		if (reason.length() < ReportUtils.getMinCharacters()) {
 			MessageUtils.sendErrorMessage(p, Message.TOO_SHORT_REASON.get().replace("_Reason_", reason));
@@ -174,11 +179,8 @@ public class ReportCommand implements TabExecutor {
 
 		Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
 
-			@SuppressWarnings("deprecation")
 			@Override
 			public void run() {
-				Database db = tr.getDb();
-
 				int reportId = -1;
 				Report r = null;
 				if (ReportUtils.stackReports()) {
@@ -205,7 +207,7 @@ public class ReportCommand implements TabExecutor {
 
 							reporterUuid += "," + uuid;
 							result.put("reporter_uuid", reporterUuid);
-							r = ReportUtils.formatEssentialOfReport(result);
+							r = ReportUtils.getEssentialOfReport(result);
 							if (r != null) {
 								reportId = r.getId();
 								if (ConfigUtils.isEnabled(configFile, "Config.UpdateDateOfStackedReports")) {
@@ -222,76 +224,60 @@ public class ReportCommand implements TabExecutor {
 					}
 				}
 
-				boolean missingData = false;
-				if (r == null) {
-					reportId = (reportId = ReportUtils.getTotalReports() + 1) <= ReportUtils.getMaxReports() ? reportId
-					        : -1;
-
-					if (reportId != -1) {
-						List<Object> parameters;
-						if (rp != null) {
-							parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", date, ruuid, uuid,
-							        freason, rp.getAddress().getAddress().toString(),
-							        MessageUtils.formatConfigLocation(rp.getLocation()), ru.getLastMessages(),
-							        rp.getGameMode().toString().toLowerCase(),
-							        !rp.getLocation()
-							                .getBlock()
-							                .getRelative(BlockFace.DOWN)
-							                .getType()
-							                .equals(Material.AIR),
-							        rp.isSneaking(), rp.isSprinting(),
-							        (int) Math.round(rp.getHealth()) + "/" + (int) Math.round(rp.getMaxHealth()),
-							        rp.getFoodLevel(), MessageUtils.formatConfigEffects(rp.getActivePotionEffects()),
-							        p.getAddress().getAddress().toString(),
-							        MessageUtils.formatConfigLocation(p.getLocation()), u.getLastMessages());
-						} else {
-							missingData = true;
-							parameters = Arrays.asList(Status.WAITING.getConfigWord(), "None", date, ruuid, uuid,
-							        freason, null, null, ru.getLastMessages(), null, null, null, null, null, null, null,
-							        p.getAddress().toString(), MessageUtils.formatConfigLocation(p.getLocation()),
-							        u.getLastMessages());
-						}
-						reportId = db.insert(
-						        "INSERT INTO tigerreports_reports (status,appreciation,date,reported_uuid,reporter_uuid,reason,reported_ip,reported_location,reported_messages,reported_gamemode,reported_on_ground,reported_sneak,reported_sprint,reported_health,reported_food,reported_effects,reporter_ip,reporter_location,reporter_messages) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);",
-						        parameters);
-					}
-
-					r = new Report(reportId, Status.WAITING.getConfigWord(), "None", date, ruuid, uuid, freason);
-				}
-
-				boolean fmissingData = missingData;
-				Report fr = r;
+				final boolean maxReportsReached = r == null
+				        && ReportUtils.getTotalReports(db) + 1 > ReportUtils.getMaxReports(); // r == null prevents from calling the database uselessly
+				final Report fr = r;
 
 				Bukkit.getScheduler().runTask(tr, new Runnable() {
 
 					@Override
 					public void run() {
-						BungeeManager bm = tr.getBungeeManager();
-						String server = bm.getServerName();
+						boolean missingData = false;
+						if (fr == null) {
+							if (!maxReportsReached) {
+								List<Object> parameters = new ArrayList<>(Arrays.asList(Status.WAITING.getConfigWord(),
+								        "None", date, ruuid, uuid, freason, p.getAddress().getAddress().toString(),
+								        MessageUtils.formatConfigLocation(p.getLocation()), u.getLastMessages()));
+								int firstReportedDataIndex = 6; // first index in parameters
+								if (rp != null) {
+									parameters.addAll(firstReportedDataIndex, ReportUtils.collectReportedData(rp, ru));
+								} else {
+									missingData = true;
+									parameters.addAll(firstReportedDataIndex, Arrays.asList(null, null,
+									        ru.getLastMessages(), null, null, null, null, null, null, null));
+								}
 
-						ReportUtils.sendReport(fr, server, true);
-						p.sendMessage(Message.REPORT_SENT.get()
-						        .replace("_Player_", fr.getPlayerName("Reported", false, true))
-						        .replace("_Reason_", freason));
-						bm.sendPluginNotification(fr.getId() + " new_report " + date.replace(" ", "_") + " " + ruuid
-						        + " " + fr.getLastReporterUniqueId() + " " + freason.replace(" ", "_") + " " + server
-						        + " " + fmissingData);
+								boolean fmissingData = missingData;
 
-						u.startCooldown(ReportUtils.getCooldown(), false);
-						ru.startImmunity(false);
-						u.changeStatistic(Statistic.REPORTS, 1, db);
-						ru.changeStatistic(Statistic.REPORTED_TIMES, 1, db);
+								Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
 
-						String reported = fr.getPlayerName("Reported", false, false);
+									@Override
+									public void run() {
+										int reportId = db.insert(
+										        "INSERT INTO tigerreports_reports (status,appreciation,date,reported_uuid,reporter_uuid,reason,reported_ip,reported_location,reported_messages,reported_gamemode,reported_on_ground,reported_sneak,reported_sprint,reported_health,reported_food,reported_effects,reporter_ip,reporter_location,reporter_messages) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);",
+										        parameters);
+										Bukkit.getScheduler().runTask(tr, new Runnable() {
 
-						for (String command : configFile.getStringList("Config.AutoCommands"))
-							Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
-							        command.replace("_Id_", Integer.toString(fr.getId()))
-							                .replace("_Server_", server)
-							                .replace("_Date_", date)
-							                .replace("_Reporter_", p.getName())
-							                .replace("_Reported_", reported)
-							                .replace("_Reason_", freason));
+											@Override
+											public void run() {
+												finalReportCommandProcess(
+												        new Report(reportId, Status.WAITING.getConfigWord(), "None",
+												                date, ruuid, uuid, freason),
+												        fmissingData, p, u, ru, ruuid, db, configFile);
+											}
+
+										});
+									}
+
+								});
+							} else {
+								finalReportCommandProcess(new Report(-1, Status.WAITING.getConfigWord(), "None", date,
+								        ruuid, uuid, freason), missingData, p, u, ru, ruuid, db, configFile);
+							}
+							return;
+						}
+
+						finalReportCommandProcess(fr, missingData, p, u, ru, ruuid, db, configFile);
 					}
 				});
 
@@ -300,6 +286,38 @@ public class ReportCommand implements TabExecutor {
 		});
 
 		return;
+	}
+
+	private void finalReportCommandProcess(Report r, boolean missingData, Player p, User u, User ru, String ruuid,
+	        Database db, FileConfiguration configFile) {
+		BungeeManager bm = tr.getBungeeManager();
+		String server = bm.getServerName();
+
+		ReportUtils.sendReport(r, server, true);
+		String reason = r.getReason(false);
+		String date = r.getDate();
+		p.sendMessage(Message.REPORT_SENT.get()
+		        .replace("_Player_", r.getPlayerName("Reported", false, true))
+		        .replace("_Reason_", reason));
+		bm.sendPluginNotification(r.getId() + " new_report " + date.replace(" ", "_") + " " + ruuid + " "
+		        + r.getLastReporterUniqueId() + " " + reason.replace(" ", "_") + " " + server + " " + missingData);
+
+		u.startCooldown(ReportUtils.getCooldown(), false);
+		ru.startImmunity(false);
+		u.changeStatistic(Statistic.REPORTS, 1, db);
+		ru.changeStatistic(Statistic.REPORTED_TIMES, 1, db);
+
+		String reported = r.getPlayerName("Reported", false, false);
+
+		for (String command : configFile.getStringList("Config.AutoCommands")) {
+			Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
+			        command.replace("_Id_", Integer.toString(r.getId()))
+			                .replace("_Server_", server)
+			                .replace("_Date_", date)
+			                .replace("_Reporter_", p.getName())
+			                .replace("_Reported_", reported)
+			                .replace("_Reason_", reason));
+		}
 	}
 
 	@Override
