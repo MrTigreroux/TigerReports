@@ -162,9 +162,13 @@ public class ReportCommand implements TabExecutor {
 			reason = reason.replace(lineBreak, lineBreak.substring(0, 1));
 
 		if (!ConfigUtils.isEnabled(configFile, "Config.CustomReasons")) {
-			for (int reasonIndex = 1; reasonIndex <= 100; reasonIndex++) {
-				String defaultReason = configFile.getString("Config.DefaultReasons.Reason" + reasonIndex + ".Name");
+			for (int reasonIndex = 1; reasonIndex <= 1000; reasonIndex++) {
+				String defaultReasonPath = "Config.DefaultReasons.Reason" + reasonIndex;
+				String defaultReason = configFile.getString(defaultReasonPath + ".Name");
 				if (defaultReason == null) {
+					if (configFile.get(defaultReasonPath) != null) {
+						continue;
+					}
 					u.openReasonMenu(1, ru);
 					return;
 				} else if (reason.equals(defaultReason)) {

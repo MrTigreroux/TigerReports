@@ -82,14 +82,14 @@ public class ReportMenu extends ReportManagerMenu {
 		inv.setItem(18, r.getItem(Message.REPORT_CHAT_ACTION.get()));
 
 		boolean stackedReport = r.isStackedReport();
-		if (!stackedReport) {
-			inv.setItem(22,
-			        MenuItem.PUNISH_ABUSE.clone()
-			                .details(Message.PUNISH_ABUSE_DETAILS.get()
-			                        .replace("_Player_", r.getPlayerName("Reporter", false, true))
-			                        .replace("_Time_", MessageUtils.convertToSentence(ReportUtils.getPunishSeconds())))
-			                .create());
-		}
+
+		inv.setItem(22, MenuItem.PUNISH_ABUSE.clone()
+		        .details(Message.PUNISH_ABUSE_DETAILS.get()
+		                .replace("_Players_",
+		                        stackedReport ? r.getReportersNames(0, false)
+		                                : r.getPlayerName("Reporter", false, true))
+		                .replace("_Time_", MessageUtils.convertToSentence(ReportUtils.getAbusiveReportCooldown())))
+		        .create());
 
 		Map<String, Object> reporter_stats = statisticsQuery != null ? statisticsQuery.getResult(0) : null;
 		Map<String, Object> reported_stats = null;
@@ -104,12 +104,13 @@ public class ReportMenu extends ReportManagerMenu {
 
 		for (String type : new String[] { "Reporter", "Reported" }) {
 			String name = r.getPlayerName(type, false, false);
-			String details = stackedReport && type.equals("Reporter")
+			boolean reporter = type.equals("Reporter");
+			String details = reporter && stackedReport
 			        ? Message.get("Menus.Stacked-report-reporters-details")
 			                .replace("_First_", r.getPlayerName(type, true, true))
-			                .replace("_Others_", r.getReportersNames(1))
+			                .replace("_Others_", r.getReportersNames(1, true))
 			        : Message.PLAYER_DETAILS.get();
-			Map<String, Object> statistics = type.equals("Reporter") ? reporter_stats : reported_stats;
+			Map<String, Object> statistics = reporter ? reporter_stats : reported_stats;
 
 			for (Statistic stat : Statistic.values()) {
 				String statName = stat.getConfigName();
@@ -134,14 +135,16 @@ public class ReportMenu extends ReportManagerMenu {
 				        + (r.getOldLocation(type) != null ? Message.TELEPORT_TO_OLD_POSITION
 				                : Message.CAN_NOT_TELEPORT_TO_OLD_POSITION).get();
 			}
-			inv.setItem(type.equals("Reporter") ? 21 : 23, new CustomItem().skullOwner(name)
-			        .name((stackedReport && type.equals("Reporter") ? Message.get("Menus.Stacked-report-reporters")
-			                : Message.valueOf(type.toUpperCase()).get()).replace("_Player_",
-			                        r.getPlayerName(type, true, true)))
-			        .lore(details.replace("_Server_", serverName)
-			                .replace("_Teleportation_", tp.replace("_Player_", name))
-			                .split(ConfigUtils.getLineBreakSymbol()))
-			        .create());
+			inv.setItem(reporter ? 21 : 23,
+			        new CustomItem().skullOwner(name)
+			                .name((reporter && stackedReport ? Message.get("Menus.Stacked-report-reporters")
+			                        : Message.valueOf(type.toUpperCase()).get()).replace("_Player_",
+			                                r.getPlayerName(type, true, true)))
+			                .lore(details.replace("_Server_", serverName)
+			                        .replace("_Teleportation_", tp.replace("_Player_", name))
+			                        .split(ConfigUtils.getLineBreakSymbol()))
+			                .amount(reporter && stackedReport ? r.getReportersUniqueIds().length : 1)
+			                .create());
 		}
 
 		inv.setItem(26, MenuItem.DATA
@@ -238,16 +241,9 @@ public class ReportMenu extends ReportManagerMenu {
 			}
 			break;
 		case 22:
-			if (!r.isStackedReport()) {
-				long seconds = ReportUtils.getPunishSeconds();
-				String uuid = p.getUniqueId().toString();
-				TigerReports.getInstance()
-				        .getUsersManager()
-				        .getUser(r.getReporterUniqueId())
-				        .punish(seconds, uuid, false);
-				r.process(uuid, "False", false, Permission.STAFF_ARCHIVE_AUTO.isOwned(u), false);
-				u.openReportsMenu(1, false);
-			}
+			r.processAbusive(p.getUniqueId().toString(), false, Permission.STAFF_ARCHIVE_AUTO.isOwned(u),
+			        ReportUtils.getAbusiveReportCooldown(), true);
+			u.openReportsMenu(1, false);
 			break;
 		case 26:
 			if (click == ClickType.LEFT) {

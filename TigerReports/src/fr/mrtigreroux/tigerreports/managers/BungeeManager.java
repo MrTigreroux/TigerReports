@@ -197,8 +197,14 @@ public class BungeeManager implements PluginMessageListener {
 					break;
 				case "process_punish":
 					String auto = parts[3];
-					getReport(parts).processPunishing(parts[0], true, parts[3].equals("1"),
-					        message.substring(message.indexOf(auto) + 2), notify);
+					getReport(parts).processPunishing(parts[0], true, auto.equals("1"),
+					        message.substring(message.indexOf(auto) + 7), notify); // appreciation = "True/punishment", 7 gives index of punishment
+					break;
+				case "process_abusive":
+					String autoArchive = parts[3];
+					long punishSeconds = parts.length >= 6 && parts[5] != null ? Long.parseLong(parts[5])
+					        : ReportUtils.getAbusiveReportCooldown();
+					getReport(parts).processAbusive(parts[0], true, autoArchive.equals("1"), punishSeconds, notify);
 					break;
 				case "delete":
 					getReport(parts).delete(notify ? parts[0] : null, true);

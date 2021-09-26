@@ -3,9 +3,7 @@ package fr.mrtigreroux.tigerreports.objects.menus;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -20,7 +18,6 @@ import fr.mrtigreroux.tigerreports.objects.CustomItem;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
-import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 /**
  * @author MrTigreroux
@@ -66,8 +63,7 @@ public class PunishmentMenu extends ReportManagerMenu {
 	}
 
 	/**
-	 * @return 45 if it remains punishments that could not be displayed in current
-	 *         page, 46 else.
+	 * @return 45 if it remains punishments that could not be displayed in current page, 46 else.
 	 */
 	private int implement(Inventory inv, String prepath, int firstConfigIndex, int firstSlot) {
 		int slot = firstSlot;
@@ -121,33 +117,12 @@ public class PunishmentMenu extends ReportManagerMenu {
 			        : "Config.DefaultReasons.Reason") + configIndex.substring(1);
 
 			FileConfiguration configFile = ConfigFile.CONFIG.get();
-			String reported = r.getPlayerName("Reported", false, false);
-			String reportId = Integer.toString(r.getId());
-			String[] reportersUniqueIds = r.getReportersUniqueIds();
-			for (String command : configFile.getStringList(path + ".PunishCommands")) {
-				command = command.replace("_Reported_", reported)
-				        .replace("_Staff_", p.getName())
-				        .replace("_Id_", reportId)
-				        .replace("_Reason_", r.getReason(false));
-				if (command.contains("_Reporter_")) {
-					for (String uuid : reportersUniqueIds)
-						executePunishCommand(p, command.replace("_Reporter_", UserUtils.getName(uuid)));
-				} else {
-					executePunishCommand(p, command);
-				}
-			}
+
+			ConfigUtils.processCommands(configFile, path + ".PunishCommands", r, p);
 
 			r.processPunishing(p.getUniqueId().toString(), false, Permission.STAFF_ARCHIVE_AUTO.isOwned(u),
 			        configFile.getString(path + ".Name"), true);
 			u.openDelayedlyReportsMenu();
-		}
-	}
-
-	private void executePunishCommand(Player p, String command) {
-		if (command.startsWith("-CONSOLE")) {
-			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.substring(9));
-		} else {
-			Bukkit.dispatchCommand(p, command);
 		}
 	}
 

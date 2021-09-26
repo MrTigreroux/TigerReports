@@ -9,6 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
+import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Statistic;
@@ -92,12 +93,13 @@ public class Report {
 		        : Message.NOT_FOUND_MALE.get();
 	}
 
-	public String getReportersNames(int first) {
+	public String getReportersNames(int first, boolean onlineSuffix) {
 		String[] reporters = getReportersUniqueIds();
 		String name = Message.REPORTERS_NAMES.get();
 		StringBuilder names = new StringBuilder();
-		for (int i = first; i < reporters.length; i++)
-			names.append(name.replace("_Player_", getPlayerName(reporters[i], "Reporter", true, true)));
+		for (int i = first; i < reporters.length; i++) {
+			names.append(name.replace("_Player_", getPlayerName(reporters[i], "Reporter", onlineSuffix, true)));
+		}
 		return names.toString();
 	}
 
@@ -166,7 +168,7 @@ public class Report {
 
 	public String implementDetails(String message, boolean menu) {
 		Status status = getStatus();
-		String reportersNames = isStackedReport() ? getReportersNames(0) : getPlayerName("Reporter", true, true);
+		String reportersNames = isStackedReport() ? getReportersNames(0, true) : getPlayerName("Reporter", true, true);
 		String suffix = getAppreciation(true).equalsIgnoreCase("true")
 		        ? Message.get("Words.Done-suffix.True-appreciation").replace("_Punishment_", getPunishment())
 		        : Message.get("Words.Done-suffix.Other-appreciation").replace("_Appreciation_", getAppreciation(false));
@@ -277,7 +279,7 @@ public class Report {
 		processing(staffUuid, appreciation, bungee, auto,
 		        (auto ? Message.STAFF_PROCESS_AUTO : Message.STAFF_PROCESS).get()
 		                .replace("_Appreciation_", Message.valueOf(appreciation.toUpperCase()).get()),
-		        "process", notifyStaff);
+		        "process", notifyStaff, null);
 	}
 
 	public void processPunishing(String staffUuid, boolean bungee, boolean auto, String punishment,
@@ -286,11 +288,37 @@ public class Report {
 		        (auto ? Message.STAFF_PROCESS_PUNISH_AUTO : Message.STAFF_PROCESS_PUNISH).get()
 		                .replace("_Punishment_", punishment)
 		                .replace("_Reported_", getPlayerName("Reported", false, true)),
-		        "process_punish", notifyStaff);
+		        "process_punish", notifyStaff, null);
+	}
+
+	public void processAbusive(String staffUuid, boolean bungee, boolean auto, long punishSeconds,
+	        boolean notifyStaff) {
+		String time = MessageUtils.convertToSentence(punishSeconds);
+		processing(staffUuid, "False", bungee, auto,
+		        Message.get("Messages.Staff-process-abusive").replace("_Time_", time), "process_abusive", notifyStaff,
+		        Long.toString(punishSeconds));
+
+		String[] usersUuid = getReportersUniqueIds();
+		TigerReports tr = TigerReports.getInstance();
+		if (!bungee) {
+			tr.getUsersManager().startCooldownForUsers(usersUuid, punishSeconds, tr.getDb());
+			ConfigUtils.processCommands(ConfigFile.CONFIG.get(), "Config.AbusiveReport.Commands", this,
+			        UserUtils.getPlayerFromUniqueId(staffUuid));
+		}
+
+		UsersManager um = tr.getUsersManager();
+		String cooldown = MessageUtils.getRelativeDate(punishSeconds);
+		for (String uuid : usersUuid) {
+			User u = um.getUser(uuid);
+			if (u != null && u instanceof OnlineUser) {
+				((OnlineUser) u).setCooldown(cooldown);
+				u.sendMessage(Message.PUNISHED.get().replace("_Time_", time));
+			}
+		}
 	}
 
 	private void processing(String staffUuid, String appreciation, boolean bungee, boolean auto, String staffMessage,
-	        String bungeeAction, boolean notifyStaff) {
+	        String bungeeAction, boolean notifyStaff, String bungeeExtraData) {
 		this.status = Status.DONE.getConfigWord() + " by " + staffUuid;
 		this.appreciation = appreciation;
 
@@ -307,7 +335,8 @@ public class Report {
 
 		if (!bungee) {
 			bm.sendPluginNotification(
-			        String.join(" ", staffUuid, bungeeAction, "" + reportId, auto ? "1" : "0", appreciation));
+			        String.join(" ", staffUuid, bungeeAction, "" + reportId, auto ? "1" : "0", appreciation)
+			                + bungeeExtraData != null ? " " + bungeeExtraData : "");
 			db.update("UPDATE tigerreports_reports SET status = ?,appreciation = ?,archived = ? WHERE report_id = ?",
 			        Arrays.asList(status, appreciation, auto ? 1 : 0, reportId));
 

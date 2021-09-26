@@ -4,10 +4,13 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
 
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
+import fr.mrtigreroux.tigerreports.objects.Report;
 
 /**
  * @author MrTigreroux
@@ -15,13 +18,13 @@ import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 
 public class ConfigUtils {
 
-	private final static List<String> ACTIVATION_WORDS = Arrays.asList("true", "t", "on", "enabled", "yes", "y",
+	private static final List<String> ACTIVATION_WORDS = Arrays.asList("true", "t", "on", "enabled", "yes", "y",
 	        "activated", "a");
 
 	public static boolean isEnabled(ConfigurationSection config, String path) {
 		return config.get(path) != null && ACTIVATION_WORDS.contains(config.getString(path));
 	}
-	
+
 	public static boolean isEnabled(String path) {
 		return isEnabled(ConfigFile.CONFIG.get(), path);
 	}
@@ -81,6 +84,42 @@ public class ConfigUtils {
 			} catch (Exception ex) {}
 		}
 		return ZoneId.systemDefault();
+	}
+
+	public static void processCommands(ConfigurationSection config, String path, Report r, Player staff) {
+		if (staff == null) {
+			Bukkit.getLogger()
+			        .warning(ConfigUtils.getInfoMessage(
+			                "Could not process commands at <" + path + "> for report #" + r.getId()
+			                        + " because staff is unknown.",
+			                "Les commandes configurées dans <" + path + "> pour le signalement #" + r.getId()
+			                        + " n'ont pas pu être traitées car le staff est inconnu."));
+			return;
+		}
+		String reported = r.getPlayerName("Reported", false, false);
+		String reportId = Integer.toString(r.getId());
+		String[] reportersUniqueIds = r.getReportersUniqueIds();
+		for (String command : config.getStringList(path)) {
+			command = command.replace("_Reported_", reported)
+			        .replace("_Staff_", staff.getName())
+			        .replace("_Id_", reportId)
+			        .replace("_Reason_", r.getReason(false));
+			if (command.contains("_Reporter_")) {
+				for (String uuid : reportersUniqueIds) {
+					executeCommand(staff, command.replace("_Reporter_", UserUtils.getName(uuid)));
+				}
+			} else {
+				executeCommand(staff, command);
+			}
+		}
+	}
+
+	public static void executeCommand(Player p, String command) {
+		if (command.startsWith("-CONSOLE")) {
+			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.substring(9));
+		} else {
+			Bukkit.dispatchCommand(p, command);
+		}
 	}
 
 }

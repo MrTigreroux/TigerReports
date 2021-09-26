@@ -33,8 +33,8 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
 public class ReportsCommand implements TabExecutor {
 
 	private static final List<String> ACTIONS = Arrays.asList("reload", "notify", "archive", "delete", "comment",
-	        "archives", "archiveall", "deleteall", "user", "stopcooldown", "#1");
-	private static final List<String> USER_ACTIONS = Arrays.asList("user", "u", "stopcooldown", "sc");
+	        "archives", "archiveall", "deleteall", "user", "stopcooldown", "punish", "#1");
+	private static final List<String> USER_ACTIONS = Arrays.asList("user", "u", "stopcooldown", "sc", "punish");
 	private static final List<String> DELETEALL_ARGS = Arrays.asList("archived", "unarchived");
 
 	private TigerReports tr;
@@ -169,16 +169,30 @@ public class ReportsCommand implements TabExecutor {
 				return true;
 			case "user":
 			case "u":
-				processCommandWithTarget(u, args[1], "user");
+				processCommandWithTarget(u, args[1], "user", 0);
 				return true;
 			case "stopcooldown":
 			case "sc":
-				processCommandWithTarget(u, args[1], "stopcooldown");
+				processCommandWithTarget(u, args[1], "stopcooldown", 0);
 				return true;
 			default:
 				break;
 			}
 			break;
+		case 3:
+			if (args[0].equalsIgnoreCase("punish")) {
+				try {
+					long punishSeconds = Long.parseLong(args[2]);
+					if (punishSeconds > 0) {
+						processCommandWithTarget(u, args[1], "punish", punishSeconds);
+						return true;
+					}
+				} catch (Exception ex) {}
+				MessageUtils.sendErrorMessage(s, Message.get("ErrorMessages.Invalid-time").replace("_Time_", args[2]));
+				return true;
+			} else {
+				break;
+			}
 		default:
 			break;
 		}
@@ -200,7 +214,7 @@ public class ReportsCommand implements TabExecutor {
 		}
 	}
 
-	private void processCommandWithTarget(OnlineUser u, String target, String command) {
+	private void processCommandWithTarget(OnlineUser u, String target, String command, long punishSeconds) {
 		Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
 
 			@Override
@@ -218,12 +232,12 @@ public class ReportsCommand implements TabExecutor {
 							return;
 						}
 
-						if (tu != null) {
-							if (command.equalsIgnoreCase("stopcooldown")) {
-								tu.stopCooldown(u.getUniqueId().toString(), false);
-							} else {
-								u.openUserMenu(tu);
-							}
+						if (command.equalsIgnoreCase("stopcooldown")) {
+							tu.stopCooldown(u.getUniqueId().toString(), false);
+						} else if (command.equalsIgnoreCase("punish")) {
+							tu.punish(punishSeconds, u.getUniqueId(), false);
+						} else {
+							u.openUserMenu(tu);
 						}
 					}
 

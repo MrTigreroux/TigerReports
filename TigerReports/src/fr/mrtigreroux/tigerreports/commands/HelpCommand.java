@@ -36,7 +36,9 @@ public class HelpCommand {
 				s.sendMessage(
 				        "\u00A77- \u00A7b/reports user <joueur> \u00A77: \u00A7eG\u00E8re les donn\u00E9es d'un joueur.");
 				s.sendMessage(
-				        "\u00A77- \u00A7b/reports stopcooldown <joueur> \u00A77: \u00A7eAnnule l'attente d'un joueur.");
+				        "\u00A77- \u00A7b/reports stopcooldown <joueur> \u00A77: \u00A7eAnnule l'attente d'un joueur avant son prochain signalement.");
+				s.sendMessage(
+				        "\u00A77- \u00A7b/reports punish <joueur> <seconds> \u00A77: \u00A7eEmp\u00EAche les signalements d'un joueur pendant une certaine dur\u00E9e.");
 				s.sendMessage(
 				        "\u00A77- \u00A7b/reports notify \u00A77: \u00A7eActive ou d\u00E9sactive les notifications de signalements.");
 				s.sendMessage(
@@ -69,7 +71,9 @@ public class HelpCommand {
 				s.sendMessage("\u00A77- \u00A7b/reports <report id> \u00A77: \u00A7eDisplays a specific report.");
 				s.sendMessage("\u00A77- \u00A7b/reports user <player> \u00A77: \u00A7eManages data of an user.");
 				s.sendMessage(
-				        "\u00A77- \u00A7b/reports stopcooldown <player> \u00A77: \u00A7eRemoves cooldown from a player.");
+				        "\u00A77- \u00A7b/reports stopcooldown <player> \u00A77: \u00A7eRemoves cooldown from a player before his next report.");
+				s.sendMessage(
+				        "\u00A77- \u00A7b/reports punish <player> <seconds> \u00A77: \u00A7ePrevents the player from reporting for a certain time.");
 				s.sendMessage(
 				        "\u00A77- \u00A7b/reports notify \u00A77: \u00A7eEnables or disables reports notifications.");
 				s.sendMessage(

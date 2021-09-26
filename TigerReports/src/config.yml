@@ -31,17 +31,23 @@ Config:
   # Minimum amount of characters in the reason of a report / Nombre minimum de caractères pour la raison d'un signalement
   
   ReportCooldown: 300
-  # Cooldown in seconds between each report / Temps en secondes d'attente entre chaque signalement
+  # Cooldown in seconds between each report / Temps d'attente en secondes entre chaque signalement
   
   ReportedImmunity: 120
-  # Time in seconds during the reported player cannot be reported again / Temps en secondes durant lequel un joueur signalé ne peut être à nouveau signalé
+  # Time in seconds during which the reported player cannot be reported again / Temps en secondes durant lequel un joueur signalé ne peut être à nouveau signalé
   
   AutoCommands: none
   # List of executed commands after a report, set 'none' to don't execute any / Liste des commandes exécutées après chaque signalement, mettre "none" pour aucune
   # Usable placeholders:    _Id_, _Server_, _Date_, _Reporter_, _Reported_ and _Reason_
   
-  PunishSeconds: 3600
-  # Cooldown inflicted for an abusive report / Temps d'attente infligé pour un signalement abusif
+  AbusiveReport:
+    Cooldown: 3600
+    # Cooldown in seconds inflicted for an abusive report / Temps d'attente en secondes infligé pour un signalement abusif
+  
+    Commands: none
+    # List of executed commands after a report is processed as abusive, set 'none' to don't execute any / Liste des commandes exécutées après chaque signalement traité comme abusif, mettre "none" pour aucune
+    # Put '-CONSOLE' at the beginning of a command to execute it with the console (and not the staff member) / Mettre "-CONSOLE" au début d'une commande pour l'exécuter avec la console (et non le membre de la modération)
+    # Usable placeholders:    _Id_ (id of the report), _Reported_ (reported player name), _Reporter_ (reporter player name, the command is executed for each reporter if they are multiple), _Staff_ (processor staff name) and _Reason_ (reason of the report and therefore not necessarily the name of the default reason) / Données utilisables: _Id_ (identifiant du signalement), _Reported_ (pseudo du joueur signalé), _Reporter_ (pseudo du joueur signaleur, la commande est exécutée pour chaque signaleur s'il y en a plusieurs), _Staff_ (pseudo du membre du staff qui traite le signalement) et _Reason_ (raison du signalement et donc pas forcément le nom de la sanction par défaut)
   
   MessagesHistory: 5
   # Amount of saved messages / Nombre de messages sauvegardés
@@ -63,11 +69,14 @@ Config:
   Notifications:
     Delay: 2
     # Time in seconds before sending the notification after the connection of the user / Délai en secondes avant d'envoyer la notification après la connexion de l'utilisateur
+    
     Players: true
     # Notify players about the decisions made on their reports / Informer les joueurs des décisions prises sur leurs signalements
+    
     Staff:
       Connection: yes
       # Display at staff connection / Afficher à la connexion d'un membre de l'équipe
+      
       MinutesInterval: 0
       # Display each x minutes, set 0 to disable / Afficher toutes les x minutes, mettre 0 pour désactiver
     # Notifications about reports to process / Notifications à propos des signalements à traiter
@@ -166,7 +175,7 @@ Config:
   #     Spigot 1.13 material names: https://helpch.at/docs/1.13/org/bukkit/Material.html
   #     Spigot latest version material names: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Material.html
   # PunishCommands:    List of commands to execute when punishing / Liste des commandes à exécuter lors d'une sanction.
-  #                    Set '-CONSOLE' at the beginning of a command to execute it with the console (and not the staff member) / Mettre "-CONSOLE" au début d'une commande pour l'exécuter avec la console (et non le membre de la modération)
+  #                    Put '-CONSOLE' at the beginning of a command to execute it with the console (and not the staff member) / Mettre "-CONSOLE" au début d'une commande pour l'exécuter avec la console (et non le membre de la modération)
   #                    Usable placeholders: _Id_ (id of the report), _Reported_ (reported player name), _Reporter_ (reporter player name, the command is executed for each reporter if they are multiple), _Staff_ (processor staff name) and _Reason_ (reason of the report and therefore not necessarily the name of the default reason) / Données utilisables: _Id_ (identifiant du signalement), _Reported_ (pseudo du joueur signalé), _Reporter_ (pseudo du joueur signaleur, la commande est exécutée pour chaque signaleur s'il y en a plusieurs), _Staff_ (pseudo du membre du staff qui traite le signalement) et _Reason_ (raison du signalement et donc pas forcément le nom de la sanction par défaut)
   # PunishCommandsPermission:    Permission required to execute the punish commands listed under PunishCommands / Permission requise pour exécuter les commandes de sanction listées dans PunishCommands
   
@@ -248,6 +257,9 @@ MySQL:
 VaultChat:
   Enabled: yes
   # Use prefixes and suffixes from the chat of Vault plugin to display player names / Utiliser les préfixes et suffixes du chat du plugin Vault pour afficher les noms des joueurs
+  
+  Format: "_Prefix__Name__Suffix_"
+  # Format used to display player names / Format utilisé pour afficher les noms des joueurs
   
   DisplayForStaff: yes
   # Use prefixes and suffixes from the chat of Vault plugin to display staff names / Utiliser les préfixes et suffixes du chat du plugin Vault pour afficher les noms des membres de l'équipe (staff)

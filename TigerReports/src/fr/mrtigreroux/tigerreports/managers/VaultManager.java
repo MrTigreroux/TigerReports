@@ -78,8 +78,11 @@ public class VaultManager {
 		if (name == null)
 			return null;
 
-		String vaultDisplayName = MessageUtils
-		        .translateColorCodes(chat.getPlayerPrefix(null, p) + name + chat.getPlayerSuffix(null, p));
+		String vaultDisplayName = MessageUtils.translateColorCodes(ConfigFile.CONFIG.get()
+		        .getString("VaultChat.Format")
+		        .replace("_Prefix_", chat.getPlayerPrefix(null, p))
+		        .replace("_Name_", name)
+		        .replace("_Suffix_", chat.getPlayerSuffix(null, p)));
 
 		displayNames.put(p.getUniqueId().toString(), vaultDisplayName);
 		return vaultDisplayName;

@@ -88,13 +88,11 @@ public class UserUtils {
 	}
 
 	/**
-	 * Return the players that player p can see (not vanished). Doesn't take in
-	 * consideration the vanished players on a different server, who are therefore
-	 * considered as online for the player p, because no official check can be used.
+	 * Return the players that player p can see (not vanished). Doesn't take in consideration the vanished players on a different server, who are therefore considered as online for the player p, because
+	 * no official check can be used.
 	 * 
 	 * @param p            - Viewer of players
-	 * @param hideExempted - Hide players owing tigerreports.report.exempt
-	 *                     permission
+	 * @param hideExempted - Hide players owing tigerreports.report.exempt permission
 	 */
 	public static List<String> getOnlinePlayersForPlayer(Player p, boolean hideExempted) {
 		TigerReports tr = TigerReports.getInstance();

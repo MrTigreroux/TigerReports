@@ -174,8 +174,8 @@ public class ReportUtils {
 		return ConfigFile.CONFIG.get().getLong("Config.ReportCooldown", 300);
 	}
 
-	public static long getPunishSeconds() {
-		return ConfigFile.CONFIG.get().getLong("Config.PunishSeconds", 3600);
+	public static long getAbusiveReportCooldown() {
+		return ConfigFile.CONFIG.get().getLong("Config.AbusiveReport.Cooldown", 3600);
 	}
 
 	public static boolean onlyDoneArchives() {

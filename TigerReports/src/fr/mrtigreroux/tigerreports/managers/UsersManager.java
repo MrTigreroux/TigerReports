@@ -13,8 +13,10 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
+import fr.mrtigreroux.tigerreports.data.database.Database;
 import fr.mrtigreroux.tigerreports.objects.users.*;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
+import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 
 /**
  * @author MrTigreroux
@@ -140,6 +142,32 @@ public class UsersManager {
 		        .warning(ConfigUtils.getInfoMessage("The name of the UUID <" + uuid + "> was not found.",
 		                "Le pseudo de l'UUID <" + uuid + "> n'a pas ete trouve."));
 		return null;
+	}
+
+	public void startCooldownForUsers(String[] usersUuid, long seconds, Database db) {
+		int amount = usersUuid.length;
+		if (amount <= 0)
+			return;
+
+		if (amount == 1) {
+			User u = getUser(usersUuid[0]);
+			if (u != null) {
+				u.startCooldown(seconds, false);
+			}
+			return;
+		}
+
+		String cooldown = MessageUtils.getRelativeDate(seconds);
+
+		StringBuilder query = new StringBuilder("UPDATE tigerreports_users SET cooldown = ? WHERE uuid IN (?");
+		for (int i = 1; i < amount; i++) {
+			query.append(",?");
+		}
+		query.append(")");
+
+		List<Object> queryParams = new ArrayList<>(Arrays.asList((Object[]) usersUuid));
+		queryParams.add(0, cooldown);
+		db.updateAsynchronously(query.toString(), queryParams);
 	}
 
 }

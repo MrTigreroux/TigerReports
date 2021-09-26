@@ -117,7 +117,7 @@ public abstract class User {
 		if (staffUuid != null) {
 			MessageUtils.sendStaffMessage(Message.STAFF_PUNISH.get()
 			        .replace("_Player_", UserUtils.getDisplayName(staffUuid, true))
-			        .replace("_Reporter_", getDisplayName(false))
+			        .replace("_Target_", getDisplayName(false))
 			        .replace("_Time_", time), ConfigSound.STAFF.get());
 			sendMessage(Message.PUNISHED.get().replace("_Time_", time));
 		}
