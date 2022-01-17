@@ -232,8 +232,9 @@ public class MessageUtils {
 			return line;
 
 		String[] parts = line.split(placeHolder);
+		BaseComponent advancedText = getAdvancedText(replacement, hover, command);
 		if (parts.length == 0) {
-			return getAdvancedText(replacement, hover, command);
+			return advancedText;
 		} else if (parts.length == 1) {
 			parts = new String[] { parts[0], "" };
 		}
@@ -241,16 +242,16 @@ public class MessageUtils {
 		BaseComponent advancedLine = new TextComponent("");
 		advancedLine.addExtra(parts[0]);
 		for (int i = 1; i < parts.length; i++) {
-			advancedLine.addExtra(getAdvancedText(replacement, hover, command));
+			advancedLine.addExtra(advancedText);
 			advancedLine.addExtra(parts[i]);
 		}
 		return advancedLine;
 	}
 
 	@SuppressWarnings("deprecation")
-	public static BaseComponent getAdvancedText(String replacement, String hover, String command) {
-		BaseComponent advancedText = new TextComponent(replacement);
-		advancedText.setColor(ChatColor.valueOf(MessageUtils.getLastColor(replacement, null).name()));
+	public static BaseComponent getAdvancedText(String text, String hover, String command) {
+		BaseComponent advancedText = new TextComponent(text);
+		advancedText.setColor(ChatColor.valueOf(MessageUtils.getLastColor(text, null).name()));
 		advancedText.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
 		        new ComponentBuilder(hover.replace(ConfigUtils.getLineBreakSymbol(), "\n")).create()));
 		if (command != null)

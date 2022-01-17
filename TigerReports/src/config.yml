@@ -37,8 +37,14 @@ Config:
   # Time in seconds during which the reported player cannot be reported again / Temps en secondes durant lequel un joueur signalé ne peut être à nouveau signalé
   
   AutoCommands: none
-  # List of executed commands after a report, set 'none' to don't execute any / Liste des commandes exécutées après chaque signalement, mettre "none" pour aucune
+  # List of commands to execute with the console after a report, set 'none' to don't execute any / Liste des commandes à exécuter avec la console après chaque signalement, mettre "none" pour aucune
   # Usable placeholders:    _Id_, _Server_, _Date_, _Reporter_, _Reported_ and _Reason_
+  
+  AutoCommandsBeforeTeleportation: none
+  # - vanish
+  # List of commands to execute before a staff teleports himself to the location of the participant of a report / Liste des commandes à exécuter avant qu'un membre de la modération ne se téléporte à la position d'un participant d'un signalement
+  # Put '-CONSOLE' at the beginning of a command to execute it with the console (and not the staff member) / Mettre "-CONSOLE" au début d'une commande pour l'exécuter avec la console (et non le membre de la modération)
+  # Usable placeholders: _Id_ (id of the report), _Reported_ (reported player name), _Reporter_ (reporter player name, the command is executed for each reporter if they are multiple), _Staff_ (name of the staff who teleports himself) and _Reason_ (reason of the report) / Données utilisables: _Id_ (identifiant du signalement), _Reported_ (pseudo du joueur signalé), _Reporter_ (pseudo du joueur signaleur, la commande est exécutée pour chaque signaleur s'il y en a plusieurs), _Staff_ (pseudo du membre de la modération qui se téléporte) et _Reason_ (raison du signalement)
   
   AbusiveReport:
     Cooldown: 3600

@@ -135,7 +135,7 @@ public class UserMenu extends Menu implements UpdatedMenu {
 						break;
 					}
 				}
-				tu.changeStatistic(stat, click.toString().contains("RIGHT") ? -1 : 1, db);
+				tu.changeStatistic(stat, click.isRightClick() ? -1 : 1, db);
 				update(true);
 			}
 			break;

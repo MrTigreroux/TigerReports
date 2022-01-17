@@ -96,10 +96,16 @@ public class ConfigUtils {
 			                        + " n'ont pas pu être traitées car le staff est inconnu."));
 			return;
 		}
+
+		List<String> commands = config.getStringList(path);
+		if (commands.isEmpty()) {
+			return;
+		}
+
 		String reported = r.getPlayerName("Reported", false, false);
 		String reportId = Integer.toString(r.getId());
 		String[] reportersUniqueIds = r.getReportersUniqueIds();
-		for (String command : config.getStringList(path)) {
+		for (String command : commands) {
 			command = command.replace("_Reported_", reported)
 			        .replace("_Staff_", staff.getName())
 			        .replace("_Id_", reportId)

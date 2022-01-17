@@ -5,18 +5,14 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
-import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.*;
 import fr.mrtigreroux.tigerreports.data.database.QueryResult;
-import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.objects.CustomItem;
 import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
@@ -187,58 +183,20 @@ public class ReportMenu extends ReportManagerMenu {
 			break;
 		case 21:
 		case 23:
-			if (!Permission.STAFF_TELEPORT.isOwned(u))
+			if (!Permission.STAFF_TELEPORT.isOwned(u) || click == null)
 				return;
-			String targetType = slot == 21 ? "Reporter" : "Reported";
-			String target = r.getPlayerName(targetType, false, false);
-			Player t = Bukkit.getPlayer(target);
-			String locType;
-			String serverName = null;
-			Location loc = null;
-			String configLoc = null;
-			boolean tpDifferentServer = false;
 
-			BungeeManager bm = TigerReports.getInstance().getBungeeManager();
-			if (click.toString().contains("LEFT")) {
-				if (t == null) {
-					if (bm.isOnline(target)) {
-						tpDifferentServer = true;
-					} else {
-						MessageUtils.sendErrorMessage(p, Message.PLAYER_OFFLINE.get().replace("_Player_", target));
-						return;
-					}
-				} else {
-					serverName = "localhost";
-					loc = t.getLocation();
-				}
-				locType = "CURRENT";
-			} else if (click.toString().contains("RIGHT")) {
-				configLoc = r.getOldLocation(targetType);
-				loc = MessageUtils.getLocation(configLoc);
-				if (loc == null) {
-					MessageUtils.sendErrorMessage(p, Message.LOCATION_UNKNOWN.get().replace("_Player_", target));
-					return;
-				}
-				serverName = MessageUtils.getServer(configLoc);
-				locType = "OLD";
+			String targetType = slot == 21 ? "Reporter" : "Reported";
+
+			boolean currentLocation = false;
+			if (click.isLeftClick()) {
+				currentLocation = true;
+			} else if (click.isRightClick()) {
+				currentLocation = false;
 			} else {
 				return;
 			}
-			u.sendMessageWithReportButton(Message.valueOf("TELEPORT_" + locType + "_LOCATION")
-			        .get()
-			        .replace("_Player_",
-			                Message.valueOf(targetType.toUpperCase() + "_NAME").get().replace("_Player_", target))
-			        .replace("_Report_", r.getName()), r);
-			if (tpDifferentServer) {
-				bm.sendPluginNotification(p.getName() + " tp_player " + target);
-			} else if (serverName.equals("localhost") || bm.getServerName().equals(serverName)) {
-				p.teleport(loc);
-				ConfigSound.TELEPORT.play(p);
-			} else {
-				bm.sendPluginMessage("ConnectOther", p.getName(), serverName);
-				bm.sendServerPluginNotification(serverName,
-				        System.currentTimeMillis() + " " + p.getName() + " tp_loc " + configLoc);
-			}
+			u.teleportToReportParticipant(r, targetType, currentLocation);
 			break;
 		case 22:
 			r.processAbusive(p.getUniqueId().toString(), false, Permission.STAFF_ARCHIVE_AUTO.isOwned(u),
@@ -246,13 +204,13 @@ public class ReportMenu extends ReportManagerMenu {
 			u.openReportsMenu(1, false);
 			break;
 		case 26:
-			if (click == ClickType.LEFT) {
+			if (click.isLeftClick()) {
 				u.sendLinesWithReportButton(
 				        r.implementData(Message.REPORT_CHAT_DATA.get(), Permission.STAFF_ADVANCED.isOwned(u))
 				                .replace("_Report_", r.getName())
 				                .split(ConfigUtils.getLineBreakSymbol()),
 				        r);
-			} else if (click == ClickType.RIGHT) {
+			} else if (click.isRightClick()) {
 				Map<Long, String> sortedMessages = new TreeMap<>();
 				for (String type : new String[] { "Reported", "Reporter" }) {
 					for (String message : r.getMessagesHistory(type)) {

@@ -3,6 +3,7 @@ package fr.mrtigreroux.tigerreports.objects.users;
 import net.md_5.bungee.api.chat.TextComponent;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
@@ -11,6 +12,7 @@ import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.data.constants.Status;
+import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.objects.Comment;
 import fr.mrtigreroux.tigerreports.objects.Report;
 import fr.mrtigreroux.tigerreports.objects.menus.*;
@@ -315,6 +317,60 @@ public class OnlineUser extends User {
 	public boolean canArchive(Report r) {
 		return Permission.STAFF_ARCHIVE.isOwned(this)
 		        && (r.getStatus() == Status.DONE || !ReportUtils.onlyDoneArchives());
+	}
+
+	public void teleportToReportParticipant(Report r, String targetType, boolean currentLocation) {
+		String target = r.getPlayerName(targetType, false, false);
+		Player t = Bukkit.getPlayer(target);
+		String locType;
+		String serverName = null;
+		Location loc = null;
+		String configLoc = null;
+		boolean tpToOnlineTargetInDifferentServer = false;
+
+		BungeeManager bm = TigerReports.getInstance().getBungeeManager();
+		if (currentLocation) {
+			if (t == null) {
+				if (bm.isOnline(target)) {
+					tpToOnlineTargetInDifferentServer = true;
+				} else {
+					MessageUtils.sendErrorMessage(p, Message.PLAYER_OFFLINE.get().replace("_Player_", target));
+					return;
+				}
+			} else {
+				serverName = "localhost";
+				loc = t.getLocation();
+			}
+			locType = "CURRENT";
+		} else {
+			configLoc = r.getOldLocation(targetType);
+			loc = MessageUtils.getLocation(configLoc);
+			if (loc == null) {
+				MessageUtils.sendErrorMessage(p, Message.LOCATION_UNKNOWN.get().replace("_Player_", target));
+				return;
+			}
+			serverName = MessageUtils.getServer(configLoc);
+			locType = "OLD";
+		}
+
+		ConfigUtils.processCommands(ConfigFile.CONFIG.get(), "Config.AutoCommandsBeforeTeleportation", r, p);
+
+		sendMessageWithReportButton(Message.valueOf("TELEPORT_" + locType + "_LOCATION")
+		        .get()
+		        .replace("_Player_",
+		                Message.valueOf(targetType.toUpperCase() + "_NAME").get().replace("_Player_", target))
+		        .replace("_Report_", r.getName()), r);
+
+		if (tpToOnlineTargetInDifferentServer) {
+			bm.sendPluginNotification(p.getName() + " tp_player " + target);
+		} else if (serverName.equals("localhost") || bm.getServerName().equals(serverName)) {
+			p.teleport(loc);
+			ConfigSound.TELEPORT.play(p);
+		} else {
+			bm.sendPluginMessage("ConnectOther", p.getName(), serverName);
+			bm.sendServerPluginNotification(serverName,
+			        System.currentTimeMillis() + " " + p.getName() + " tp_loc " + configLoc);
+		}
 	}
 
 }

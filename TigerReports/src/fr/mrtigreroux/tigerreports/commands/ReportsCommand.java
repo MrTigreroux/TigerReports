@@ -135,7 +135,7 @@ public class ReportsCommand implements TabExecutor {
 			case "deleteall":
 				String reportsType = args[1];
 				boolean unarchived = reportsType != null && reportsType.equalsIgnoreCase("unarchived");
-				if ((unarchived || reportsType.equalsIgnoreCase("archived"))) {
+				if (unarchived || (reportsType != null && reportsType.equalsIgnoreCase("archived"))) {
 					if (Permission.STAFF_DELETE.check(s)) {
 						tr.getDb()
 						        .updateAsynchronously("DELETE FROM tigerreports_reports WHERE archived = ?",

@@ -126,6 +126,21 @@ public class Report {
 		return Status.getFrom(status);
 	}
 
+	public String getStatusWithDetails() {
+		Status status = getStatus();
+		if (status.equals(Status.DONE)) {
+			String suffix = getAppreciation(true).equalsIgnoreCase("true")
+			        ? Message.get("Words.Done-suffix.True-appreciation").replace("_Punishment_", getPunishment())
+			        : Message.get("Words.Done-suffix.Other-appreciation")
+			                .replace("_Appreciation_", getAppreciation(false));
+			return status.getWord(getProcessor()) + suffix;
+		} else if (status.equals(Status.IN_PROGRESS)) {
+			return status.getWord(getProcessingStaff(), true);
+		} else {
+			return status.getWord(null);
+		}
+	}
+
 	public String getReason(boolean menu) {
 		return reason != null
 		        ? menu ? MessageUtils.getMenuSentence(reason, Message.REPORT_DETAILS, "_Reason_", true) : reason
@@ -133,7 +148,7 @@ public class Report {
 	}
 
 	public String getAppreciation(boolean config) {
-		int pos = appreciation.indexOf('/');
+		int pos = appreciation != null ? appreciation.indexOf('/') : -1;
 		String appreciationWord = pos != -1 ? appreciation.substring(0, pos) : appreciation;
 		if (config)
 			return appreciationWord;
@@ -167,16 +182,9 @@ public class Report {
 	}
 
 	public String implementDetails(String message, boolean menu) {
-		Status status = getStatus();
 		String reportersNames = isStackedReport() ? getReportersNames(0, true) : getPlayerName("Reporter", true, true);
-		String suffix = getAppreciation(true).equalsIgnoreCase("true")
-		        ? Message.get("Words.Done-suffix.True-appreciation").replace("_Punishment_", getPunishment())
-		        : Message.get("Words.Done-suffix.Other-appreciation").replace("_Appreciation_", getAppreciation(false));
-		return message
-		        .replace("_Status_",
-		                status.equals(Status.DONE) ? status.getWord(getProcessor()) + suffix
-		                        : status.equals(Status.IN_PROGRESS) ? status.getWord(getProcessingStaff(), true)
-		                                : status.getWord(null))
+
+		return message.replace("_Status_", getStatusWithDetails())
 		        .replace("_Date_", getDate())
 		        .replace("_Reporters_", reportersNames)
 		        .replace("_Reported_", getPlayerName("Reported", true, true))
