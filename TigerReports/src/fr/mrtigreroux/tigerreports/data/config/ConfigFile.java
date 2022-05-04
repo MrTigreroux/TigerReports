@@ -3,14 +3,12 @@ package fr.mrtigreroux.tigerreports.data.config;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
+import fr.mrtigreroux.tigerreports.logs.Logger;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 
@@ -28,15 +26,14 @@ public enum ConfigFile {
 
 	ConfigFile() {}
 
-	public void load() {
-		file = new File("plugins/TigerReports", name().toLowerCase() + ".yml");
+	public void load(TigerReports tr) {
+		file = new File(tr.getDataFolder(), name().toLowerCase() + ".yml");
 		if (!file.exists())
-			reset();
+			reset(tr);
 		config = YamlConfiguration.loadConfiguration(file);
 
 		try {
-			Reader defaultConfigStream = new InputStreamReader(TigerReports.getInstance().getResource(file.getName()),
-			        "UTF8");
+			Reader defaultConfigStream = new InputStreamReader(tr.getResource(file.getName()), "UTF8");
 			YamlConfiguration defaultConfig = YamlConfiguration.loadConfiguration(defaultConfigStream);
 			if (this == CONFIG) {
 				defaultConfig.set("Config.DefaultReasons", null);
@@ -47,9 +44,8 @@ public enum ConfigFile {
 
 			config.setDefaults(defaultConfig);
 		} catch (Exception ex) {
-			Bukkit.getLogger()
-			        .log(Level.SEVERE, ConfigUtils.getInfoMessage("An error has occurred while loading config files:",
-			                "Une erreur est survenue en chargeant les fichiers de configuration:"), ex);
+			Logger.CONFIG.error(ConfigUtils.getInfoMessage("An error has occurred while loading config files:",
+			        "Une erreur est survenue en chargeant les fichiers de configuration:"), ex);
 		}
 	}
 
@@ -57,22 +53,22 @@ public enum ConfigFile {
 		return config;
 	}
 
-	public void save() {
+	public void save(TigerReports tr) {
 		try {
 			get().save(file);
 		} catch (Exception ex) {
-			load();
+			load(tr);
 		}
 	}
 
-	public void reset() {
-		TigerReports.getInstance().saveResource(file.getName(), false);
-		Logger logger = Bukkit.getLogger();
-		logger.warning(MessageUtils.LINE);
-		logger.warning(this != CONFIG && ConfigUtils.getInfoLanguage().equalsIgnoreCase("English")
-		        ? "[TigerReports] The file " + file.getName() + " has been reset."
-		        : "[TigerReports] Le fichier " + file.getName() + " a ete reinitialise.");
-		logger.warning(MessageUtils.LINE);
+	public void reset(TigerReports tr) {
+		tr.saveResource(file.getName(), false);
+		Logger logger = Logger.CONFIG;
+		logger.warn(() -> MessageUtils.LINE);
+		logger.warn(() -> this != CONFIG && ConfigUtils.getInfoLanguage().equalsIgnoreCase("English")
+		        ? "The file " + file.getName() + " has been reset."
+		        : "Le fichier " + file.getName() + " a ete reinitialise.");
+		logger.warn(() -> MessageUtils.LINE);
 	}
 
 }

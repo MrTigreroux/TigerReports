@@ -11,17 +11,18 @@ import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 
 public class HelpCommand {
 
+	private static final String STRAIGHT_LINE = "\u00A77\u00A7m---------------------------------------------------";
+
 	public static void onCommand(CommandSender s) {
-		String straightLine = "\u00A77\u00A7m---------------------------------------------------";
 		String commands = Message.get("Messages.Help-commands");
 		String[] commandLines = new String[0];
 		if (commands != null && !commands.isEmpty())
 			commandLines = commands.split(ConfigUtils.getLineBreakSymbol());
 
 		if (ConfigUtils.getInfoLanguage().equalsIgnoreCase("French")) {
-			s.sendMessage(straightLine);
+			s.sendMessage(STRAIGHT_LINE);
 			s.sendMessage("\u00A7r                         \u00A76TigerReports \u00A77> \u00A7eAide");
-			s.sendMessage(straightLine);
+			s.sendMessage(STRAIGHT_LINE);
 			if (commandLines != null && commandLines.length > 0) {
 				for (String line : commandLines) {
 					s.sendMessage(line);
@@ -54,11 +55,11 @@ public class HelpCommand {
 			}
 			s.sendMessage(
 			        "\u00A77Le plugin \u00A76TigerReports \u00A77install\u00E9 sur ce serveur a \u00E9t\u00E9 r\u00E9alis\u00E9 par \u00A7a@MrTigreroux\u00A77.");
-			s.sendMessage(straightLine);
+			s.sendMessage(STRAIGHT_LINE);
 		} else {
-			s.sendMessage(straightLine);
+			s.sendMessage(STRAIGHT_LINE);
 			s.sendMessage("\u00A7r                         \u00A76TigerReports \u00A77> \u00A7eHelp");
-			s.sendMessage(straightLine);
+			s.sendMessage(STRAIGHT_LINE);
 			if (commandLines != null && commandLines.length > 0) {
 				for (String line : commandLines) {
 					s.sendMessage(line);
@@ -82,11 +83,12 @@ public class HelpCommand {
 				        "\u00A77- \u00A7b/reports comment <report id> <comment> \u00A77: \u00A7eAdds the comment to the report.");
 				s.sendMessage("\u00A77- \u00A7b/reports archiveall \u00A77: \u00A7eArchives all done reports.");
 				s.sendMessage("\u00A77- \u00A7b/reports archives \u00A77: \u00A7eDisplays all archived reports.");
-				s.sendMessage("\u00A77- \u00A7b/reports deleteall <archived / unarchived> \u00A77: \u00A7eDeletes all (un)archived reports.");
+				s.sendMessage(
+				        "\u00A77- \u00A7b/reports deleteall <archived / unarchived> \u00A77: \u00A7eDeletes all (un)archived reports.");
 			}
 			s.sendMessage(
 			        "\u00A77Plugin \u00A76TigerReports \u00A77installed on this server has been created by \u00A7a@MrTigreroux\u00A77.");
-			s.sendMessage(straightLine);
+			s.sendMessage(STRAIGHT_LINE);
 		}
 	}
 

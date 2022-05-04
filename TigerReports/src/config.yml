@@ -38,7 +38,7 @@ Config:
   
   AutoCommands: none
   # List of commands to execute with the console after a report, set 'none' to don't execute any / Liste des commandes à exécuter avec la console après chaque signalement, mettre "none" pour aucune
-  # Usable placeholders:    _Id_, _Server_, _Date_, _Reporter_, _Reported_ and _Reason_
+  # Usable placeholders: _Id_, _Server_, _Date_, _Reporter_, _Reported_ and _Reason_
   
   AutoCommandsBeforeTeleportation: none
   # - vanish
@@ -53,7 +53,7 @@ Config:
     Commands: none
     # List of executed commands after a report is processed as abusive, set 'none' to don't execute any / Liste des commandes exécutées après chaque signalement traité comme abusif, mettre "none" pour aucune
     # Put '-CONSOLE' at the beginning of a command to execute it with the console (and not the staff member) / Mettre "-CONSOLE" au début d'une commande pour l'exécuter avec la console (et non le membre de la modération)
-    # Usable placeholders:    _Id_ (id of the report), _Reported_ (reported player name), _Reporter_ (reporter player name, the command is executed for each reporter if they are multiple), _Staff_ (processor staff name) and _Reason_ (reason of the report and therefore not necessarily the name of the default reason) / Données utilisables: _Id_ (identifiant du signalement), _Reported_ (pseudo du joueur signalé), _Reporter_ (pseudo du joueur signaleur, la commande est exécutée pour chaque signaleur s'il y en a plusieurs), _Staff_ (pseudo du membre du staff qui traite le signalement) et _Reason_ (raison du signalement et donc pas forcément le nom de la sanction par défaut)
+    # Usable placeholders: _Id_ (id of the report), _Reported_ (reported player name), _Reporter_ (reporter player name, the command is executed for each reporter if they are multiple), _Staff_ (processor staff name) and _Reason_ (reason of the report and therefore not necessarily the name of the default reason) / Données utilisables: _Id_ (identifiant du signalement), _Reported_ (pseudo du joueur signalé), _Reporter_ (pseudo du joueur signaleur, la commande est exécutée pour chaque signaleur s'il y en a plusieurs), _Staff_ (pseudo du membre du staff qui traite le signalement) et _Reason_ (raison du signalement et donc pas forcément le nom de la sanction par défaut)
   
   MessagesHistory: 5
   # Amount of saved messages / Nombre de messages sauvegardés
@@ -89,6 +89,9 @@ Config:
   
   OnlyDoneArchives: no
   # Prevent archive of unprocessed reports / Empêcher l'archivage de signalements non traités
+  
+  CloseMenuAfterReportProcessing: no
+  # Close the menu after processing a report. If set to 'no', the first page of not archived reports is opened after processing a report / Fermer le menu après le traitement d'un signalement. Si configuré à "no", la première page des signalements non archivés est ouverte après le traitement d'un signalement
   
   MenuUpdatesInterval: 10
   # Update opened menus each x seconds / Actualiser les menus ouverts toutes les x secondes
@@ -182,7 +185,7 @@ Config:
   #     Spigot latest version material names: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Material.html
   # PunishCommands:    List of commands to execute when punishing / Liste des commandes à exécuter lors d'une sanction.
   #                    Put '-CONSOLE' at the beginning of a command to execute it with the console (and not the staff member) / Mettre "-CONSOLE" au début d'une commande pour l'exécuter avec la console (et non le membre de la modération)
-  #                    Usable placeholders: _Id_ (id of the report), _Reported_ (reported player name), _Reporter_ (reporter player name, the command is executed for each reporter if they are multiple), _Staff_ (processor staff name) and _Reason_ (reason of the report and therefore not necessarily the name of the default reason) / Données utilisables: _Id_ (identifiant du signalement), _Reported_ (pseudo du joueur signalé), _Reporter_ (pseudo du joueur signaleur, la commande est exécutée pour chaque signaleur s'il y en a plusieurs), _Staff_ (pseudo du membre du staff qui traite le signalement) et _Reason_ (raison du signalement et donc pas forcément le nom de la sanction par défaut)
+  #                    Usable placeholders: _Id_ (id of the report), _Reported_ (reported player name), _Reporter_ (reporter player name, the command is executed for each reporter if they are multiple), _Staff_ (processor staff name), _Reason_ (reason of the report and not the name of the punishment) and _StaffReason_ (reason of the punishment specified by the processor staff) / Données utilisables: _Id_ (identifiant du signalement), _Reported_ (pseudo du joueur signalé), _Reporter_ (pseudo du joueur signaleur, la commande est exécutée pour chaque signaleur s'il y en a plusieurs), _Staff_ (pseudo du membre du staff qui traite le signalement), _Reason_ (raison du signalement et non le nom de la sanction) et _StaffReason_ (motif de sanction du membre du staff qui traite le signalement)
   # PunishCommandsPermission:    Permission required to execute the punish commands listed under PunishCommands / Permission requise pour exécuter les commandes de sanction listées dans PunishCommands
   
   Punishments:
@@ -211,6 +214,13 @@ Config:
       Item: Material-Pumpkin
       PunishCommands:
       - "ban _Reported_ 7d Harc\u00E8lement"
+    Punishment3:
+      Name: "Autre: _StaffReason_"
+      Lore: "&7Autre raison \xe0 pr\xe9ciser."
+      # "&7Other punishment reason to specify."
+      Item: Material-Pumpkin
+      PunishCommands:
+      - "ban _Reported_ 7d _StaffReason_"
   # Punishments available after processing a report as True / Sanctions disponibles après avoir traité un signalement comme vrai
   # Name:    Name of the punsihment / Nom de la sanction
   # Lore:    Description of the punishment / Description de la sanction
@@ -222,7 +232,7 @@ Config:
   #     Spigot latest version material names: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Material.html
   # PunishCommands:    List of commands to execute when punishing / Liste des commandes à exécuter lors d'une sanction.
   #                    Set '-CONSOLE' at the beginning of a command to execute it with the console (and not the staff member) / Mettre "-CONSOLE" au début d'une commande pour l'exécuter avec la console (et non le membre de la modération)
-  #                    Usable placeholders: _Id_ (id of the report), _Reported_ (reported player name), _Reporter_ (reporter player name, the command is executed for each reporter if they are multiple), _Staff_ (processor staff name) and _Reason_ (reason of the report and not the name of the punishment) / Données utilisables: _Id_ (identifiant du signalement), _Reported_ (pseudo du joueur signalé), _Reporter_ (pseudo du joueur signaleur, la commande est exécutée pour chaque signaleur s'il y en a plusieurs), _Staff_ (pseudo du membre du staff qui traite le signalement) et _Reason_ (raison du signalement et non le nom de la sanction)
+  #                    Usable placeholders: _Id_ (id of the report), _Reported_ (reported player name), _Reporter_ (reporter player name, the command is executed for each reporter if they are multiple), _Staff_ (processor staff name), _Reason_ (reason of the report and not the name of the punishment) and _StaffReason_ (reason of the punishment specified by the processor staff) / Données utilisables: _Id_ (identifiant du signalement), _Reported_ (pseudo du joueur signalé), _Reporter_ (pseudo du joueur signaleur, la commande est exécutée pour chaque signaleur s'il y en a plusieurs), _Staff_ (pseudo du membre du staff qui traite le signalement), _Reason_ (raison du signalement et non le nom de la sanction) et _StaffReason_ (motif de sanction du membre du staff qui traite le signalement)
   # PunishCommandsPermission:    Permission required to execute the punish commands listed under PunishCommands / Permission requise pour exécuter les commandes de sanction listées dans PunishCommands
   
   ChatReport:

@@ -1,5 +1,5 @@
 name: TigerReports
-version: 4.13.1
+version: 5.0
 api-version: 1.13
 description: Management of reports / Gestion de signalements.
 author: MrTigreroux
@@ -18,6 +18,8 @@ permissions:
     default: op
     children:
        tigerreports.manage: true
+       tigerreports.report: true
+       tigerreports.report.exempt: true
   tigerreports.manage:
     children:
        tigerreports.staff.*: true
@@ -43,9 +45,6 @@ permissions:
   tigerreports.staff.teleport:
     children:
        tigerreports.staff: true
-  tigerreports.staff:
-    children:
-       tigerreports.report: true
   tigerreports.report.exempt:
     children:
        tigerreports.report: true

@@ -7,7 +7,13 @@ import org.bukkit.inventory.ItemStack;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.MenuRawItem;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
-import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
+import fr.mrtigreroux.tigerreports.data.database.Database;
+import fr.mrtigreroux.tigerreports.managers.BungeeManager;
+import fr.mrtigreroux.tigerreports.managers.ReportsManager;
+import fr.mrtigreroux.tigerreports.managers.UsersManager;
+import fr.mrtigreroux.tigerreports.managers.VaultManager;
+import fr.mrtigreroux.tigerreports.objects.users.User;
+import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 
 /**
@@ -16,17 +22,47 @@ import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 
 public class ConfirmationMenu extends ReportManagerMenu {
 
-	private String action;
+	public enum Action {
 
-	public ConfirmationMenu(OnlineUser u, int reportId, String action) {
-		super(u, 27, 0, Permission.STAFF, reportId);
+		ARCHIVE("ARCHIVE", Permission.STAFF_ARCHIVE),
+		DELETE_ARCHIVE("DELETE", Permission.STAFF_DELETE),
+		DELETE("DELETE", Permission.STAFF_DELETE);
+
+		String displayedName;
+		Permission perm;
+
+		Action(String displayedName, Permission perm) {
+			this.displayedName = displayedName;
+			this.perm = perm;
+		}
+
+		public String getDisplayedName() {
+			return displayedName;
+		}
+
+		public Permission getRequiredPermission() {
+			return perm;
+		}
+
+	}
+
+	private Action action;
+	private final VaultManager vm;
+	private final BungeeManager bm;
+
+	public ConfirmationMenu(User u, int reportId, Action action, ReportsManager rm, Database db,
+	        TaskScheduler taskScheduler, VaultManager vm, BungeeManager bm, UsersManager um) {
+		super(u, 27, 0, Permission.STAFF, reportId, rm, db, taskScheduler, um);
 		this.action = action;
+		this.vm = vm;
+		this.bm = bm;
 	}
 
 	@Override
 	public Inventory onOpen() {
 		String report = r.getName();
-		String actionDisplayed = action.equals("DELETE_ARCHIVE") ? "DELETE" : action;
+		String actionDisplayed = action.getDisplayedName();
+
 		Inventory inv = getInventory(
 		        Message.valueOf("CONFIRM_" + actionDisplayed + "_TITLE").get().replace("_Report_", report), false);
 
@@ -42,7 +78,8 @@ public class ConfirmationMenu extends ReportManagerMenu {
 		                        .replace("_Report_", report)
 		                        .split(ConfigUtils.getLineBreakSymbol()))
 		                .create());
-		inv.setItem(13, r.getItem(null));
+
+		inv.setItem(13, r.getItem(null, vm, bm));
 		inv.setItem(15,
 		        MenuRawItem.RED_CLAY.clone()
 		                .name(Message.valueOf("CANCEL_" + actionDisplayed).get())
@@ -57,28 +94,28 @@ public class ConfirmationMenu extends ReportManagerMenu {
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
 		if (slot == 11) {
-			if (!Permission.valueOf("STAFF_" + (action.equals("DELETE_ARCHIVE") ? "DELETE" : action)).isOwned(u)) {
-				u.openReportMenu(r.getId());
+			if (!u.hasPermission(action.getRequiredPermission())) {
+				u.openReportMenu(r.getId(), rm, db, taskScheduler, vm, bm, um);
 				return;
 			}
 
+			u.openReportsMenu(1, false, rm, db, taskScheduler, vm, bm, um);
 			switch (action) {
-			case "DELETE":
-				r.delete(p.getUniqueId().toString(), false);
+			case DELETE:
+				r.delete(u, false, db, taskScheduler, rm, vm, bm);
 				break;
-			case "DELETE_ARCHIVE":
-				r.deleteFromArchives(p.getUniqueId().toString(), false);
+			case DELETE_ARCHIVE:
+				r.deleteFromArchives(u, false, db, taskScheduler, rm, vm, bm);
 				break;
 			default:
-				r.archive(p.getUniqueId().toString(), false);
+				r.archive(u, false, db);
 				break;
 			}
-			u.openDelayedlyReportsMenu();
 		} else if (slot == 15) {
-			if (action.equals("DELETE_ARCHIVE")) {
-				u.openArchivedReportsMenu(1, true);
+			if (action == Action.DELETE_ARCHIVE) {
+				u.openArchivedReportsMenu(1, true, rm, db, taskScheduler, vm, bm, um);
 			} else {
-				u.openReportMenu(r.getId());
+				u.openReportMenu(r.getId(), rm, db, taskScheduler, vm, bm, um);
 			}
 		}
 	}

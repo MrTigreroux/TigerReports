@@ -31,10 +31,18 @@
   Report-chat-data: "&7&m---------------------------------------------------//&r _Report_ &7> &eDatos//&7&m---------------------------------------------------//&eReportado: &c_Reported_//_DefaultData_//_AdvancedData_//_ReportButton_//&7&m---------------------------------------------------"
   Report-messages-history: "&7&m---------------------------------------------------//&r _Report_ &7> &eHistorial de mensajes//&7&m---------------------------------------------------//_Messages_// //_ReportButton_//&7&m---------------------------------------------------"
   Report-message-format: "//&7(&8_Date_&7) _Player_&7: _Message_"
-  Edit-comment: "&7[&6Reportes&7] &ePor favor, escribe en el chat tu comentario para el _Report_&e. _CancelButton_"
-  Cancel-button: "&7[&cCancelar&7]"
-  Cancel-button-details: "&6Haz click izquierdo &7para cancelar tu comentario//&7para el _Report_&7."
-  Cancel-comment: "&7[&6Reportes&7] &eHas cancelado el comentario para el _Report_&e. _ReportButton_"
+  Edit-comment:
+    Text: "&7[&6Reports&7] &ePlease &etype &ein &ethe &echat &6your &6comment &efor _Report_&e. _CancelButton_"
+    Cancel-button:
+      Text: "&7[&cC&ca&cn&cc&ce&cl&7]"
+      Hover: "&6Left click &7to cancel your comment//&7for _Report_&7."
+  Cancel-comment: "&7[&6Reports&7] &eYou &ccancelled &eyour &ecomment &efor _Report_&e. _ReportButton_"
+  Process-report-punishing-with-staff-reason:
+    Text: "&7[&6Reports&7] &ePlease &etype &ein &ethe &echat &6your &6punishment &ereason &efor _Report_&e. _CancelButton_"
+    Cancel-button:
+      Text: "&7[&cC&ca&cn&cc&ce&cl&7]"
+      Hover: "&6Left click &7to cancel your punishment//&7and processing of _Report_&7."
+  Cancel-process-report-punishing-with-staff-reason: "&7[&6Reports&7] &eVous &eavez &cannul\xe9 &ele &etraitement &eavec &esanction &edu _Report_&e. _ReportButton_"
   Report-details: "_Report_// //&7Estado: _Status_//&7Fecha: &e_Date_// //&7Reportador(es): &a_Reporters_//&7Reportado: &c_Reported_//&7Motivo: &6_Reason_"
   Help-commands: ""
 ErrorMessages:
@@ -208,3 +216,4 @@ Words:
   Read: "&aLeído el _Date_"
   Report-type: "&6_Amount_ &ereporte _Type_"
   Reports-type: "&6_Amount_ &ereportes _Type_"
+  Staff-reason: "<Punishment reason>"

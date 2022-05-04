@@ -14,8 +14,15 @@ import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.MenuItem;
 import fr.mrtigreroux.tigerreports.data.constants.MenuRawItem;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
+import fr.mrtigreroux.tigerreports.data.database.Database;
+import fr.mrtigreroux.tigerreports.managers.BungeeManager;
+import fr.mrtigreroux.tigerreports.managers.ReportsManager;
+import fr.mrtigreroux.tigerreports.managers.UsersManager;
+import fr.mrtigreroux.tigerreports.managers.VaultManager;
 import fr.mrtigreroux.tigerreports.objects.CustomItem;
-import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
+import fr.mrtigreroux.tigerreports.objects.reports.Report;
+import fr.mrtigreroux.tigerreports.objects.users.User;
+import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 
@@ -26,25 +33,31 @@ import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 public class PunishmentMenu extends ReportManagerMenu {
 
 	private Map<Integer, String> configIndexes = new HashMap<>();
+	private final VaultManager vm;
+	private final BungeeManager bm;
 
-	public PunishmentMenu(OnlineUser u, int page, int reportId) {
-		super(u, 54, page, Permission.STAFF, reportId);
+	public PunishmentMenu(User u, int page, int reportId, ReportsManager rm, Database db, TaskScheduler taskScheduler,
+	        VaultManager vm, BungeeManager bm, UsersManager um) {
+		super(u, 54, page, Permission.STAFF, reportId, rm, db, taskScheduler, um);
+		this.vm = vm;
+		this.bm = bm;
 	}
 
 	@Override
 	public Inventory onOpen() {
 		Inventory inv = getInventory(
-		        Message.PUNISH_TITLE.get().replace("_Reported_", r.getPlayerName("Reported", false, false)), true);
+		        Message.PUNISH_TITLE.get()
+		                .replace("_Reported_", r.getPlayerName(Report.ParticipantType.REPORTED, false, false, vm, bm)),
+		        true);
 
 		inv.setItem(0, MenuItem.CANCEL_PROCESS.get());
 		inv.setItem(4, MenuItem.PUNISHMENTS.create());
-		inv.setItem(8,
-		        MenuRawItem.GREEN_CLAY.clone()
-		                .name(Message.NO_PUNISHMENT.get())
-		                .lore(Message.NO_PUNISHMENT_DETAILS.get()
-		                        .replace("_Reported_", r.getPlayerName("Reported", false, true))
-		                        .split(ConfigUtils.getLineBreakSymbol()))
-		                .create());
+		inv.setItem(8, MenuRawItem.GREEN_CLAY.clone()
+		        .name(Message.NO_PUNISHMENT.get())
+		        .lore(Message.NO_PUNISHMENT_DETAILS.get()
+		                .replace("_Reported_", r.getPlayerName(Report.ParticipantType.REPORTED, false, true, vm, bm))
+		                .split(ConfigUtils.getLineBreakSymbol()))
+		        .create());
 
 		int firstPunishment = 1;
 		if (page >= 2) {
@@ -75,10 +88,10 @@ public class PunishmentMenu extends ReportManagerMenu {
 
 		for (int configIndex = firstConfigIndex; configIndex <= firstConfigIndex + 27; configIndex++) {
 			String path = prepath + configIndex;
-			boolean punishCommandsExists = ConfigUtils.exist(configFile, path + ".PunishCommands");
+			boolean punishCommandsExists = ConfigUtils.exists(configFile, path + ".PunishCommands");
 			if (slot > 44)
 				return punishCommandsExists ? 45 : 46;
-			if (!ConfigUtils.exist(configFile, path))
+			if (!ConfigUtils.exists(configFile, path))
 				break;
 			if (!punishCommandsExists)
 				continue;
@@ -87,15 +100,21 @@ public class PunishmentMenu extends ReportManagerMenu {
 				continue;
 
 			String punishment = configFile.getString(path + ".Name");
+			if (punishment != null) {
+				punishment = punishment.replace("_StaffReason_", Message.STAFF_REASON.get());
+			}
 			String lore = configFile.getString(path + ".Lore");
-			inv.setItem(slot, new CustomItem().fromConfig(configFile, path + ".Item")
-			        .name(PUNISHMENT_MESSAGE.replace("_Punishment_", punishment))
-			        .lore(PUNISHMENT_DETAILS_MESSAGE.replace("_Reported_", r.getPlayerName("Reported", false, true))
-			                .replace("_Punishment_", punishment)
-			                .replace("_Lore_", MessageUtils.translateColorCodes(lore != null ? lore : ""))
-			                .split(LINE_BREAK_SYMBOL))
-			        .hideFlags(true)
-			        .create());
+			inv.setItem(slot,
+			        new CustomItem().fromConfig(configFile, path + ".Item")
+			                .name(PUNISHMENT_MESSAGE.replace("_Punishment_", punishment))
+			                .lore(PUNISHMENT_DETAILS_MESSAGE
+			                        .replace("_Reported_",
+			                                r.getPlayerName(Report.ParticipantType.REPORTED, false, true, vm, bm))
+			                        .replace("_Punishment_", punishment)
+			                        .replace("_Lore_", MessageUtils.translateColorCodes(lore != null ? lore : ""))
+			                        .split(LINE_BREAK_SYMBOL))
+			                .hideFlags(true)
+			                .create());
 			int len = prepath.length();
 			configIndexes.put(slot, prepath.substring(len - 1) + configIndex);
 			slot++;
@@ -106,23 +125,24 @@ public class PunishmentMenu extends ReportManagerMenu {
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
 		if (slot == 0) {
-			u.openReportMenu(r.getId());
+			u.openReportMenu(r.getId(), rm, db, taskScheduler, vm, bm, um);
 		} else if (slot == 8) {
-			r.process(p.getUniqueId().toString(), "True", false, Permission.STAFF_ARCHIVE_AUTO.isOwned(u), true);
-			u.openDelayedlyReportsMenu();
-		} else if (slot >= 18 && slot <= size - 9) {
+			u.afterProcessingAReport(true, rm, db, taskScheduler, vm, bm, um);
+			r.process(u, "True", false, u.hasPermission(Permission.STAFF_ARCHIVE_AUTO), true, db);
+		} else if (slot >= 18 && slot <= size - 10) {
 			ConfigSound.MENU.play(p);
 			String configIndex = configIndexes.get(slot);
-			String path = (configIndex.charAt(0) == 't' ? "Config.Punishments.Punishment"
+			String punishmentConfigPath = (configIndex.charAt(0) == 't' ? "Config.Punishments.Punishment"
 			        : "Config.DefaultReasons.Reason") + configIndex.substring(1);
 
 			FileConfiguration configFile = ConfigFile.CONFIG.get();
 
-			ConfigUtils.processCommands(configFile, path + ".PunishCommands", r, p);
-
-			r.processPunishing(p.getUniqueId().toString(), false, Permission.STAFF_ARCHIVE_AUTO.isOwned(u),
-			        configFile.getString(path + ".Name"), true);
-			u.openDelayedlyReportsMenu();
+			if (ConfigUtils.isPlaceholderUsedInCommands(configFile, punishmentConfigPath + ".PunishCommands",
+			        "_StaffReason_")) {
+				u.startProcessPunishingWithStaffReason(r, punishmentConfigPath);
+			} else {
+				u.processPunishing(r, punishmentConfigPath, configFile, rm, db, taskScheduler, vm, bm);
+			}
 		}
 	}
 

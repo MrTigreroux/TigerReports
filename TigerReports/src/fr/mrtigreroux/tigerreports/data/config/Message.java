@@ -20,6 +20,7 @@ public enum Message {
 	COOLDOWN_STOPPED("Messages.Cooldown-stopped"),
 	STAFF_PROCESS("Messages.Staff-process"),
 	STAFF_PROCESS_AUTO("Messages.Staff-process-auto"),
+	STAFF_PROCESS_ABUSIVE("Messages.Staff-process-abusive"),
 	STAFF_PROCESS_PUNISH("Messages.Staff-process-punish"),
 	STAFF_PROCESS_PUNISH_AUTO("Messages.Staff-process-punish-auto"),
 	STAFF_ARCHIVE("Messages.Staff-archive"),
@@ -38,10 +39,12 @@ public enum Message {
 	REPORT_MESSAGES_HISTORY("Messages.Report-messages-history"),
 	REPORT_MESSAGE_FORMAT("Messages.Report-message-format"),
 	EDIT_COMMENT("Messages.Edit-comment"),
-	CANCEL_BUTTON("Messages.Cancel-button"),
-	CANCEL_BUTTON_DETAILS("Messages.Cancel-button-details"),
 	CANCEL_COMMENT("Messages.Cancel-comment"),
+	PROCESS_REPORT_PUNISHING_WITH_STAFF_REASON("Messages.Process-report-punishing-with-staff-reason"),
+	CANCEL_PROCESS_REPORT_PUNISHING_WITH_STAFF_REASON("Messages.Cancel-process-report-punishing-with-staff-reason"),
 
+	INVALID_SYNTAX_REPORT("ErrorMessages.Invalid-syntax-report"),
+	INVALID_SYNTAX_REPORTS("ErrorMessages.Invalid-syntax-reports"),
 	PERMISSION_COMMAND("ErrorMessages.Permission-command"),
 	PERMISSION_REPORT("ErrorMessages.Permission-report"),
 	PERMISSION_ACCESS_DETAILS("ErrorMessages.Permission-access-details"),
@@ -51,11 +54,12 @@ public enum Message {
 	REPORT_ONESELF("ErrorMessages.Report-oneself"),
 	REPORTED_OFFLINE("ErrorMessages.Reported-offline"),
 	TOO_SHORT_REASON("ErrorMessages.Too-short-reason"),
-	PLAYER_OFFLINE("ErrorMessages.Player-offline"),
 	LOCATION_UNKNOWN("ErrorMessages.Location-unknown"),
 	INVALID_REPORT_ID("ErrorMessages.Invalid-report-id"),
 	INVALID_REPORT("ErrorMessages.Invalid-report"),
 	INVALID_PLAYER("ErrorMessages.Invalid-player"),
+	PLAYER_OFFLINE("ErrorMessages.Player-offline"),
+	INVALID_TIME("ErrorMessages.Invalid-time"),
 
 	REASON_TITLE("Menus.Reason-title"),
 	REASONS("Menus.Reasons"),
@@ -188,7 +192,8 @@ public enum Message {
 	SENT("Words.Sent"),
 	READ("Words.Read"),
 	REPORT_TYPE("Words.Report-type"),
-	REPORTS_TYPE("Words.Reports-type");
+	REPORTS_TYPE("Words.Reports-type"),
+	STAFF_REASON("Words.Staff-reason");
 
 	private final String path;
 

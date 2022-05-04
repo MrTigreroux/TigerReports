@@ -14,8 +14,8 @@ import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.MenuItem;
 import fr.mrtigreroux.tigerreports.data.constants.MenuRawItem;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
-import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
-import fr.mrtigreroux.tigerreports.runnables.MenuUpdater;
+import fr.mrtigreroux.tigerreports.logs.Logger;
+import fr.mrtigreroux.tigerreports.objects.users.User;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 import fr.mrtigreroux.tigerreports.utils.VersionUtils;
 
@@ -25,13 +25,17 @@ import fr.mrtigreroux.tigerreports.utils.VersionUtils;
 
 public abstract class Menu {
 
-	final OnlineUser u;
+	private static final Logger LOGGER = Logger.fromClass(Menu.class);
+
+	final User u;
 	final Player p;
 	final int size;
 	int page;
 	private final Permission permission;
+	private boolean isInvCurrentlyModified = false;
+	private boolean updateRequested = false;
 
-	public Menu(OnlineUser u, int size, int page, Permission permission) {
+	public Menu(User u, int size, int page, Permission permission) {
 		this.u = u;
 		this.p = u.getPlayer();
 		this.size = size;
@@ -40,7 +44,12 @@ public abstract class Menu {
 	}
 
 	boolean check() {
-		String error = permission != null && !permission.isOwned(u) ? Message.PERMISSION_COMMAND.get()
+		if (!u.isOnline()) {
+			LOGGER.info(() -> this + ": check(): " + u.getName() + " is not online, return false");
+			return false;
+		}
+
+		String error = permission != null && !u.hasPermission(permission) ? Message.PERMISSION_COMMAND.get()
 		        : this instanceof ReportManagerMenu ? ((ReportManagerMenu) this).checkReport() : null;
 		if (error != null) {
 			MessageUtils.sendErrorMessage(p, error);
@@ -68,48 +77,90 @@ public abstract class Menu {
 	}
 
 	public void open(boolean sound) {
-		if (this instanceof ReportManagerMenu && !((ReportManagerMenu) this).collectReport())
-			return;
-
 		if (!check())
 			return;
 
+		u.setOpenedMenu(null); // Close previous menu if any
+
+		LOGGER.info(() -> this + ": open()");
+		isInvCurrentlyModified = true;
 		Inventory inv = onOpen();
 		if (inv == null) {
 			p.closeInventory();
+			isInvCurrentlyModified = false;
 			return;
 		}
 
-		boolean updated = this instanceof UpdatedMenu;
-		if (updated)
+		if (this instanceof UpdatedMenu) {
 			((UpdatedMenu) this).onUpdate(inv);
+		}
 
 		p.openInventory(inv);
 		u.setOpenedMenu(this);
-		if (updated)
-			MenuUpdater.addUser(u);
-		if (sound)
+		isInvCurrentlyModified = false;
+
+		if (sound) {
 			ConfigSound.MENU.play(p);
+		}
+
+		if (updateRequested) {
+			LOGGER.info(() -> this + ": open(): update requested, calls update()");
+			updateRequested = false;
+			update(false);
+		}
 	}
 
 	abstract Inventory onOpen();
 
 	public void update(boolean sound) {
-		if (this instanceof UpdatedMenu) {
-			if (!check())
-				return;
-			InventoryView invView = p.getOpenInventory();
-			if (invView != null) {
-				Inventory inv = invView.getTopInventory();
-				if (inv != null && inv.getSize() == size) {
-					((UpdatedMenu) this).onUpdate(inv);
-					if (sound)
-						ConfigSound.MENU.play(p);
-					return;
-				}
+		if (!check())
+			return;
+
+		if (this != u.getOpenedMenu()) {
+			LOGGER.info(() -> this + ": update(): " + u.getName()
+			        + "'s opened menu is not this menu, cancel update");
+			return;
+		}
+
+		LOGGER.info(() -> this + ": update(): isInvCurrentlyModified = " + isInvCurrentlyModified);
+		if (isInvCurrentlyModified) {
+			updateRequested = true;
+			return;
+		}
+
+		Inventory inv = getOpenInventory();
+
+		if (inv != null) {
+			isInvCurrentlyModified = true;
+			if (this instanceof UpdatedMenu) {
+				((UpdatedMenu) this).onUpdate(inv);
+			} else {
+				inv.setContents(this.onOpen().getContents());
+			}
+			isInvCurrentlyModified = false;
+
+			if (sound) {
+				ConfigSound.MENU.play(p);
+			}
+			if (updateRequested) {
+				LOGGER.info(() -> this + ": update(): update requested, calls update()");
+				updateRequested = false;
+				update(false);
+			}
+		} else {
+			open(sound);
+		}
+	}
+
+	protected Inventory getOpenInventory() {
+		InventoryView invView = p.getOpenInventory();
+		if (invView != null) {
+			Inventory inv = invView.getTopInventory();
+			if (inv != null && inv.getSize() == size) {
+				return inv;
 			}
 		}
-		open(sound);
+		return null;
 	}
 
 	public void click(ItemStack item, int slot, ClickType click) {
@@ -120,7 +171,7 @@ public abstract class Menu {
 			return;
 
 		if (slot == size - 5) {
-			Bukkit.getScheduler().runTaskLater(TigerReports.getInstance(), new Runnable() {
+			TigerReports.getInstance().runTaskDelayedly(10, new Runnable() {
 
 				@Override
 				public void run() {
@@ -128,15 +179,16 @@ public abstract class Menu {
 					ConfigSound.MENU.play(p);
 				}
 
-			}, 3);
+			});
 			return;
 		}
 
 		if (page != 0) {
 			int newPage = page - (slot == size - 7 ? 1 : slot == size - 3 ? -1 : page);
 			if (newPage != 0) {
+				onPageChange(page, newPage);
 				page = newPage;
-				open(true);
+				update(true);
 				return;
 			}
 		}
@@ -146,8 +198,16 @@ public abstract class Menu {
 
 	abstract void onClick(ItemStack item, int slot, ClickType click);
 
-	int getConfigIndex(int slot) {
+	int getItemGlobalIndex(int slot) {
 		return slot - 17 + ((page - 1) * 27);
 	}
+
+	public int getPage() {
+		return page;
+	}
+
+	public void onPageChange(int oldPage, int newPage) {}
+
+	public void onClose() {}
 
 }

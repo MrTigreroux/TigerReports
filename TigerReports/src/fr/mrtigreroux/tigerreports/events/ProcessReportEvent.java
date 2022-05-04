@@ -1,9 +1,11 @@
 package fr.mrtigreroux.tigerreports.events;
 
+import java.util.Objects;
+
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-import fr.mrtigreroux.tigerreports.objects.Report;
+import fr.mrtigreroux.tigerreports.objects.reports.Report;
 
 /**
  * @author MrTigreroux
@@ -12,11 +14,11 @@ import fr.mrtigreroux.tigerreports.objects.Report;
 public class ProcessReportEvent extends Event {
 
 	private static final HandlerList handlers = new HandlerList();
-	private Report r;
-	private String staff;
+	private final Report r;
+	private final String staff;
 
 	public ProcessReportEvent(Report r, String staff) {
-		this.r = r;
+		this.r = Objects.requireNonNull(r);
 		this.staff = staff;
 	}
 

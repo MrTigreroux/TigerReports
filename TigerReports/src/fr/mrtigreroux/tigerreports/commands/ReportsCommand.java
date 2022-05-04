@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -15,13 +15,15 @@ import org.bukkit.util.StringUtil;
 import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
-import fr.mrtigreroux.tigerreports.data.constants.Pair;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
+import fr.mrtigreroux.tigerreports.data.database.Database;
 import fr.mrtigreroux.tigerreports.managers.BungeeManager;
-import fr.mrtigreroux.tigerreports.objects.Report;
-import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
+import fr.mrtigreroux.tigerreports.managers.ReportsManager;
+import fr.mrtigreroux.tigerreports.managers.UsersManager;
+import fr.mrtigreroux.tigerreports.managers.VaultManager;
+import fr.mrtigreroux.tigerreports.objects.reports.Report;
 import fr.mrtigreroux.tigerreports.objects.users.User;
-import fr.mrtigreroux.tigerreports.runnables.MenuUpdater;
+import fr.mrtigreroux.tigerreports.tasks.ResultCallback;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 import fr.mrtigreroux.tigerreports.utils.UserUtils;
@@ -37,25 +39,29 @@ public class ReportsCommand implements TabExecutor {
 	private static final List<String> USER_ACTIONS = Arrays.asList("user", "u", "stopcooldown", "sc", "punish");
 	private static final List<String> DELETEALL_ARGS = Arrays.asList("archived", "unarchived");
 
-	private TigerReports tr;
+	private final ReportsManager rm;
+	private final Database db;
+	private final TigerReports tr;
+	private final BungeeManager bm;
+	private final VaultManager vm;
+	private final UsersManager um;
 
-	public ReportsCommand(TigerReports tr) {
+	public ReportsCommand(ReportsManager rm, Database db, TigerReports tr, BungeeManager bm, VaultManager vm,
+	        UsersManager um) {
+		this.rm = rm;
+		this.db = db;
 		this.tr = tr;
+		this.bm = bm;
+		this.vm = vm;
+		this.um = um;
 	}
 
 	@Override
 	public boolean onCommand(CommandSender s, Command cmd, String label, String[] args) {
 		if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
 			if (Permission.MANAGE.check(s)) {
-				MenuUpdater.stop(true);
-				tr.unload();
+				tr.unload(false);
 				tr.load();
-				tr.getReportsManager().clearReports();
-				tr.getUsersManager().clearUsers();
-				tr.initializeDatabase();
-				BungeeManager bm = tr.getBungeeManager();
-				bm.collectServerName();
-				bm.collectOnlinePlayers();
 
 				if (s instanceof Player) {
 					s.sendMessage(Message.RELOAD.get());
@@ -67,40 +73,52 @@ public class ReportsCommand implements TabExecutor {
 		}
 
 		if (args.length > 2 && args[0].equalsIgnoreCase("comment") && Permission.STAFF.check(s)) {
-			String reportId = args[1];
-			Report r = tr.getReportsManager().getReportById(getReportId(reportId), false);
-			if (r == null) {
-				MessageUtils.sendErrorMessage(s, Message.INVALID_REPORT_ID.get().replace("_Id_", reportId));
+			String reportIdStr = args[1];
+			int reportId = getReportIdOrSendError(args[1], s);
+			if (reportId < 0) {
 				return true;
 			}
+			rm.getReportByIdAsynchronously(reportId, false, true, true, db, tr, um, new ResultCallback<Report>() {
 
-			Player p = s instanceof Player ? (Player) s : null;
-			String author = p != null ? p.getUniqueId().toString() : s.getName();
-			StringBuilder sb = new StringBuilder();
-			for (int argIndex = 2; argIndex < args.length; argIndex++)
-				sb.append(args[argIndex]).append(" ");
-			String message = sb.toString().trim();
+				@Override
+				public void onResultReceived(Report r) {
+					if (r == null) {
+						MessageUtils.sendErrorMessage(s, Message.INVALID_REPORT_ID.get().replace("_Id_", reportIdStr));
+						return;
+					}
 
-			r.addComment(author, message, tr.getDb());
-			if (p != null) {
-				tr.getUsersManager().getOnlineUser(p).openDelayedlyCommentsMenu(r);
-			}
+					Player p = s instanceof Player ? (Player) s : null;
+					String author = p != null ? p.getUniqueId().toString() : s.getName();
+					StringBuilder sb = new StringBuilder();
+					for (int argIndex = 2; argIndex < args.length; argIndex++) {
+						sb.append(args[argIndex]).append(" ");
+					}
+					String message = sb.toString().trim();
+
+					r.addComment(author, message, db, tr, ResultCallback.NOTHING);
+					if (p != null) {
+						um.getOnlineUser(p).openCommentsMenu(1, r, rm, db, tr, um, bm, vm);
+					}
+				}
+
+			});
 			return true;
 		}
 
 		if (!UserUtils.checkPlayer(s) || !Permission.STAFF.check(s))
 			return true;
 		Player p = (Player) s;
-		OnlineUser u = tr.getUsersManager().getOnlineUser(p);
+		User u = um.getOnlineUser(p);
 
 		switch (args.length) {
 		case 0:
-			u.openReportsMenu(1, true);
+			u.openReportsMenu(1, true, rm, db, tr, vm, bm, um);
 			return true;
 		case 1:
 			switch (args[0].toLowerCase()) {
 			case "canceledit":
-				u.cancelComment();
+				u.cancelEditingComment();
+				u.cancelProcessPunishingWithStaffReason();
 				return true;
 			case "notify":
 				boolean newState = !u.acceptsNotifications();
@@ -110,23 +128,21 @@ public class ReportsCommand implements TabExecutor {
 				return true;
 			case "archiveall":
 				if (Permission.STAFF_ARCHIVE.check(s)) {
-					tr.getDb()
-					        .updateAsynchronously(
-					                "UPDATE tigerreports_reports SET archived = ? WHERE archived = ? AND status LIKE 'Done%'",
-					                Arrays.asList(1, 0));
+					db.updateAsynchronously(
+					        "UPDATE tigerreports_reports SET archived = ? WHERE archived = ? AND status LIKE 'Done%'",
+					        Arrays.asList(1, 0));
 					MessageUtils.sendStaffMessage(Message.STAFF_ARCHIVEALL.get().replace("_Player_", p.getName()),
 					        ConfigSound.STAFF.get());
 				}
 				return true;
 			case "archives":
 				if (Permission.STAFF_ARCHIVE.check(s))
-					u.openArchivedReportsMenu(1, true);
+					u.openArchivedReportsMenu(1, true, rm, db, tr, vm, bm, um);
 				return true;
 			default:
-				try {
-					u.openReportMenu(getReportId(args[0]));
-				} catch (Exception invalidIndex) {
-					MessageUtils.sendErrorMessage(s, Message.INVALID_REPORT_ID.get().replace("_Id_", args[0]));
+				int reportId = getReportIdOrSendError(args[0], s);
+				if (reportId >= 0) {
+					u.openReportMenu(reportId, rm, db, tr, vm, bm, um);
 				}
 				return true;
 			}
@@ -137,9 +153,8 @@ public class ReportsCommand implements TabExecutor {
 				boolean unarchived = reportsType != null && reportsType.equalsIgnoreCase("unarchived");
 				if (unarchived || (reportsType != null && reportsType.equalsIgnoreCase("archived"))) {
 					if (Permission.STAFF_DELETE.check(s)) {
-						tr.getDb()
-						        .updateAsynchronously("DELETE FROM tigerreports_reports WHERE archived = ?",
-						                Collections.singletonList(unarchived ? 0 : 1));
+						db.updateAsynchronously("DELETE FROM tigerreports_reports WHERE archived = ?",
+						        Collections.singletonList(unarchived ? 0 : 1));
 						MessageUtils.sendStaffMessage(
 						        Message.get("Messages.Staff-deleteall-" + (unarchived ? "un" : "") + "archived")
 						                .replace("_Player_", p.getName()),
@@ -150,21 +165,28 @@ public class ReportsCommand implements TabExecutor {
 				break;
 			case "delete":
 				if (Permission.STAFF_DELETE.check(s)) {
-					Pair<Report, Boolean> info = getReportAndArchiveInfo(args[1], s);
-					if (info == null)
-						return true;
-					if (info.a) {
-						info.r.deleteFromArchives(p.getUniqueId().toString(), false);
-					} else {
-						info.r.delete(p.getUniqueId().toString(), false);
-					}
+					getReportAndArchiveInfo(args[1], s, db, new ResultCallback<Report>() {
+
+						@Override
+						public void onResultReceived(Report r) {
+							if (r == null)
+								return;
+							r.delete(u, false, db, tr, rm, vm, bm);
+						}
+					});
 				}
 				return true;
 			case "archive":
 				if (Permission.STAFF_ARCHIVE.check(s)) {
-					Pair<Report, Boolean> info2 = getReportAndArchiveInfo(args[1], s);
-					if (info2 != null && !info2.a)
-						info2.r.archive(p.getUniqueId().toString(), false);
+					getReportAndArchiveInfo(args[1], s, db, new ResultCallback<Report>() {
+
+						@Override
+						public void onResultReceived(Report r) {
+							if (r != null && !r.isArchived()) {
+								r.archive(u, false, db);
+							}
+						}
+					});
 				}
 				return true;
 			case "user":
@@ -188,7 +210,7 @@ public class ReportsCommand implements TabExecutor {
 						return true;
 					}
 				} catch (Exception ex) {}
-				MessageUtils.sendErrorMessage(s, Message.get("ErrorMessages.Invalid-time").replace("_Time_", args[2]));
+				MessageUtils.sendErrorMessage(s, Message.INVALID_TIME.get().replace("_Time_", args[2]));
 				return true;
 			} else {
 				break;
@@ -196,56 +218,64 @@ public class ReportsCommand implements TabExecutor {
 		default:
 			break;
 		}
-		for (String line : Message.get("ErrorMessages.Invalid-syntax-reports").split(ConfigUtils.getLineBreakSymbol()))
+		for (String line : Message.INVALID_SYNTAX_REPORTS.get().split(ConfigUtils.getLineBreakSymbol())) {
 			s.sendMessage(line);
+		}
 		return true;
 	}
 
-	private int getReportId(String reportId) {
-		return Integer.parseInt(reportId.replace("#", ""));
+	private int getReportIdOrSendError(String reportId, CommandSender s) {
+		int id = -1;
+		try {
+			id = Integer.parseInt(reportId.replace("#", ""));
+		} catch (NumberFormatException ex) {
+			MessageUtils.sendErrorMessage(s, Message.INVALID_REPORT_ID.get().replace("_Id_", reportId));
+		}
+		return id;
 	}
 
-	private Pair<Report, Boolean> getReportAndArchiveInfo(String reportId, CommandSender s) {
-		try {
-			return tr.getReportsManager().getReportByIdAndArchiveInfo(getReportId(reportId));
-		} catch (Exception invalidIndex) {
-			MessageUtils.sendErrorMessage(s, Message.INVALID_REPORT_ID.get().replace("_Id_", reportId));
-			return null;
+	private void getReportAndArchiveInfo(String reportId, CommandSender s, Database db,
+	        ResultCallback<Report> resultCallback) {
+		int id = getReportIdOrSendError(reportId, s);
+		if (id >= 0) {
+			rm.getReportByIdAsynchronously(id, false, false, true, db, tr, um, resultCallback);
+		} else {
+			resultCallback.onResultReceived(null);
 		}
 	}
 
-	private void processCommandWithTarget(OnlineUser u, String target, String command, long punishSeconds) {
-		Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
+	private void processCommandWithTarget(User u, String target, String command, long punishSeconds) {
+		UUID tuuid = UserUtils.getUniqueId(target);
+		UserUtils.checkUserExistsAsynchronously(tuuid, db, tr, new ResultCallback<Boolean>() {
 
 			@Override
-			public void run() {
-				String tuuid = UserUtils.getUniqueId(target);
-				User tu = tr.getUsersManager().getUser(tuuid);
-				boolean invalidTarget = tu == null || !UserUtils.isValid(tuuid, tr.getDb());
-				Bukkit.getScheduler().runTask(tr, new Runnable() {
+			public void onResultReceived(Boolean targetExists) {
+				if (!targetExists) {
+					u.sendErrorMessage(Message.INVALID_PLAYER.get().replace("_Player_", target));
+					return;
+				}
+
+				um.getUserAsynchronously(tuuid, db, tr, new ResultCallback<User>() {
 
 					@Override
-					public void run() {
-						if (invalidTarget) {
-							MessageUtils.sendErrorMessage(u.getPlayer(),
-							        Message.INVALID_PLAYER.get().replace("_Player_", target));
+					public void onResultReceived(User tu) {
+						if (tu == null) {
+							u.sendErrorMessage(Message.INVALID_PLAYER.get().replace("_Player_", target));
 							return;
 						}
 
 						if (command.equalsIgnoreCase("stopcooldown")) {
-							tu.stopCooldown(u.getUniqueId().toString(), false);
+							tu.stopCooldown(u, false, db, bm);
 						} else if (command.equalsIgnoreCase("punish")) {
-							tu.punish(punishSeconds, u.getUniqueId(), false);
+							tu.punish(punishSeconds, u, false, db, bm, vm);
 						} else {
-							u.openUserMenu(tu);
+							u.openUserMenu(tu, rm, db, tr, vm, um);
 						}
 					}
-
 				});
-			}
 
+			}
 		});
-		return;
 	}
 
 	@Override
@@ -263,8 +293,8 @@ public class ReportsCommand implements TabExecutor {
 				        new ArrayList<>());
 			default:
 				return USER_ACTIONS.contains(args[0].toLowerCase()) && s instanceof Player
-				        ? StringUtil.copyPartialMatches(args[1], UserUtils.getOnlinePlayersForPlayer((Player) s, false),
-				                new ArrayList<>())
+				        ? StringUtil.copyPartialMatches(args[1],
+				                UserUtils.getOnlinePlayersForPlayer((Player) s, false, um, bm), new ArrayList<>())
 				        : new ArrayList<>();
 			}
 		default:

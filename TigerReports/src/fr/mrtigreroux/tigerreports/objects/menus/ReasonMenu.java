@@ -9,8 +9,8 @@ import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.MenuItem;
+import fr.mrtigreroux.tigerreports.managers.VaultManager;
 import fr.mrtigreroux.tigerreports.objects.CustomItem;
-import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
 import fr.mrtigreroux.tigerreports.objects.users.User;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
@@ -22,10 +22,12 @@ import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 public class ReasonMenu extends Menu {
 
 	final User tu;
+	private final VaultManager vm;
 
-	public ReasonMenu(OnlineUser u, int page, User tu) {
+	public ReasonMenu(User u, int page, User tu, VaultManager vm) {
 		super(u, 54, page, null);
 		this.tu = tu;
+		this.vm = vm;
 	}
 
 	@Override
@@ -40,14 +42,14 @@ public class ReasonMenu extends Menu {
 		}
 
 		FileConfiguration configFile = ConfigFile.CONFIG.get();
-		String targetDisplayName = tu.getDisplayName(false);
+		String targetDisplayName = tu.getDisplayName(vm, false);
 		final String REASON_MESSAGE = Message.REASON.get();
 		final String REASON_DETAILS_MESSAGE = Message.REASON_DETAILS.get();
 		final String LINE_BREAK_SYMBOL = ConfigUtils.getLineBreakSymbol();
 
 		for (int reasonIndex = firstReason; reasonIndex <= firstReason + 26; reasonIndex++) {
 			String path = "Config.DefaultReasons.Reason" + reasonIndex;
-			if (!ConfigUtils.exist(configFile, path))
+			if (!ConfigUtils.exists(configFile, path))
 				break;
 			String blankCheck = configFile.getString(path);
 			if (blankCheck != null && blankCheck.equals("blank"))
@@ -66,7 +68,7 @@ public class ReasonMenu extends Menu {
 			                .create());
 		}
 
-		if (ConfigUtils.exist(configFile, "Config.DefaultReasons.Reason" + (firstReason + 27)))
+		if (ConfigUtils.exists(configFile, "Config.DefaultReasons.Reason" + (firstReason + 27)))
 			inv.setItem(size - 3, MenuItem.PAGE_SWITCH_NEXT.get());
 
 		return inv;
@@ -74,10 +76,10 @@ public class ReasonMenu extends Menu {
 
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
-		if (slot >= 18 && slot <= size - 9) {
+		if (slot >= 18 && slot <= size - 10) {
 			ConfigSound.MENU.play(p);
 			p.chat("/tigerreports:report " + tu.getName() + " " + ConfigFile.CONFIG.get()
-			        .getString("Config.DefaultReasons.Reason" + (getConfigIndex(slot)) + ".Name"));
+			        .getString("Config.DefaultReasons.Reason" + (getItemGlobalIndex(slot)) + ".Name"));
 			p.closeInventory();
 		}
 	}

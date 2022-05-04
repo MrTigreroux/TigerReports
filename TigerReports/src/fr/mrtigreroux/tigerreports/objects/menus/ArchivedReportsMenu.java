@@ -1,26 +1,38 @@
 package fr.mrtigreroux.tigerreports.objects.menus;
 
-import org.bukkit.Bukkit;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.MenuItem;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
-import fr.mrtigreroux.tigerreports.objects.Report;
-import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
-import fr.mrtigreroux.tigerreports.utils.ReportUtils;
+import fr.mrtigreroux.tigerreports.data.database.Database;
+import fr.mrtigreroux.tigerreports.managers.BungeeManager;
+import fr.mrtigreroux.tigerreports.managers.ReportsManager;
+import fr.mrtigreroux.tigerreports.managers.UsersManager;
+import fr.mrtigreroux.tigerreports.managers.VaultManager;
+import fr.mrtigreroux.tigerreports.objects.reports.Report;
+import fr.mrtigreroux.tigerreports.objects.reports.ReportsCharacteristics;
+import fr.mrtigreroux.tigerreports.objects.users.User;
+import fr.mrtigreroux.tigerreports.tasks.ResultCallback;
+import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
 
 /**
  * @author MrTigreroux
  */
 
-public class ArchivedReportsMenu extends Menu implements UpdatedMenu {
+public class ArchivedReportsMenu extends ReportsPageMenu implements UpdatedMenu {
 
-	public ArchivedReportsMenu(OnlineUser u, int page) {
-		super(u, 54, page, Permission.STAFF_ARCHIVE);
+	private final VaultManager vm;
+	private final BungeeManager bm;
+
+	public ArchivedReportsMenu(User u, int page, ReportsManager rm, Database db, TaskScheduler taskScheduler,
+	        VaultManager vm, BungeeManager bm, UsersManager um) {
+		super(u, 54, page, Permission.STAFF_ARCHIVE, ReportsCharacteristics.ARCHIVED_REPORTS, rm, db, taskScheduler,
+		        um);
+		this.vm = vm;
+		this.bm = bm;
 	}
 
 	@Override
@@ -36,39 +48,40 @@ public class ArchivedReportsMenu extends Menu implements UpdatedMenu {
 
 	@Override
 	public void onUpdate(Inventory inv) {
-		ReportUtils.addReports(null, null, true, inv, page, Message.REPORT_RESTORE_ACTION.get()
-		        + (Permission.STAFF_DELETE.isOwned(u) ? Message.REPORT_DELETE_ACTION.get() : ""), false, "");
+		rm.fillInventoryWithReportsPage(inv, reportsPage,
+		        Message.REPORT_RESTORE_ACTION.get()
+		                + (u.hasPermission(Permission.STAFF_DELETE) ? Message.REPORT_DELETE_ACTION.get() : ""),
+		        false, "", vm, bm);
 	}
 
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
 		if (slot == 0) {
-			u.openReportsMenu(1, true);
-		} else if (slot >= 18 && slot <= size - 9) {
-			TigerReports tr = TigerReports.getInstance();
-			Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
+			u.openReportsMenu(1, true, rm, db, taskScheduler, vm, bm, um);
+		} else if (slot >= 18 && slot <= size - 10) {
+			int reportId = reportsPage.getReportIdAtIndex(slot - 18);
 
-				@Override
-				public void run() {
-					Report r = tr.getReportsManager().getReport(true, getConfigIndex(slot));
-					Bukkit.getScheduler().runTask(tr, new Runnable() {
+			if (reportId == -1) {
+				update(false);
+			} else {
+				rm.getReportByIdAsynchronously(reportId, false, true, true, db, taskScheduler, um,
+				        new ResultCallback<Report>() {
 
-						@Override
-						public void run() {
-							if (r == null) {
-								update(true);
-							} else if (click.equals(ClickType.DROP) && Permission.STAFF_DELETE.isOwned(u)) {
-								u.openConfirmationMenu(r, "DELETE_ARCHIVE");
-							} else {
-								r.unarchive(p.getUniqueId().toString(), false);
-								u.openDelayedlyReportsMenu();
-							}
-						}
+					        @Override
+					        public void onResultReceived(Report r) {
+						        if (r == null) {
+							        update(true);
+						        } else if (click == ClickType.DROP && u.hasPermission(Permission.STAFF_DELETE)) {
+							        u.openConfirmationMenu(r, ConfirmationMenu.Action.DELETE_ARCHIVE, rm, db,
+							                taskScheduler, vm, bm, um);
+						        } else {
+							        r.unarchive(u, false, db);
+							        u.openReportsMenu(1, false, rm, db, taskScheduler, vm, bm, um);
+						        }
+					        }
 
-					});
-				}
-
-			});
+				        });
+			}
 		}
 	}
 

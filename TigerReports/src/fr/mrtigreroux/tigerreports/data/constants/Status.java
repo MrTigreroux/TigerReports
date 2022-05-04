@@ -21,6 +21,26 @@ public enum Status {
 	private CustomItem icon;
 	private final CustomItem buttonItem;
 
+	public static Status from(String status) {
+		try {
+			if (status == null) {
+				return Status.WAITING;
+			} else if (status.startsWith(Status.DONE.getRawName())) {
+				return Status.DONE;
+			} else if (status.startsWith(Status.IN_PROGRESS.getRawName())) {
+				return Status.IN_PROGRESS;
+			} else {
+				return fromRawName(status.split(" ")[0]);
+			}
+		} catch (Exception invalidStatus) {
+			return Status.WAITING;
+		}
+	}
+
+	public static Status fromRawName(String rawName) {
+		return Status.valueOf(rawName.toUpperCase());
+	}
+
 	Status(Message word, CustomItem icon, CustomItem buttonItem) {
 		this(word, (Material) null, buttonItem);
 		this.icon = icon;
@@ -32,7 +52,7 @@ public enum Status {
 		this.buttonItem = buttonItem;
 	}
 
-	public String getConfigWord() {
+	public String getRawName() {
 		String name = name();
 		return name.charAt(0) + name.substring(1).toLowerCase();
 	}
@@ -52,17 +72,6 @@ public enum Status {
 
 	public CustomItem getButtonItem() {
 		return buttonItem.clone();
-	}
-
-	public static Status getFrom(String status) {
-		try {
-			return status == null ? Status.WAITING
-			        : status.startsWith(Status.DONE.getConfigWord()) ? Status.DONE
-			                : status.startsWith(Status.IN_PROGRESS.getConfigWord()) ? Status.IN_PROGRESS
-			                        : Status.valueOf(status.toUpperCase().replace(" ", "_"));
-		} catch (Exception invalidStatus) {
-			return Status.WAITING;
-		}
 	}
 
 }

@@ -1,35 +1,24 @@
 package fr.mrtigreroux.tigerreports.objects.menus;
 
-import org.bukkit.event.inventory.ClickType;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
-
-import fr.mrtigreroux.tigerreports.data.config.Message;
-import fr.mrtigreroux.tigerreports.data.constants.Permission;
-import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
+import fr.mrtigreroux.tigerreports.data.database.Database;
+import fr.mrtigreroux.tigerreports.managers.BungeeManager;
+import fr.mrtigreroux.tigerreports.managers.ReportsManager;
+import fr.mrtigreroux.tigerreports.managers.UsersManager;
+import fr.mrtigreroux.tigerreports.managers.VaultManager;
+import fr.mrtigreroux.tigerreports.objects.reports.ReportsCharacteristics;
 import fr.mrtigreroux.tigerreports.objects.users.User;
-import fr.mrtigreroux.tigerreports.utils.ReportUtils;
+import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
 
 /**
  * @author MrTigreroux
  */
 
-public class UserReportsMenu extends UserManagerMenu implements UpdatedMenu {
+public class UserReportsMenu extends UserReportsPageMenu {
 
-	public UserReportsMenu(OnlineUser u, int page, User tu) {
-		super("Menus.User-reports", u, page, tu);
-	}
-
-	@Override
-	public void onUpdate(Inventory inv) {
-		ReportUtils.addReports(tu.getUniqueId(), null, false, inv, page, Message.REPORT_SHOW_ACTION.get(),
-		        Permission.STAFF_ARCHIVE.isOwned(u),
-		        Permission.STAFF_DELETE.isOwned(u) ? Message.REPORT_DELETE_ACTION.get() : "");
-	}
-
-	@Override
-	public void onClick(ItemStack item, int slot, ClickType click) {
-		onClickCurrentReports(true, item, slot, click);
+	public UserReportsMenu(User u, int page, User tu, ReportsManager rm, Database db, TaskScheduler taskScheduler,
+	        VaultManager vm, BungeeManager bm, UsersManager um) {
+		super("Menus.User-reports", u, page, tu, new ReportsCharacteristics(tu.getUniqueId(), null, false), rm, db,
+		        taskScheduler, vm, bm, um);
 	}
 
 }

@@ -1,29 +1,28 @@
 package fr.mrtigreroux.tigerreports.utils;
 
-import java.util.*;
+import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 
+import com.google.common.primitives.Ints;
+
+import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
+import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
+import fr.mrtigreroux.tigerreports.data.config.Message;
+import fr.mrtigreroux.tigerreports.data.database.Database;
+import fr.mrtigreroux.tigerreports.events.NewReportEvent;
+import fr.mrtigreroux.tigerreports.managers.BungeeManager;
+import fr.mrtigreroux.tigerreports.managers.VaultManager;
+import fr.mrtigreroux.tigerreports.objects.reports.Report;
+import fr.mrtigreroux.tigerreports.objects.users.User;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-
-import com.google.common.primitives.Ints;
-
-import fr.mrtigreroux.tigerreports.TigerReports;
-import fr.mrtigreroux.tigerreports.data.config.*;
-import fr.mrtigreroux.tigerreports.data.constants.MenuItem;
-import fr.mrtigreroux.tigerreports.data.constants.Status;
-import fr.mrtigreroux.tigerreports.data.database.Database;
-import fr.mrtigreroux.tigerreports.events.NewReportEvent;
-import fr.mrtigreroux.tigerreports.objects.Report;
-import fr.mrtigreroux.tigerreports.objects.users.User;
 
 /**
  * @author MrTigreroux
@@ -31,31 +30,47 @@ import fr.mrtigreroux.tigerreports.objects.users.User;
 
 public class ReportUtils {
 
+	private ReportUtils() {}
+
 	/**
-	 * @param rp the reported player instance
-	 * @param ru the reported user instance
-	 * @return fixed size list of reported user data
+	 * @param ru the online reported user instance
+	 * @return true if reported data has been successfully collected.
 	 */
 	@SuppressWarnings("deprecation")
-	public static List<Object> collectReportedData(Player rp, User ru) {
-		return Arrays.asList(rp.getAddress().getAddress().toString(),
-		        MessageUtils.formatConfigLocation(rp.getLocation()), ru.getLastMessages(),
-		        rp.getGameMode().toString().toLowerCase(),
-		        !rp.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().equals(Material.AIR),
-		        rp.isSneaking(), rp.isSprinting(),
-		        (int) Math.round(rp.getHealth()) + "/" + (int) Math.round(rp.getMaxHealth()), rp.getFoodLevel(),
-		        MessageUtils.formatConfigEffects(rp.getActivePotionEffects()));
+	public static boolean collectAndFillReportedData(User ru, BungeeManager bm, Map<String, Object> data) {
+		Player rp = ru.getPlayer();
+		if (rp == null) {
+			return false;
+		}
+		try {
+			data.put("reported_ip", rp.getAddress().getAddress().toString());
+			data.put("reported_location", MessageUtils.formatConfigLocation(rp.getLocation(), bm));
+			data.put("reported_messages", ru.getLastMessages());
+			data.put("reported_gamemode", rp.getGameMode().toString().toLowerCase());
+			data.put("reported_on_ground",
+			        !rp.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().equals(Material.AIR));
+			data.put("reported_sneak", rp.isSneaking());
+			data.put("reported_sprint", rp.isSprinting());
+			data.put("reported_health", (int) Math.round(rp.getHealth()) + "/" + (int) Math.round(rp.getMaxHealth()));
+			data.put("reported_food", rp.getFoodLevel());
+			data.put("reported_effects", MessageUtils.formatConfigEffects(rp.getActivePotionEffects()));
+			return true;
+		} catch (Exception ex) {
+			return false;
+		}
 	}
 
 	@SuppressWarnings("deprecation")
-	public static void sendReport(Report r, String server, boolean notify) {
-		if (!ConfigUtils.isEnabled("Config.NotifyStackedReports"))
+	public static void sendReport(Report r, String server, boolean notify, Database db, VaultManager vm,
+	        BungeeManager bm) {
+		if (r.isStackedReport() && !ConfigUtils.isEnabled("Config.NotifyStackedReports"))
 			return;
 
 		try {
 			Bukkit.getServer().getPluginManager().callEvent(new NewReportEvent(server, r));
 		} catch (Exception ignored) {}
-		if (!notify)
+
+		if (r.isArchived() || !notify)
 			return;
 
 		int reportId = r.getId();
@@ -72,85 +87,23 @@ public class ReportUtils {
 			        new ComponentBuilder(Message.ALERT_DETAILS.get().replace("_Report_", r.getName())).create()));
 		}
 
-		for (String line : Message.ALERT.get()
+		String[] lines = Message.ALERT.get()
 		        .replace("_Server_", MessageUtils.getServerName(server))
-		        .replace("_Reporter_", r.getPlayerName(r.getLastReporterUniqueId(), "Reporter", false, true))
-		        .replace("_Reported_", r.getPlayerName("Reported", !ReportUtils.onlinePlayerRequired(), true))
+		        .replace("_Reporter_",
+		                r.getPlayerName(r.getLastReporter(), Report.ParticipantType.REPORTER, false, true, vm, bm))
+		        .replace("_Reported_",
+		                r.getPlayerName(Report.ParticipantType.REPORTED, !ReportUtils.onlinePlayerRequired(), true, vm,
+		                        bm))
 		        .replace("_Reason_", r.getReason(false))
-		        .split(ConfigUtils.getLineBreakSymbol())) {
+		        .split(ConfigUtils.getLineBreakSymbol());
+		for (String line : lines) {
 			alert.setText(line);
 			MessageUtils.sendStaffMessage(new TextComponent(alert), ConfigSound.REPORT.get());
 		}
 	}
 
-	public static Report getEssentialOfReport(Map<String, Object> result) {
-		if (result == null)
-			return null;
-		return new Report((int) result.get("report_id"), (String) result.get("status"),
-		        (String) result.get("appreciation"), (String) result.get("date"), (String) result.get("reported_uuid"),
-		        (String) result.get("reporter_uuid"), (String) result.get("reason"));
-	}
-
-	public static void addReports(String reporter, String reported, boolean archived, Inventory inv, int page,
-	        String actionsBefore, boolean archiveAction, String actionsAfter) {
-		int size = inv.getSize();
-		int firstReport = 1;
-		if (page >= 2) {
-			inv.setItem(size - 7, MenuItem.PAGE_SWITCH_PREVIOUS.get());
-			firstReport += (page - 1) * 27;
-		}
-
-		int first = firstReport - 1;
-		TigerReports tr = TigerReports.getInstance();
-		Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
-
-			@Override
-			public void run() {
-				List<Map<String, Object>> results = tr.getDb()
-				        .query("SELECT report_id,status,appreciation,date,reported_uuid,reporter_uuid,reason FROM tigerreports_reports WHERE archived = ?"
-				                + (reporter != null ? " AND reporter_uuid LIKE '%" + reporter + "%'"
-				                        : reported != null ? " AND reported_uuid = '" + reported + "'" : "")
-				                + (archived ? " ORDER BY report_id DESC" : "") + " LIMIT 28 OFFSET ?",
-				                Arrays.asList(archived ? 1 : 0, first))
-				        .getResultList();
-
-				Bukkit.getScheduler().runTask(tr, new Runnable() {
-
-					@Override
-					public void run() {
-						int index = 0;
-						for (int slot = 18; slot < 45; slot++) {
-							if (index == -1) {
-								inv.setItem(slot, null);
-							} else {
-								Report r = getEssentialOfReport(index < results.size() ? results.get(index) : null);
-								if (r == null) {
-									inv.setItem(slot, null);
-									index = -1;
-								} else {
-									inv.setItem(slot,
-									        r.getItem(actionsBefore + (archiveAction
-									                && (r.getStatus() == Status.DONE || !ReportUtils.onlyDoneArchives())
-									                        ? Message.REPORT_ARCHIVE_ACTION.get()
-									                        : "")
-									                + actionsAfter));
-									index++;
-								}
-							}
-						}
-
-						if (results.size() == 28)
-							inv.setItem(size - 3, MenuItem.PAGE_SWITCH_NEXT.get());
-					}
-
-				});
-			}
-
-		});
-	}
-
 	public static int getTotalReports(Database db) {
-		Object o = db.query("SELECT COUNT(report_id) AS Total FROM tigerreports_reports", null).getResult(0, "Total");
+		Object o = db.query("SELECT COUNT(report_id) AS total FROM tigerreports_reports", null).getResult(0, "total");
 		return o instanceof Integer ? (int) o : Ints.checkedCast((long) o);
 	}
 
@@ -158,7 +111,7 @@ public class ReportUtils {
 		return ConfigFile.CONFIG.get().getInt("Config.MaxReports", 100);
 	}
 
-	public static boolean permissionRequired() {
+	public static boolean permissionRequiredToReport() {
 		return ConfigUtils.isEnabled("Config.PermissionRequired");
 	}
 

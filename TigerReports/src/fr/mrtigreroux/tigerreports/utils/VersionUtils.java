@@ -7,6 +7,8 @@ public class VersionUtils {
 
 	private static double version = 0;
 
+	private VersionUtils() {}
+
 	public static String ver() {
 		String pkg = Bukkit.getServer().getClass().getPackage().getName();
 		return pkg.substring(pkg.lastIndexOf(".") + 1);

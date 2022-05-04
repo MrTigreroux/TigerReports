@@ -2,6 +2,7 @@ package fr.mrtigreroux.tigerreports.managers;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -9,8 +10,9 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
-import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
+import fr.mrtigreroux.tigerreports.logs.Logger;
+import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 import net.milkbowl.vault.chat.Chat;
@@ -21,33 +23,30 @@ import net.milkbowl.vault.chat.Chat;
 
 public class VaultManager {
 
-	private boolean isVaultInstalled;
+	private final boolean enabled;
 	private Chat chat = null;
 
 	private boolean displayForStaff = false;
 	private boolean displayForPlayers = false;
 
-	private Map<String, String> displayNames = new HashMap<>();
+	private final Map<UUID, String> displayNames = new HashMap<>();
 
 	public VaultManager(boolean isVaultInstalled) {
-		this.isVaultInstalled = isVaultInstalled;
-		load();
-	}
-
-	public void load() {
-		if (setupChat()) {
-			FileConfiguration configFile = ConfigFile.CONFIG.get();
-			displayForStaff = ConfigUtils.isEnabled(configFile, "VaultChat.DisplayForStaff");
-			displayForPlayers = ConfigUtils.isEnabled(configFile, "VaultChat.DisplayForPlayers");
+		this.enabled = isVaultInstalled && ConfigUtils.isEnabled("VaultChat.Enabled");
+		if (enabled) {
+			initialize();
 		}
 	}
 
-	private boolean isEnabled() {
-		return isVaultInstalled && ConfigUtils.isEnabled("VaultChat.Enabled");
+	private void initialize() {
+		setupChat();
+		FileConfiguration configFile = ConfigFile.CONFIG.get();
+		displayForStaff = ConfigUtils.isEnabled(configFile, "VaultChat.DisplayForStaff");
+		displayForPlayers = ConfigUtils.isEnabled(configFile, "VaultChat.DisplayForPlayers");
 	}
 
 	private boolean setupChat() {
-		if (!isEnabled())
+		if (!enabled)
 			return false;
 		if (chat != null)
 			return true;
@@ -57,17 +56,59 @@ public class VaultManager {
 		if (rsp != null) {
 			chat = rsp.getProvider();
 			if (chat != null) {
-				Bukkit.getLogger()
-				        .info(ConfigUtils.getInfoMessage(
-				                "The plugin is using the prefixes and suffixes from the chat of Vault plugin to display player names.",
-				                "Le plugin utilise les prefixes et suffixes du chat du plugin Vault pour afficher les noms des joueurs."));
+				Logger.CONFIG.info(() -> ConfigUtils.getInfoMessage(
+				        "The plugin is using the prefixes and suffixes from the chat of Vault plugin to display player names.",
+				        "Le plugin utilise les prefixes et suffixes du chat du plugin Vault pour afficher les noms des joueurs."));
 				return true;
 			}
 		}
 
-		MessageUtils.logSevere(ConfigUtils.getInfoMessage("The Chat of Vault plugin could not be used.",
+		Logger.CONFIG.error(ConfigUtils.getInfoMessage("The Chat of Vault plugin could not be used.",
 		        "Le chat du plugin Vault n'a pas pu etre utilise."));
 		return false;
+	}
+
+	public interface DisplayNameResultCallback {
+		void onDisplayNameReceived(String displayName);
+	}
+
+	public void getPlayerDisplayNameAsynchronously(OfflinePlayer p, boolean staff, TaskScheduler taskScheduler,
+	        DisplayNameResultCallback resultCallback) {
+		if (!useVaultDisplayName(staff)) {
+			resultCallback.onDisplayNameReceived(p.getName());
+		}
+
+		if (!p.isOnline()) {
+			UUID uuid = p.getUniqueId();
+			String lastDisplayName = displayNames.get(uuid);
+			if (lastDisplayName != null) {
+				resultCallback.onDisplayNameReceived(lastDisplayName);
+			} else {
+				getVaultDisplayNameAsynchronously(p, taskScheduler, resultCallback);
+			}
+		} else {
+			resultCallback.onDisplayNameReceived(getVaultDisplayName(p));
+		}
+	}
+
+	public void getVaultDisplayNameAsynchronously(OfflinePlayer p, TaskScheduler taskScheduler,
+	        DisplayNameResultCallback resultCallback) {
+		taskScheduler.runTaskAsynchronously(new Runnable() {
+
+			@Override
+			public void run() {
+				String displayName = getVaultDisplayName(p);
+				taskScheduler.runTask(new Runnable() {
+
+					@Override
+					public void run() {
+						resultCallback.onDisplayNameReceived(displayName);
+					}
+
+				});
+			}
+
+		});
 	}
 
 	/**
@@ -75,7 +116,7 @@ public class VaultManager {
 	 */
 	private String getVaultDisplayName(OfflinePlayer p) {
 		String name = p.getName();
-		if (name == null)
+		if (name == null || !setupChat())
 			return null;
 
 		String vaultDisplayName = MessageUtils.translateColorCodes(ConfigFile.CONFIG.get()
@@ -84,37 +125,20 @@ public class VaultManager {
 		        .replace("_Name_", name)
 		        .replace("_Suffix_", chat.getPlayerSuffix(null, p)));
 
-		displayNames.put(p.getUniqueId().toString(), vaultDisplayName);
+		displayNames.put(p.getUniqueId(), vaultDisplayName);
 		return vaultDisplayName;
 	}
 
-	public String getPlayerDisplayName(OfflinePlayer p, boolean staff) {
-		if (!(((staff && displayForStaff) || (!staff && displayForPlayers)) && setupChat()))
-			return p.getName();
-
-		if (!p.isOnline()) {
-			String uuid = p.getUniqueId().toString();
-			String lastDisplayName = displayNames.get(uuid);
-			if (lastDisplayName != null)
-				return lastDisplayName;
-
-			Bukkit.getScheduler().runTaskAsynchronously(TigerReports.getInstance(), new Runnable() {
-
-				@Override
-				public void run() {
-					getVaultDisplayName(p); // Collected and saved for next time.
-				}
-
-			});
-
-			return p.getName();
-		}
-
-		return getVaultDisplayName(p);
+	public boolean useVaultDisplayName(boolean staff) {
+		return ((staff && displayForStaff) || (!staff && displayForPlayers)) && setupChat();
 	}
 
 	public String getOnlinePlayerDisplayName(Player p) {
 		return setupChat() ? getVaultDisplayName(p) : p.getDisplayName();
+	}
+
+	public String getOnlinePlayerDisplayName(Player p, boolean staff) {
+		return useVaultDisplayName(staff) ? getVaultDisplayName(p) : p.getDisplayName();
 	}
 
 }

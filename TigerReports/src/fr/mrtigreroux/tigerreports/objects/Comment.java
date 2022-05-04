@@ -1,16 +1,21 @@
 package fr.mrtigreroux.tigerreports.objects;
 
 import java.util.Arrays;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
-import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.database.Database;
+import fr.mrtigreroux.tigerreports.managers.ReportsManager;
+import fr.mrtigreroux.tigerreports.managers.VaultManager;
+import fr.mrtigreroux.tigerreports.objects.reports.Report;
+import fr.mrtigreroux.tigerreports.objects.users.User;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
-import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 /**
  * @author MrTigreroux
@@ -20,11 +25,12 @@ public class Comment {
 
 	private final Report r;
 	private final Integer commentId;
-	private final String date, author;
+	private final String date;
+	private final User author;
 	private String status, message;
 
-	public Comment(Report r, Integer commentId, String status, String date, String author, String message) {
-		this.r = r;
+	public Comment(Report r, Integer commentId, String status, String date, User author, String message) {
+		this.r = Objects.requireNonNull(r);
 		this.commentId = commentId;
 		this.status = status;
 		this.date = date;
@@ -54,39 +60,38 @@ public class Comment {
 		}
 	}
 
-	public void setStatus(String status) {
-		this.status = status;
-		TigerReports.getInstance()
-		        .getDb()
-		        .updateAsynchronously(
-		                "UPDATE tigerreports_comments SET status = ? WHERE report_id = ? AND comment_id = ?",
-		                Arrays.asList(this.status, r.getId(), commentId));
+	public void setStatus(String status, Database db, ReportsManager rm) {
+		updateStatusWithBroadcast(status, rm);
+		db.updateAsynchronously("UPDATE tigerreports_comments SET status = ? WHERE report_id = ? AND comment_id = ?",
+		        Arrays.asList(this.status, r.getId(), commentId));
 	}
 
-	public String getAuthorUniqueId() {
-		return author;
+	public UUID getAuthorUniqueId() {
+		return author != null ? author.getUniqueId() : null;
 	}
 
-	public String getAuthorDisplayName() {
-		return UserUtils.getDisplayName(author, true);
+	public String getAuthorDisplayName(VaultManager vm) {
+		return author != null ? author.getDisplayName(vm, true) : null;
 	}
 
 	public String getMessage() {
 		return message;
 	}
 
-	public void addMessage(String message, Database db) {
+	public void addMessage(String message, Database db, ReportsManager rm) {
 		this.message += " " + message;
+		rm.broadcastCommentDataChanged(this);
+
 		db.updateAsynchronously("UPDATE tigerreports_comments SET message = ? WHERE report_id = ? AND comment_id = ?",
 		        Arrays.asList(this.message, r.getId(), commentId));
 	}
 
-	public ItemStack getItem(boolean deletePermission) {
+	public ItemStack getItem(boolean deletePermission, VaultManager vm) {
 		return new CustomItem().type(Material.PAPER)
 		        .name(Message.COMMENT.get().replace("_Id_", Integer.toString(commentId)))
 		        .lore(Message.COMMENT_DETAILS.get()
 		                .replace("_Status_", getStatus(false))
-		                .replace("_Author_", getAuthorDisplayName())
+		                .replace("_Author_", getAuthorDisplayName(vm))
 		                .replace("_Date_", date)
 		                .replace("_Message_",
 		                        MessageUtils.getMenuSentence(message, Message.COMMENT_DETAILS, "_Message_", true))
@@ -99,11 +104,62 @@ public class Comment {
 		        .create();
 	}
 
-	public void delete() {
-		TigerReports.getInstance()
-		        .getDb()
-		        .updateAsynchronously("DELETE FROM tigerreports_comments WHERE report_id = ? AND comment_id = ?",
-		                Arrays.asList(r.getId(), commentId));
+	public void delete(Database db, ReportsManager rm) {
+		db.updateAsynchronously("DELETE FROM tigerreports_comments WHERE report_id = ? AND comment_id = ?",
+		        Arrays.asList(r.getId(), commentId));
+		rm.commentIsDeleted(this);
+	}
+
+	public boolean update(Map<String, Object> result) {
+		boolean changed = false;
+
+		changed |= updateStatus((String) result.get("status"));
+		changed |= updateMessage((String) result.get("message"));
+
+		return changed;
+	}
+
+	private boolean updateStatus(String newStatus) {
+		if (!Objects.equals(this.status, newStatus)) {
+			this.status = newStatus;
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	private boolean updateMessage(String newMessage) {
+		if (!Objects.equals(this.message, newMessage)) {
+			this.message = newMessage;
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	private boolean updateStatusWithBroadcast(String newStatus, ReportsManager rm) {
+		boolean changed = updateStatus(newStatus);
+		if (changed) {
+			rm.broadcastCommentDataChanged(this);
+		}
+		return changed;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(commentId);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (!(obj instanceof Comment)) {
+			return false;
+		}
+		Comment other = (Comment) obj;
+		return Objects.equals(commentId, other.commentId);
 	}
 
 }

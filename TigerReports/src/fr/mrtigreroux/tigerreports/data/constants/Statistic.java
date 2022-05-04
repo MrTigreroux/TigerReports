@@ -58,4 +58,12 @@ public enum Statistic {
 		return material != null ? new CustomItem().type(material).damage(durability) : customItem.clone();
 	}
 
+	public static Statistic getStatisticAtPosition(int position) {
+		for (Statistic statistic : values()) {
+			if (statistic.getPosition() == position) {
+				return statistic;
+			}
+		}
+		return null;
+	}
 }

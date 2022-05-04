@@ -1,5 +1,6 @@
 package fr.mrtigreroux.tigerreports.data.database;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -12,7 +13,7 @@ public final class QueryResult {
 	private final List<Map<String, Object>> resultList;
 
 	public QueryResult(List<Map<String, Object>> resultList) {
-		this.resultList = resultList;
+		this.resultList = resultList != null ? resultList : new ArrayList<>();
 	}
 
 	public List<Map<String, Object>> getResultList() {

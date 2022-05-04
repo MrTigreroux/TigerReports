@@ -10,7 +10,13 @@ import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.MenuItem;
 import fr.mrtigreroux.tigerreports.data.constants.MenuRawItem;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
-import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
+import fr.mrtigreroux.tigerreports.data.database.Database;
+import fr.mrtigreroux.tigerreports.managers.BungeeManager;
+import fr.mrtigreroux.tigerreports.managers.ReportsManager;
+import fr.mrtigreroux.tigerreports.managers.UsersManager;
+import fr.mrtigreroux.tigerreports.managers.VaultManager;
+import fr.mrtigreroux.tigerreports.objects.users.User;
+import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.ReportUtils;
 
@@ -20,8 +26,15 @@ import fr.mrtigreroux.tigerreports.utils.ReportUtils;
 
 public class ProcessMenu extends ReportManagerMenu {
 
-	public ProcessMenu(OnlineUser u, int reportId) {
-		super(u, 27, 0, Permission.STAFF, reportId);
+	private static final int[] GUI_POSITIONS = new int[] { 1, 2, 3, 4, 5, 6, 7, 10, 16, 19, 20, 21, 22, 23, 24, 25 };
+	private final VaultManager vm;
+	private final BungeeManager bm;
+
+	public ProcessMenu(User u, int reportId, ReportsManager rm, Database db, TaskScheduler taskScheduler,
+	        VaultManager vm, BungeeManager bm, UsersManager um) {
+		super(u, 27, 0, Permission.STAFF, reportId, rm, db, taskScheduler, um);
+		this.vm = vm;
+		this.bm = bm;
 	}
 
 	@Override
@@ -29,10 +42,11 @@ public class ProcessMenu extends ReportManagerMenu {
 		Inventory inv = getInventory(Message.PROCESS_TITLE.get().replace("_Report_", r.getName()), false);
 
 		ItemStack gui = MenuRawItem.GUI.create();
-		for (int position : new Integer[] { 1, 2, 3, 4, 5, 6, 7, 10, 16, 19, 20, 21, 22, 23, 24, 25 })
+		for (int position : GUI_POSITIONS) {
 			inv.setItem(position, gui);
+		}
 
-		inv.setItem(0, r.getItem(null));
+		inv.setItem(0, r.getItem(null, vm, bm));
 
 		for (String appreciation : Arrays.asList("TRUE", "UNCERTAIN", "FALSE")) {
 			String appreciationWord = Message.valueOf(appreciation).get();
@@ -57,7 +71,7 @@ public class ProcessMenu extends ReportManagerMenu {
 		switch (slot) {
 		case 11:
 			if (ReportUtils.punishmentsEnabled()) {
-				u.openPunishmentMenu(1, r);
+				u.openPunishmentMenu(1, r, rm, db, taskScheduler, vm, bm, um);
 			} else {
 				process("True");
 			}
@@ -69,7 +83,7 @@ public class ProcessMenu extends ReportManagerMenu {
 			process("False");
 			break;
 		case 18:
-			u.openReportMenu(r.getId());
+			u.openReportMenu(r.getId(), rm, db, taskScheduler, vm, bm, um);
 			break;
 		default:
 			break;
@@ -77,8 +91,8 @@ public class ProcessMenu extends ReportManagerMenu {
 	}
 
 	private void process(String appreciation) {
-		r.process(p.getUniqueId().toString(), appreciation, false, Permission.STAFF_ARCHIVE_AUTO.isOwned(u), true);
-		u.openDelayedlyReportsMenu();
+		u.afterProcessingAReport(true, rm, db, taskScheduler, vm, bm, um);
+		r.process(u, appreciation, false, u.hasPermission(Permission.STAFF_ARCHIVE_AUTO), true, db);
 	}
 
 }

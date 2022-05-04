@@ -4,109 +4,115 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.bukkit.Bukkit;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import fr.mrtigreroux.tigerreports.TigerReports;
+import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
-import fr.mrtigreroux.tigerreports.data.constants.*;
-import fr.mrtigreroux.tigerreports.data.database.QueryResult;
+import fr.mrtigreroux.tigerreports.data.constants.MenuItem;
+import fr.mrtigreroux.tigerreports.data.constants.Permission;
+import fr.mrtigreroux.tigerreports.data.constants.Statistic;
+import fr.mrtigreroux.tigerreports.data.constants.Status;
+import fr.mrtigreroux.tigerreports.data.database.Database;
+import fr.mrtigreroux.tigerreports.logs.Logger;
+import fr.mrtigreroux.tigerreports.managers.BungeeManager;
+import fr.mrtigreroux.tigerreports.managers.ReportsManager;
+import fr.mrtigreroux.tigerreports.managers.UsersManager;
+import fr.mrtigreroux.tigerreports.managers.VaultManager;
 import fr.mrtigreroux.tigerreports.objects.CustomItem;
-import fr.mrtigreroux.tigerreports.objects.Report;
-import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
-import fr.mrtigreroux.tigerreports.utils.*;
+import fr.mrtigreroux.tigerreports.objects.reports.Report;
+import fr.mrtigreroux.tigerreports.objects.reports.Report.StatusDetails;
+import fr.mrtigreroux.tigerreports.objects.users.User;
+import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
+import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
+import fr.mrtigreroux.tigerreports.utils.DatetimeUtils;
+import fr.mrtigreroux.tigerreports.utils.MessageUtils;
+import fr.mrtigreroux.tigerreports.utils.ReportUtils;
 
 /**
  * @author MrTigreroux
  */
 
-public class ReportMenu extends ReportManagerMenu {
+public class ReportMenu extends ReportManagerMenu implements User.UserListener {
 
-	private QueryResult statisticsQuery = null;
-	private boolean statisticsCollected = false;
+	private static final Logger LOGGER = Logger.fromClass(ReportMenu.class);
 
-	public ReportMenu(OnlineUser u, int reportId) {
-		super(u, 54, 0, Permission.STAFF, reportId);
-	}
+	private final VaultManager vm;
+	private final BungeeManager bm;
 
-	@Override
-	protected boolean collectReport() {
-		if (reportCollected && statisticsCollected) {
-			return true;
-		} else {
-			Report r = this.r;
-			TigerReports tr = TigerReports.getInstance();
-			Bukkit.getScheduler().runTaskAsynchronously(tr, new Runnable() {
-
-				@Override
-				public void run() {
-					Report upr = r != null ? r : tr.getReportsManager().getReportById(reportId, true);
-					QueryResult upStatisticsQuery = statisticsQuery != null ? statisticsQuery
-					        : upr != null ? tr.getDb()
-					                .query("SELECT uuid,true_appreciations,uncertain_appreciations,false_appreciations,reports,reported_times,processed_reports FROM tigerreports_users WHERE uuid = ? OR uuid = ? LIMIT 2",
-					                        Arrays.asList(upr.getReporterUniqueId(), upr.getReportedUniqueId()))
-					                : null;
-					Bukkit.getScheduler().runTask(tr, new Runnable() {
-
-						@Override
-						public void run() {
-							setReport(upr);
-							setStatistics(upStatisticsQuery);
-							open(true);
-						}
-
-					});
-				}
-
-			});
-			return false;
-		}
-	}
-
-	private void setStatistics(QueryResult statistics) {
-		this.statisticsCollected = true;
-		this.statisticsQuery = statistics;
+	public ReportMenu(User u, int reportId, ReportsManager rm, Database db, TaskScheduler taskScheduler,
+	        VaultManager vm, BungeeManager bm, UsersManager um) {
+		super(u, 54, 0, Permission.STAFF, reportId, true, rm, db, taskScheduler, um);
+		this.vm = vm;
+		this.bm = bm;
 	}
 
 	@Override
 	public Inventory onOpen() {
+		r.getReported().addListener(this, db, taskScheduler, um);
+		r.getReporter().addListener(this, db, taskScheduler, um);
+
 		Inventory inv = getInventory(Message.REPORT_TITLE.get().replace("_Report_", r.getName()), true);
 		inv.setItem(0, MenuItem.REPORTS.getWithDetails(Message.REPORTS_DETAILS.get()));
-		inv.setItem(4, r.getItem(null));
-		inv.setItem(18, r.getItem(Message.REPORT_CHAT_ACTION.get()));
+		inv.setItem(4, r.getItem(null, vm, bm));
+		inv.setItem(18, r.getItem(Message.REPORT_CHAT_ACTION.get(), vm, bm));
 
 		boolean stackedReport = r.isStackedReport();
 
 		inv.setItem(22, MenuItem.PUNISH_ABUSE.clone()
 		        .details(Message.PUNISH_ABUSE_DETAILS.get()
 		                .replace("_Players_",
-		                        stackedReport ? r.getReportersNames(0, false)
-		                                : r.getPlayerName("Reporter", false, true))
-		                .replace("_Time_", MessageUtils.convertToSentence(ReportUtils.getAbusiveReportCooldown())))
+		                        stackedReport ? r.getReportersNames(0, false, vm, bm)
+		                                : r.getPlayerName(Report.ParticipantType.REPORTER, false, true, vm, bm))
+		                .replace("_Time_", DatetimeUtils.convertToSentence(ReportUtils.getAbusiveReportCooldown())))
 		        .create());
 
-		Map<String, Object> reporter_stats = statisticsQuery != null ? statisticsQuery.getResult(0) : null;
-		Map<String, Object> reported_stats = null;
-		if (reporter_stats != null && !reporter_stats.get("uuid").equals(r.getReporterUniqueId())) {
-			reported_stats = reporter_stats;
-			if (statisticsQuery != null)
-				reporter_stats = statisticsQuery.getResult(1);
-		} else {
-			if (statisticsQuery != null)
-				reported_stats = statisticsQuery.getResult(1);
+		implementParticipantsSkull(inv);
+
+		inv.setItem(26, MenuItem.DATA.getWithDetails(
+		        r.implementData(Message.DATA_DETAILS.get(), u.hasPermission(Permission.STAFF_ADVANCED), vm, bm)));
+
+		int statusPosition = 29;
+		boolean archive = u.canArchive(r);
+		for (Status status : Status.values()) {
+			inv.setItem(statusPosition,
+			        status.getButtonItem()
+			                .glow(status.equals(r.getStatus()))
+			                .name(status == Status.DONE ? Message.PROCESS_STATUS.get()
+			                        : Message.CHANGE_STATUS.get().replace("_Status_", status.getWord(null)))
+			                .lore((status == Status.DONE ? Message.PROCESS_STATUS_DETAILS.get()
+			                        : Message.CHANGE_STATUS_DETAILS.get()).replace("_Status_", status.getWord(null))
+			                                .split(ConfigUtils.getLineBreakSymbol()))
+			                .create());
+			statusPosition += status == Status.IN_PROGRESS && !archive ? 2 : 1;
+		}
+		if (archive) {
+			inv.setItem(33, MenuItem.ARCHIVE.create());
 		}
 
-		for (String type : new String[] { "Reporter", "Reported" }) {
-			String name = r.getPlayerName(type, false, false);
-			boolean reporter = type.equals("Reporter");
+		if (u.hasPermission(Permission.STAFF_DELETE)) {
+			inv.setItem(36, MenuItem.DELETE.get());
+		}
+		inv.setItem(44, MenuItem.COMMENTS.getWithDetails(Message.COMMENTS_DETAILS.get()));
+
+		return inv;
+	}
+
+	private void implementParticipantsSkull(Inventory inv) {
+		boolean stackedReport = r.isStackedReport();
+		for (Report.ParticipantType type : new Report.ParticipantType[] { Report.ParticipantType.REPORTER,
+		        Report.ParticipantType.REPORTED }) {
+			boolean reporter = type == Report.ParticipantType.REPORTER;
+			User participant = reporter ? r.getReporter() : r.getReported();
+			String name = participant.getName();
+
 			String details = reporter && stackedReport
 			        ? Message.get("Menus.Stacked-report-reporters-details")
-			                .replace("_First_", r.getPlayerName(type, true, true))
-			                .replace("_Others_", r.getReportersNames(1, true))
+			                .replace("_First_", r.getPlayerName(type, true, true, vm, bm))
+			                .replace("_Others_", r.getReportersNames(1, true, vm, bm))
 			        : Message.PLAYER_DETAILS.get();
-			Map<String, Object> statistics = reporter ? reporter_stats : reported_stats;
+			Map<String, Integer> statistics = participant.getStatistics();
 
 			for (Statistic stat : Statistic.values()) {
 				String statName = stat.getConfigName();
@@ -125,68 +131,41 @@ public class ReportMenu extends ReportManagerMenu {
 			        : Message.NOT_FOUND_MALE.get();
 
 			String tp = "";
-			if (Permission.STAFF_TELEPORT.isOwned(u)) {
-				tp = (UserUtils.isOnline(name) ? Message.TELEPORT_TO_CURRENT_POSITION
+			if (u.hasPermission(Permission.STAFF_TELEPORT)) {
+				tp = (participant.isOnlineInNetwork(bm) ? Message.TELEPORT_TO_CURRENT_POSITION
 				        : Message.CAN_NOT_TELEPORT_TO_CURRENT_POSITION).get()
 				        + (r.getOldLocation(type) != null ? Message.TELEPORT_TO_OLD_POSITION
 				                : Message.CAN_NOT_TELEPORT_TO_OLD_POSITION).get();
 			}
-			inv.setItem(reporter ? 21 : 23,
-			        new CustomItem().skullOwner(name)
-			                .name((reporter && stackedReport ? Message.get("Menus.Stacked-report-reporters")
-			                        : Message.valueOf(type.toUpperCase()).get()).replace("_Player_",
-			                                r.getPlayerName(type, true, true)))
-			                .lore(details.replace("_Server_", serverName)
-			                        .replace("_Teleportation_", tp.replace("_Player_", name))
-			                        .split(ConfigUtils.getLineBreakSymbol()))
-			                .amount(reporter && stackedReport ? r.getReportersUniqueIds().length : 1)
-			                .create());
+			inv.setItem(reporter ? 21 : 23, new CustomItem().skullOwner(name)
+			        .name((reporter && stackedReport ? Message.get("Menus.Stacked-report-reporters") : type.getName())
+			                .replace("_Player_", r.getPlayerName(type, true, true, vm, bm)))
+			        .lore(details.replace("_Server_", serverName)
+			                .replace("_Teleportation_", tp.replace("_Player_", name))
+			                .split(ConfigUtils.getLineBreakSymbol()))
+			        .amount(reporter && stackedReport ? r.getReportersAmount() : 1)
+			        .create());
 		}
-
-		inv.setItem(26, MenuItem.DATA
-		        .getWithDetails(r.implementData(Message.DATA_DETAILS.get(), Permission.STAFF_ADVANCED.isOwned(u))));
-
-		int statusPosition = 29;
-		boolean archive = u.canArchive(r);
-		for (Status status : Status.values()) {
-			inv.setItem(statusPosition,
-			        status.getButtonItem()
-			                .glow(status.equals(r.getStatus()))
-			                .name(status == Status.DONE ? Message.PROCESS_STATUS.get()
-			                        : Message.CHANGE_STATUS.get().replace("_Status_", status.getWord(null)))
-			                .lore((status == Status.DONE ? Message.PROCESS_STATUS_DETAILS.get()
-			                        : Message.CHANGE_STATUS_DETAILS.get()).replace("_Status_", status.getWord(null))
-			                                .split(ConfigUtils.getLineBreakSymbol()))
-			                .create());
-			statusPosition += status.equals(Status.IN_PROGRESS) && !archive ? 2 : 1;
-		}
-		if (archive)
-			inv.setItem(33, MenuItem.ARCHIVE.create());
-
-		if (Permission.STAFF_DELETE.isOwned(u))
-			inv.setItem(36, MenuItem.DELETE.get());
-		inv.setItem(44, MenuItem.COMMENTS.getWithDetails(Message.COMMENTS_DETAILS.get()));
-
-		return inv;
 	}
 
 	@Override
 	public void onClick(ItemStack item, int slot, ClickType click) {
 		switch (slot) {
 		case 0:
-			u.openReportsMenu(1, true);
+			u.openReportsMenu(1, true, rm, db, taskScheduler, vm, bm, um);
 			break;
 		case 18:
-			u.sendLinesWithReportButton(r.implementDetails(Message.REPORT_CHAT_DETAILS.get(), false)
+			u.sendLinesWithReportButton(r.implementDetails(Message.REPORT_CHAT_DETAILS.get(), false, vm, bm)
 			        .replace("_Report_", r.getName())
 			        .split(ConfigUtils.getLineBreakSymbol()), r);
 			break;
 		case 21:
 		case 23:
-			if (!Permission.STAFF_TELEPORT.isOwned(u) || click == null)
+			if (!u.hasPermission(Permission.STAFF_TELEPORT) || click == null)
 				return;
 
-			String targetType = slot == 21 ? "Reporter" : "Reported";
+			Report.ParticipantType targetType = slot == 21 ? Report.ParticipantType.REPORTER
+			        : Report.ParticipantType.REPORTED;
 
 			boolean currentLocation = false;
 			if (click.isLeftClick()) {
@@ -196,30 +175,30 @@ public class ReportMenu extends ReportManagerMenu {
 			} else {
 				return;
 			}
-			u.teleportToReportParticipant(r, targetType, currentLocation);
+			u.teleportToReportParticipant(r, targetType, currentLocation, vm, bm);
 			break;
 		case 22:
-			r.processAbusive(p.getUniqueId().toString(), false, Permission.STAFF_ARCHIVE_AUTO.isOwned(u),
-			        ReportUtils.getAbusiveReportCooldown(), true);
-			u.openReportsMenu(1, false);
+			u.openReportsMenu(1, false, rm, db, taskScheduler, vm, bm, um);
+			r.processAbusive(u, false, u.hasPermission(Permission.STAFF_ARCHIVE_AUTO),
+			        ReportUtils.getAbusiveReportCooldown(), true, db);
 			break;
 		case 26:
 			if (click.isLeftClick()) {
 				u.sendLinesWithReportButton(
-				        r.implementData(Message.REPORT_CHAT_DATA.get(), Permission.STAFF_ADVANCED.isOwned(u))
-				                .replace("_Report_", r.getName())
-				                .split(ConfigUtils.getLineBreakSymbol()),
+				        r.implementData(Message.REPORT_CHAT_DATA.get(), u.hasPermission(Permission.STAFF_ADVANCED), vm,
+				                bm).replace("_Report_", r.getName()).split(ConfigUtils.getLineBreakSymbol()),
 				        r);
 			} else if (click.isRightClick()) {
 				Map<Long, String> sortedMessages = new TreeMap<>();
-				for (String type : new String[] { "Reported", "Reporter" }) {
+				for (Report.ParticipantType type : new Report.ParticipantType[] { Report.ParticipantType.REPORTED,
+				        Report.ParticipantType.REPORTER }) {
 					for (String message : r.getMessagesHistory(type)) {
 						if (message != null && message.length() >= 20) {
 							String date = message.substring(0, 19);
-							sortedMessages.put(MessageUtils.getSeconds(date),
+							sortedMessages.put(DatetimeUtils.getSeconds(date),
 							        Message.REPORT_MESSAGE_FORMAT.get()
 							                .replace("_Date_", date)
-							                .replace("_Player_", r.getPlayerName(type, false, true))
+							                .replace("_Player_", r.getPlayerName(type, false, true, vm, bm))
 							                .replace("_Message_", message.substring(20)));
 						}
 					}
@@ -235,34 +214,36 @@ public class ReportMenu extends ReportManagerMenu {
 			}
 			break;
 		case 36:
-			u.openConfirmationMenu(r, "DELETE");
+			u.openConfirmationMenu(r, ConfirmationMenu.Action.DELETE, rm, db, taskScheduler, vm, bm, um);
 			break;
 		case 44:
-			u.openCommentsMenu(1, r);
+			u.openCommentsMenu(1, r, rm, db, taskScheduler, um, bm, vm);
 			break;
 		default:
-			if ((slot == 32 || slot == 33) && !(Permission.STAFF_ARCHIVE.isOwned(u)
+			if ((slot == 32 || slot == 33) && !(u.hasPermission(Permission.STAFF_ARCHIVE)
 			        && (r.getStatus() == Status.DONE || !ReportUtils.onlyDoneArchives())))
 				slot--;
 			switch (slot) {
 			case 29:
 			case 30:
 			case 31:
-				r.setStatus(Arrays.asList(Status.values()).get(slot - 29), p.getUniqueId().toString(), false);
-				if (slot == 31 && !Permission.STAFF_ADVANCED.isOwned(u)) {
-					u.openReportsMenu(1, true);
+				StatusDetails sd = Report.StatusDetails.from(Arrays.asList(Status.values()).get(slot - 29), u);
+
+				if (slot == 31 && !u.hasPermission(Permission.STAFF_ADVANCED)) {
+					u.openReportsMenu(1, true, rm, db, taskScheduler, vm, bm, um);
 				} else {
-					open(true);
+					ConfigSound.MENU.play(p);
 				}
+				r.setStatus(sd, false, db, rm, bm);
 				break;
 			case 32:
-				u.openProcessMenu(r);
+				u.openProcessMenu(r, rm, db, taskScheduler, vm, bm, um);
 				break;
 			case 33:
 				if (u.canArchive(r)) {
-					u.openConfirmationMenu(r, "ARCHIVE");
+					u.openConfirmationMenu(r, ConfirmationMenu.Action.ARCHIVE, rm, db, taskScheduler, vm, bm, um);
 				} else {
-					open(false);
+					update(false);
 				}
 				break;
 			default:
@@ -270,6 +251,31 @@ public class ReportMenu extends ReportManagerMenu {
 			}
 			break;
 		}
+	}
+
+	@Override
+	public void onCooldownChange(User u) {
+		// Ignored
+	}
+
+	@Override
+	public void onStatisticsChange(User u) {
+		Inventory inv = getOpenInventory();
+		if (inv != null) {
+			implementParticipantsSkull(inv);
+		} else {
+			LOGGER.info(
+			        () -> this + ": onStatisticsChanged(" + u.getName() + "): open inventoy = null, calls update()");
+
+			update(false);
+		}
+	}
+
+	@Override
+	public void onClose() {
+		r.getReported().removeListener(this);
+		r.getReporter().removeListener(this);
+		super.onClose();
 	}
 
 }

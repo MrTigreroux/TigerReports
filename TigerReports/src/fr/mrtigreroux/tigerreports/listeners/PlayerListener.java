@@ -3,9 +3,6 @@ package fr.mrtigreroux.tigerreports.listeners;
 import java.util.Arrays;
 import java.util.List;
 
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.*;
-
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -25,13 +22,21 @@ import fr.mrtigreroux.tigerreports.commands.HelpCommand;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.data.database.Database;
+import fr.mrtigreroux.tigerreports.logs.Logger;
+import fr.mrtigreroux.tigerreports.managers.BungeeManager;
+import fr.mrtigreroux.tigerreports.managers.ReportsManager;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
-import fr.mrtigreroux.tigerreports.objects.Comment;
-import fr.mrtigreroux.tigerreports.objects.Report;
-import fr.mrtigreroux.tigerreports.objects.users.*;
-import fr.mrtigreroux.tigerreports.runnables.ReportsNotifier;
+import fr.mrtigreroux.tigerreports.managers.VaultManager;
+import fr.mrtigreroux.tigerreports.objects.users.User;
+import fr.mrtigreroux.tigerreports.tasks.runnables.ReportsNotifier;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 
 /**
  * @author MrTigreroux
@@ -39,47 +44,58 @@ import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 
 public class PlayerListener implements Listener {
 
-	private final List<String> HELP_COMMANDS = Arrays.asList("tigerreport", "helptigerreport", "reportshelp", "report?",
-	        "reports?");
+	private static final List<String> HELP_COMMANDS = Arrays.asList("tigerreport", "helptigerreport", "reportshelp",
+	        "report?", "reports?");
 
-	private TigerReports tr;
+	private final ReportsManager rm;
+	private final Database db;
+	private final TigerReports tr;
+	private final BungeeManager bm;
+	private final VaultManager vm;
+	private final UsersManager um;
 
-	public PlayerListener(TigerReports tr) {
+	public PlayerListener(ReportsManager rm, Database db, TigerReports tr, BungeeManager bm, VaultManager vm,
+	        UsersManager um) {
+		this.rm = rm;
+		this.db = db;
 		this.tr = tr;
+		this.bm = bm;
+		this.vm = vm;
+		this.um = um;
 	}
 
 	@SuppressWarnings("deprecation")
 	@EventHandler
 	private void onPlayerJoin(PlayerJoinEvent e) {
 		Player p = e.getPlayer();
-		OnlineUser u = tr.getUsersManager().getOnlineUser(p);
+		User u = um.getOnlineUser(p);
+		Logger.EVENTS.info(() -> "onPlayerJoin(): " + u.getName());
 		FileConfiguration configFile = ConfigFile.CONFIG.get();
 
-		Bukkit.getScheduler().runTaskLater(tr, new Runnable() {
+		tr.runTaskDelayedly(1000L, new Runnable() {
 
 			@Override
 			public void run() {
-				tr.getDb().updateUserName(p.getUniqueId().toString(), p.getName());
-				u.updateImmunity(Permission.REPORT_EXEMPT.isOwned(u) ? "always" : null, false);
+				u.updateBasicData(db, bm, um);
 			}
 
-		}, 20);
+		});
 
-		Bukkit.getScheduler().runTaskLater(tr, new Runnable() {
+		tr.runTaskDelayedly(configFile.getInt("Config.Notifications.Delay", 2) * 1000L, new Runnable() {
 
 			@Override
 			public void run() {
-				u.sendNotifications();
-				if (Permission.STAFF.isOwned(u)
+				u.sendNotifications(rm, db, tr, vm, bm, um);
+				if (u.hasPermission(Permission.STAFF)
 				        && ConfigUtils.isEnabled(configFile, "Config.Notifications.Staff.Connection")) {
-					ReportsNotifier.sendReportsNotification(p);
+					ReportsNotifier.sendReportsNotification(p, db, tr);
 				}
 			}
 
-		}, configFile.getInt("Config.Notifications.Delay", 2) * 20);
+		});
 
-		if (Permission.MANAGE.isOwned(u)) {
-			String newVersion = tr.getWebManager().getNewVersion();
+		if (u.hasPermission(Permission.MANAGE)) {
+			String newVersion = tr.getNewVersion();
 			if (newVersion != null) {
 				boolean english = ConfigUtils.getInfoLanguage().equalsIgnoreCase("English");
 				p.sendMessage("\u00A77[\u00A76TigerReports\u00A77] "
@@ -103,53 +119,34 @@ public class PlayerListener implements Listener {
 			}
 		}
 
-		tr.getBungeeManager().processPlayerConnection(p.getName());
+		bm.processPlayerConnection(p.getName());
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST)
 	private void onPlayerQuit(PlayerQuitEvent e) {
 		Player p = e.getPlayer();
-		String uuid = p.getUniqueId().toString();
-		UsersManager userManager = tr.getUsersManager();
-		User u = userManager.getSavedUser(uuid);
-
-		if (u != null) {
-			List<String> lastMessages = u.lastMessages;
-			if (lastMessages.isEmpty()) {
-				userManager.removeUser(uuid);
-			} else {
-				OfflineUser ou = new OfflineUser(uuid);
-				ou.lastMessages = lastMessages;
-				userManager.saveUser(ou);
-			}
-		}
-
-		tr.getBungeeManager().processPlayerDisconnection(p.getName());
+		Logger.EVENTS.info(() -> "onPlayerQuit(): " + p.getName());
+		um.processUserDisconnection(p.getUniqueId(), vm);
+		bm.processPlayerDisconnection(p.getName());
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST)
 	private void onPlayerChat(AsyncPlayerChatEvent e) {
-		OnlineUser u = tr.getUsersManager().getOnlineUser(e.getPlayer());
-		Comment c = u.getEditingComment();
-		if (c != null) {
-			String message = e.getMessage();
-			Report r = c.getReport();
-			Database db = tr.getDb();
-			if (c.getId() == null) {
-				r.addComment(u, message, db);
-			} else {
-				c.addMessage(message, db);
-			}
-			u.setEditingComment(null);
-			u.openDelayedlyCommentsMenu(r);
+		User u = um.getOnlineUser(e.getPlayer());
+		Logger.EVENTS.info(() -> "onPlayerChat(): " + u.getName());
+		if (u.isEditingComment()) {
+			u.terminateEditingComment(e.getMessage(), rm, db, tr, um, bm, vm);
 			e.setCancelled(true);
-			return;
+		} else if (u.isProcessPunishingWithStaffReason()) {
+			u.terminateProcessPunishingWithStaffReason(e.getMessage(), rm, db, tr, vm, bm);
+			e.setCancelled(true);
 		}
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	private void onPlayerChat2(AsyncPlayerChatEvent e) {
-		OnlineUser u = tr.getUsersManager().getOnlineUser(e.getPlayer());
+		User u = um.getOnlineUser(e.getPlayer());
+		Logger.EVENTS.info(() -> "onPlayerChat2(): " + u.getName());
 		u.updateLastMessages(e.getMessage());
 
 		ConfigurationSection config = ConfigFile.CONFIG.get();
@@ -158,7 +155,7 @@ public class PlayerListener implements Listener {
 		if (ConfigUtils.isEnabled(config, path + "Enabled")) {
 			Object message = MessageUtils.getAdvancedMessage(
 			        MessageUtils.translateColorCodes(config.getString(path + "Message"))
-			                .replace("_DisplayName_", u.getDisplayName())
+			                .replace("_DisplayName_", u.getDisplayName(vm))
 			                .replace("_Name_", playerName)
 			                .replace("_Message_", e.getMessage()),
 			        "_ReportButton_", MessageUtils.translateColorCodes(config.getString(path + "ReportButton.Text")),
@@ -185,7 +182,7 @@ public class PlayerListener implements Listener {
 		if (checkHelpCommand(command, e.getPlayer())) {
 			e.setCancelled(true);
 		} else if (ConfigFile.CONFIG.get().getStringList("Config.CommandsHistory").contains(command.split(" ")[0])) {
-			tr.getUsersManager().getOnlineUser(e.getPlayer()).updateLastMessages("/" + command);
+			um.getOnlineUser(e.getPlayer()).updateLastMessages("/" + command);
 		}
 	}
 

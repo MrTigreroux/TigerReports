@@ -4,9 +4,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Arrays;
 
-import org.bukkit.Bukkit;
-
-import fr.mrtigreroux.tigerreports.TigerReports;
+import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 
 /**
@@ -20,7 +18,8 @@ public class MySQL extends Database {
 	private boolean useSsl, verifyServerCertificate;
 
 	public MySQL(String host, int port, String database, String username, String password, boolean useSsl,
-	        boolean verifyServerCertificate) {
+	        boolean verifyServerCertificate, TaskScheduler taskScheduler) {
+		super(taskScheduler);
 		this.host = host;
 		this.port = port;
 		this.database = database;
@@ -30,16 +29,16 @@ public class MySQL extends Database {
 		this.verifyServerCertificate = verifyServerCertificate;
 	}
 
-	public void check() throws SQLException {
+	public void check() throws Exception {
 		if (host == null || host.isEmpty() || database == null || database.isEmpty() || username == null
 		        || username.isEmpty())
-			throw new SQLException();
+			throw new IllegalArgumentException("Invalid connection settings.");
 		openConnection();
-		connection.createStatement();
+		connection.createStatement().close();
 	}
 
 	@Override
-	public void openConnection() {
+	public void openConnection() throws Exception {
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
 			connection = DriverManager.getConnection(
@@ -49,16 +48,18 @@ public class MySQL extends Database {
 			        username, password);
 		} catch (ClassNotFoundException missing) {
 			logError(ConfigUtils.getInfoMessage("MySQL is missing.", "MySQL n'est pas installe."), null);
+			throw missing;
 		} catch (SQLException ex) {
 			logError(ConfigUtils.getInfoMessage("An error has occurred during the connection to the MySQL database:",
 			        "Une erreur s'est produite lors de la connexion a la base de donnees MySQL:"), ex);
+			throw ex;
 		}
 		return;
 	}
 
 	@Override
 	public void initialize() {
-		Bukkit.getScheduler().runTaskAsynchronously(TigerReports.getInstance(), new Runnable() {
+		taskScheduler.runTaskAsynchronously(new Runnable() {
 
 			@Override
 			public void run() {
@@ -74,8 +75,8 @@ public class MySQL extends Database {
 	}
 
 	@Override
-	public boolean isValid() throws SQLException {
-		return connection.isValid(5);
+	public boolean isConnectionValid() throws SQLException {
+		return connection != null && connection.isValid(5);
 	}
 
 	public void updateUserName(String uuid, String name) {

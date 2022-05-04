@@ -13,9 +13,10 @@ import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 
-import fr.mrtigreroux.tigerreports.TigerReports;
-import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
-import fr.mrtigreroux.tigerreports.runnables.MenuUpdater;
+import fr.mrtigreroux.tigerreports.data.database.Database;
+import fr.mrtigreroux.tigerreports.logs.Logger;
+import fr.mrtigreroux.tigerreports.managers.UsersManager;
+import fr.mrtigreroux.tigerreports.objects.users.User;
 
 /**
  * @author MrTigreroux
@@ -23,22 +24,26 @@ import fr.mrtigreroux.tigerreports.runnables.MenuUpdater;
 
 public class InventoryListener implements Listener {
 
-	private TigerReports tr;
+	private Database db;
+	private UsersManager um;
 
-	public InventoryListener(TigerReports tr) {
-		this.tr = tr;
+	public InventoryListener(Database db, UsersManager um) {
+		this.db = db;
+		this.um = um;
 	}
 
 	@EventHandler(priority = EventPriority.LOW)
 	private void onInventoryDrag(InventoryDragEvent e) {
+		Logger.EVENTS.info(() -> "onInventoryDrag(): " + e.getWhoClicked().getName());
 		if (checkMenuAction(e.getWhoClicked(), e.getInventory()) != null)
 			e.setCancelled(true);
 	}
 
 	@EventHandler(priority = EventPriority.LOW)
 	private void onInventoryClick(InventoryClickEvent e) {
+		Logger.EVENTS.info(() -> "onInventoryClick(): " + e.getWhoClicked().getName());
 		Inventory inv = e.getClickedInventory();
-		OnlineUser u = checkMenuAction(e.getWhoClicked(), inv);
+		User u = checkMenuAction(e.getWhoClicked(), inv);
 		if (u != null) {
 			if (inv.getType() == InventoryType.CHEST) {
 				e.setCancelled(true);
@@ -54,18 +59,18 @@ public class InventoryListener implements Listener {
 
 	@EventHandler(priority = EventPriority.LOW)
 	private void onInventoryClose(InventoryCloseEvent e) {
-		OnlineUser u = tr.getUsersManager().getOnlineUser((Player) e.getPlayer());
-		MenuUpdater.removeUser(u);
+		User u = um.getOnlineUser((Player) e.getPlayer());
+		Logger.EVENTS.info(() -> "onInventoryClose(): " + u.getName());
 		u.setOpenedMenu(null);
 		try {
-			tr.getDb().startClosing();
+			db.startClosing();
 		} catch (Exception ignored) {}
 	}
 
-	private OnlineUser checkMenuAction(HumanEntity whoClicked, Inventory inv) {
+	private User checkMenuAction(HumanEntity whoClicked, Inventory inv) {
 		if (!(whoClicked instanceof Player) || inv == null)
 			return null;
-		OnlineUser u = tr.getUsersManager().getOnlineUser((Player) whoClicked);
+		User u = um.getOnlineUser((Player) whoClicked);
 		return u.getOpenedMenu() != null ? u : null;
 	}
 

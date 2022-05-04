@@ -9,11 +9,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
+import java.util.Objects;
 
-import org.bukkit.Bukkit;
-
-import fr.mrtigreroux.tigerreports.TigerReports;
+import fr.mrtigreroux.tigerreports.logs.Logger;
+import fr.mrtigreroux.tigerreports.tasks.ResultCallback;
+import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
+import fr.mrtigreroux.tigerreports.utils.CollectionUtils;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 
 /**
@@ -22,24 +23,43 @@ import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 
 public abstract class Database {
 
+	protected final TaskScheduler taskScheduler;
 	protected Connection connection;
 	private int closingTaskId = -1;
+	private boolean forcedClosing = false;
 
-	public Database() {}
+	public Database(TaskScheduler taskScheduler) {
+		this.taskScheduler = taskScheduler;
+	}
 
-	public abstract void openConnection();
+	public abstract void openConnection() throws Exception;
 
 	public abstract void initialize();
 
-	public abstract boolean isValid() throws SQLException;
+	public abstract boolean isConnectionValid() throws SQLException;
 
-	private void checkConnection() {
+	private boolean checkConnection() {
 		cancelClosing();
 		try {
-			if (connection != null && isValid())
-				return;
+			if (isConnectionValid())
+				return true;
+		} catch (SQLException ignored) {}
+		try {
+			openConnection();
 		} catch (Exception ignored) {}
-		openConnection();
+		return connection != null;
+	}
+
+	public void update(final String query, final List<Object> parameters) {
+		Logger.SQL.info(() -> "update(" + query + ", " + CollectionUtils.toString(parameters) + ")");
+		if (checkConnection()) {
+			try (PreparedStatement ps = connection.prepareStatement(query)) {
+				prepare(ps, parameters);
+				ps.executeUpdate();
+			} catch (SQLException ex) {
+				logDatabaseError(ex);
+			}
+		}
 	}
 
 	private PreparedStatement prepare(PreparedStatement ps, final List<Object> parameters) throws SQLException {
@@ -52,18 +72,8 @@ public abstract class Database {
 		return ps;
 	}
 
-	public void update(final String query, final List<Object> parameters) {
-		checkConnection();
-		try (PreparedStatement ps = connection.prepareStatement(query)) {
-			prepare(ps, parameters);
-			ps.executeUpdate();
-		} catch (SQLException ex) {
-			logDatabaseError(ex);
-		}
-	}
-
 	public void updateAsynchronously(final String query, final List<Object> parameters) {
-		Bukkit.getScheduler().runTaskAsynchronously(TigerReports.getInstance(), new Runnable() {
+		taskScheduler.runTaskAsynchronously(new Runnable() {
 
 			@Override
 			public void run() {
@@ -76,96 +86,155 @@ public abstract class Database {
 	public abstract void updateUserName(String uuid, String name);
 
 	public QueryResult query(final String query, final List<Object> parameters) {
-		checkConnection();
-		try (PreparedStatement ps = connection.prepareStatement(query)) {
-			prepare(ps, parameters);
-			ResultSet rs = ps.executeQuery();
+		Logger.SQL.info(() -> "query(" + query + ", " + CollectionUtils.toString(parameters) + ")");
+		if (checkConnection()) {
+			try (PreparedStatement ps = connection.prepareStatement(query)) {
+				prepare(ps, parameters);
+				ResultSet rs = ps.executeQuery();
 
-			List<Map<String, Object>> resultList = new ArrayList<>();
-			Map<String, Object> row = null;
-			ResultSetMetaData metaData = rs.getMetaData();
-			int columnCount = metaData.getColumnCount();
-			while (rs.next()) {
-				row = new HashMap<>();
-				for (int i = 1; i <= columnCount; i++)
-					row.put(metaData.getColumnName(i), rs.getObject(i));
-				resultList.add(row);
+				List<Map<String, Object>> resultList = new ArrayList<>();
+				Map<String, Object> row = null;
+				ResultSetMetaData metaData = rs.getMetaData();
+				int columnCount = metaData.getColumnCount();
+				while (rs.next()) {
+					row = new HashMap<>();
+					for (int i = 1; i <= columnCount; i++)
+						row.put(metaData.getColumnName(i), rs.getObject(i));
+					resultList.add(row);
+				}
+
+				close(rs);
+				return new QueryResult(resultList);
+			} catch (SQLException ex) {
+				logDatabaseError(ex);
+				return new QueryResult(new ArrayList<>());
 			}
-
-			close(rs);
-			return new QueryResult(resultList);
-		} catch (SQLException ex) {
-			logDatabaseError(ex);
+		} else {
 			return new QueryResult(new ArrayList<>());
 		}
 	}
 
-	public int insert(final String query, final List<Object> parameters) {
-		checkConnection();
-		try (PreparedStatement ps = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS)) {
-			prepare(ps, parameters);
-			ps.executeUpdate();
+	public void queryAsynchronously(final String query, final List<Object> parameters, TaskScheduler taskScheduler,
+	        ResultCallback<QueryResult> resultCallback) {
+		Objects.requireNonNull(resultCallback);
 
-			try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-				if (generatedKeys.next()) {
-					return generatedKeys.getInt(1);
-				} else {
-					return -1;
-				}
+		taskScheduler.runTaskAsynchronously(new Runnable() {
+
+			@Override
+			public void run() {
+				QueryResult qr = query(query, parameters);
+
+				taskScheduler.runTask(new Runnable() {
+
+					@Override
+					public void run() {
+						resultCallback.onResultReceived(qr);
+					}
+
+				});
 			}
-		} catch (SQLException ex) {
-			logDatabaseError(ex);
+
+		});
+	}
+
+	public int insert(final String query, final List<Object> parameters) {
+		Logger.SQL.info(() -> "insert(" + query + ", " + CollectionUtils.toString(parameters) + ")");
+		if (checkConnection()) {
+			try (PreparedStatement ps = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS)) {
+				prepare(ps, parameters);
+				ps.executeUpdate();
+
+				try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+					if (generatedKeys.next()) {
+						return generatedKeys.getInt(1);
+					} else {
+						return -1;
+					}
+				}
+			} catch (SQLException ex) {
+				logDatabaseError(ex);
+				return -1;
+			}
+		} else {
 			return -1;
 		}
 	}
 
-	public void insertAsynchronously(final String query, final List<Object> parameters) {
-		Bukkit.getScheduler().runTaskAsynchronously(TigerReports.getInstance(), new Runnable() {
+	public void insertAsynchronously(final String query, final List<Object> parameters, TaskScheduler taskScheduler,
+	        ResultCallback<Integer> resultCallback) {
+		taskScheduler.runTaskAsynchronously(new Runnable() {
 
 			@Override
 			public void run() {
-				insert(query, parameters);
+				int generatedKey = insert(query, parameters);
+				if (resultCallback != null) {
+					taskScheduler.runTask(new Runnable() {
+
+						@Override
+						public void run() {
+							resultCallback.onResultReceived(generatedKey);
+						}
+
+					});
+				}
 			}
 
 		});
 	}
 
 	private void close(ResultSet rs) {
-		if (rs != null)
+		if (rs != null) {
 			try {
 				rs.close();
 			} catch (SQLException ignored) {}
+		}
 	}
 
 	public void startClosing() {
+		startClosing(false);
+	}
+
+	public void startClosing(boolean forceClosing) {
 		if (closingTaskId != -1 || connection == null)
 			return;
-		closingTaskId = Bukkit.getScheduler().scheduleSyncDelayedTask(TigerReports.getInstance(), new Runnable() {
+		try {
+			if (connection.isClosed())
+				return;
+		} catch (SQLException ignored) {}
+
+		forcedClosing = true;
+		closingTaskId = taskScheduler.runTaskDelayedly(60L * 1000L, new Runnable() {
 
 			@Override
 			public void run() {
 				if (closingTaskId != -1) {
-					closeConnection();
 					closingTaskId = -1;
+					closeConnection();
 				}
 			}
 
-		}, 1200);
+		});
 	}
 
+	/**
+	 * Cancel closing connection task except if {@link forcedClosing} is true.
+	 */
 	public void cancelClosing() {
-		if (closingTaskId == -1)
+		if (forcedClosing || closingTaskId == -1)
 			return;
-		Bukkit.getScheduler().cancelTask(closingTaskId);
+		taskScheduler.cancelTask(closingTaskId);
 		closingTaskId = -1;
 	}
 
 	public void closeConnection() {
 		try {
-			if (connection == null || connection.isClosed())
-				return;
-			connection.close();
+			if (connection != null) {
+				connection.close();
+			}
 			connection = null;
+			forcedClosing = false;
+
+			cancelClosing();
 		} catch (SQLException ignored) {}
 	}
 
@@ -175,7 +244,19 @@ public abstract class Database {
 	}
 
 	void logError(String message, Exception ex) {
-		Bukkit.getLogger().log(Level.SEVERE, message, ex);
+		Logger.SQL.error(message, ex);
+	}
+
+	@SuppressWarnings("deprecation")
+	@Override
+	protected void finalize() throws Throwable {
+		try {
+			closeConnection();
+		} catch (Throwable ex) {
+			throw ex;
+		} finally {
+			super.finalize();
+		}
 	}
 
 }

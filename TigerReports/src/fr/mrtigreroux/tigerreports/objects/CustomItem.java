@@ -90,6 +90,9 @@ public class CustomItem {
 	}
 
 	public CustomItem amount(Integer amount) {
+		if (amount == 0 && !VersionUtils.isVersionLower1_13()) {
+			amount = 1; // 0 quantity not displayed in new versions.
+		}
 		this.amount = amount;
 		return this;
 	}

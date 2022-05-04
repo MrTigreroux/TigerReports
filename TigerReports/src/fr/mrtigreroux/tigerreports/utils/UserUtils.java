@@ -3,6 +3,7 @@ package fr.mrtigreroux.tigerreports.utils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -13,6 +14,12 @@ import org.bukkit.entity.Player;
 import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.database.Database;
+import fr.mrtigreroux.tigerreports.data.database.QueryResult;
+import fr.mrtigreroux.tigerreports.managers.BungeeManager;
+import fr.mrtigreroux.tigerreports.managers.UsersManager;
+import fr.mrtigreroux.tigerreports.managers.VaultManager;
+import fr.mrtigreroux.tigerreports.tasks.ResultCallback;
+import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
 
 /**
  * @author MrTigreroux
@@ -20,45 +27,101 @@ import fr.mrtigreroux.tigerreports.data.database.Database;
 
 public class UserUtils {
 
-	public static String getUniqueId(String name) {
+	private UserUtils() {}
+
+	public static UUID getUniqueId(String name) {
 		try {
-			return Bukkit.getPlayer(name).getUniqueId().toString();
+			return Bukkit.getPlayer(name).getUniqueId();
 		} catch (Exception offlinePlayer) {
 			return TigerReports.getInstance().getUsersManager().getUniqueId(name);
 		}
 	}
 
-	public static String getName(String uuid) {
-		UUID uniqueId = UUID.fromString(uuid);
-		Player p = Bukkit.getPlayer(uniqueId);
-		return p != null ? p.getName() : TigerReports.getInstance().getUsersManager().getName(uuid, uniqueId);
+	public interface NamesResultCallback {
+		void onNamesReceived(String[] names);
 	}
 
-	public static String getDisplayName(String uuid, boolean staff) {
+	public static void getNamesAsynchronously(String[] uuids, Database db, TaskScheduler taskScheduler, UsersManager um,
+	        NamesResultCallback resultCallback) {
+		String[] names = new String[uuids.length];
+		getNamesAsynchronously(uuids, 0, names, db, taskScheduler, um, resultCallback);
+	}
+
+	private static void getNamesAsynchronously(String[] uuids, int index, String[] names, Database db,
+	        TaskScheduler taskScheduler, UsersManager um, NamesResultCallback resultCallback) {
+		if (index < uuids.length) {
+			getNameAsynchronously(uuids[index], db, taskScheduler, um, new UsersManager.NameResultCallback() {
+
+				@Override
+				public void onNameReceived(String name) {
+					names[index] = name;
+					getNamesAsynchronously(uuids, index + 1, names, db, taskScheduler, um, resultCallback);
+				}
+
+			});
+		} else {
+			resultCallback.onNamesReceived(names);
+		}
+	}
+
+	public static void getNameAsynchronously(String uuid, Database db, TaskScheduler taskScheduler, UsersManager um,
+	        UsersManager.NameResultCallback resultCallback) {
+		getNameAsynchronously(UUID.fromString(uuid), db, taskScheduler, um, resultCallback);
+	}
+
+	public static void getNameAsynchronously(UUID uuid, Database db, TaskScheduler taskScheduler, UsersManager um,
+	        UsersManager.NameResultCallback resultCallback) {
+		Player p = Bukkit.getPlayer(uuid);
+		if (p != null) {
+			resultCallback.onNameReceived(p.getName());
+		} else {
+			um.getNameAsynchronously(uuid, db, taskScheduler, resultCallback);
+		}
+	}
+
+	public static void getDisplayNameAsynchronously(String uuid, boolean staff, Database db,
+	        DisplayNameResultCallback resultCallback) {
 		try {
 			UUID uniqueId = UUID.fromString(uuid);
 			Player p = Bukkit.getPlayer(uniqueId);
-			OfflinePlayer offp = null;
-
 			TigerReports tr = TigerReports.getInstance();
-			String name = null;
+			getDisplayNameAsynchronously(uniqueId, p, staff, db, tr, tr.getVaultManager(), tr.getUsersManager(),
+			        resultCallback);
+		} catch (IllegalArgumentException invalidUniqueId) {
+			resultCallback.onDisplayNameReceived(uuid); // Allows to display old author display name of comments (now saved author is
+			// its uuid and not its display name)
+		}
+	}
 
-			if (p != null) {
-				name = tr.getVaultManager().getPlayerDisplayName(p, staff);
-				offp = p;
-			} else {
-				if (uniqueId != null) {
-					offp = Bukkit.getOfflinePlayer(uniqueId);
-					if (offp != null) {
-						name = tr.getVaultManager().getPlayerDisplayName(offp, staff);
-					}
+	public interface DisplayNameResultCallback {
+		void onDisplayNameReceived(String displayName);
+	}
+
+	public static void getDisplayNameAsynchronously(UUID uniqueId, Player p, boolean staff, Database db,
+	        TaskScheduler taskScheduler, VaultManager vm, UsersManager um, DisplayNameResultCallback resultCallback) {
+		Objects.requireNonNull(uniqueId);
+
+		OfflinePlayer offp = p != null ? p : Bukkit.getOfflinePlayer(uniqueId);
+
+		vm.getPlayerDisplayNameAsynchronously(offp, staff, taskScheduler, new VaultManager.DisplayNameResultCallback() {
+
+			@Override
+			public void onDisplayNameReceived(String displayName) {
+				if (displayName != null) {
+					resultCallback.onDisplayNameReceived(displayName);
+				} else {
+					um.getNameAsynchronously(uniqueId, offp, db, taskScheduler, new UsersManager.NameResultCallback() {
+
+						@Override
+						public void onNameReceived(String name) {
+							resultCallback.onDisplayNameReceived(name);
+						}
+
+					});
 				}
 			}
-			return name != null ? name : tr.getUsersManager().getName(uuid, uniqueId, offp);
-		} catch (Exception invalidUniqueId) {
-			return uuid; // Allows to display old author display name of comments (now saved author is
-			             // its uuid and not its display name)
-		}
+
+		});
 	}
 
 	public static boolean checkPlayer(CommandSender s) {
@@ -70,33 +133,52 @@ public class UserUtils {
 		}
 	}
 
-	public static Player getPlayerFromUniqueId(String uuid) {
+	public static Player getPlayerFromUniqueId(UUID uuid) {
 		try {
-			return Bukkit.getPlayer(UUID.fromString(uuid));
+			return Bukkit.getPlayer(uuid);
 		} catch (Exception offlinePlayer) {
 			return null;
 		}
 	}
 
-	public static boolean isValid(String uuid, Database db) {
-		return db.query("SELECT uuid FROM tigerreports_users WHERE uuid = ?", Collections.singletonList(uuid))
-		        .getResult(0, "uuid") != null;
+	public static void checkUserExistsAsynchronously(UUID uuid, Database db, TaskScheduler taskScheduler,
+	        ResultCallback<Boolean> resultCallback) {
+		checkUserExistsAsynchronously(uuid, Bukkit.getPlayer(uuid), db, taskScheduler, resultCallback);
 	}
 
-	public static boolean isOnline(String name) {
-		return Bukkit.getPlayer(name) != null ? true : TigerReports.getInstance().getBungeeManager().isOnline(name);
+	public static void checkUserExistsAsynchronously(UUID uuid, Player p, Database db, TaskScheduler taskScheduler,
+	        ResultCallback<Boolean> resultCallback) {
+		if (p != null) {
+			resultCallback.onResultReceived(true);
+			db.updateUserName(p.getUniqueId().toString(), p.getName());
+		} else {
+			db.queryAsynchronously("SELECT uuid FROM tigerreports_users WHERE uuid = ?",
+			        Collections.singletonList(uuid), taskScheduler, new ResultCallback<QueryResult>() {
+
+				        @Override
+				        public void onResultReceived(QueryResult qr) {
+					        Object o = qr.getResult(0, "uuid");
+					        resultCallback.onResultReceived(o != null);
+				        }
+
+			        });
+		}
+	}
+
+	public static boolean isOnline(String name, BungeeManager bm) {
+		return Bukkit.getPlayer(name) != null ? true : bm.isOnline(name);
 	}
 
 	/**
-	 * Return the players that player p can see (not vanished). Doesn't take in consideration the vanished players on a different server, who are therefore considered as online for the player p, because
-	 * no official check can be used.
+	 * Return the players that player p can see (not vanished). Doesn't take in consideration vanished players on a different server, who are therefore considered as online for the player p, because no
+	 * official check can be used.
 	 * 
 	 * @param p            - Viewer of players
-	 * @param hideExempted - Hide players owing tigerreports.report.exempt permission
+	 * @param hideExempted - Hide players owning tigerreports.report.exempt permission
 	 */
-	public static List<String> getOnlinePlayersForPlayer(Player p, boolean hideExempted) {
-		TigerReports tr = TigerReports.getInstance();
-		List<String> players = tr.getBungeeManager().getOnlinePlayers();
+	public static List<String> getOnlinePlayersForPlayer(Player p, boolean hideExempted, UsersManager um,
+	        BungeeManager bm) {
+		List<String> players = bm.getOnlinePlayers();
 
 		if (players == null) {
 			players = new ArrayList<>();
@@ -107,7 +189,7 @@ public class UserUtils {
 		}
 
 		if (hideExempted)
-			players.removeAll(tr.getUsersManager().getExemptedPlayers());
+			players.removeAll(um.getExemptedPlayers());
 
 		return players;
 	}

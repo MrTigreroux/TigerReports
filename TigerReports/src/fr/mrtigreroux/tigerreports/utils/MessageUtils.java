@@ -1,21 +1,10 @@
 package fr.mrtigreroux.tigerreports.utils;
 
 import java.text.Normalizer;
-import java.time.Duration;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.function.Function;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -29,8 +18,15 @@ import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
+import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
-import fr.mrtigreroux.tigerreports.objects.users.OnlineUser;
+import fr.mrtigreroux.tigerreports.objects.users.User;
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 
 /**
  * @author MrTigreroux
@@ -45,14 +41,6 @@ public class MessageUtils {
 
 	public static final String LINE = "------------------------------------------------------";
 
-	private static final String[] TIME_UNITS = new String[] { "YEAR", "MONTH", "WEEK", "DAY", "HOUR", "MINUTE",
-	        "SECOND" };
-	private static final int[] SECONDS_IN_UNIT = new int[] { 365 * 24 * 60 * 60, 30 * 24 * 60 * 60, 7 * 24 * 60 * 60,
-	        24 * 60 * 60, 60 * 60, 60 };
-
-	private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
-	        .withZone(ConfigUtils.getZoneId());
-
 	private static final Pattern HEX_PATTERN = Pattern.compile("&#[a-fA-F0-9]{6}");
 
 	static {
@@ -64,6 +52,8 @@ public class MessageUtils {
 			        .translateAlternateColorCodes(ConfigUtils.getColorCharacter(), string);
 		}
 	}
+
+	private MessageUtils() {}
 
 	public static void sendErrorMessage(CommandSender s, String message) {
 		s.sendMessage(message);
@@ -77,7 +67,7 @@ public class MessageUtils {
 		for (Player p : Bukkit.getOnlinePlayers()) {
 			if (!p.hasPermission(Permission.STAFF.get()))
 				continue;
-			OnlineUser u = um.getOnlineUser(p);
+			User u = um.getOnlineUser(p);
 			if (!u.acceptsNotifications())
 				continue;
 
@@ -94,79 +84,6 @@ public class MessageUtils {
 
 		message = CONSOLE_PATTERN.matcher(temp).replaceAll("");
 		Bukkit.getConsoleSender().sendMessage(message.replace("»", ">"));
-	}
-
-	public static String getNowDate() {
-		try {
-			return ZonedDateTime.now().format(DATE_FORMATTER);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			return Message.NOT_FOUND_FEMALE.get();
-		}
-	}
-
-	public static String getRelativeDate(long secondsToAdd) {
-		try {
-			return ZonedDateTime.now().plusSeconds(secondsToAdd).format(DATE_FORMATTER);
-		} catch (Exception ex) {
-			return Message.NOT_FOUND_FEMALE.get();
-		}
-	}
-
-	public static long getSecondsBetweenNowAndDate(String date) {
-		try {
-			return Duration
-			        .between(ZonedDateTime.now(ConfigUtils.getZoneId()), ZonedDateTime.parse(date, DATE_FORMATTER))
-			        .getSeconds();
-		} catch (Exception invalidDate) {
-			return -1;
-		}
-	}
-
-	public static long getSeconds(String date) {
-		try {
-			return ZonedDateTime.parse(date, DATE_FORMATTER).toEpochSecond();
-		} catch (Exception ex) {
-			return -1;
-		}
-	}
-
-	public static int[] getTimeValues(double seconds) {
-		int[] values = new int[] { 0, 0, 0, 0, 0, 0, 0 };
-
-		for (int unitIndex = 0; unitIndex <= 5; unitIndex++) {
-			int amountForUnit = (int) seconds / SECONDS_IN_UNIT[unitIndex];
-			values[unitIndex] += amountForUnit;
-			seconds -= amountForUnit * SECONDS_IN_UNIT[unitIndex];
-		}
-
-		values[6] += (int) Math.round(seconds);
-
-		return values;
-	}
-
-	public static String convertToSentence(double seconds) {
-		int[] values = getTimeValues(seconds);
-
-		StringBuilder sentenceBuilder = new StringBuilder();
-		for (int valueIndex = 0; valueIndex <= 6; valueIndex++) {
-			int value = values[valueIndex];
-			if (value <= 0)
-				continue;
-
-			String valueMessage = TIME_UNITS[valueIndex];
-			if (value > 1)
-				valueMessage += "S";
-			sentenceBuilder.append(value).append(" ").append(Message.valueOf(valueMessage).get()).append(" ");
-		}
-
-		int length = sentenceBuilder.length();
-
-		return length > 1 ? sentenceBuilder.deleteCharAt(length - 1).toString() : "0 " + Message.SECOND.get();
-	}
-
-	public static String getTimeAgo(String date) {
-		return convertToSentence(-getSecondsBetweenNowAndDate(date));
 	}
 
 	public static ChatColor getLastColor(String text, String lastWord) {
@@ -267,10 +184,8 @@ public class MessageUtils {
 		}
 	}
 
-	public static String formatConfigLocation(Location loc) {
-		StringBuilder configLoc = new StringBuilder(TigerReports.getInstance().getBungeeManager().getServerName())
-		        .append("/")
-		        .append(loc.getWorld().getName());
+	public static String formatConfigLocation(Location loc, BungeeManager bm) {
+		StringBuilder configLoc = new StringBuilder(bm.getServerName()).append("/").append(loc.getWorld().getName());
 		for (Object coords : new Object[] { loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch() }) {
 			String coord = String.valueOf(coords);
 			int end = (end = coord.indexOf('.') + 3) < coord.length() ? end : coord.length();
@@ -310,13 +225,6 @@ public class MessageUtils {
 		return name != null ? name : server;
 	}
 
-	public static void logSevere(String error) {
-		Logger logger = Bukkit.getLogger();
-		logger.severe(LINE);
-		logger.severe(error);
-		logger.severe(LINE);
-	}
-
 	public static String translateColorCodes(String message) {
 		if (VersionUtils.isVersionAtLeast1_16()) {
 			Matcher matcher = HEX_PATTERN.matcher(message);
@@ -329,6 +237,23 @@ public class MessageUtils {
 		}
 
 		return TRANSLATE_COLOR_CODES_METHOD.apply(message);
+	}
+
+	public static String joinElements(String separator, Object[] elements) {
+		if (elements == null || elements.length == 0) {
+			return "";
+		}
+		StringBuilder sb = new StringBuilder();
+		boolean firstElementAdded = false;
+		for (Object ele : elements) {
+			if (firstElementAdded) {
+				sb.append(separator);
+			} else {
+				firstElementAdded = true;
+			}
+			sb.append(ele);
+		}
+		return sb.toString();
 	}
 
 }
