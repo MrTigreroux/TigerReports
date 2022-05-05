@@ -886,6 +886,7 @@ public class ReportsManager {
 
 		final StringBuilder query = new StringBuilder();
 		final List<Object> params = new ArrayList<>();
+		int index = 0;
 
 		LOGGER.info(() -> "collectReportsPages(): " + CollectionUtils.toString(pagesCharacteristics));
 		for (ReportsPageCharacteristics pageCharacteristics : pagesCharacteristics) {
@@ -918,7 +919,8 @@ public class ReportsManager {
 
 			query.append("SELECT * FROM (SELECT report_id,'" + pageCharacteristics + "' AS "
 			        + PAGE_CHARACTERISTICS_FAKE_COLUMN + " FROM tigerreports_reports WHERE archived = ?" + whereClause
-			        + orderClause + " LIMIT ? OFFSET ?)");
+			        + orderClause + " LIMIT ? OFFSET ?) AS p" + index);
+			index++;
 		}
 
 		return db.query(query.toString(), params);
