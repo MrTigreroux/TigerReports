@@ -54,11 +54,11 @@ public class SQLite extends Database {
 
 			@Override
 			public void run() {
-				update("CREATE TABLE IF NOT EXISTS tigerreports_users ('uuid' text NOT NULL PRIMARY KEY, 'name' text, 'cooldown' text, 'immunity' text, 'notifications' text, 'true_appreciations' int DEFAULT '0', 'uncertain_appreciations' int DEFAULT '0', 'false_appreciations' int DEFAULT '0', 'reports' int DEFAULT '0', 'reported_times' int DEFAULT '0', 'processed_reports' int DEFAULT '0')",
+				update("CREATE TABLE IF NOT EXISTS tigerreports_users ('uuid' TEXT NOT NULL PRIMARY KEY, 'name' TEXT, 'cooldown' TEXT, 'immunity' TEXT, 'notifications' TEXT, 'true_appreciations' INTEGER DEFAULT '0', 'uncertain_appreciations' INTEGER DEFAULT '0', 'false_appreciations' INTEGER DEFAULT '0', 'reports' INTEGER DEFAULT '0', 'reported_times' INTEGER DEFAULT '0', 'processed_reports' INTEGER DEFAULT '0')",
 				        null);
-				update("CREATE TABLE IF NOT EXISTS tigerreports_reports ('report_id' INTEGER PRIMARY KEY, 'status' varchar(50) NOT NULL DEFAULT 'Waiting', 'appreciation' text, 'date' text, 'reported_uuid' text, 'reporter_uuid' text, 'reason' text, 'reported_ip' text, 'reported_location' text, 'reported_messages' text, 'reported_gamemode' text, 'reported_on_ground' text, 'reported_sneak' text, 'reported_sprint' text, 'reported_health' text, 'reported_food' text, 'reported_effects' text, 'reporter_ip' text NOT NULL, 'reporter_location' text NOT NULL, 'reporter_messages' text, 'archived' tinyint(1) NOT NULL DEFAULT 0)",
+				update("CREATE TABLE IF NOT EXISTS tigerreports_reports ('report_id' INTEGER PRIMARY KEY, 'status' TEXT NOT NULL DEFAULT 'Waiting', 'appreciation' TEXT, 'date' TEXT, 'reported_uuid' TEXT, 'reporter_uuid' TEXT, 'reason' TEXT, 'reported_ip' TEXT, 'reported_location' TEXT, 'reported_messages' TEXT, 'reported_gamemode' TEXT, 'reported_on_ground' INTEGER, 'reported_sneak' INTEGER, 'reported_sprint' INTEGER, 'reported_health' TEXT, 'reported_food' TEXT, 'reported_effects' TEXT, 'reporter_ip' TEXT NOT NULL, 'reporter_location' TEXT NOT NULL, 'reporter_messages' TEXT, 'archived' INTEGER NOT NULL DEFAULT 0)",
 				        null);
-				update("CREATE TABLE IF NOT EXISTS tigerreports_comments ('report_id' INTEGER NOT NULL, 'comment_id' INTEGER PRIMARY KEY, 'status' text, 'date' text, 'author' text, 'message' text)",
+				update("CREATE TABLE IF NOT EXISTS tigerreports_comments ('report_id' INTEGER NOT NULL, 'comment_id' INTEGER PRIMARY KEY, 'status' TEXT, 'date' TEXT, 'author' TEXT, 'message' TEXT)",
 				        null);
 			}
 

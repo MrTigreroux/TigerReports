@@ -48,9 +48,9 @@ public class ReportUtils {
 			data.put("reported_messages", ru.getLastMessages());
 			data.put("reported_gamemode", rp.getGameMode().toString().toLowerCase());
 			data.put("reported_on_ground",
-			        !rp.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().equals(Material.AIR));
-			data.put("reported_sneak", rp.isSneaking());
-			data.put("reported_sprint", rp.isSprinting());
+			        !rp.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().equals(Material.AIR) ? 1 : 0);
+			data.put("reported_sneak", rp.isSneaking() ? 1 : 0);
+			data.put("reported_sprint", rp.isSprinting() ? 1 : 0);
 			data.put("reported_health", (int) Math.round(rp.getHealth()) + "/" + (int) Math.round(rp.getMaxHealth()));
 			data.put("reported_food", rp.getFoodLevel());
 			data.put("reported_effects", MessageUtils.formatConfigEffects(rp.getActivePotionEffects()));
