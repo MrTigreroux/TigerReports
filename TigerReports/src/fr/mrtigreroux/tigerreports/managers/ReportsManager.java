@@ -706,7 +706,7 @@ public class ReportsManager {
 	        ResultCallback<Report> resultCallback) {
 		boolean archived = false;
 		if (reportData != null) {
-			archived = (boolean) ((int) reportData.get("archived") == 1);
+			archived = (int) reportData.get("archived") == 1;
 		}
 		updateAndGetReport(reportId, reportData, archived, saveAdvancedData, saveInCache, db, taskScheduler, um,
 		        resultCallback);
