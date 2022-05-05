@@ -46,16 +46,16 @@ public class ReportsNotifier implements Runnable {
 					if (!reportsNotification.contains(statusPlaceHolder)) {
 						break;
 					}
-					Integer amount = (Integer) db.query(
+					Long amount = (Long) db.query(
 					        "SELECT COUNT(DISTINCT report_id) AS amount FROM tigerreports_reports WHERE archived = ? AND status LIKE ?",
 					        Arrays.asList(0, status.getRawName() + "%")).getResult(0, "amount");
 					// TODO: See to use a batch to run the queries
 					if (amount == null || amount < 0) {
-						amount = 0;
+						amount = 0L;
 					}
 					reportsNotification = reportsNotification.replace(statusPlaceHolder,
 					        (amount <= 1 ? Message.REPORT_TYPE : Message.REPORTS_TYPE).get()
-					                .replace("_Amount_", Integer.toString(amount))
+					                .replace("_Amount_", Long.toString(amount))
 					                .replace("_Type_", status.getWord(null).toLowerCase()));
 					totalAmount += amount;
 				}
