@@ -270,7 +270,7 @@ public class ReportCommand implements TabExecutor {
 											queryColumnsName.append(",");
 											queryColumnsValue.append(",");
 										}
-										queryColumnsName.append('"').append(data.getKey()).append('"');
+										queryColumnsName.append('`').append(data.getKey()).append('`');
 										queryColumnsValue.append("?");
 										queryParams.add(data.getValue());
 									}

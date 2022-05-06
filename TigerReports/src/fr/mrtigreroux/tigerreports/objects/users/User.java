@@ -442,8 +442,8 @@ public class User {
 			if (bm != null) {
 				bm.sendPluginNotificationToAll(relativeValue + " change_statistic " + statisticName + " " + uuid);
 			}
-			db.updateAsynchronously("UPDATE tigerreports_users SET \"" + statisticName + "\" = \"" + statisticName
-			        + "\" + ? WHERE uuid = ?", Arrays.asList(relativeValue, uuid.toString()));
+			db.updateAsynchronously("UPDATE tigerreports_users SET `" + statisticName + "` = `" + statisticName
+			        + "` + ? WHERE uuid = ?", Arrays.asList(relativeValue, uuid.toString()));
 		}
 
 	}
