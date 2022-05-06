@@ -172,7 +172,7 @@ public class User {
 			db.updateUserName(p.getUniqueId().toString(), p.getName());
 		} else {
 			db.queryAsynchronously("SELECT uuid FROM tigerreports_users WHERE uuid = ?",
-			        Collections.singletonList(uuid), taskScheduler, new ResultCallback<QueryResult>() {
+			        Collections.singletonList(uuid.toString()), taskScheduler, new ResultCallback<QueryResult>() {
 
 				        @Override
 				        public void onResultReceived(QueryResult qr) {
@@ -274,7 +274,7 @@ public class User {
 				        + " new_immunity user " + uuid);
 			}
 			db.updateAsynchronously("UPDATE tigerreports_users SET immunity = ? WHERE uuid = ?",
-			        Arrays.asList(this.immunity, uuid));
+			        Arrays.asList(this.immunity, uuid.toString()));
 		}
 	}
 
@@ -314,7 +314,7 @@ public class User {
 		} else {
 			if (immunity == null) {
 				db.queryAsynchronously("SELECT immunity FROM tigerreports_users WHERE uuid = ?",
-				        Collections.singletonList(uuid), taskScheduler, new ResultCallback<QueryResult>() {
+				        Collections.singletonList(uuid.toString()), taskScheduler, new ResultCallback<QueryResult>() {
 
 					        @Override
 					        public void onResultReceived(QueryResult qr) {
@@ -351,7 +351,7 @@ public class User {
 				        (cooldown != null ? cooldown.replace(" ", "_") : "null") + " new_cooldown user " + uuid);
 			}
 			db.updateAsynchronously("UPDATE tigerreports_users SET cooldown = ? WHERE uuid = ?",
-			        Arrays.asList(cooldown, uuid));
+			        Arrays.asList(cooldown, uuid.toString()));
 		}
 	}
 
@@ -389,7 +389,7 @@ public class User {
 
 	public void getCooldownAsynchronously(Database db, TaskScheduler taskScheduler,
 	        ResultCallback<String> resultCallback) {
-		db.queryAsynchronously(COOLDOWN_QUERY, Collections.singletonList(uuid), taskScheduler,
+		db.queryAsynchronously(COOLDOWN_QUERY, Collections.singletonList(uuid.toString()), taskScheduler,
 		        new ResultCallback<QueryResult>() {
 
 			        @Override
@@ -443,7 +443,7 @@ public class User {
 				bm.sendPluginNotificationToAll(relativeValue + " change_statistic " + statisticName + " " + uuid);
 			}
 			db.updateAsynchronously("UPDATE tigerreports_users SET \"" + statisticName + "\" = \"" + statisticName
-			        + "\" + ? WHERE uuid = ?", Arrays.asList(relativeValue, uuid));
+			        + "\" + ? WHERE uuid = ?", Arrays.asList(relativeValue, uuid.toString()));
 		}
 
 	}
@@ -467,7 +467,7 @@ public class User {
 		}
 		db.queryAsynchronously(
 		        "SELECT true_appreciations,uncertain_appreciations,false_appreciations,reports,reported_times,processed_reports FROM tigerreports_users WHERE uuid = ?",
-		        Collections.singletonList(uuid), taskScheduler, new ResultCallback<QueryResult>() {
+		        Collections.singletonList(uuid.toString()), taskScheduler, new ResultCallback<QueryResult>() {
 
 			        @Override
 			        public void onResultReceived(QueryResult qr) {
@@ -737,14 +737,14 @@ public class User {
 	}
 
 	public List<String> getNotifications(Database db) {
-		QueryResult qr = db.query(NOTIFICATIONS_QUERY, Collections.singletonList(uuid));
+		QueryResult qr = db.query(NOTIFICATIONS_QUERY, Collections.singletonList(uuid.toString()));
 
 		return getNotificationsFromQueryResult(qr);
 	}
 
 	public void getNotificationsAsynchronously(Database db, TaskScheduler taskScheduler,
 	        ResultCallback<List<String>> resultCallback) {
-		db.queryAsynchronously(NOTIFICATIONS_QUERY, Collections.singletonList(uuid), taskScheduler,
+		db.queryAsynchronously(NOTIFICATIONS_QUERY, Collections.singletonList(uuid.toString()), taskScheduler,
 		        new ResultCallback<QueryResult>() {
 
 			        @Override
@@ -768,7 +768,7 @@ public class User {
 
 	public void setNotificationsAsynchronously(List<String> notifications, Database db) {
 		db.updateAsynchronously("UPDATE tigerreports_users SET notifications = ? WHERE uuid = ?", Arrays
-		        .asList(notifications != null ? String.join(NOTIFICATIONS_SEPARATOR, notifications) : null, uuid));
+		        .asList(notifications != null ? String.join(NOTIFICATIONS_SEPARATOR, notifications) : null, uuid.toString()));
 	}
 
 	public void addReportNotification(int reportId, Database db, TaskScheduler taskScheduler) {

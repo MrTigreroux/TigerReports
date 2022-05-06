@@ -153,7 +153,7 @@ public class UserUtils {
 			db.updateUserName(p.getUniqueId().toString(), p.getName());
 		} else {
 			db.queryAsynchronously("SELECT uuid FROM tigerreports_users WHERE uuid = ?",
-			        Collections.singletonList(uuid), taskScheduler, new ResultCallback<QueryResult>() {
+			        Collections.singletonList(uuid.toString()), taskScheduler, new ResultCallback<QueryResult>() {
 
 				        @Override
 				        public void onResultReceived(QueryResult qr) {
