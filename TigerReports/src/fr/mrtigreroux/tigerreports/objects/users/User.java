@@ -1112,7 +1112,7 @@ public class User {
 	}
 
 	public boolean checkAccessToReport(Report r) {
-		if (!canAccessToReport(r)) {
+		if (!canAccessToReport(r, false)) {
 			sendErrorMessage(Message.PERMISSION_ACCESS_DETAILS.get().replace("_Report_", r.getName()));
 			return false;
 		} else {
@@ -1121,17 +1121,17 @@ public class User {
 	}
 
 	/**
-	 * Archived reports are considered not accessible (must be restored to be accessed).
 	 * 
 	 * @param r != null
+	 * @param allowAccessIfArchived if false, archived reports are considered not accessible (must be restored to be accessed).
 	 * @return
 	 */
-	public boolean canAccessToReport(Report r) {
+	public boolean canAccessToReport(Report r, boolean allowAccessIfArchived) {
 		if (!isOnline()) {
 			return false;
 		}
 
-		if (r.isArchived()) {
+		if (!allowAccessIfArchived && r.isArchived()) {
 			return false;
 		}
 

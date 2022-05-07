@@ -189,7 +189,7 @@ public class ReportCommand implements TabExecutor {
 						if (ReportUtils.stackReports()) {
 							Map<String, Object> reportData = db.query(
 							        "SELECT report_id,status,appreciation,date,reported_uuid,reporter_uuid,reason FROM tigerreports_reports WHERE status NOT LIKE ? AND reported_uuid = ? AND archived = ? AND LOWER(reason) = LOWER(?) LIMIT 1",
-							        Arrays.asList(Status.DONE.getRawName() + "%", ru.getUniqueId(), 0, freason))
+							        Arrays.asList(Status.DONE.getRawName() + "%", ru.getUniqueId().toString(), 0, freason))
 							        .getResult(0);
 							if (reportData != null) {
 								try {

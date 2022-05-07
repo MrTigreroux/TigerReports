@@ -52,7 +52,7 @@ public class ConfirmationMenu extends ReportManagerMenu {
 
 	public ConfirmationMenu(User u, int reportId, Action action, ReportsManager rm, Database db,
 	        TaskScheduler taskScheduler, VaultManager vm, BungeeManager bm, UsersManager um) {
-		super(u, 27, 0, Permission.STAFF, reportId, rm, db, taskScheduler, um);
+		super(u, 27, 0, Permission.STAFF, reportId, action == Action.DELETE_ARCHIVE, rm, db, taskScheduler, um);
 		this.action = action;
 		this.vm = vm;
 		this.bm = bm;
