@@ -135,10 +135,14 @@ public class PlayerListener implements Listener {
 		User u = um.getOnlineUser(e.getPlayer());
 		Logger.EVENTS.info(() -> "onPlayerChat(): " + u.getName());
 		if (u.isEditingComment()) {
-			u.terminateEditingComment(e.getMessage(), rm, db, tr, um, bm, vm);
+			tr.runTask(() -> {
+				u.terminateEditingComment(e.getMessage(), rm, db, tr, um, bm, vm);
+			});
 			e.setCancelled(true);
 		} else if (u.isProcessPunishingWithStaffReason()) {
-			u.terminateProcessPunishingWithStaffReason(e.getMessage(), rm, db, tr, vm, bm);
+			tr.runTask(() -> {
+				u.terminateProcessPunishingWithStaffReason(e.getMessage(), rm, db, tr, vm, bm);
+			});
 			e.setCancelled(true);
 		}
 	}

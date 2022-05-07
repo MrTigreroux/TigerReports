@@ -470,15 +470,16 @@ public class Report {
 		this.advancedData = null;
 	}
 
-	void extractAndSaveAdvancedData(Map<String, Object> result) {
+	void extractAndSaveAdvancedData(Map<String, Object> reportData) {
 		if (isArchived()) {
 			return;
 		}
 		Map<String, String> advancedData = new HashMap<>();
-		Set<String> advancedKeys = new HashSet<>(result.keySet());
+		Set<String> advancedKeys = new HashSet<>(reportData.keySet());
 		advancedKeys.removeAll(REPORT_BASIC_DATA_KEYS);
 		for (String key : advancedKeys) {
-			advancedData.put(key, (String) result.get(key));
+			Object data = reportData.get(key);
+			advancedData.put(key, data != null ? data.toString() : null);
 		}
 		setAdvancedData(advancedData);
 	}
