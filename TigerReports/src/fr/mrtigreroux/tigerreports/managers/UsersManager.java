@@ -1,7 +1,6 @@
 package fr.mrtigreroux.tigerreports.managers;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -442,7 +441,10 @@ public class UsersManager {
 		}
 		query.append(")");
 
-		List<Object> queryParams = Arrays.asList(uuids.toArray());
+		List<Object> queryParams = new ArrayList<>();
+		for (UUID uuid : uuids) {
+			queryParams.add(uuid.toString());
+		}
 		LOGGER.info(() -> "collectUsersDataAsynchronously(): users: " + CollectionUtils.toString(queryParams));
 		db.queryAsynchronously(query.toString(), queryParams, taskScheduler, resultCallback);
 	}

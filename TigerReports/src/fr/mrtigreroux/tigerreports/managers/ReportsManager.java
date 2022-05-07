@@ -356,13 +356,17 @@ public class ReportsManager {
 						Set<Integer> reportsToCollect = getKeysWithSubscribers(reportsListeners);
 
 						if (reportCommentsPagesQueries != null && !reportCommentsPagesQueries.isEmpty()) {
+							if (reportsToCollect == null) {
+								reportsToCollect = new HashSet<>();
+							}
 							for (ReportCommentsPagesQuery query : reportCommentsPagesQueries) {
 								reportsToCollect.add(query.reportId);
 							}
 						}
 
+						final Set<Integer> freportsToCollect = reportsToCollect;
 						LOGGER.info(() -> "updateData(): start collecting reports: "
-						        + CollectionUtils.toString(reportsToCollect));
+						        + CollectionUtils.toString(freportsToCollect));
 						collectReportsAsynchronously(reportsToCollect, db, taskScheduler,
 						        new ResultCallback<QueryResult>() {
 
@@ -371,7 +375,8 @@ public class ReportsManager {
 								        List<Map<String, Object>> results = reportsQR != null
 								                ? reportsQR.getResultList()
 								                : new ArrayList<>();
-								        LOGGER.info(() -> "updateData(): end collecting reports, start updating reports");
+								        LOGGER.info(
+								                () -> "updateData(): end collecting reports, start updating reports");
 
 								        updateReports(results, db, taskScheduler, um,
 								                new ResultCallback<List<Report>>() {
@@ -1036,6 +1041,7 @@ public class ReportsManager {
 	private void updateReportsPages(List<Map<String, Object>> results, Database db, TaskScheduler taskScheduler,
 	        UsersManager um) {
 		if (results == null || results.isEmpty()) {
+			LOGGER.info(() -> "updateReportsPages(): empty result");
 			return;
 		}
 
