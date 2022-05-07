@@ -353,19 +353,17 @@ public class ReportsManager {
 							LOGGER.info(() -> "updateData(): updated reports pages (not yet their reports)");
 						}
 
+						Set<Integer> reportsToCollect = getKeysWithSubscribers(reportsListeners);
+
 						if (reportCommentsPagesQueries != null && !reportCommentsPagesQueries.isEmpty()) {
 							for (ReportCommentsPagesQuery query : reportCommentsPagesQueries) {
-								updateReportCommentsPages(query.reportId, query.minPage, query.qr.getResultList(), db,
-								        taskScheduler, um);
+								reportsToCollect.add(query.reportId);
 							}
 						}
 
-						Set<Integer> updatedReportsIdsWithListeners = getKeysWithSubscribers(reportsListeners);
-						LOGGER.info(() -> ("updateData(): updatedReportsIdsWithListeners="
-						        + CollectionUtils.toString(updatedReportsIdsWithListeners)));
-
-						LOGGER.info(() -> "updateData(): start collecting reports");
-						collectReportsAsynchronously(updatedReportsIdsWithListeners, db, taskScheduler,
+						LOGGER.info(() -> "updateData(): start collecting reports: "
+						        + CollectionUtils.toString(reportsToCollect));
+						collectReportsAsynchronously(reportsToCollect, db, taskScheduler,
 						        new ResultCallback<QueryResult>() {
 
 							        @Override
@@ -373,7 +371,7 @@ public class ReportsManager {
 								        List<Map<String, Object>> results = reportsQR != null
 								                ? reportsQR.getResultList()
 								                : new ArrayList<>();
-								        LOGGER.info(() -> "updateData(): end collecting reports");
+								        LOGGER.info(() -> "updateData(): end collecting reports, start updating reports");
 
 								        updateReports(results, db, taskScheduler, um,
 								                new ResultCallback<List<Report>>() {
@@ -397,6 +395,17 @@ public class ReportsManager {
 												                        () -> "updateData(): failed update of reports ("
 												                                + ffailedUpdateReportsAmount + "): ["
 												                                + failedUpdateReportsData + "]");
+											                }
+										                }
+
+										                LOGGER.info(
+										                        () -> "updateData(): start updating reports comments pages");
+										                if (reportCommentsPagesQueries != null
+										                        && !reportCommentsPagesQueries.isEmpty()) {
+											                for (ReportCommentsPagesQuery query : reportCommentsPagesQueries) {
+												                updateReportCommentsPages(query.reportId, query.minPage,
+												                        query.qr.getResultList(), db, taskScheduler,
+												                        um);
 											                }
 										                }
 
@@ -978,8 +987,8 @@ public class ReportsManager {
 
 			@Override
 			public void onResultReceived(List<Comment> newComments) {
-				LOGGER.info(() -> "updateReportCommentsPages(): took " + (System.currentTimeMillis() - now)
-				        + "ms to process all comments data received from db");
+				LOGGER.info(() -> "updateReportCommentsPages(" + reportId + "): took "
+				        + (System.currentTimeMillis() - now) + "ms to process all comments data received from db");
 
 				int lastIndex;
 

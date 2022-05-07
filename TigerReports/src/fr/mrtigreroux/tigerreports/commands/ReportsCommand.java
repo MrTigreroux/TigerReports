@@ -131,7 +131,7 @@ public class ReportsCommand implements TabExecutor {
 					db.updateAsynchronously(
 					        "UPDATE tigerreports_reports SET archived = ? WHERE archived = ? AND status LIKE 'Done%'",
 					        Arrays.asList(1, 0));
-					MessageUtils.sendStaffMessage(Message.STAFF_ARCHIVEALL.get().replace("_Player_", p.getName()),
+					MessageUtils.sendStaffMessage(Message.STAFF_ARCHIVEALL.get().replace("_Player_", u.getDisplayName(vm, true)),
 					        ConfigSound.STAFF.get());
 				}
 				return true;
@@ -157,7 +157,7 @@ public class ReportsCommand implements TabExecutor {
 						        Collections.singletonList(unarchived ? 0 : 1));
 						MessageUtils.sendStaffMessage(
 						        Message.get("Messages.Staff-deleteall-" + (unarchived ? "un" : "") + "archived")
-						                .replace("_Player_", p.getName()),
+						                .replace("_Player_", u.getDisplayName(vm, true)),
 						        ConfigSound.STAFF.get());
 					}
 					return true;
