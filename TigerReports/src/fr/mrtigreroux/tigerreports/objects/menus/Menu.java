@@ -117,8 +117,7 @@ public abstract class Menu {
 			return;
 
 		if (this != u.getOpenedMenu()) {
-			LOGGER.info(() -> this + ": update(): " + u.getName()
-			        + "'s opened menu is not this menu, cancel update");
+			LOGGER.info(() -> this + ": update(): " + u.getName() + "'s opened menu is not this menu, cancel update");
 			return;
 		}
 

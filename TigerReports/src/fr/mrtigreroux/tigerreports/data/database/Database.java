@@ -86,7 +86,6 @@ public abstract class Database {
 	public abstract void updateUserName(String uuid, String name);
 
 	public QueryResult query(final String query, final List<Object> parameters) {
-		Logger.SQL.info(() -> "query(" + query + ", " + CollectionUtils.toString(parameters) + ")");
 		if (checkConnection()) {
 			try (PreparedStatement ps = connection.prepareStatement(query)) {
 				prepare(ps, parameters);
@@ -104,6 +103,8 @@ public abstract class Database {
 				}
 
 				close(rs);
+				Logger.SQL.info(() -> "query(" + query + ", " + CollectionUtils.toString(parameters) + "): result: "
+				        + CollectionUtils.toString(resultList));
 				return new QueryResult(resultList);
 			} catch (SQLException ex) {
 				logDatabaseError(ex);

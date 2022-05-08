@@ -31,6 +31,7 @@ import fr.mrtigreroux.tigerreports.objects.reports.Report;
 import fr.mrtigreroux.tigerreports.objects.users.User;
 import fr.mrtigreroux.tigerreports.tasks.ResultCallback;
 import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
+import fr.mrtigreroux.tigerreports.utils.CollectionUtils;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.DatetimeUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
@@ -68,6 +69,13 @@ public class ReportCommand implements TabExecutor {
 		if (!UserUtils.checkPlayer(s) || (ReportUtils.permissionRequiredToReport() && !Permission.REPORT.check(s)))
 			return true;
 
+		FileConfiguration configFile = ConfigFile.CONFIG.get();
+		if (args.length == 0
+		        || (args.length == 1 && !ConfigUtils.exists(configFile, "Config.DefaultReasons.Reason1"))) {
+			s.sendMessage(Message.INVALID_SYNTAX_REPORT.get());
+			return true;
+		}
+
 		Player p = (Player) s;
 		User u = um.getOnlineUser(p);
 
@@ -75,35 +83,34 @@ public class ReportCommand implements TabExecutor {
 
 			@Override
 			public void onResultReceived(String cooldown) {
+				LOGGER.info(() -> "user cooldown = " + cooldown);
 				if (cooldown != null) {
+					LOGGER.info(() -> "under cooldown, cancelled");
 					u.sendErrorMessage(Message.COOLDOWN.get().replace("_Time_", cooldown));
-					return;
-				}
-
-				FileConfiguration configFile = ConfigFile.CONFIG.get();
-				if (args.length == 0
-				        || (args.length == 1 && !ConfigUtils.exists(configFile, "Config.DefaultReasons.Reason1"))) {
-					s.sendMessage(Message.INVALID_SYNTAX_REPORT.get());
 					return;
 				}
 
 				final String reportedName = args[0];
 				boolean reportOneself = reportedName.equalsIgnoreCase(p.getName());
 				if (reportOneself && !u.hasPermission(Permission.MANAGE)) {
+					LOGGER.info(() -> "report oneself no permission");
 					u.sendErrorMessage(Message.REPORT_ONESELF.get());
 					return;
 				}
 
 				UUID ruuid = UserUtils.getUniqueId(reportedName);
+				LOGGER.info(() -> "reported uuid = " + ruuid);
 				um.getUserAsynchronously(ruuid, db, taskScheduler, new ResultCallback<User>() {
 
 					@Override
 					public void onResultReceived(User ru) {
+						LOGGER.info(() -> "reported user = " + ru.getName() + ", is online: " + ru.isOnline());
 						ru.checkExistsAsynchronously(db, taskScheduler, um, new ResultCallback<Boolean>() {
 
 							@Override
 							public void onResultReceived(Boolean reportedExists) {
 								if (!reportedExists) {
+									LOGGER.info(() -> "reported user does not exists");
 									u.sendErrorMessage(Message.INVALID_PLAYER.get().replace("_Player_", reportedName));
 									return;
 								}
@@ -125,7 +132,10 @@ public class ReportCommand implements TabExecutor {
 	        FileConfiguration configFile) {
 		Player p = u.getPlayer();
 		Player rp = ru.getPlayer();
+
+		LOGGER.info(() -> "processReportCommand()");
 		if (ReportUtils.onlinePlayerRequired() && ((rp != null && !p.canSee(rp)) || !ru.isOnlineInNetwork(bm))) {
+			LOGGER.info(() -> "processReportCommand(): reported offline");
 			u.sendErrorMessage(Message.REPORTED_OFFLINE.get().replace("_Player_", ru.getName()));
 			return;
 		}
@@ -134,6 +144,7 @@ public class ReportCommand implements TabExecutor {
 
 			@Override
 			public void onResultReceived(String reportedImmunity) {
+				LOGGER.info(() -> "processReportCommand(): reportedImmunity = " + reportedImmunity);
 				if (reportedImmunity != null && !reportOneself) {
 					if (User.IMMUNITY_ALWAYS.equals(reportedImmunity)) {
 						u.sendErrorMessage(Message.PERMISSION_REPORT.get().replace("_Player_", ru.getName()));
@@ -146,6 +157,7 @@ public class ReportCommand implements TabExecutor {
 				}
 
 				if (args.length == 1) {
+					LOGGER.info(() -> "processReportCommand(): no reason, open reason menu");
 					u.openReasonMenu(1, ru, db, vm);
 					return;
 				}
@@ -182,6 +194,7 @@ public class ReportCommand implements TabExecutor {
 
 				String reporterUUID = u.getUniqueId().toString();
 
+				LOGGER.info(() -> "processReportCommand(): checking if similar existing report");
 				taskScheduler.runTaskAsynchronously(new Runnable() {
 
 					@Override
@@ -189,9 +202,12 @@ public class ReportCommand implements TabExecutor {
 						if (ReportUtils.stackReports()) {
 							Map<String, Object> reportData = db.query(
 							        "SELECT report_id,status,appreciation,date,reported_uuid,reporter_uuid,reason FROM tigerreports_reports WHERE status NOT LIKE ? AND reported_uuid = ? AND archived = ? AND LOWER(reason) = LOWER(?) LIMIT 1",
-							        Arrays.asList(Status.DONE.getRawName() + "%", ru.getUniqueId().toString(), 0, freason))
+							        Arrays.asList(Status.DONE.getRawName() + "%", ru.getUniqueId().toString(), 0,
+							                freason))
 							        .getResult(0);
 							if (reportData != null) {
+								LOGGER.info(() -> "processReportCommand(): found a similar report: "
+								        + CollectionUtils.toString(reportData));
 								try {
 									String reportReporterUUID = (String) reportData.get("reporter_uuid");
 									if (reportReporterUUID.contains(reporterUUID.toString())) {
@@ -237,6 +253,7 @@ public class ReportCommand implements TabExecutor {
 							}
 						}
 
+						LOGGER.info(() -> "processReportCommand(): creating a new report...");
 						final boolean maxReportsReached = ReportUtils.getTotalReports(db) + 1 > ReportUtils
 						        .getMaxReports();
 
@@ -298,6 +315,7 @@ public class ReportCommand implements TabExecutor {
 
 									        });
 								} else {
+									LOGGER.info(() -> "processReportCommand(): max reports reached");
 									reportData.put("report_id", -1);
 									Report.asynchronouslyFrom(reportData, false, false, db, taskScheduler, um,
 									        new ResultCallback<Report>() {
@@ -338,6 +356,7 @@ public class ReportCommand implements TabExecutor {
 
 	private void finalReportCommandProcess(Report r, boolean missingData, User u, User ru, Database db,
 	        FileConfiguration configFile) {
+		LOGGER.info(() -> "finalReportCommandProcess(): report id = " + r.getId());
 		String server = bm.getServerName();
 
 		ReportUtils.sendReport(r, server, true, db, vm, bm);

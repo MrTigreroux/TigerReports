@@ -238,10 +238,13 @@ public class User {
 	}
 
 	public void sendErrorMessage(String message) {
+		LOGGER.info(() -> getName() + ": sendErrorMessage(" + message + ")");
 		Player p = getPlayer();
 		if (p == null) {
+			LOGGER.info(() -> getName() + ": sendErrorMessage(" + message + "): p = null, cannot send error message");
 			return;
 		}
+
 		p.sendMessage(message);
 		ConfigSound.ERROR.play(p);
 	}
@@ -357,7 +360,7 @@ public class User {
 
 	public boolean updateCooldown(String newCooldown) {
 		if (!Objects.equals(this.cooldown, newCooldown)) {
-			this.cooldown = newCooldown == null ? "|" + System.currentTimeMillis() : newCooldown;
+			this.cooldown = newCooldown;
 
 			broadcastCooldownChanged();
 			return true;
@@ -532,8 +535,8 @@ public class User {
 		new ReasonMenu(this, page, tu, vm).open(true);
 	}
 
-	public void afterProcessingAReport(boolean sound, ReportsManager rm, Database db,
-	        TaskScheduler taskScheduler, VaultManager vm, BungeeManager bm, UsersManager um) {
+	public void afterProcessingAReport(boolean sound, ReportsManager rm, Database db, TaskScheduler taskScheduler,
+	        VaultManager vm, BungeeManager bm, UsersManager um) {
 		if (ConfigUtils.isEnabled("Config.CloseMenuAfterReportProcessing")) {
 			Player p = getPlayer();
 			if (p != null) {
@@ -767,8 +770,8 @@ public class User {
 	}
 
 	public void setNotificationsAsynchronously(List<String> notifications, Database db) {
-		db.updateAsynchronously("UPDATE tigerreports_users SET notifications = ? WHERE uuid = ?", Arrays
-		        .asList(notifications != null ? String.join(NOTIFICATIONS_SEPARATOR, notifications) : null, uuid.toString()));
+		db.updateAsynchronously("UPDATE tigerreports_users SET notifications = ? WHERE uuid = ?", Arrays.asList(
+		        notifications != null ? String.join(NOTIFICATIONS_SEPARATOR, notifications) : null, uuid.toString()));
 	}
 
 	public void addReportNotification(int reportId, Database db, TaskScheduler taskScheduler) {
@@ -1122,7 +1125,7 @@ public class User {
 
 	/**
 	 * 
-	 * @param r != null
+	 * @param r                     != null
 	 * @param allowAccessIfArchived if false, archived reports are considered not accessible (must be restored to be accessed).
 	 * @return
 	 */

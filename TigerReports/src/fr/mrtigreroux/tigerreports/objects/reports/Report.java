@@ -78,7 +78,7 @@ public class Report {
 			return;
 		}
 
-		boolean archived = (int) Objects.requireNonNull(reportData.get("archived")) == 1;
+		boolean archived = ((int) Objects.requireNonNull(reportData.get("archived"))) == 1;
 
 		asynchronouslyFrom(reportData, archived, saveAdvancedData, db, taskScheduler, um, resultCallback);
 	}

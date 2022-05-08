@@ -194,7 +194,7 @@ public class TigerReports extends JavaPlugin implements TaskScheduler {
 				db.initialize();
 
 				runTask(new Runnable() {
-					
+
 					@Override
 					public void run() {
 						instance.database = new WeakReference<>(db);
@@ -202,7 +202,7 @@ public class TigerReports extends JavaPlugin implements TaskScheduler {
 							initializationCallback.onDatabaseInitializationDone(db);
 						}
 					}
-					
+
 				});
 			}
 

@@ -200,6 +200,7 @@ public class UsersManager {
 	}
 
 	public void removeCachedUser(UUID uuid) {
+		LOGGER.info(() -> "removeCachedUser(" + uuid + ")");
 		users.remove(uuid);
 	}
 

@@ -24,14 +24,47 @@ public class CollectionUtils {
 			return "null";
 		}
 
-		return toString(collection.iterator(), new BiConsumer<StringBuilder, T>() {
+		BiConsumer<StringBuilder, T> consumer = null;
+		Iterator<T> iterator = collection.iterator();
+		T firstElement = null;
+		while (firstElement == null && iterator.hasNext()) {
+			firstElement = iterator.next();
+		}
 
-			@Override
-			public void accept(StringBuilder sb, T element) {
-				sb.append(element);
+		if (firstElement != null) {
+			if (firstElement instanceof Map<?, ?>) {
+				consumer = new BiConsumer<StringBuilder, T>() {
+
+					@Override
+					public void accept(StringBuilder sb, T element) {
+						sb.append(CollectionUtils.toString((Map<?, ?>) element));
+					}
+
+				};
+			} else if (firstElement instanceof Collection<?>) {
+				consumer = new BiConsumer<StringBuilder, T>() {
+
+					@Override
+					public void accept(StringBuilder sb, T element) {
+						sb.append(CollectionUtils.toString((Collection<?>) element));
+					}
+
+				};
 			}
+		}
 
-		});
+		if (consumer == null) {
+			consumer = new BiConsumer<StringBuilder, T>() {
+
+				@Override
+				public void accept(StringBuilder sb, T element) {
+					sb.append(element);
+				}
+
+			};
+		}
+
+		return toString(collection.iterator(), consumer);
 	}
 
 	public static <K, V> String toString(Map<K, V> map) {
@@ -39,14 +72,54 @@ public class CollectionUtils {
 			return "null";
 		}
 
-		return toString(map.entrySet().iterator(), new BiConsumer<StringBuilder, Entry<K, V>>() {
-
-			@Override
-			public void accept(StringBuilder sb, Entry<K, V> element) {
-				sb.append(element.getKey()).append(": ").append(element.getValue());
+		BiConsumer<StringBuilder, Entry<K, V>> consumer = null;
+		Iterator<Entry<K, V>> iterator = map.entrySet().iterator();
+		V firstValue = null;
+		while (firstValue == null && iterator.hasNext()) {
+			Entry<K, V> entry = iterator.next();
+			if (entry != null) {
+				firstValue = entry.getValue();
 			}
+		}
 
-		});
+		if (firstValue != null) {
+			if (firstValue instanceof Map<?, ?>) {
+				consumer = new BiConsumer<StringBuilder, Entry<K, V>>() {
+
+					@Override
+					public void accept(StringBuilder sb, Entry<K, V> element) {
+						sb.append(element.getKey())
+						        .append(": ")
+						        .append(CollectionUtils.toString((Map<?, ?>) element.getValue()));
+					}
+
+				};
+			} else if (firstValue instanceof Collection<?>) {
+				consumer = new BiConsumer<StringBuilder, Entry<K, V>>() {
+
+					@Override
+					public void accept(StringBuilder sb, Entry<K, V> element) {
+						sb.append(element.getKey())
+						        .append(": ")
+						        .append(CollectionUtils.toString((Collection<?>) element.getValue()));
+					}
+
+				};
+			}
+		}
+
+		if (consumer == null) {
+			consumer = new BiConsumer<StringBuilder, Entry<K, V>>() {
+
+				@Override
+				public void accept(StringBuilder sb, Entry<K, V> element) {
+					sb.append(element.getKey()).append(": ").append(element.getValue());
+				}
+
+			};
+		}
+
+		return toString(map.entrySet().iterator(), consumer);
 	}
 
 	public static <E> String toString(Iterator<E> it, BiConsumer<StringBuilder, E> elementAppender) {

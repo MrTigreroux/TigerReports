@@ -31,17 +31,19 @@ public abstract class ReportManagerMenu extends Menu implements Report.ReportLis
 	protected final UsersManager um;
 
 	public ReportManagerMenu(User u, int size, int page, Permission permission, int reportId, ReportsManager rm,
-			Database db, TaskScheduler taskScheduler, UsersManager um) {
+	        Database db, TaskScheduler taskScheduler, UsersManager um) {
 		this(u, size, page, permission, reportId, false, rm, db, taskScheduler, um);
 	}
-	
-	public ReportManagerMenu(User u, int size, int page, Permission permission, int reportId, boolean allowAccessIfArchived, ReportsManager rm,
-	        Database db, TaskScheduler taskScheduler, UsersManager um) {
+
+	public ReportManagerMenu(User u, int size, int page, Permission permission, int reportId,
+	        boolean allowAccessIfArchived, ReportsManager rm, Database db, TaskScheduler taskScheduler,
+	        UsersManager um) {
 		this(u, size, page, permission, reportId, false, allowAccessIfArchived, rm, db, taskScheduler, um);
 	}
 
-	public ReportManagerMenu(User u, int size, int page, Permission permission, int reportId, boolean withAdvancedData, boolean allowAccessIfArchived,
-	        ReportsManager rm, Database db, TaskScheduler taskScheduler, UsersManager um) {
+	public ReportManagerMenu(User u, int size, int page, Permission permission, int reportId, boolean withAdvancedData,
+	        boolean allowAccessIfArchived, ReportsManager rm, Database db, TaskScheduler taskScheduler,
+	        UsersManager um) {
 		super(u, size, page, permission);
 		this.reportId = reportId;
 		this.withAdvancedData = withAdvancedData;

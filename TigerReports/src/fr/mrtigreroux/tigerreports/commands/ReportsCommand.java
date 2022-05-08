@@ -131,7 +131,8 @@ public class ReportsCommand implements TabExecutor {
 					db.updateAsynchronously(
 					        "UPDATE tigerreports_reports SET archived = ? WHERE archived = ? AND status LIKE 'Done%'",
 					        Arrays.asList(1, 0));
-					MessageUtils.sendStaffMessage(Message.STAFF_ARCHIVEALL.get().replace("_Player_", u.getDisplayName(vm, true)),
+					MessageUtils.sendStaffMessage(
+					        Message.STAFF_ARCHIVEALL.get().replace("_Player_", u.getDisplayName(vm, true)),
 					        ConfigSound.STAFF.get());
 				}
 				return true;
@@ -155,10 +156,11 @@ public class ReportsCommand implements TabExecutor {
 					if (Permission.STAFF_DELETE.check(s)) {
 						db.updateAsynchronously("DELETE FROM tigerreports_reports WHERE archived = ?",
 						        Collections.singletonList(unarchived ? 0 : 1));
-						MessageUtils.sendStaffMessage(
-						        Message.get("Messages.Staff-deleteall-" + (unarchived ? "un" : "") + "archived")
-						                .replace("_Player_", u.getDisplayName(vm, true)),
-						        ConfigSound.STAFF.get());
+						MessageUtils
+						        .sendStaffMessage(
+						                Message.get("Messages.Staff-deleteall-" + (unarchived ? "un" : "") + "archived")
+						                        .replace("_Player_", u.getDisplayName(vm, true)),
+						                ConfigSound.STAFF.get());
 					}
 					return true;
 				}
