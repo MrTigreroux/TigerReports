@@ -76,16 +76,11 @@ public class User {
 	protected String cooldown = null;
 	private Map<String, Integer> statistics = null;
 	public List<String> lastMessages = new ArrayList<>();
-	/**
-	 * Last day this cached instance was used.
-	 */
-	private byte lastDayUsed;
 	private final Set<UserListener> listeners = new HashSet<>();
 
 	public User(UUID uuid, UserData data) {
 		this.uuid = Objects.requireNonNull(uuid);
 		this.data = Objects.requireNonNull(data);
-		updateLastDayUsed();
 	}
 
 	public interface UserListener {
@@ -145,9 +140,9 @@ public class User {
 		return data instanceof OnlineUserData ? (OnlineUserData) data : null;
 	}
 
-//	private OfflineUserData getOfflineUserData() {
-//		return data instanceof OfflineUserData ? (OfflineUserData) data : null;
-//	}
+	private OfflineUserData getOfflineUserData() {
+		return data instanceof OfflineUserData ? (OfflineUserData) data : null;
+	}
 
 	public boolean hasOnlineUserData() {
 		return data instanceof OnlineUserData;
@@ -173,7 +168,6 @@ public class User {
 		Player p = getPlayer();
 		if (p != null) {
 			resultCallback.onResultReceived(true);
-			db.updateUserName(p.getUniqueId().toString(), p.getName());
 		} else {
 			db.queryAsynchronously("SELECT uuid FROM tigerreports_users WHERE uuid = ?",
 			        Collections.singletonList(uuid.toString()), taskScheduler, new ResultCallback<QueryResult>() {
@@ -215,7 +209,7 @@ public class User {
 
 	public Player getPlayer() {
 		OnlineUserData onData = getOnlineUserData();
-		LOGGER.info(() -> getName() + ": getPlayer: onData = " + onData);
+		LOGGER.info(() -> getName() + ": getPlayer(): onData = " + onData);
 		return onData != null ? onData.p : null;
 	}
 
@@ -1160,18 +1154,22 @@ public class User {
 		setImmunity(hasPermission(Permission.REPORT_EXEMPT) ? User.IMMUNITY_ALWAYS : null, false, db, bm, um);
 	}
 
-	public byte getLastDayUsed() {
-		return lastDayUsed;
-	}
-
-	public void updateLastDayUsed() {
-		lastDayUsed = DatetimeUtils.getCurrentDayOfMonth();
-	}
-
 	public void update(Map<String, Object> userData, UsersManager um) {
 		updateImmunity((String) userData.get("immunity"), um);
 		updateCooldown((String) userData.get("cooldown"));
 		updateStatistics(userData);
+	}
+
+	public byte getLastDayUsed() {
+		OfflineUserData offlineUserData = getOfflineUserData();
+		return offlineUserData != null ? offlineUserData.lastDayUsed : -1;
+	}
+
+	public void updateLastDayUsed() {
+		OfflineUserData offlineUserData = getOfflineUserData();
+		if (offlineUserData != null) {
+			offlineUserData.lastDayUsed = DatetimeUtils.getCurrentDayOfMonth();
+		}
 	}
 
 	public void destroy() {

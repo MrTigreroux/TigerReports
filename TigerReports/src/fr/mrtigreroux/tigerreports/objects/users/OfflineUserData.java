@@ -3,15 +3,21 @@ package fr.mrtigreroux.tigerreports.objects.users;
 import java.util.Objects;
 
 import fr.mrtigreroux.tigerreports.managers.VaultManager;
+import fr.mrtigreroux.tigerreports.utils.DatetimeUtils;
 
 public class OfflineUserData implements UserData {
 
 	private String name;
 	private String displayName;
+	/**
+	 * Last day this cached instance was used.
+	 */
+	protected byte lastDayUsed;
 
 	public OfflineUserData(String name, String displayName) {
 		this.name = Objects.requireNonNull(name);
 		this.displayName = displayName != null && !displayName.isEmpty() ? displayName : name;
+		this.lastDayUsed = DatetimeUtils.getCurrentDayOfMonth();
 	}
 
 	@Override

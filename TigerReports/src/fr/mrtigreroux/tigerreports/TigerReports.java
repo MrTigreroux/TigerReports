@@ -10,6 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
@@ -110,7 +111,9 @@ public class TigerReports extends JavaPlugin implements TaskScheduler {
 
 				ReportsNotifier.startIfNeeded(db, instance);
 
-				for (User u : usersManager.getOnlineUsers()) {
+				for (Player p : Bukkit.getOnlinePlayers()) {
+					usersManager.processUserConnection(p);
+					User u = usersManager.getOnlineUser(p);
 					u.updateBasicData(db, bungeeManager, usersManager);
 				}
 
@@ -315,7 +318,7 @@ public class TigerReports extends JavaPlugin implements TaskScheduler {
 	}
 
 	public void removeLoadUnloadListener(Consumer<Boolean> listener) {
-		Logger.MAIN.info(() -> "addAndNotifyLoadUnloadListener(" + listener + ")");
+		Logger.MAIN.info(() -> "removeLoadUnloadListener(" + listener + ")");
 		loadUnloadListeners.remove(listener);
 	}
 

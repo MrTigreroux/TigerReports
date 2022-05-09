@@ -70,6 +70,11 @@ public class UsersManager {
 		return exemptedPlayers;
 	}
 
+	public void processUserConnection(Player p) {
+		LOGGER.info(() -> "processUserConnection(" + p.getName() + ")");
+		updateAndGetUser(p.getUniqueId(), new OnlineUserData(p));
+	}
+
 	public void processUserDisconnection(UUID uuid, VaultManager vm) {
 		User u = getCachedUser(uuid);
 		LOGGER.info(() -> "processUserDisconnection(" + uuid + "): u = " + u);
@@ -93,7 +98,8 @@ public class UsersManager {
 		Iterator<User> usersIt = users.values().iterator();
 		while (usersIt.hasNext()) {
 			User u = usersIt.next();
-			if (!u.hasListener() && Math.abs(curDay - u.getLastDayUsed()) >= USERS_CACHE_EXPIRE_DAYS) {
+
+			if (!u.isOnline() && !u.hasListener() && Math.abs(curDay - u.getLastDayUsed()) >= USERS_CACHE_EXPIRE_DAYS) {
 				// TODO: save it as weakref, try to remove it, gc x2 and then see if it still exists, if so put it back in users because it is used in the app, else it can be removed, nobody uses it.
 				u.destroy();
 				usersIt.remove();
@@ -152,7 +158,7 @@ public class UsersManager {
 
 							        @Override
 							        public void onDisplayNameReceived(String displayName) {
-								        User u = getUser(uuid, new OfflineUserData(name, displayName));
+								        User u = updateAndGetUser(uuid, new OfflineUserData(name, displayName));
 
 								        resultCallback.onResultReceived(u);
 							        }
@@ -168,31 +174,32 @@ public class UsersManager {
 		return getOnlineUser(UUID.fromString(uuid));
 	}
 
-	public User getOnlineUser(UUID uuid) {
-		return getOnlineUser(Bukkit.getPlayer(uuid));
-	}
-
 	public User getOnlineUser(Player p) {
 		if (p == null) {
 			return null;
 		}
 
-		return getUser(p.getUniqueId(), new OnlineUserData(p));
+		return getOnlineUser(p.getUniqueId());
 	}
 
-	public User getUser(UUID uuid, UserData userData) {
+	public User getOnlineUser(UUID uuid) {
+		User u = getCachedUser(uuid);
+		return u != null && u.isOnline() ? u : null;
+	}
+
+	private User updateAndGetUser(UUID uuid, UserData userData) {
 		User u = getCachedUser(uuid);
 		if (u == null) {
-			LOGGER.info(() -> "getUser(" + uuid + "): cached u = null, create new");
+			LOGGER.info(() -> "updateAndGetUser(" + uuid + "): cached u = null, create new");
 			u = new User(uuid, userData);
 			users.put(uuid, u);
 		} else if (!u.hasSameUserDataType(userData)) {
-			LOGGER.info(() -> "getUser(" + uuid + "): not same user data type, change it");
+			LOGGER.info(() -> "updateAndGetUser(" + uuid + "): not same user data type, change it");
 			u.setUserData(userData);
 		}
 
 		final User fu = u;
-		LOGGER.info(() -> "getUser(" + uuid + "): u = " + fu + ", u = cached user ? " + (fu == users.get(uuid)));
+		LOGGER.info(() -> "updateAndGetUser(" + uuid + "): u = " + fu);
 
 		return u;
 	}
@@ -354,13 +361,14 @@ public class UsersManager {
 		Set<UUID> usersUUID = usersForUpdateData;
 		usersUUID.addAll(getUsersWithListener());
 		if (usersUUID == null || usersUUID.isEmpty()) {
-			LOGGER.info(() -> "updateData(): cancelled because there is no user, calls freeUsersCacheIfPossible()");
+			LOGGER.info(
+			        () -> "updateData(): cancelled because there is no user to collect data from, calls freeUsersCacheIfPossible()");
 			pendingDataUpdate = false;
 			freeUsersCacheIfPossible();
 			return false;
 		}
 
-		LOGGER.info(() -> "updateData(): start collecting users");
+		LOGGER.info(() -> "updateData(): start collecting users: " + CollectionUtils.toString(usersUUID));
 		collectUsersDataAsynchronously(usersUUID, db, taskScheduler, new ResultCallback<QueryResult>() {
 
 			@Override

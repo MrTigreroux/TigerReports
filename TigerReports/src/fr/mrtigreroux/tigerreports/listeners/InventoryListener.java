@@ -59,12 +59,18 @@ public class InventoryListener implements Listener {
 
 	@EventHandler(priority = EventPriority.LOW)
 	private void onInventoryClose(InventoryCloseEvent e) {
+		if (!(e.getPlayer() instanceof Player)) {
+			return;
+		}
+
 		User u = um.getOnlineUser((Player) e.getPlayer());
-		Logger.EVENTS.info(() -> "onInventoryClose(): " + u.getName());
-		u.setOpenedMenu(null);
-		try {
-			db.startClosing();
-		} catch (Exception ignored) {}
+		if (u != null) {
+			Logger.EVENTS.info(() -> "onInventoryClose(): " + u.getName());
+			u.setOpenedMenu(null);
+			try {
+				db.startClosing();
+			} catch (Exception ignored) {}
+		}
 	}
 
 	private User checkMenuAction(HumanEntity whoClicked, Inventory inv) {

@@ -68,15 +68,18 @@ public class PlayerListener implements Listener {
 	@EventHandler
 	private void onPlayerJoin(PlayerJoinEvent e) {
 		Player p = e.getPlayer();
+		Logger.EVENTS.info(() -> "onPlayerJoin(): " + p.getName());
+		um.processUserConnection(p);
 		User u = um.getOnlineUser(p);
-		Logger.EVENTS.info(() -> "onPlayerJoin(): " + u.getName() + ", u = " + u + ", p = " + p);
+		Logger.EVENTS.info(() -> "onPlayerJoin(): " + u.getName() + ", u = " + u);
 		FileConfiguration configFile = ConfigFile.CONFIG.get();
 
-		tr.runTaskDelayedly(1000L, new Runnable() {
+		tr.runTaskDelayedly(2000L, new Runnable() {
 
 			@Override
 			public void run() {
 				u.updateBasicData(db, bm, um);
+				um.processUserConnection(p); // In case that PlayerQuitEvent is fired after PlayerJoinEvent (for a reconnection it should be the opposite)
 			}
 
 		});
@@ -128,7 +131,7 @@ public class PlayerListener implements Listener {
 		Logger.EVENTS.info(() -> "onPlayerQuit(): " + p.getName());
 		um.processUserDisconnection(p.getUniqueId(), vm);
 		bm.processPlayerDisconnection(p.getName());
-		Logger.EVENTS.info(() -> "onPlayerQuit(): " + p.getName()+", end");
+		Logger.EVENTS.info(() -> "onPlayerQuit(): " + p.getName() + ", end");
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST)
@@ -151,6 +154,10 @@ public class PlayerListener implements Listener {
 	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	private void onPlayerChat2(AsyncPlayerChatEvent e) {
 		User u = um.getOnlineUser(e.getPlayer());
+		if (u == null) {
+			Logger.EVENTS.info(() -> "onPlayerChat2(): " + e.getPlayer().getName() + " is offline (u = null)");
+			return;
+		}
 		Logger.EVENTS.info(() -> "onPlayerChat2(): " + u.getName());
 		u.updateLastMessages(e.getMessage());
 

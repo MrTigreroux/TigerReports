@@ -16,10 +16,12 @@ public class ProcessReportEvent extends Event {
 	private static final HandlerList handlers = new HandlerList();
 	private final Report r;
 	private final String staff;
+	private final boolean bungee;
 
-	public ProcessReportEvent(Report r, String staff) {
+	public ProcessReportEvent(Report r, String staff, boolean bungee) {
 		this.r = Objects.requireNonNull(r);
 		this.staff = staff;
+		this.bungee = bungee;
 	}
 
 	public Report getReport() {
@@ -28,6 +30,10 @@ public class ProcessReportEvent extends Event {
 
 	public String getStaff() {
 		return staff;
+	}
+
+	public boolean isFromBungeeCord() {
+		return bungee;
 	}
 
 	@Override

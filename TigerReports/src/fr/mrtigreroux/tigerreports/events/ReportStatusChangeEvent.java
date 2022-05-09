@@ -15,13 +15,19 @@ public class ReportStatusChangeEvent extends Event {
 
 	private static final HandlerList handlers = new HandlerList();
 	private final Report r;
+	private final boolean bungee;
 
-	public ReportStatusChangeEvent(Report r) {
+	public ReportStatusChangeEvent(Report r, boolean bungee) {
 		this.r = Objects.requireNonNull(r);
+		this.bungee = bungee;
 	}
 
 	public Report getReport() {
 		return r;
+	}
+
+	public boolean isFromBungeeCord() {
+		return bungee;
 	}
 
 	@Override

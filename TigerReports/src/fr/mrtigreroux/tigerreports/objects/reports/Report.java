@@ -373,7 +373,7 @@ public class Report {
 		}
 
 		try {
-			Bukkit.getServer().getPluginManager().callEvent(new ReportStatusChangeEvent(this));
+			Bukkit.getServer().getPluginManager().callEvent(new ReportStatusChangeEvent(this, bungee));
 		} catch (Exception ignored) {}
 	}
 
@@ -687,7 +687,7 @@ public class Report {
 
 		Bukkit.getServer()
 		        .getPluginManager()
-		        .callEvent(new ProcessReportEvent(Report.this, staff != null ? staff.getName() : null));
+		        .callEvent(new ProcessReportEvent(Report.this, staff != null ? staff.getName() : null, bungee));
 	}
 
 	public void addComment(User u, String message, Database db, TaskScheduler taskScheduler,
