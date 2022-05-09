@@ -78,6 +78,8 @@ public class ReportCommand implements TabExecutor {
 
 		Player p = (Player) s;
 		User u = um.getOnlineUser(p);
+		LOGGER.info(
+		        () -> "user = " + u + ", user name = " + u.getName() + ", p = u.getPlayer() ? " + (p == u.getPlayer()));
 
 		u.getCooldownAsynchronously(db, taskScheduler, new ResultCallback<String>() {
 

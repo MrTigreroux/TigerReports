@@ -141,6 +141,7 @@ public class User {
 	}
 
 	private OnlineUserData getOnlineUserData() {
+		LOGGER.info(() -> getName() + ": getOnlineUserData(): data = " + data);
 		return data instanceof OnlineUserData ? (OnlineUserData) data : null;
 	}
 
@@ -157,10 +158,13 @@ public class User {
 	}
 
 	public boolean hasSameUserDataType(UserData otherUserData) {
+		LOGGER.info(() -> getName() + ": hasSameUserDataType(" + otherUserData + "): "
+		        + data.getClass().equals(otherUserData.getClass()));
 		return data.getClass().equals(otherUserData.getClass());
 	}
 
 	public void setUserData(UserData data) {
+		LOGGER.info(() -> getName() + ": setUserData(" + data + ")");
 		this.data = Objects.requireNonNull(data);
 	}
 
@@ -211,11 +215,13 @@ public class User {
 
 	public Player getPlayer() {
 		OnlineUserData onData = getOnlineUserData();
+		LOGGER.info(() -> getName() + ": getPlayer: onData = " + onData);
 		return onData != null ? onData.p : null;
 	}
 
 	public boolean hasPermission(Permission perm) {
 		Player p = getPlayer();
+		LOGGER.info(() -> getName() + ": hasPermission(" + perm.get() + "): p = " + p);
 		return p != null && p.hasPermission(perm.get());
 	}
 

@@ -69,7 +69,7 @@ public class PlayerListener implements Listener {
 	private void onPlayerJoin(PlayerJoinEvent e) {
 		Player p = e.getPlayer();
 		User u = um.getOnlineUser(p);
-		Logger.EVENTS.info(() -> "onPlayerJoin(): " + u.getName());
+		Logger.EVENTS.info(() -> "onPlayerJoin(): " + u.getName() + ", u = " + u + ", p = " + p);
 		FileConfiguration configFile = ConfigFile.CONFIG.get();
 
 		tr.runTaskDelayedly(1000L, new Runnable() {
@@ -128,6 +128,7 @@ public class PlayerListener implements Listener {
 		Logger.EVENTS.info(() -> "onPlayerQuit(): " + p.getName());
 		um.processUserDisconnection(p.getUniqueId(), vm);
 		bm.processPlayerDisconnection(p.getName());
+		Logger.EVENTS.info(() -> "onPlayerQuit(): " + p.getName()+", end");
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST)

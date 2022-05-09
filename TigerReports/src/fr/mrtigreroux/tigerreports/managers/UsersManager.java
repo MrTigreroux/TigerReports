@@ -37,7 +37,7 @@ import fr.mrtigreroux.tigerreports.utils.DatetimeUtils;
 
 public class UsersManager {
 
-	public static final Logger LOGGER = Logger.fromClass(UsersManager.class);
+	private static final Logger LOGGER = Logger.fromClass(UsersManager.class);
 
 	private static final byte USERS_CACHE_EXPIRE_DAYS = 2;
 	private static final int DATA_UPDATE_COOLDOWN = 5 * 1000; // in ms
@@ -72,6 +72,7 @@ public class UsersManager {
 
 	public void processUserDisconnection(UUID uuid, VaultManager vm) {
 		User u = getCachedUser(uuid);
+		LOGGER.info(() -> "processUserDisconnection(" + uuid + "): u = " + u);
 		if (u == null) {
 			return;
 		}
@@ -182,11 +183,16 @@ public class UsersManager {
 	public User getUser(UUID uuid, UserData userData) {
 		User u = getCachedUser(uuid);
 		if (u == null) {
+			LOGGER.info(() -> "getUser(" + uuid + "): cached u = null, create new");
 			u = new User(uuid, userData);
 			users.put(uuid, u);
 		} else if (!u.hasSameUserDataType(userData)) {
+			LOGGER.info(() -> "getUser(" + uuid + "): not same user data type, change it");
 			u.setUserData(userData);
 		}
+
+		final User fu = u;
+		LOGGER.info(() -> "getUser(" + uuid + "): u = " + fu + ", u = cached user ? " + (fu == users.get(uuid)));
 
 		return u;
 	}
@@ -196,6 +202,7 @@ public class UsersManager {
 		if (u != null) {
 			u.updateLastDayUsed();
 		}
+		LOGGER.info(() -> "getCachedUser(" + uuid + "): u = " + u);
 		return u;
 	}
 

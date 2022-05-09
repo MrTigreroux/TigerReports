@@ -2,6 +2,9 @@ package fr.mrtigreroux.tigerreports;
 
 import java.lang.ref.WeakReference;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Consumer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandExecutor;
@@ -45,12 +48,14 @@ public class TigerReports extends JavaPlugin implements TaskScheduler {
 
 	private static TigerReports instance;
 
+	private boolean loaded = false;
 	private String newVersion = null;
 	private WeakReference<Database> database;
 	private BungeeManager bungeeManager;
 	private UsersManager usersManager;
 	private ReportsManager reportsManager;
 	private VaultManager vaultManager = null;
+	private final Set<Consumer<Boolean>> loadUnloadListeners = new HashSet<>();
 
 	public TigerReports() {}
 
@@ -109,6 +114,8 @@ public class TigerReports extends JavaPlugin implements TaskScheduler {
 					u.updateBasicData(db, bungeeManager, usersManager);
 				}
 
+				setLoaded(true);
+
 				WebUtils.checkNewVersion(instance, instance, SPIGOTMC_RESOURCE_ID, new ResultCallback<String>() {
 
 					@Override
@@ -120,7 +127,6 @@ public class TigerReports extends JavaPlugin implements TaskScheduler {
 			}
 
 		});
-
 	}
 
 	private void setCommandExecutor(String commandName, CommandExecutor commandExecutor) {
@@ -297,6 +303,34 @@ public class TigerReports extends JavaPlugin implements TaskScheduler {
 			} else {
 				db.startClosing(true);
 			}
+		}
+
+		setLoaded(false);
+	}
+
+	public void addAndNotifyLoadUnloadListener(Consumer<Boolean> listener) {
+		Logger.MAIN.info(() -> "addAndNotifyLoadUnloadListener(" + listener + ")");
+		loadUnloadListeners.add(listener);
+		listener.accept(this.loaded);
+	}
+
+	public void removeLoadUnloadListener(Consumer<Boolean> listener) {
+		Logger.MAIN.info(() -> "addAndNotifyLoadUnloadListener(" + listener + ")");
+		loadUnloadListeners.remove(listener);
+	}
+
+	private void setLoaded(boolean loaded) {
+		Logger.MAIN.info(() -> "setLoaded(" + loaded + ")");
+		if (this.loaded != loaded) {
+			this.loaded = loaded;
+			broadcastLoadUnload(this.loaded);
+		}
+	}
+
+	private void broadcastLoadUnload(boolean loaded) {
+		Logger.MAIN.info(() -> "broadcastLoadUnload(" + loaded + ")");
+		for (Consumer<Boolean> listeners : loadUnloadListeners) {
+			listeners.accept(loaded);
 		}
 	}
 
