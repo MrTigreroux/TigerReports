@@ -2,6 +2,7 @@ package fr.mrtigreroux.tigerreports.utils;
 
 import java.text.Normalizer;
 import java.util.Collection;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,7 +25,6 @@ import fr.mrtigreroux.tigerreports.objects.users.User;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 
@@ -36,6 +36,7 @@ public class MessageUtils {
 
 	private static final Pattern COLOR_CODES_PATTERN = Pattern.compile("^[0-9a-f]$");
 	private static final Function<String, String> TRANSLATE_COLOR_CODES_METHOD;
+	public static final BiConsumer<BaseComponent, String> APPEND_TEXT_WITH_TRANSLATED_COLOR_CODES_TO_COMPONENT_BUILDER_METHOD;
 
 	private static final Pattern CONSOLE_PATTERN = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
 
@@ -47,9 +48,12 @@ public class MessageUtils {
 		if (VersionUtils.isVersionAtLeast1_16()) {
 			TRANSLATE_COLOR_CODES_METHOD = string -> net.md_5.bungee.api.ChatColor
 			        .translateAlternateColorCodes(ConfigUtils.getColorCharacter(), string);
+			APPEND_TEXT_WITH_TRANSLATED_COLOR_CODES_TO_COMPONENT_BUILDER_METHOD = (tc, text) -> tc
+			        .addExtra(new TextComponent(TextComponent.fromLegacyText(text)));
 		} else {
 			TRANSLATE_COLOR_CODES_METHOD = string -> org.bukkit.ChatColor
 			        .translateAlternateColorCodes(ConfigUtils.getColorCharacter(), string);
+			APPEND_TEXT_WITH_TRANSLATED_COLOR_CODES_TO_COMPONENT_BUILDER_METHOD = (bc, text) -> bc.addExtra(text);
 		}
 	}
 
@@ -157,23 +161,27 @@ public class MessageUtils {
 		}
 
 		BaseComponent advancedLine = new TextComponent("");
-		advancedLine.addExtra(parts[0]);
+		APPEND_TEXT_WITH_TRANSLATED_COLOR_CODES_TO_COMPONENT_BUILDER_METHOD.accept(advancedLine, parts[0]);
 		for (int i = 1; i < parts.length; i++) {
 			advancedLine.addExtra(advancedText);
-			advancedLine.addExtra(parts[i]);
+			APPEND_TEXT_WITH_TRANSLATED_COLOR_CODES_TO_COMPONENT_BUILDER_METHOD.accept(advancedLine, parts[i]);
 		}
-		return advancedLine;
+		return new TextComponent(advancedLine);
 	}
 
 	@SuppressWarnings("deprecation")
 	public static BaseComponent getAdvancedText(String text, String hover, String command) {
-		BaseComponent advancedText = new TextComponent(text);
+		BaseComponent advancedText = new TextComponent("");
 		advancedText.setColor(ChatColor.valueOf(MessageUtils.getLastColor(text, null).name()));
-		advancedText.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-		        new ComponentBuilder(hover.replace(ConfigUtils.getLineBreakSymbol(), "\n")).create()));
+		APPEND_TEXT_WITH_TRANSLATED_COLOR_CODES_TO_COMPONENT_BUILDER_METHOD.accept(advancedText, text);
+
+		BaseComponent hoverTC = new TextComponent("");
+		APPEND_TEXT_WITH_TRANSLATED_COLOR_CODES_TO_COMPONENT_BUILDER_METHOD.accept(hoverTC,
+		        hover.replace(ConfigUtils.getLineBreakSymbol(), "\n"));
+		advancedText.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[] { hoverTC }));
 		if (command != null)
 			advancedText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command));
-		return advancedText;
+		return new TextComponent(advancedText);
 	}
 
 	public static String getGamemodeWord(String gamemode) {

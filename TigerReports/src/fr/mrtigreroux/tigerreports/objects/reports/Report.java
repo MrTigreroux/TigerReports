@@ -311,7 +311,7 @@ public class Report {
 		String name;
 
 		if (color) {
-			name = type.nameMsg.get().replace("_Player_", u.getDisplayName(vm, false));
+			name = type.getName().replace("_Player_", u.getDisplayName(vm, false));
 		} else {
 			name = u.getName();
 		}

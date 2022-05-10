@@ -43,7 +43,7 @@ public class ReportMenu extends ReportManagerMenu implements User.UserListener {
 
 	public ReportMenu(User u, int reportId, ReportsManager rm, Database db, TaskScheduler taskScheduler,
 	        VaultManager vm, BungeeManager bm, UsersManager um) {
-		super(u, 54, 0, Permission.STAFF, reportId, true, rm, db, taskScheduler, um);
+		super(u, 54, 0, Permission.STAFF, reportId, true, false, rm, db, taskScheduler, um);
 		this.vm = vm;
 		this.bm = bm;
 	}
@@ -116,15 +116,13 @@ public class ReportMenu extends ReportManagerMenu implements User.UserListener {
 
 			for (Statistic stat : Statistic.values()) {
 				String statName = stat.getConfigName();
-				String value = null;
-				try {
-					value = statistics != null ? String.valueOf(statistics.get(statName)) : null;
-				} catch (Exception notFound) {}
-				if (value == null)
-					value = Message.NOT_FOUND_MALE.get();
+				Integer statValue = statistics != null ? statistics.get(statName) : null;
+				String statDisplayedValue = statValue != null ? Integer.toString(statValue)
+				        : Message.NOT_FOUND_MALE.get();
+
 				details = details.replace(
 				        "_" + statName.substring(0, 1).toUpperCase() + statName.substring(1).replace("_", "") + "_",
-				        value);
+				        statDisplayedValue);
 			}
 			String serverName = (serverName = MessageUtils.getServer(r.getOldLocation(type))) != null
 			        ? MessageUtils.getServerName(serverName)

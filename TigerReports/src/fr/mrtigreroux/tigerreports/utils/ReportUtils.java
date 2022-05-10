@@ -19,8 +19,8 @@ import fr.mrtigreroux.tigerreports.managers.VaultManager;
 import fr.mrtigreroux.tigerreports.objects.reports.Report;
 import fr.mrtigreroux.tigerreports.objects.users.User;
 import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 
@@ -75,7 +75,7 @@ public class ReportUtils {
 
 		int reportId = r.getId();
 
-		TextComponent alert = new TextComponent();
+		BaseComponent alert = new TextComponent("");
 		alert.setColor(ChatColor.valueOf(MessageUtils.getLastColor(Message.ALERT.get(), "_Reason_").name()));
 		if (reportId == -1) {
 			MessageUtils.sendStaffMessage(
@@ -83,8 +83,12 @@ public class ReportUtils {
 			        ConfigSound.STAFF.get());
 		} else {
 			alert.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/reports #" + reportId));
-			alert.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-			        new ComponentBuilder(Message.ALERT_DETAILS.get().replace("_Report_", r.getName())).create()));
+			BaseComponent hoverTC = new TextComponent("");
+			MessageUtils.APPEND_TEXT_WITH_TRANSLATED_COLOR_CODES_TO_COMPONENT_BUILDER_METHOD.accept(hoverTC,
+			        Message.ALERT_DETAILS.get()
+			                .replace("_Report_", r.getName())
+			                .replace(ConfigUtils.getLineBreakSymbol(), "\n"));
+			alert.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[] { hoverTC }));
 		}
 
 		String[] lines = Message.ALERT.get()
@@ -96,8 +100,9 @@ public class ReportUtils {
 		                        bm))
 		        .replace("_Reason_", r.getReason(false))
 		        .split(ConfigUtils.getLineBreakSymbol());
+
 		for (String line : lines) {
-			alert.setText(line);
+			MessageUtils.APPEND_TEXT_WITH_TRANSLATED_COLOR_CODES_TO_COMPONENT_BUILDER_METHOD.accept(alert, line);
 			MessageUtils.sendStaffMessage(new TextComponent(alert), ConfigSound.REPORT.get());
 		}
 	}
