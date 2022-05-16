@@ -844,10 +844,10 @@ public class ReportsManager {
 	}
 
 	public List<Comment> getCachedReportComments(int reportId, boolean initialize) {
-		List<Comment> reportComments = this.reportsComments.get(reportId);
+		List<Comment> reportComments = reportsComments.get(reportId);
 		if (reportComments == null && initialize) {
 			reportComments = new ArrayList<>();
-			this.reportsComments.put(reportId, reportComments);
+			reportsComments.put(reportId, reportComments);
 		}
 		return reportComments;
 	}

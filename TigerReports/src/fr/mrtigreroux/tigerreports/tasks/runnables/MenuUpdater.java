@@ -63,8 +63,9 @@ public class MenuUpdater implements Runnable {
 		LOGGER.info(() -> "-------------- MenuUpdater start --------------");
 
 		long interval = ConfigFile.CONFIG.get().getInt("Config.MenuUpdatesInterval", 10) * 1000L;
-		if (interval > 0)
+		if (interval > 0) {
 			taskId = taskScheduler.runTaskRepeatedly(interval, interval, new MenuUpdater(rm, db, taskScheduler, um));
+		}
 	}
 
 	public static void stop(boolean reset, TaskScheduler taskScheduler) {

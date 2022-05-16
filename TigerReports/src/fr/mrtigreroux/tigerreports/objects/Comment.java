@@ -47,8 +47,9 @@ public class Comment {
 	}
 
 	public String getStatus(boolean config) {
-		if (config)
+		if (config) {
 			return status;
+		}
 
 		if (status == null) {
 			return Message.PRIVATE.get();
@@ -120,8 +121,8 @@ public class Comment {
 	}
 
 	private boolean updateStatus(String newStatus) {
-		if (!Objects.equals(this.status, newStatus)) {
-			this.status = newStatus;
+		if (!Objects.equals(status, newStatus)) {
+			status = newStatus;
 			return true;
 		} else {
 			return false;
@@ -129,8 +130,8 @@ public class Comment {
 	}
 
 	private boolean updateMessage(String newMessage) {
-		if (!Objects.equals(this.message, newMessage)) {
-			this.message = newMessage;
+		if (!Objects.equals(message, newMessage)) {
+			message = newMessage;
 			return true;
 		} else {
 			return false;

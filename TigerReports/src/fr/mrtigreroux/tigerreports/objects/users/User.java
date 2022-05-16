@@ -149,7 +149,7 @@ public class User {
 	}
 
 	public boolean hasOfflineUserData() {
-		return data instanceof OnlineUserData;
+		return data instanceof OfflineUserData;
 	}
 
 	public boolean hasSameUserDataType(UserData otherUserData) {
@@ -254,8 +254,9 @@ public class User {
 			return;
 		}
 
-		if (!direct && r.getStatus() != Status.DONE)
+		if (!direct && r.getStatus() != Status.DONE) {
 			return;
+		}
 
 		sendMessage(
 		        MessageUtils
@@ -286,8 +287,8 @@ public class User {
 			newImmunity = IMMUNITY_ALWAYS;
 		}
 
-		if (!Objects.equals(this.immunity, newImmunity)) {
-			this.immunity = newImmunity;
+		if (!Objects.equals(immunity, newImmunity)) {
+			immunity = newImmunity;
 
 			if (IMMUNITY_ALWAYS.equals(immunity)) {
 				um.addExemptedPlayer(getName());
@@ -309,10 +310,10 @@ public class User {
 	public void getImmunityAsynchronously(Database db, TaskScheduler taskScheduler, UsersManager um, BungeeManager bm,
 	        ResultCallback<String> resultCallback) {
 		if (hasPermission(Permission.REPORT_EXEMPT)) {
-			if (!IMMUNITY_ALWAYS.equals(this.immunity)) {
+			if (!IMMUNITY_ALWAYS.equals(immunity)) {
 				setImmunity(IMMUNITY_ALWAYS, false, db, bm, um);
 			}
-		} else if (isOnline() && IMMUNITY_ALWAYS.equals(this.immunity)) {
+		} else if (isOnline() && IMMUNITY_ALWAYS.equals(immunity)) {
 			setImmunity(null, false, db, bm, um);
 		} else {
 			if (immunity == null) {
@@ -359,8 +360,8 @@ public class User {
 	}
 
 	public boolean updateCooldown(String newCooldown) {
-		if (!Objects.equals(this.cooldown, newCooldown)) {
-			this.cooldown = newCooldown;
+		if (!Objects.equals(cooldown, newCooldown)) {
+			cooldown = newCooldown;
 
 			broadcastCooldownChanged();
 			return true;
@@ -516,11 +517,13 @@ public class User {
 
 	public void updateLastMessages(String newMessage) {
 		int lastMessagesAmount = ConfigFile.CONFIG.get().getInt("Config.MessagesHistory", 5);
-		if (lastMessagesAmount <= 0)
+		if (lastMessagesAmount <= 0) {
 			return;
+		}
 
-		if (lastMessages.size() >= lastMessagesAmount)
+		if (lastMessages.size() >= lastMessagesAmount) {
 			lastMessages.remove(0);
+		}
 		lastMessages.add(DatetimeUtils.getNowDate() + ":" + newMessage);
 	}
 
@@ -900,8 +903,9 @@ public class User {
 			return;
 		}
 
-		if (!direct && !c.getStatus(true).equals("Sent"))
+		if (!direct && !c.getStatus(true).equals("Sent")) {
 			return;
+		}
 		p.sendMessage(Message.COMMENT_NOTIFICATION.get()
 		        .replace("_Player_", c.getAuthorDisplayName(vm))
 		        .replace("_Reported_", r.getPlayerName(Report.ParticipantType.REPORTED, false, true, vm, bm))

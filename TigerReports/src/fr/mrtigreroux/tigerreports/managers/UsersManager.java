@@ -58,8 +58,9 @@ public class UsersManager {
 	public UsersManager() {}
 
 	public void addExemptedPlayer(String name) {
-		if (name != null && !exemptedPlayers.contains(name))
+		if (name != null && !exemptedPlayers.contains(name)) {
 			exemptedPlayers.add(name);
+		}
 	}
 
 	public void removeExemptedPlayer(String name) {
@@ -72,6 +73,10 @@ public class UsersManager {
 
 	public void processUserConnection(Player p) {
 		LOGGER.info(() -> "processUserConnection(" + p.getName() + ")");
+		if (!p.isOnline()) {
+			LOGGER.info(() -> "processUserConnection(" + p.getName() + "): player is not online, cancelled");
+			return;
+		}
 		updateAndGetUser(p.getUniqueId(), new OnlineUserData(p));
 	}
 
@@ -119,6 +124,20 @@ public class UsersManager {
 
 	public void getUsersAsynchronously(String[] uuids, Database db, TaskScheduler taskScheduler,
 	        ResultCallback<List<User>> resultCallback) {
+		if (uuids == null || uuids.length == 0) {
+			resultCallback.onResultReceived(null);
+			return;
+		}
+
+		if (uuids.length == 1) {
+			getUserAsynchronously(uuids[0], db, taskScheduler, u -> {
+				List<User> result = new ArrayList<>();
+				result.add(u);
+				resultCallback.onResultReceived(result);
+			});
+			return;
+		}
+
 		SeveralTasksHandler<User> usersTaskHandler = new SeveralTasksHandler<>();
 
 		for (String uuid : uuids) {

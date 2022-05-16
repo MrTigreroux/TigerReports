@@ -41,8 +41,9 @@ public abstract class Database {
 	private boolean checkConnection() {
 		cancelClosing();
 		try {
-			if (isConnectionValid())
+			if (isConnectionValid()) {
 				return true;
+			}
 		} catch (SQLException ignored) {}
 		try {
 			openConnection();
@@ -97,8 +98,9 @@ public abstract class Database {
 				int columnCount = metaData.getColumnCount();
 				while (rs.next()) {
 					row = new HashMap<>();
-					for (int i = 1; i <= columnCount; i++)
+					for (int i = 1; i <= columnCount; i++) {
 						row.put(metaData.getColumnName(i), rs.getObject(i));
+					}
 					resultList.add(row);
 				}
 
@@ -196,11 +198,13 @@ public abstract class Database {
 	}
 
 	public void startClosing(boolean forceClosing) {
-		if (closingTaskId != -1 || connection == null)
+		if (closingTaskId != -1 || connection == null) {
 			return;
+		}
 		try {
-			if (connection.isClosed())
+			if (connection.isClosed()) {
 				return;
+			}
 		} catch (SQLException ignored) {}
 
 		forcedClosing = true;
@@ -221,8 +225,9 @@ public abstract class Database {
 	 * Cancel closing connection task except if {@link forcedClosing} is true.
 	 */
 	public void cancelClosing() {
-		if (forcedClosing || closingTaskId == -1)
+		if (forcedClosing || closingTaskId == -1) {
 			return;
+		}
 		taskScheduler.cancelTask(closingTaskId);
 		closingTaskId = -1;
 	}

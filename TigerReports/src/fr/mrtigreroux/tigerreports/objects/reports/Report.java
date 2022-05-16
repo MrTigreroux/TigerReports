@@ -291,7 +291,7 @@ public class Report {
 
 		ParticipantType(String configName, Message name) {
 			this.configName = configName;
-			this.nameMsg = name;
+			nameMsg = name;
 		}
 
 		public String getName() {
@@ -411,8 +411,9 @@ public class Report {
 	public String getAppreciation(boolean config) {
 		int pos = appreciation != null ? appreciation.indexOf(APPRECIATION_PUNISHMENT_SEPARATOR) : -1;
 		String appreciationWord = pos != -1 ? appreciation.substring(0, pos) : appreciation;
-		if (config)
+		if (config) {
 			return appreciationWord;
+		}
 		try {
 			return appreciation != null && !appreciation.equalsIgnoreCase("None")
 			        ? Message.valueOf(appreciationWord.toUpperCase()).get()
@@ -467,7 +468,7 @@ public class Report {
 	}
 
 	private void clearAdvancedData() {
-		this.advancedData = null;
+		advancedData = null;
 	}
 
 	void extractAndSaveAdvancedData(Map<String, Object> reportData) {
@@ -485,8 +486,9 @@ public class Report {
 	}
 
 	public String implementData(String message, boolean advanced, VaultManager vm, BungeeManager bm) {
-		if (advancedData == null)
+		if (advancedData == null) {
 			return null;
+		}
 
 		String defaultData;
 		String reportedAdvancedData = "";
@@ -542,8 +544,9 @@ public class Report {
 	}
 
 	public String getOldLocation(ParticipantType type) {
-		if (advancedData == null)
+		if (advancedData == null) {
 			return null;
+		}
 		return advancedData.get(type.configName + "_location");
 	}
 
@@ -831,8 +834,8 @@ public class Report {
 	}
 
 	private boolean updateStatusDetails(StatusDetails newStatusDetails) {
-		if (!Objects.equals(this.statusDetails, Objects.requireNonNull(newStatusDetails))) {
-			this.statusDetails = newStatusDetails;
+		if (!Objects.equals(statusDetails, Objects.requireNonNull(newStatusDetails))) {
+			statusDetails = newStatusDetails;
 			return true;
 		} else {
 			return false;
@@ -841,13 +844,13 @@ public class Report {
 
 	private void updateStatusDetails(String newStatusDetails, Database db, TaskScheduler taskScheduler, UsersManager um,
 	        ResultCallback<Boolean> resultCallback) {
-		if (!Objects.equals(this.statusDetails.toString(), newStatusDetails)) {
+		if (!Objects.equals(statusDetails.toString(), newStatusDetails)) {
 			StatusDetails.asynchronouslyFrom(newStatusDetails, db, taskScheduler, um,
 			        new ResultCallback<Report.StatusDetails>() {
 
 				        @Override
 				        public void onResultReceived(StatusDetails sd) {
-					        Report.this.statusDetails = sd;
+					        statusDetails = sd;
 					        resultCallback.onResultReceived(true);
 				        }
 
@@ -858,8 +861,8 @@ public class Report {
 	}
 
 	private boolean updateAppreciation(String newAppreciation) {
-		if (!Objects.equals(this.appreciation, newAppreciation)) {
-			this.appreciation = newAppreciation;
+		if (!Objects.equals(appreciation, newAppreciation)) {
+			appreciation = newAppreciation;
 			return true;
 		} else {
 			return false;
@@ -870,7 +873,7 @@ public class Report {
 	        UsersManager um, ResultCallback<Boolean> resultCallback) {
 		String[] newReportersUUID = newReporters.split(REPORTERS_SEPARATOR);
 		int newReportersUUIDLength = newReportersUUID.length;
-		boolean changed = !Objects.equals(this.date, newDate);
+		boolean changed = !Objects.equals(date, newDate);
 		if (!changed) {
 			for (int i = 0; i < reporters.size(); i++) {
 				User reporter = reporters.get(i);
@@ -887,7 +890,7 @@ public class Report {
 				@Override
 				public void onResultReceived(List<User> reporters) {
 					Report.this.reporters = reporters;
-					Report.this.date = newDate;
+					date = newDate;
 					resultCallback.onResultReceived(true);
 				}
 
@@ -898,8 +901,8 @@ public class Report {
 	}
 
 	private boolean updateArchived(boolean newArchived) {
-		if (!Objects.equals(this.archived, newArchived)) {
-			this.archived = newArchived;
+		if (!Objects.equals(archived, newArchived)) {
+			archived = newArchived;
 			// Advanced data is fixed. It can be present or missing but cannot change. If the report is archived, advanced data is useless and we free
 			// memory.
 			if (isArchived()) {
@@ -912,8 +915,8 @@ public class Report {
 	}
 
 	private boolean updateStatusDetailsWithBroadcast(StatusDetails newStatusDetails, ReportsManager rm) {
-		if (!Objects.equals(this.statusDetails, Objects.requireNonNull(newStatusDetails))) {
-			this.statusDetails = newStatusDetails;
+		if (!Objects.equals(statusDetails, Objects.requireNonNull(newStatusDetails))) {
+			statusDetails = newStatusDetails;
 			rm.broadcastReportDataChanged(this);
 			return true;
 		} else {
@@ -922,8 +925,8 @@ public class Report {
 	}
 
 	private boolean updateArchivedWithBroadcast(boolean newArchived, ReportsManager rm) {
-		if (!Objects.equals(this.archived, newArchived)) {
-			this.archived = newArchived;
+		if (!Objects.equals(archived, newArchived)) {
+			archived = newArchived;
 			rm.broadcastReportDataChanged(this);
 			return true;
 		} else {
@@ -952,7 +955,7 @@ public class Report {
 	        TaskScheduler taskScheduler, UsersManager um, ResultCallback<Boolean> resultCallback) {
 		boolean archived = false;
 		if (reportData != null) {
-			archived = (boolean) ((int) reportData.get("archived") == 1);
+			archived = (int) reportData.get("archived") == 1;
 		}
 		update(reportData, archived, saveAdvancedData, db, taskScheduler, um, resultCallback);
 	}

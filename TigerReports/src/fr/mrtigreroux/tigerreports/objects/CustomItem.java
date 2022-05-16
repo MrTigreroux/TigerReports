@@ -47,6 +47,7 @@ public class CustomItem {
 
 	public CustomItem() {}
 
+	@Override
 	public CustomItem clone() {
 		return new CustomItem(material, amount, damage, displayName, lore, enchantments, skullOwner, hideFlags, glow);
 	}
@@ -54,8 +55,8 @@ public class CustomItem {
 	public CustomItem fromConfig(FileConfiguration configFile, String path) {
 		Material material = ConfigUtils.getMaterial(configFile, path);
 		this.material = material != null ? material : Material.PAPER;
-		this.damage = ConfigUtils.getDamage(configFile, path);
-		this.skullOwner = ConfigUtils.getSkull(configFile, path);
+		damage = ConfigUtils.getDamage(configFile, path);
+		skullOwner = ConfigUtils.getSkull(configFile, path);
 		return this;
 	}
 
@@ -113,8 +114,9 @@ public class CustomItem {
 	}
 
 	public CustomItem lore(String... strings) {
-		if (strings != null)
-			this.lore = Arrays.asList(strings);
+		if (strings != null) {
+			lore = Arrays.asList(strings);
+		}
 		return this;
 	}
 
@@ -128,8 +130,9 @@ public class CustomItem {
 	}
 
 	public CustomItem enchant(Enchantment enchantment, Integer level) {
-		if (enchantments == null)
+		if (enchantments == null) {
 			enchantments = new HashMap<>();
+		}
 		enchantments.put(enchantment, level);
 		return this;
 	}
@@ -161,19 +164,24 @@ public class CustomItem {
 
 		if (displayName != null || lore != null || hideFlags) {
 			ItemMeta itemM = item.getItemMeta();
-			if (hideFlags && !VersionUtils.isOldVersion())
+			if (hideFlags && !VersionUtils.isOldVersion()) {
 				itemM.addItemFlags(ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_POTION_EFFECTS,
 				        ItemFlag.HIDE_UNBREAKABLE, ItemFlag.HIDE_DESTROYS, ItemFlag.HIDE_PLACED_ON);
-			if (glow) {
-				if (enchantments == null || enchantments.size() == 0)
-					enchant(Enchantment.WATER_WORKER, 1);
-				if (!VersionUtils.isOldVersion() && !itemM.getItemFlags().contains(ItemFlag.HIDE_ENCHANTS))
-					itemM.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 			}
-			if (displayName != null)
+			if (glow) {
+				if (enchantments == null || enchantments.size() == 0) {
+					enchant(Enchantment.WATER_WORKER, 1);
+				}
+				if (!VersionUtils.isOldVersion() && !itemM.getItemFlags().contains(ItemFlag.HIDE_ENCHANTS)) {
+					itemM.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+				}
+			}
+			if (displayName != null) {
 				itemM.setDisplayName(displayName);
-			if (lore != null)
+			}
+			if (lore != null) {
 				itemM.setLore(lore);
+			}
 			item.setItemMeta(itemM);
 		}
 

@@ -78,8 +78,13 @@ public class PlayerListener implements Listener {
 
 			@Override
 			public void run() {
-				u.updateBasicData(db, bm, um);
-				um.processUserConnection(p); // In case that PlayerQuitEvent is fired after PlayerJoinEvent (for a reconnection it should be the opposite)
+				if (p.isOnline()) {
+					u.updateBasicData(db, bm, um);
+					um.processUserConnection(p); // In case that PlayerQuitEvent is fired after PlayerJoinEvent (for a reconnection it should be the opposite)
+				} else {
+					Logger.EVENTS.info(() -> "onPlayerJoin(): after the delay, player " + u.getName()
+					        + " is no longer online, cancel any update");
+				}
 			}
 
 		});
@@ -200,8 +205,9 @@ public class PlayerListener implements Listener {
 
 	@EventHandler(priority = EventPriority.LOWEST)
 	private void onServerCommandPreprocess(ServerCommandEvent e) {
-		if (checkHelpCommand(e.getCommand(), e.getSender()))
+		if (checkHelpCommand(e.getCommand(), e.getSender())) {
 			e.setCommand("tigerreports");
+		}
 	}
 
 	private boolean checkHelpCommand(String command, CommandSender s) {

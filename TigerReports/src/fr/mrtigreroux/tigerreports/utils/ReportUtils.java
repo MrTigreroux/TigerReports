@@ -63,15 +63,17 @@ public class ReportUtils {
 	@SuppressWarnings("deprecation")
 	public static void sendReport(Report r, String server, boolean notify, Database db, VaultManager vm,
 	        BungeeManager bm) {
-		if (r.isStackedReport() && !ConfigUtils.isEnabled("Config.NotifyStackedReports"))
+		if (r.isStackedReport() && !ConfigUtils.isEnabled("Config.NotifyStackedReports")) {
 			return;
+		}
 
 		try {
 			Bukkit.getServer().getPluginManager().callEvent(new NewReportEvent(server, r));
 		} catch (Exception ignored) {}
 
-		if (r.isArchived() || !notify)
+		if (r.isArchived() || !notify) {
 			return;
+		}
 
 		int reportId = r.getId();
 

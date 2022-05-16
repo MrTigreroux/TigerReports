@@ -9,7 +9,7 @@ import fr.mrtigreroux.tigerreports.logs.Logger;
 
 public class SeveralTasksHandler<R> {
 
-	private final Logger LOGGER = Logger.fromClass(SeveralTasksHandler.class);
+	private static final Logger LOGGER = Logger.fromClass(SeveralTasksHandler.class);
 
 	private final List<R> tasksResult = new ArrayList<R>();
 	private final List<Boolean> tasksDone = new ArrayList<Boolean>();

@@ -31,8 +31,9 @@ public class MySQL extends Database {
 
 	public void check() throws Exception {
 		if (host == null || host.isEmpty() || database == null || database.isEmpty() || username == null
-		        || username.isEmpty())
+		        || username.isEmpty()) {
 			throw new IllegalArgumentException("Invalid connection settings.");
+		}
 		openConnection();
 		connection.createStatement().close();
 	}
@@ -79,6 +80,7 @@ public class MySQL extends Database {
 		return connection != null && connection.isValid(5);
 	}
 
+	@Override
 	public void updateUserName(String uuid, String name) {
 		updateAsynchronously(
 		        "INSERT INTO tigerreports_users (uuid,name) VALUES (?,?) ON DUPLICATE KEY UPDATE name=VALUES(name)",

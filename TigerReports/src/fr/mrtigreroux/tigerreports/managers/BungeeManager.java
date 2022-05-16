@@ -82,13 +82,15 @@ public class BungeeManager implements PluginMessageListener {
 	}
 
 	public void collectServerName() {
-		if (serverName == null)
+		if (serverName == null) {
 			sendBungeeMessage("GetServer");
+		}
 	}
 
 	public void processPlayerConnection(String name) {
-		if (!initialized)
+		if (!initialized) {
 			return;
+		}
 
 		tr.runTaskDelayedly(50L, new Runnable() {
 
@@ -100,8 +102,9 @@ public class BungeeManager implements PluginMessageListener {
 						collectOnlinePlayers();
 					}
 					if (playerToRemove != null) {
-						if (playerToRemove != name)
+						if (playerToRemove != name) {
 							sendPluginNotificationToAll(playerToRemove + " player_status false");
+						}
 						playerToRemove = null;
 					}
 					updatePlayerStatus(name, true);
@@ -112,8 +115,9 @@ public class BungeeManager implements PluginMessageListener {
 	}
 
 	public void processPlayerDisconnection(String name) {
-		if (!initialized)
+		if (!initialized) {
 			return;
+		}
 
 		if (Bukkit.getOnlinePlayers().size() > 1) {
 			updatePlayerStatus(name, false);
@@ -124,8 +128,9 @@ public class BungeeManager implements PluginMessageListener {
 	}
 
 	public String getServerName() {
-		if (serverName == null)
+		if (serverName == null) {
 			sendBungeeMessage("GetServer");
+		}
 		return serverName != null ? serverName : "localhost";
 	}
 
@@ -156,12 +161,14 @@ public class BungeeManager implements PluginMessageListener {
 	}
 
 	public void sendPluginMessageTo(String serverName, String message) {
-		if (!initialized)
+		if (!initialized) {
 			return;
+		}
 
 		Player p = getRandomPlayer();
-		if (p == null)
+		if (p == null) {
 			return;
+		}
 		try {
 			ByteArrayDataOutput out = ByteStreams.newDataOutput();
 			out.writeUTF("Forward");
@@ -183,23 +190,27 @@ public class BungeeManager implements PluginMessageListener {
 	}
 
 	public void sendBungeeMessage(String... message) {
-		if (!initialized)
+		if (!initialized) {
 			return;
+		}
 
 		Player p = getRandomPlayer();
-		if (p == null)
+		if (p == null) {
 			return;
+		}
 
 		ByteArrayDataOutput out = ByteStreams.newDataOutput();
-		for (String part : message)
+		for (String part : message) {
 			out.writeUTF(part);
+		}
 		p.sendPluginMessage(tr, "BungeeCord", out.toByteArray());
 	}
 
 	@Override
 	public void onPluginMessageReceived(String channel, Player player, byte[] messageReceived) {
-		if (!channel.equals("BungeeCord"))
+		if (!channel.equals("BungeeCord")) {
 			return;
+		}
 
 		ByteArrayDataInput in = ByteStreams.newDataInput(messageReceived);
 		String subchannel = in.readUTF();
@@ -461,8 +472,9 @@ public class BungeeManager implements PluginMessageListener {
 					}
 					break;
 				case "tp_player":
-					if (!notify)
+					if (!notify) {
 						break;
+					}
 
 					String target = parts[2];
 					Player t = Bukkit.getPlayer(target);
@@ -717,16 +729,18 @@ public class BungeeManager implements PluginMessageListener {
 
 	private void setPlayerStatus(String name, boolean online) {
 		if (online) {
-			if (!onlinePlayers.contains(name))
+			if (!onlinePlayers.contains(name)) {
 				onlinePlayers.add(name);
+			}
 		} else {
 			onlinePlayers.remove(name);
 		}
 	}
 
 	public void updatePlayerStatus(String name, boolean online) {
-		if (!initialized)
+		if (!initialized) {
 			return;
+		}
 
 		setPlayerStatus(name, online);
 		sendPluginNotificationToAll(name + " player_status " + online);

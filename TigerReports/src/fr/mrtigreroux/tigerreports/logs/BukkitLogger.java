@@ -21,7 +21,7 @@ public class BukkitLogger extends Logger {
 		this.pluginName = pluginName;
 		this.showName = showName;
 		this.useColors = useColors;
-		this.logger = Bukkit.getLogger();
+		logger = Bukkit.getLogger();
 		setLevel(minLoggableLevel);
 	}
 

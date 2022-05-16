@@ -183,13 +183,15 @@ public class UserUtils {
 		if (players == null) {
 			players = new ArrayList<>();
 			for (Player plr : Bukkit.getOnlinePlayers()) {
-				if (p.canSee(plr))
+				if (p.canSee(plr)) {
 					players.add(plr.getName());
+				}
 			}
 		}
 
-		if (hideExempted)
+		if (hideExempted) {
 			players.removeAll(um.getExemptedPlayers());
+		}
 
 		return players;
 	}

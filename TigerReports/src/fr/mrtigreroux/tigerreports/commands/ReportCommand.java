@@ -56,7 +56,7 @@ public class ReportCommand implements TabExecutor {
 
 	public ReportCommand(TaskScheduler tr, ReportsManager rm, Database db, BungeeManager bm, VaultManager vm,
 	        UsersManager um) {
-		this.taskScheduler = tr;
+		taskScheduler = tr;
 		this.rm = rm;
 		this.db = db;
 		this.bm = bm;
@@ -66,8 +66,9 @@ public class ReportCommand implements TabExecutor {
 
 	@Override
 	public boolean onCommand(CommandSender s, Command cmd, String label, String[] args) {
-		if (!UserUtils.checkPlayer(s) || (ReportUtils.permissionRequiredToReport() && !Permission.REPORT.check(s)))
+		if (!UserUtils.checkPlayer(s) || (ReportUtils.permissionRequiredToReport() && !Permission.REPORT.check(s))) {
 			return true;
+		}
 
 		FileConfiguration configFile = ConfigFile.CONFIG.get();
 		if (args.length == 0

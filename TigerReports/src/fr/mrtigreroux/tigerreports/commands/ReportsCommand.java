@@ -105,8 +105,9 @@ public class ReportsCommand implements TabExecutor {
 			return true;
 		}
 
-		if (!UserUtils.checkPlayer(s) || !Permission.STAFF.check(s))
+		if (!UserUtils.checkPlayer(s) || !Permission.STAFF.check(s)) {
 			return true;
+		}
 		Player p = (Player) s;
 		User u = um.getOnlineUser(p);
 
@@ -137,8 +138,9 @@ public class ReportsCommand implements TabExecutor {
 				}
 				return true;
 			case "archives":
-				if (Permission.STAFF_ARCHIVE.check(s))
+				if (Permission.STAFF_ARCHIVE.check(s)) {
 					u.openArchivedReportsMenu(1, true, rm, db, tr, vm, bm, um);
+				}
 				return true;
 			default:
 				int reportId = getReportIdOrSendError(args[0], s);
@@ -171,8 +173,9 @@ public class ReportsCommand implements TabExecutor {
 
 						@Override
 						public void onResultReceived(Report r) {
-							if (r == null)
+							if (r == null) {
 								return;
+							}
 							r.delete(u, false, db, tr, rm, vm, bm);
 						}
 					});

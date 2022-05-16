@@ -19,7 +19,7 @@ public class SQLite extends Database {
 
 	public SQLite(TaskScheduler taskScheduler, File databaseFolder, String databaseFileName) {
 		super(taskScheduler);
-		this.databaseFile = new File(databaseFolder, databaseFileName);
+		databaseFile = new File(databaseFolder, databaseFileName);
 	}
 
 	@Override
@@ -70,6 +70,7 @@ public class SQLite extends Database {
 		return connection != null && !connection.isClosed();
 	}
 
+	@Override
 	public void updateUserName(String uuid, String name) {
 		taskScheduler.runTaskAsynchronously(new Runnable() {
 

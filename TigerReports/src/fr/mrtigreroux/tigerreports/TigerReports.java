@@ -285,15 +285,15 @@ public class TigerReports extends JavaPlugin implements TaskScheduler {
 
 		HandlerList.unregisterAll(this); // Unregister all event listeners.
 
-		this.reportsManager = null;
-		this.usersManager = null;
+		reportsManager = null;
+		usersManager = null;
 
-		if (this.bungeeManager != null) {
-			this.bungeeManager.destroy();
-			this.bungeeManager = null;
+		if (bungeeManager != null) {
+			bungeeManager.destroy();
+			bungeeManager = null;
 		}
 
-		this.vaultManager = null;
+		vaultManager = null;
 
 		// Free memory to remove database dependency
 		System.gc();
@@ -314,7 +314,7 @@ public class TigerReports extends JavaPlugin implements TaskScheduler {
 	public void addAndNotifyLoadUnloadListener(Consumer<Boolean> listener) {
 		Logger.MAIN.info(() -> "addAndNotifyLoadUnloadListener(" + listener + ")");
 		loadUnloadListeners.add(listener);
-		listener.accept(this.loaded);
+		listener.accept(loaded);
 	}
 
 	public void removeLoadUnloadListener(Consumer<Boolean> listener) {

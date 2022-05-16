@@ -17,7 +17,7 @@ public class OfflineUserData implements UserData {
 	public OfflineUserData(String name, String displayName) {
 		this.name = Objects.requireNonNull(name);
 		this.displayName = displayName != null && !displayName.isEmpty() ? displayName : name;
-		this.lastDayUsed = DatetimeUtils.getCurrentDayOfMonth();
+		lastDayUsed = DatetimeUtils.getCurrentDayOfMonth();
 	}
 
 	@Override

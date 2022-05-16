@@ -16,8 +16,9 @@ public class HelpCommand {
 	public static void onCommand(CommandSender s) {
 		String commands = Message.get("Messages.Help-commands");
 		String[] commandLines = new String[0];
-		if (commands != null && !commands.isEmpty())
+		if (commands != null && !commands.isEmpty()) {
 			commandLines = commands.split(ConfigUtils.getLineBreakSymbol());
+		}
 
 		if (ConfigUtils.getInfoLanguage().equalsIgnoreCase("French")) {
 			s.sendMessage(STRAIGHT_LINE);

@@ -53,7 +53,7 @@ public class MessageUtils {
 		} else {
 			TRANSLATE_COLOR_CODES_METHOD = string -> org.bukkit.ChatColor
 			        .translateAlternateColorCodes(ConfigUtils.getColorCharacter(), string);
-			APPEND_TEXT_WITH_TRANSLATED_COLOR_CODES_TO_COMPONENT_BUILDER_METHOD = (bc, text) -> bc.addExtra(text);
+			APPEND_TEXT_WITH_TRANSLATED_COLOR_CODES_TO_COMPONENT_BUILDER_METHOD = BaseComponent::addExtra;
 		}
 	}
 
@@ -61,24 +61,28 @@ public class MessageUtils {
 
 	public static void sendErrorMessage(CommandSender s, String message) {
 		s.sendMessage(message);
-		if (s instanceof Player)
+		if (s instanceof Player) {
 			ConfigSound.ERROR.play((Player) s);
+		}
 	}
 
 	public static void sendStaffMessage(Object message, Sound sound) {
 		boolean isTextComponent = message instanceof TextComponent;
 		UsersManager um = TigerReports.getInstance().getUsersManager();
 		for (Player p : Bukkit.getOnlinePlayers()) {
-			if (!p.hasPermission(Permission.STAFF.get()))
+			if (!p.hasPermission(Permission.STAFF.get())) {
 				continue;
+			}
 			User u = um.getOnlineUser(p);
-			if (!u.acceptsNotifications())
+			if (!u.acceptsNotifications()) {
 				continue;
+			}
 
 			u.sendMessage(message);
 
-			if (sound != null)
+			if (sound != null) {
 				p.playSound(p.getLocation(), sound, 1, 1);
+			}
 		}
 		sendConsoleMessage(isTextComponent ? ((TextComponent) message).toLegacyText() : (String) message);
 	}
@@ -93,22 +97,26 @@ public class MessageUtils {
 	public static ChatColor getLastColor(String text, String lastWord) {
 		String color = null;
 		int index = lastWord != null ? text.indexOf(lastWord) : text.length();
-		if (index == -1)
+		if (index == -1) {
 			return ChatColor.WHITE;
-
-		for (String code : org.bukkit.ChatColor.getLastColors(text.substring(0, index)).split("\u00A7")) {
-			if (COLOR_CODES_PATTERN.matcher(code).matches())
-				color = code;
 		}
 
-		if (color == null)
+		for (String code : org.bukkit.ChatColor.getLastColors(text.substring(0, index)).split("\u00A7")) {
+			if (COLOR_CODES_PATTERN.matcher(code).matches()) {
+				color = code;
+			}
+		}
+
+		if (color == null) {
 			color = "f";
+		}
 		return ChatColor.getByChar(color.charAt(0));
 	}
 
 	public static String getMenuSentence(String text, Message message, String lastWord, boolean wordSeparation) {
-		if (text == null || text.isEmpty())
+		if (text == null || text.isEmpty()) {
 			return Message.NOT_FOUND_MALE.get();
+		}
 
 		StringBuilder sentence = new StringBuilder();
 		int maxLength = 22;
@@ -149,8 +157,9 @@ public class MessageUtils {
 
 	public static Object getAdvancedMessage(String line, String placeHolder, String replacement, String hover,
 	        String command) {
-		if (!line.contains(placeHolder))
+		if (!line.contains(placeHolder)) {
 			return line;
+		}
 
 		String[] parts = line.split(placeHolder);
 		BaseComponent advancedText = getAdvancedText(replacement, hover, command);
@@ -179,8 +188,9 @@ public class MessageUtils {
 		APPEND_TEXT_WITH_TRANSLATED_COLOR_CODES_TO_COMPONENT_BUILDER_METHOD.accept(hoverTC,
 		        hover.replace(ConfigUtils.getLineBreakSymbol(), "\n"));
 		advancedText.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[] { hoverTC }));
-		if (command != null)
+		if (command != null) {
 			advancedText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command));
+		}
 		return new TextComponent(advancedText);
 	}
 
@@ -207,8 +217,9 @@ public class MessageUtils {
 	}
 
 	public static Location getLocation(String configLoc) {
-		if (configLoc == null)
+		if (configLoc == null) {
 			return null;
+		}
 		String[] coords = configLoc.split("/");
 		return new Location(Bukkit.getWorld(coords[1]), Double.parseDouble(coords[2]), Double.parseDouble(coords[3]),
 		        Double.parseDouble(coords[4]), Float.parseFloat(coords[5]), Float.parseFloat(coords[6]));

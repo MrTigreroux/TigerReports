@@ -92,8 +92,9 @@ public class ReportsNotifier implements Runnable {
 		}
 
 		long interval = ConfigFile.CONFIG.get().getInt("Config.Notifications.Staff.MinutesInterval", 0) * 60 * 1000L;
-		if (interval > 0)
+		if (interval > 0) {
 			taskId = taskScheduler.runTaskRepeatedly(interval, interval, new ReportsNotifier(db, taskScheduler));
+		}
 	}
 
 	public static void stop(TaskScheduler taskScheduler) {

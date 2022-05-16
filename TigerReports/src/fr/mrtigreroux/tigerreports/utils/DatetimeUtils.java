@@ -67,12 +67,14 @@ public class DatetimeUtils {
 		StringBuilder sentenceBuilder = new StringBuilder();
 		for (int valueIndex = 0; valueIndex <= 6; valueIndex++) {
 			int value = values[valueIndex];
-			if (value <= 0)
+			if (value <= 0) {
 				continue;
+			}
 
 			String valueMessage = DatetimeUtils.TIME_UNITS[valueIndex];
-			if (value > 1)
+			if (value > 1) {
 				valueMessage += "S";
+			}
 			sentenceBuilder.append(value).append(" ").append(Message.valueOf(valueMessage).get()).append(" ");
 		}
 

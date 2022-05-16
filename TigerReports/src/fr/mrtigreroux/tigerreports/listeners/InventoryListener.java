@@ -35,8 +35,9 @@ public class InventoryListener implements Listener {
 	@EventHandler(priority = EventPriority.LOW)
 	private void onInventoryDrag(InventoryDragEvent e) {
 		Logger.EVENTS.info(() -> "onInventoryDrag(): " + e.getWhoClicked().getName());
-		if (checkMenuAction(e.getWhoClicked(), e.getInventory()) != null)
+		if (checkMenuAction(e.getWhoClicked(), e.getInventory()) != null) {
 			e.setCancelled(true);
+		}
 	}
 
 	@EventHandler(priority = EventPriority.LOW)
@@ -47,8 +48,9 @@ public class InventoryListener implements Listener {
 		if (u != null) {
 			if (inv.getType() == InventoryType.CHEST) {
 				e.setCancelled(true);
-				if (e.getCursor().getType() == Material.AIR)
+				if (e.getCursor().getType() == Material.AIR) {
 					u.getOpenedMenu().click(e.getCurrentItem(), e.getSlot(), e.getClick());
+				}
 			} else if (inv.getType() == InventoryType.PLAYER
 			        && (e.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY
 			                || e.getAction() == InventoryAction.COLLECT_TO_CURSOR)) {
@@ -74,8 +76,9 @@ public class InventoryListener implements Listener {
 	}
 
 	private User checkMenuAction(HumanEntity whoClicked, Inventory inv) {
-		if (!(whoClicked instanceof Player) || inv == null)
+		if (!(whoClicked instanceof Player) || inv == null) {
 			return null;
+		}
 		User u = um.getOnlineUser((Player) whoClicked);
 		return u.getOpenedMenu() != null ? u : null;
 	}
