@@ -7,6 +7,9 @@ import org.bukkit.Bukkit;
 
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 
+/**
+ * @author MrTigreroux
+ */
 public class BukkitLogger extends Logger {
 
 	private final String name;

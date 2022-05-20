@@ -41,7 +41,6 @@ import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 /**
  * @author MrTigreroux
  */
-
 public class Report {
 
 	private static final Logger LOGGER = Logger.fromClass(Report.class);
@@ -1009,7 +1008,7 @@ public class Report {
 
 	public String getBasicDataAsString() {
 		String[] basicData = new String[] { Integer.toString(reportId), getConfigStatus(), appreciation, date,
-		        reported.getUniqueId().toString(), getReportersUUIDStr(), reason, Boolean.toString(archived) };
+		        reported.getUniqueId().toString(), getReportersUUIDStr(), reason, Integer.toString(archived ? 1 : 0) };
 		for (int i = 0; i < basicData.length; i++) {
 			basicData[i].replace(DATA_SEPARATOR, "");
 		}
@@ -1020,21 +1019,32 @@ public class Report {
 		if (dataAsString == null || dataAsString.isEmpty()) {
 			return null;
 		}
-		Map<String, Object> result = new HashMap<>();
+
 		String[] data = dataAsString.split(DATA_SEPARATOR);
-		if (data.length >= 8) {
-			try {
-				result.put("report_id", Integer.parseInt(data[0]));
-			} catch (NumberFormatException ex) {
-				return null;
-			}
-			result.put("status", data[1]);
-			result.put("appreciation", data[2]);
-			result.put("date", data[3]);
-			result.put("reported_uuid", data[4]);
-			result.put("reporter_uuid", data[5]);
-			result.put("reason", data[6]);
-			result.put("archived", Boolean.parseBoolean(data[7]));
+		if (data.length < 8) {
+			LOGGER.info(() -> "parseBasicDataFromString(" + dataAsString + "): data length < 8");
+			return null;
+		}
+
+		Map<String, Object> result = new HashMap<>();
+		try {
+			result.put("report_id", Integer.parseInt(data[0]));
+		} catch (NumberFormatException ex) {
+			LOGGER.info(() -> "parseBasicDataFromString(" + dataAsString + "): invalid report id: " + data[0]);
+			return null;
+		}
+
+		result.put("status", data[1]);
+		result.put("appreciation", data[2]);
+		result.put("date", data[3]);
+		result.put("reported_uuid", data[4]);
+		result.put("reporter_uuid", data[5]);
+		result.put("reason", data[6]);
+		try {
+			result.put("archived", Integer.parseInt(data[7]));
+		} catch (NumberFormatException ex) {
+			LOGGER.info(() -> "parseBasicDataFromString(" + dataAsString + "): invalid archived value: " + data[7]);
+			return null;
 		}
 		return result;
 	}

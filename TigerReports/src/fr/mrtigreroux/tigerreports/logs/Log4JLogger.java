@@ -4,6 +4,9 @@ import java.util.function.Supplier;
 
 import org.apache.logging.log4j.LogManager;
 
+/**
+ * @author MrTigreroux
+ */
 public class Log4JLogger extends Logger {
 
 	private final org.apache.logging.log4j.Logger logger;

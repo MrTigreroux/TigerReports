@@ -20,11 +20,13 @@ import org.bukkit.event.server.ServerCommandEvent;
 import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.commands.HelpCommand;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
+import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.data.database.Database;
 import fr.mrtigreroux.tigerreports.logs.Logger;
 import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.managers.ReportsManager;
+import fr.mrtigreroux.tigerreports.managers.UpdatesManager;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
 import fr.mrtigreroux.tigerreports.managers.VaultManager;
 import fr.mrtigreroux.tigerreports.objects.users.User;
@@ -41,7 +43,6 @@ import net.md_5.bungee.api.chat.TextComponent;
 /**
  * @author MrTigreroux
  */
-
 public class PlayerListener implements Listener {
 
 	private static final List<String> HELP_COMMANDS = Arrays.asList("tigerreport", "helptigerreport", "reportshelp",
@@ -103,12 +104,48 @@ public class PlayerListener implements Listener {
 		});
 
 		if (u.hasPermission(Permission.MANAGE)) {
+			if (tr.needUpdatesInstructions()) {
+				boolean english = ConfigUtils.getInfoLanguage().equalsIgnoreCase("English");
+				String version = tr.getDescription().getVersion();
+				String oldVersion = UpdatesManager.getLastVersionUsed(tr);
+				String oldVersionStr;
+				if (UpdatesManager.DEFAULT_LAST_USED_VERSION.equals(oldVersion)) {
+					oldVersionStr = english ? "unknown" : "inconnue";
+				} else {
+					oldVersionStr = oldVersion;
+				}
+
+				p.sendMessage("\u00A77[\u00A76TigerReports\u00A77] " + (english
+				        ? "\u00A7cYou updated the plugin \u00A76TigerReports \u00A7cfrom an older version (\u00A77"
+				                + oldVersionStr + "\u00A7c) to the current version (\u00A77" + version
+				                + "\u00A7c) and some data (database and config files) need to be updated."
+				        : "\u00A7cVous avez mis \u00E0 jour le plugin \u00A76TigerReports \u00A7cdepuis une ancienne version (\u00A77"
+				                + oldVersionStr + "\u00A7c) vers la version actuelle (\u00A77" + version
+				                + "\u00A7c) et certaines donn\u00E9es (base de donn\u00E9es et fichiers de configuration) doivent \u00EAtre mises \u00E0 jour."));
+				BaseComponent updateMessage = new TextComponent(english
+				        ? "\u00A7cPlease make a backup of your data of \u00A76TigerReports\u00A7c plugin, then click on: "
+				        : "\u00A7cVeuillez faire une sauvegarde de vos donn\u00E9es du plugin \u00A76TigerReports\u00A7c, puis cliquez sur: ");
+				updateMessage.setColor(ChatColor.RED);
+				BaseComponent button = new TextComponent(english ? "\u00A77[\u00A7aUpdate data\u00A77]"
+				        : "\u00A77[\u00A7aMettre \u00E0 jour les donn\u00E9es\u00A77]");
+				button.setColor(ChatColor.GREEN);
+				button.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder((english
+				        ? "\u00A76Left click \u00A77to update the data \n\u00A77of the plugin"
+				        : "\u00A76Clic gauche \u00A77pour mettre \u00E0 jour les donn\u00E9es \n\u00A77du plugin")
+				        + " \u00A7eTigerReports\u00A77.").create()));
+				button.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
+				        "/tigerreports:reports update_data " + oldVersion));
+				updateMessage.addExtra(button);
+				ConfigSound.ERROR.play(p);
+				p.spigot().sendMessage(updateMessage);
+			}
+
 			String newVersion = tr.getNewVersion();
 			if (newVersion != null) {
 				boolean english = ConfigUtils.getInfoLanguage().equalsIgnoreCase("English");
 				p.sendMessage("\u00A77[\u00A76TigerReports\u00A77] "
 				        + (english ? "\u00A7eThe plugin \u00A76TigerReports \u00A7ehas been updated."
-				                : "\u00A7eLe plugin \u00A76TigerReports \u00A7ea \u00E9t\u00E9 mis à jour."));
+				                : "\u00A7eLe plugin \u00A76TigerReports \u00A7ea \u00E9t\u00E9 mis \u00E0 jour."));
 				BaseComponent updateMessage = new TextComponent(
 				        english ? "The new version \u00A77" + newVersion + " \u00A7eis available on: "
 				                : "La nouvelle version \u00A77" + newVersion + " \u00A7eest disponible ici: ");

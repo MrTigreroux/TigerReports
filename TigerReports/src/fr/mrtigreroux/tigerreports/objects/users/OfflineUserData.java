@@ -5,6 +5,9 @@ import java.util.Objects;
 import fr.mrtigreroux.tigerreports.managers.VaultManager;
 import fr.mrtigreroux.tigerreports.utils.DatetimeUtils;
 
+/**
+ * @author MrTigreroux
+ */
 public class OfflineUserData implements UserData {
 
 	private String name;

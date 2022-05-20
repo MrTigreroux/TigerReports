@@ -1,16 +1,23 @@
 package fr.mrtigreroux.tigerreports.logs;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
+import org.bukkit.plugin.Plugin;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.utils.CollectionUtils;
 import fr.mrtigreroux.tigerreports.utils.FileUtils;
 
+/**
+ * @author MrTigreroux
+ */
 public abstract class Logger {
+
+	private static final String LOGS_CONFIG_FILE_NAME = "logs.config";
 
 	public static final Logger MAIN;
 	public static final Logger SQL;
@@ -43,8 +50,8 @@ public abstract class Logger {
 				return Level.parse(configLines.get(configLine).substring(loggerName.length() + 2));
 			} catch (IndexOutOfBoundsException | NullPointerException | IllegalArgumentException ex) {
 				Bukkit.getLogger()
-				        .log(Level.SEVERE, "[" + pluginName + "] Invalid logs.config file for " + loggerName + ": "
-				                + CollectionUtils.toString(configLines), ex);
+				        .log(Level.SEVERE, "[" + pluginName + "] Invalid " + LOGS_CONFIG_FILE_NAME + " file for "
+				                + loggerName + ": " + CollectionUtils.toString(configLines), ex);
 				return defaultBukkitLoggerLevel;
 			}
 		}
@@ -62,7 +69,8 @@ public abstract class Logger {
 	}
 
 	static {
-		String pluginName = TigerReports.getInstance().getName();
+		Plugin plugin = TigerReports.getInstance();
+		String pluginName = plugin.getName();
 
 		final GlobalLogger mainGlobalLogger = new GlobalLogger("main", 2, Level.WARNING);
 		final GlobalLogger sqlGlobalLogger = new GlobalLogger("sql", 3, Level.SEVERE);
@@ -71,9 +79,10 @@ public abstract class Logger {
 		final GlobalLogger configGlobalLogger = new GlobalLogger("config", 6, Level.INFO);
 
 		if (Bukkit.getLogger() != null) {
-			List<String> configLines = FileUtils.getFileLines("plugins/" + pluginName + "/logs.config");
+			List<String> configLines;
+			try {
+				configLines = FileUtils.getFileLines(FileUtils.getPluginDataFile(plugin, LOGS_CONFIG_FILE_NAME));
 
-			if (configLines != null) {
 				if (!configLines.isEmpty() && configLines.size() >= 2) {
 					String[] firstLineParams = configLines.get(0).split(",");
 					bukkitLoggersShowName = "1".equals(firstLineParams[0]);
@@ -83,14 +92,16 @@ public abstract class Logger {
 						classBukkitLoggerLevel = Level.parse(configLines.get(1).substring(7));
 					} catch (IndexOutOfBoundsException | NullPointerException | IllegalArgumentException ex) {
 						Bukkit.getLogger()
-						        .log(Level.SEVERE, "[" + pluginName + "] Invalid logs.config file for class: "
-						                + CollectionUtils.toString(configLines), ex);
+						        .log(Level.SEVERE, "[" + pluginName + "] Invalid " + LOGS_CONFIG_FILE_NAME
+						                + " file for class: " + CollectionUtils.toString(configLines), ex);
 					}
 				} else {
 					Bukkit.getLogger()
-					        .log(Level.SEVERE, "[" + pluginName + "] Invalid logs.config file: "
+					        .log(Level.SEVERE, "[" + pluginName + "] Invalid " + LOGS_CONFIG_FILE_NAME + " file: "
 					                + CollectionUtils.toString(configLines));
 				}
+			} catch (IOException | SecurityException e) {
+				configLines = null;
 			}
 
 			MAIN = mainGlobalLogger.createBukkitLogger(configLines, pluginName, bukkitLoggersShowName,
@@ -105,7 +116,7 @@ public abstract class Logger {
 			        bukkitLoggersUseColors);
 
 			if (configLines != null) {
-				MAIN.info(() -> "Using logs.config file.");
+				MAIN.info(() -> "Using " + LOGS_CONFIG_FILE_NAME + " file.");
 			}
 		} else {
 			MAIN = mainGlobalLogger.createLog4JLogger(pluginName);

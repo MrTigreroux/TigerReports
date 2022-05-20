@@ -19,6 +19,7 @@ import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.data.database.Database;
 import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.managers.ReportsManager;
+import fr.mrtigreroux.tigerreports.managers.UpdatesManager;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
 import fr.mrtigreroux.tigerreports.managers.VaultManager;
 import fr.mrtigreroux.tigerreports.objects.reports.Report;
@@ -102,6 +103,19 @@ public class ReportsCommand implements TabExecutor {
 				}
 
 			});
+			return true;
+		}
+
+		if (args.length == 2 && args[0].equals("update_data") && Permission.MANAGE.check(s)) {
+			UpdatesManager.runUpdatesInstructions(args[1], tr, tr, db);
+			UpdatesManager.updateLastVersionUsed(tr);
+			tr.updateNeedUpdatesInstructions(false);
+			if (s instanceof Player) {
+				ConfigSound.STAFF.play((Player) s);
+			}
+			s.sendMessage("\u00A77[\u00A76TigerReports\u00A77] " + ConfigUtils.getInfoMessage(
+			        "\u00A7eData should have been \u00A7aupdated\u00A7e. Check if there is an error in the logs/console.",
+			        "\u00A7eLes donn\u00E9es devraient avoir \u00E9t\u00E9 \u00A7amises \u00E0 jour\u00A7e. V\u00E9rifiez qu'il n'y ait pas d'erreur dans les logs/console."));
 			return true;
 		}
 

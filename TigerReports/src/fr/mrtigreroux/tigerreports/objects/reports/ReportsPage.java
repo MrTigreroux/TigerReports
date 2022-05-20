@@ -14,6 +14,9 @@ import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
 import fr.mrtigreroux.tigerreports.tasks.runnables.MenuUpdater;
 import fr.mrtigreroux.tigerreports.utils.CollectionUtils;
 
+/**
+ * @author MrTigreroux
+ */
 public class ReportsPage implements Report.ReportListener {
 
 	private static final Logger LOGGER = Logger.fromClass(ReportsPage.class);

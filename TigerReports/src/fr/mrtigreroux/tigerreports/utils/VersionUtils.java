@@ -1,44 +1,67 @@
 package fr.mrtigreroux.tigerreports.utils;
 
-import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 
+import fr.mrtigreroux.tigerreports.logs.Logger;
+
+/**
+ * @author MrTigreroux
+ */
 public class VersionUtils {
 
-	private static double version = 0;
+	private static final int MAX_VERSION_TOKEN_VALUE = 100;
+	private static int minecraftVersion = 0;
 
 	private VersionUtils() {}
 
-	public static String ver() {
-		String pkg = Bukkit.getServer().getClass().getPackage().getName();
-		return pkg.substring(pkg.lastIndexOf(".") + 1);
-	}
-
-	private static double getVersion() {
-		if (version == 0) {
-			String ver = Bukkit.getVersion();
-			ver = ver.substring(ver.indexOf('(') + 5, ver.length() - 1).replaceFirst("\\.", "");
+	private static int getMinecraftVersion() {
+		if (minecraftVersion == 0) {
+			String bukkitVersion = Bukkit.getVersion();
+			final String fver = bukkitVersion;
+			Logger.MAIN.info(() -> "bukkit version: " + fver);
 			try {
-				version = Double.parseDouble(ver + (StringUtils.countMatches(ver, ".") == 0 ? ".0" : ""));
-			} catch (Exception ignored) {}
+				minecraftVersion = toInt(
+				        bukkitVersion.substring(bukkitVersion.indexOf('(') + 5, bukkitVersion.length() - 1));
+			} catch (NumberFormatException e) {
+				Logger.CONFIG.error(ConfigUtils.getInfoMessage(
+				        "Failed to extract the Minecraft version (bukkit version = " + bukkitVersion + "):",
+				        "La version Minecraft n'a pas pu etre extraite (bukkit version = " + bukkitVersion + "):"), e);
+			}
+			Logger.MAIN.info(() -> "MC version: " + minecraftVersion + ", checks: old: " + isOldVersion() + ", <1.9: "
+			        + isVersionLower1_9() + ", <1.13: " + isVersionLower1_13() + ", >=1.16: " + isVersionAtLeast1_16());
 		}
-		return version;
+		return minecraftVersion;
 	}
 
 	public static boolean isOldVersion() {
-		return getVersion() < 18;
+		return getMinecraftVersion() < 10800;
 	}
 
 	public static boolean isVersionLower1_9() {
-		return getVersion() < 19;
+		return getMinecraftVersion() < 10900;
 	}
 
 	public static boolean isVersionLower1_13() {
-		return getVersion() < 113;
+		return getMinecraftVersion() < 11300;
 	}
 
 	public static boolean isVersionAtLeast1_16() {
-		return getVersion() >= 116;
+		return getMinecraftVersion() >= 11600;
+	}
+
+	public static int toInt(String version) throws NumberFormatException {
+		if (version == null) {
+			return -1;
+		}
+
+		String[] verTokens = version.split("\\.");
+		int result = 0;
+		int decimal = verTokens.length >= 3 ? 1 : 100; // 1.2 = 1.2.0 = 1 20 00
+		for (int i = verTokens.length - 1; i >= 0; i--) {
+			result += Integer.parseInt(verTokens[i]) * decimal;
+			decimal *= MAX_VERSION_TOKEN_VALUE;
+		}
+		return result;
 	}
 
 }

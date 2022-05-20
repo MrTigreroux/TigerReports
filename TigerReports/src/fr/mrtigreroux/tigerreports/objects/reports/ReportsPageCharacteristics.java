@@ -2,6 +2,9 @@ package fr.mrtigreroux.tigerreports.objects.reports;
 
 import java.util.Objects;
 
+/**
+ * @author MrTigreroux
+ */
 public class ReportsPageCharacteristics {
 
 	public final ReportsCharacteristics reportsCharacteristics;

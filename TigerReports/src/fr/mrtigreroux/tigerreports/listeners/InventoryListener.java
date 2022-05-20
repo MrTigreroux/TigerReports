@@ -21,7 +21,6 @@ import fr.mrtigreroux.tigerreports.objects.users.User;
 /**
  * @author MrTigreroux
  */
-
 public class InventoryListener implements Listener {
 
 	private Database db;

@@ -33,6 +33,7 @@ import fr.mrtigreroux.tigerreports.objects.reports.Report;
 import fr.mrtigreroux.tigerreports.objects.reports.Report.StatusDetails;
 import fr.mrtigreroux.tigerreports.objects.users.User;
 import fr.mrtigreroux.tigerreports.tasks.ResultCallback;
+import fr.mrtigreroux.tigerreports.utils.CollectionUtils;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 import fr.mrtigreroux.tigerreports.utils.ReportUtils;
@@ -42,6 +43,8 @@ import fr.mrtigreroux.tigerreports.utils.ReportUtils;
  */
 
 public class BungeeManager implements PluginMessageListener {
+
+	private static final Logger LOGGER = Logger.fromClass(BungeeManager.class);
 
 	public static final String MESSAGE_DATA_SEPARATOR = " ";
 	public static final int RECENT_MESSAGE_MAX_DELAY = 5000;
@@ -521,7 +524,12 @@ public class BungeeManager implements PluginMessageListener {
 				default:
 					break;
 				}
-			} catch (Exception ignored) {}
+			} catch (Exception ex) {
+				LOGGER.error(
+				        ConfigUtils.getInfoMessage("An error has occurred when processing a BungeeCord notification:",
+				                "Une erreur est survenue en traitant une notification BungeeCord:"),
+				        ex);
+			}
 		} else if (subchannel.equals("GetServer")) {
 			serverName = in.readUTF();
 		} else if (subchannel.equals("PlayerList")) {
@@ -587,6 +595,7 @@ public class BungeeManager implements PluginMessageListener {
 		String reportDataAsString = message.substring(reportDataStartIndex);
 		Map<String, Object> reportData = Report.parseBasicDataFromString(reportDataAsString);
 		if (reportData == null) {
+			LOGGER.info(() -> "getReportFromData(): reportData = null, reportDataAsString = " + reportDataAsString);
 			resultCallback.onResultReceived(null);
 			return;
 		}
@@ -606,11 +615,15 @@ public class BungeeManager implements PluginMessageListener {
 	        boolean reportMissingData, String reportDataAsString) {
 		Map<String, Object> reportData = Report.parseBasicDataFromString(reportDataAsString);
 		if (reportData == null) {
+			LOGGER.info(
+			        () -> "processNewReportMessage(): reportData = null, reportDataAsString = " + reportDataAsString);
 			return;
 		}
 
 		int reportId = (int) reportData.get("report_id");
 
+		LOGGER.info(() -> "processNewReportMessage(): reportData = " + CollectionUtils.toString(reportData)
+		        + ", isRecentMsg = " + isRecentMsg + ", notify = " + notify);
 		if (isRecentMsg) {
 			rm.updateAndGetReport(reportId, reportData, false, false, db, tr, um, createNewReportResultCallback(notify,
 			        reportServer, reportMissingData, reportDataAsString, reportData));

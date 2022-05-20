@@ -7,6 +7,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.BiConsumer;
 
+/**
+ * @author MrTigreroux
+ */
 public class CollectionUtils {
 
 	private static final String ELEMENTS_SEPARATOR = ", ";

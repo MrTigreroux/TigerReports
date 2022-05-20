@@ -59,7 +59,6 @@ import net.md_5.bungee.api.chat.TextComponent;
 /**
  * @author MrTigreroux
  */
-
 public class User {
 
 	private static final Logger LOGGER = Logger.fromClass(User.class);

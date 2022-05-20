@@ -19,7 +19,6 @@ import fr.mrtigreroux.tigerreports.utils.VersionUtils;
 /**
  * @author MrTigreroux
  */
-
 public class CustomItem {
 
 	private Material material = null;

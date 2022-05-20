@@ -29,6 +29,7 @@ import fr.mrtigreroux.tigerreports.listeners.PlayerListener;
 import fr.mrtigreroux.tigerreports.logs.Logger;
 import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.managers.ReportsManager;
+import fr.mrtigreroux.tigerreports.managers.UpdatesManager;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
 import fr.mrtigreroux.tigerreports.managers.VaultManager;
 import fr.mrtigreroux.tigerreports.objects.users.User;
@@ -42,7 +43,6 @@ import fr.mrtigreroux.tigerreports.utils.WebUtils;
 /**
  * @author MrTigreroux Published on: 30/06/2016
  */
-
 public class TigerReports extends JavaPlugin implements TaskScheduler {
 
 	private static final String SPIGOTMC_RESOURCE_ID = "25773";
@@ -51,6 +51,7 @@ public class TigerReports extends JavaPlugin implements TaskScheduler {
 
 	private boolean loaded = false;
 	private String newVersion = null;
+	private boolean needUpdatesInstructions = false;
 	private WeakReference<Database> database;
 	private BungeeManager bungeeManager;
 	private UsersManager usersManager;
@@ -127,6 +128,8 @@ public class TigerReports extends JavaPlugin implements TaskScheduler {
 					}
 
 				});
+
+				updateNeedUpdatesInstructions(true);
 			}
 
 		});
@@ -335,6 +338,38 @@ public class TigerReports extends JavaPlugin implements TaskScheduler {
 		for (Consumer<Boolean> listeners : loadUnloadListeners) {
 			listeners.accept(loaded);
 		}
+	}
+
+	public void updateNeedUpdatesInstructions(boolean updateLastVersionUsed) {
+		needUpdatesInstructions = UpdatesManager.needUpdatesInstructions(instance);
+		if (!needUpdatesInstructions) {
+			if (updateLastVersionUsed) {
+				UpdatesManager.updateLastVersionUsed(instance);
+			}
+		} else {
+			String version = getDescription().getVersion();
+			String oldVersion = UpdatesManager.getLastVersionUsed(instance);
+			String oldVersionStr;
+			boolean english = ConfigUtils.getInfoLanguage().equalsIgnoreCase("English");
+			if (UpdatesManager.DEFAULT_LAST_USED_VERSION.equals(oldVersion)) {
+				oldVersionStr = english ? "unknown" : "inconnue";
+			} else {
+				oldVersionStr = oldVersion;
+			}
+			String command = "/reports update_data " + oldVersion;
+			Logger.CONFIG.error(english ? "You updated the plugin from an older version (" + oldVersionStr
+			        + ") to the current version (" + version
+			        + ") and some data (database and config files) need to be updated. Please make a backup of your data of TigerReports plugin, then run the command: "
+			        + command
+			        : "Vous avez mis a jour le plugin depuis une ancienne version (" + oldVersionStr
+			                + ") vers la version actuelle (" + version
+			                + ") et certaines donnees (base de donnees et fichiers de configuration) doivent etre mises a jour. Veuillez faire une sauvegarde de vos donnees du plugin TigerReports, puis executer la commande: "
+			                + command);
+		}
+	}
+
+	public boolean needUpdatesInstructions() {
+		return needUpdatesInstructions;
 	}
 
 }

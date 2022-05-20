@@ -18,7 +18,6 @@ import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
 /**
  * @author MrTigreroux
  */
-
 public class WebUtils {
 
 	private WebUtils() {}

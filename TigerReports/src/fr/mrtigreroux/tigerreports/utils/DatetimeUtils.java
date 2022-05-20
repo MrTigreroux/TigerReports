@@ -7,6 +7,9 @@ import java.util.Calendar;
 
 import fr.mrtigreroux.tigerreports.data.config.Message;
 
+/**
+ * @author MrTigreroux
+ */
 public class DatetimeUtils {
 
 	public static final String[] TIME_UNITS = new String[] { "YEAR", "MONTH", "WEEK", "DAY", "HOUR", "MINUTE",

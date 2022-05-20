@@ -799,7 +799,7 @@ public class ReportsManager {
 		if (valueForInitialization != null && r == null) {
 			r = valueForInitialization;
 			reports.put(reportId, r);
-			LOGGER.info(() -> "getCachedReportById(): " + reportId + " added to cache:" + valueForInitialization);
+			LOGGER.info(() -> "getCachedReportById(): " + reportId + " added to cache: " + valueForInitialization);
 		}
 
 		return r;

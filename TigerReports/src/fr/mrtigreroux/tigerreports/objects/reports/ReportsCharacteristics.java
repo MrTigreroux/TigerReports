@@ -3,6 +3,9 @@ package fr.mrtigreroux.tigerreports.objects.reports;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * @author MrTigreroux
+ */
 public class ReportsCharacteristics {
 
 	public static final ReportsCharacteristics CURRENT_REPORTS = new ReportsCharacteristics(null, null, false);

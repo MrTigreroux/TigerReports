@@ -9,6 +9,9 @@ import fr.mrtigreroux.tigerreports.objects.Comment;
 import fr.mrtigreroux.tigerreports.objects.menus.Menu;
 import fr.mrtigreroux.tigerreports.objects.reports.Report;
 
+/**
+ * @author MrTigreroux
+ */
 public class OnlineUserData implements UserData {
 
 	final Player p;

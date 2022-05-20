@@ -53,7 +53,7 @@ public class MessageUtils {
 		} else {
 			TRANSLATE_COLOR_CODES_METHOD = string -> org.bukkit.ChatColor
 			        .translateAlternateColorCodes(ConfigUtils.getColorCharacter(), string);
-			APPEND_TEXT_WITH_TRANSLATED_COLOR_CODES_TO_COMPONENT_BUILDER_METHOD = BaseComponent::addExtra;
+			APPEND_TEXT_WITH_TRANSLATED_COLOR_CODES_TO_COMPONENT_BUILDER_METHOD = (bc, text) -> bc.addExtra(text);
 		}
 	}
 

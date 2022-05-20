@@ -10,6 +10,9 @@ import fr.mrtigreroux.tigerreports.objects.reports.ReportsPage;
 import fr.mrtigreroux.tigerreports.objects.users.User;
 import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
 
+/**
+ * @author MrTigreroux
+ */
 public abstract class ReportsPageMenu extends Menu implements ReportsPage.ReportsPageListener {
 
 	private static final Logger LOGGER = Logger.fromClass(ReportsPageMenu.class);
@@ -28,7 +31,7 @@ public abstract class ReportsPageMenu extends Menu implements ReportsPage.Report
 		this.db = db;
 		this.taskScheduler = taskScheduler;
 		this.um = um;
-		this.reportsPage = rm.getAndListenReportsPage(reportsCharacteristics, page, true, this, db, taskScheduler, um);
+		reportsPage = rm.getAndListenReportsPage(reportsCharacteristics, page, true, this, db, taskScheduler, um);
 	}
 
 	@Override
