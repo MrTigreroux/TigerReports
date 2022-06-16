@@ -23,6 +23,7 @@ import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 
 public abstract class Database {
 
+	private static final long CLOSING_DELAY = 10L * 1000L;
 	protected final TaskScheduler taskScheduler;
 	protected Connection connection;
 	private int closingTaskId = -1;
@@ -44,10 +45,15 @@ public abstract class Database {
 			if (isConnectionValid()) {
 				return true;
 			}
-		} catch (SQLException ignored) {}
+		} catch (SQLException ignored) {
+			Logger.SQL.warn(() -> "checkConnection(): isConnectionValid() failed");
+		}
 		try {
 			openConnection();
-		} catch (Exception ignored) {}
+			Logger.SQL.info(() -> "checkConnection(): openConnection() succeeded");
+		} catch (Exception ignored) {
+			Logger.SQL.warn(() -> "checkConnection(): openConnection() failed");
+		}
 		return connection != null;
 	}
 
@@ -90,24 +96,23 @@ public abstract class Database {
 		if (checkConnection()) {
 			try (PreparedStatement ps = connection.prepareStatement(query)) {
 				prepare(ps, parameters);
-				ResultSet rs = ps.executeQuery();
-
-				List<Map<String, Object>> resultList = new ArrayList<>();
-				Map<String, Object> row = null;
-				ResultSetMetaData metaData = rs.getMetaData();
-				int columnCount = metaData.getColumnCount();
-				while (rs.next()) {
-					row = new HashMap<>();
-					for (int i = 1; i <= columnCount; i++) {
-						row.put(metaData.getColumnName(i), rs.getObject(i));
+				try (ResultSet rs = ps.executeQuery()) {
+					List<Map<String, Object>> resultList = new ArrayList<>();
+					Map<String, Object> row = null;
+					ResultSetMetaData metaData = rs.getMetaData();
+					int columnCount = metaData.getColumnCount();
+					while (rs.next()) {
+						row = new HashMap<>();
+						for (int i = 1; i <= columnCount; i++) {
+							row.put(metaData.getColumnName(i), rs.getObject(i));
+						}
+						resultList.add(row);
 					}
-					resultList.add(row);
-				}
 
-				close(rs);
-				Logger.SQL.info(() -> "query(" + query + ", " + CollectionUtils.toString(parameters) + "): result: "
-				        + CollectionUtils.toString(resultList));
-				return new QueryResult(resultList);
+					Logger.SQL.info(() -> "query(" + query + ", " + CollectionUtils.toString(parameters) + "): result: "
+					        + CollectionUtils.toString(resultList));
+					return new QueryResult(resultList);
+				}
 			} catch (SQLException ex) {
 				logDatabaseError(ex);
 				return new QueryResult(new ArrayList<>());
@@ -185,14 +190,6 @@ public abstract class Database {
 		});
 	}
 
-	private void close(ResultSet rs) {
-		if (rs != null) {
-			try {
-				rs.close();
-			} catch (SQLException ignored) {}
-		}
-	}
-
 	public void startClosing() {
 		startClosing(false);
 	}
@@ -208,7 +205,7 @@ public abstract class Database {
 		} catch (SQLException ignored) {}
 
 		forcedClosing = true;
-		closingTaskId = taskScheduler.runTaskDelayedly(60L * 1000L, new Runnable() {
+		closingTaskId = taskScheduler.runTaskDelayedly(CLOSING_DELAY, new Runnable() {
 
 			@Override
 			public void run() {
@@ -239,9 +236,12 @@ public abstract class Database {
 			}
 			connection = null;
 			forcedClosing = false;
+			Logger.SQL.info(() -> "closeConnection(): succeeded");
 
 			cancelClosing();
-		} catch (SQLException ignored) {}
+		} catch (SQLException ignored) {
+			Logger.SQL.info(() -> "closeConnection(): failed");
+		}
 	}
 
 	private void logDatabaseError(Exception ex) {
