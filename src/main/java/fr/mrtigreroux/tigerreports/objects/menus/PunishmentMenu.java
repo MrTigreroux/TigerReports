@@ -11,6 +11,7 @@ import org.bukkit.inventory.ItemStack;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
+import fr.mrtigreroux.tigerreports.data.constants.Appreciation;
 import fr.mrtigreroux.tigerreports.data.constants.MenuItem;
 import fr.mrtigreroux.tigerreports.data.constants.MenuRawItem;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
@@ -68,10 +69,12 @@ public class PunishmentMenu extends ReportManagerMenu {
 		int slot = ConfigUtils.isEnabled("Config.Punishments.DefaultReasons")
 		        ? implement(inv, "Config.DefaultReasons.Reason", firstPunishment, 18)
 		        : 18;
-		if (slot < 44)
+		if (slot < 44) {
 			slot = implement(inv, "Config.Punishments.Punishment", slot == 18 ? firstPunishment : 1, slot);
-		if (slot == 45)
+		}
+		if (slot == 45) {
 			inv.setItem(size - 3, MenuItem.PAGE_SWITCH_NEXT.get());
+		}
 		return inv;
 	}
 
@@ -89,15 +92,19 @@ public class PunishmentMenu extends ReportManagerMenu {
 		for (int configIndex = firstConfigIndex; configIndex <= firstConfigIndex + 27; configIndex++) {
 			String path = prepath + configIndex;
 			boolean punishCommandsExists = ConfigUtils.exists(configFile, path + ".PunishCommands");
-			if (slot > 44)
+			if (slot > 44) {
 				return punishCommandsExists ? 45 : 46;
-			if (!ConfigUtils.exists(configFile, path))
+			}
+			if (!ConfigUtils.exists(configFile, path)) {
 				break;
-			if (!punishCommandsExists)
+			}
+			if (!punishCommandsExists) {
 				continue;
+			}
 			String permission = configFile.getString(path + ".PunishCommandsPermission");
-			if (permission != null && !p.hasPermission(permission))
+			if (permission != null && !p.hasPermission(permission)) {
 				continue;
+			}
 
 			String punishment = configFile.getString(path + ".Name");
 			if (punishment != null) {
@@ -128,7 +135,8 @@ public class PunishmentMenu extends ReportManagerMenu {
 			u.openReportMenu(r.getId(), rm, db, taskScheduler, vm, bm, um);
 		} else if (slot == 8) {
 			u.afterProcessingAReport(true, rm, db, taskScheduler, vm, bm, um);
-			r.process(u, "True", false, u.hasPermission(Permission.STAFF_ARCHIVE_AUTO), true, db);
+			r.process(u, Appreciation.TRUE, false, u.hasPermission(Permission.STAFF_ARCHIVE_AUTO), true, db, rm, vm, bm,
+			        taskScheduler);
 		} else if (slot >= 18 && slot <= size - 10) {
 			ConfigSound.MENU.play(p);
 			String configIndex = configIndexes.get(slot);

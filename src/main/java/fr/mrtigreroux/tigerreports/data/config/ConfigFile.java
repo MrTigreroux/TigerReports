@@ -28,8 +28,9 @@ public enum ConfigFile {
 
 	public void load(TigerReports tr) {
 		file = new File(tr.getDataFolder(), name().toLowerCase() + ".yml");
-		if (!file.exists())
+		if (!file.exists()) {
 			reset(tr);
+		}
 		config = YamlConfiguration.loadConfiguration(file);
 
 		try {

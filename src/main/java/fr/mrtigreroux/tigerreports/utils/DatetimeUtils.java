@@ -3,20 +3,24 @@ package fr.mrtigreroux.tigerreports.utils;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Calendar;
 
 import fr.mrtigreroux.tigerreports.data.config.Message;
+import fr.mrtigreroux.tigerreports.logs.Logger;
 
 /**
  * @author MrTigreroux
  */
 public class DatetimeUtils {
 
+	private static final Logger LOGGER = Logger.fromClass(DatetimeUtils.class);
 	public static final String[] TIME_UNITS = new String[] { "YEAR", "MONTH", "WEEK", "DAY", "HOUR", "MINUTE",
 	        "SECOND" };
 	public static final int[] SECONDS_IN_UNIT = new int[] { 365 * 24 * 60 * 60, 30 * 24 * 60 * 60, 7 * 24 * 60 * 60,
 	        24 * 60 * 60, 60 * 60, 60 };
-	public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
+	public static final String DATETIME_FORMAT = "dd/MM/yyyy HH:mm:ss";
+	public static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern(DATETIME_FORMAT)
 	        .withZone(ConfigUtils.getZoneId());
 
 	private DatetimeUtils() {}
@@ -25,26 +29,26 @@ public class DatetimeUtils {
 		return (byte) Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
 	}
 
-	public static String getRelativeDate(long secondsToAdd) {
+	public static String getRelativeDatetime(long secondsToAdd) {
 		try {
-			return ZonedDateTime.now().plusSeconds(secondsToAdd).format(DatetimeUtils.DATE_FORMATTER);
+			return ZonedDateTime.now().plusSeconds(secondsToAdd).format(DatetimeUtils.DATETIME_FORMATTER);
 		} catch (Exception ex) {
 			return Message.NOT_FOUND_FEMALE.get();
 		}
 	}
 
-	public static String getNowDate() {
+	public static String getNowDatetime() {
 		try {
-			return ZonedDateTime.now().format(DatetimeUtils.DATE_FORMATTER);
+			return ZonedDateTime.now().format(DatetimeUtils.DATETIME_FORMATTER);
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			return Message.NOT_FOUND_FEMALE.get();
+			return null;
 		}
 	}
 
-	public static long getSeconds(String date) {
+	public static long getSeconds(String datetime) {
 		try {
-			return ZonedDateTime.parse(date, DatetimeUtils.DATE_FORMATTER).toEpochSecond();
+			return ZonedDateTime.parse(datetime, DatetimeUtils.DATETIME_FORMATTER).toEpochSecond();
 		} catch (Exception ex) {
 			return -1;
 		}
@@ -86,18 +90,30 @@ public class DatetimeUtils {
 		return length > 1 ? sentenceBuilder.deleteCharAt(length - 1).toString() : "0 " + Message.SECOND.get();
 	}
 
-	public static String getTimeAgo(String date) {
-		return convertToSentence(-DatetimeUtils.getSecondsBetweenNowAndDate(date));
+	public static String getTimeAgo(String datetime) {
+		return convertToSentence(-DatetimeUtils.getSecondsBetweenNowAndDatetime(datetime));
 	}
 
-	public static long getSecondsBetweenNowAndDate(String date) {
+	public static long getSecondsBetweenNowAndDatetime(String datetime) {
 		try {
 			return Duration
 			        .between(ZonedDateTime.now(ConfigUtils.getZoneId()),
-			                ZonedDateTime.parse(date, DatetimeUtils.DATE_FORMATTER))
+			                ZonedDateTime.parse(datetime, DatetimeUtils.DATETIME_FORMATTER))
 			        .getSeconds();
 		} catch (Exception invalidDate) {
 			return -1;
+		}
+	}
+
+	public static ZonedDateTime getZonedDateTime(String datetime) {
+		if (datetime == null) {
+			return null;
+		}
+		try {
+			return ZonedDateTime.parse(datetime, DatetimeUtils.DATETIME_FORMATTER);
+		} catch (DateTimeParseException e) {
+			LOGGER.warn(() -> "getZonedDateTime(): invalid datetime: " + datetime);
+			return null;
 		}
 	}
 

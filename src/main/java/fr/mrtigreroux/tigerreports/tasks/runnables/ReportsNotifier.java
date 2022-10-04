@@ -42,13 +42,13 @@ public class ReportsNotifier implements Runnable {
 				int totalAmount = 0;
 
 				for (Status status : Status.values()) {
-					String statusPlaceHolder = "_" + status.getRawName() + "_";
+					String statusPlaceHolder = "_" + status.getConfigName() + "_";
 					if (!reportsNotification.contains(statusPlaceHolder)) {
 						break;
 					}
 					Object amountObj = db.query(
 					        "SELECT COUNT(DISTINCT report_id) AS amount FROM tigerreports_reports WHERE archived = ? AND status LIKE ?",
-					        Arrays.asList(0, status.getRawName() + "%")).getResult(0, "amount");
+					        Arrays.asList(0, status.getConfigName() + "%")).getResult(0, "amount");
 					Integer amount;
 					if (amountObj instanceof Long) {
 						amount = Math.toIntExact((Long) amountObj);
@@ -62,7 +62,7 @@ public class ReportsNotifier implements Runnable {
 					reportsNotification = reportsNotification.replace(statusPlaceHolder,
 					        (amount <= 1 ? Message.REPORT_TYPE : Message.REPORTS_TYPE).get()
 					                .replace("_Amount_", Long.toString(amount))
-					                .replace("_Type_", status.getWord(null).toLowerCase()));
+					                .replace("_Type_", status.getDisplayName(null).toLowerCase()));
 					totalAmount += amount;
 				}
 

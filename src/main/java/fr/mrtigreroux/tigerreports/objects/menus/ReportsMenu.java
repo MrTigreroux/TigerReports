@@ -67,7 +67,7 @@ public class ReportsMenu extends ReportsPageMenu implements UpdatedMenu {
 			if (reportId == -1) {
 				update(false);
 			} else {
-				rm.getReportByIdAsynchronously(reportId, false, true, true, db, taskScheduler, um,
+				rm.getReportByIdAsynchronously(reportId, false, true, db, taskScheduler, um,
 				        new ResultCallback<Report>() {
 
 					        @Override

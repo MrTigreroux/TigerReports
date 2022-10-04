@@ -1,11 +1,6 @@
 package fr.mrtigreroux.tigerreports.logs;
 
-import java.util.function.Supplier;
-import java.util.logging.Level;
-
 import org.bukkit.Bukkit;
-
-import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 
 /**
  * @author MrTigreroux
@@ -17,7 +12,7 @@ public class BukkitLogger extends Logger {
 	private boolean showName = true;
 	private boolean useColors = true;
 	private final java.util.logging.Logger logger;
-	private Level level;
+	private java.util.logging.Level loggingLevel;
 
 	public BukkitLogger(String name, String pluginName, Level minLoggableLevel, boolean showName, boolean useColors) {
 		this.name = name;
@@ -28,52 +23,37 @@ public class BukkitLogger extends Logger {
 		setLevel(minLoggableLevel);
 	}
 
+	@Override
 	public void setLevel(Level level) {
-		this.level = level; // This class uses the main bukkit logger, therefore the levels must be managed here.
-		if (!logger.isLoggable(level)) { // Reduce the level if necessary, but do not increase it because the same bukkit logger is shared across all the BukkitLogger (this class) instances.
-			logger.setLevel(level);
+		loggingLevel = level.getLoggingLevel(); // This class uses the main bukkit logger, therefore the levels must be managed here.
+		if (!logger.isLoggable(loggingLevel)) { // Reduce the level if necessary, but do not increase it because the same bukkit logger is shared across all the BukkitLogger (this class) instances.
+			logger.setLevel(loggingLevel);
 		}
 	}
 
 	@Override
-	public void info(Supplier<?> message) {
-		log(Level.INFO, message);
+	public boolean isLoggable(Level level) {
+		return logger.isLoggable(level.getLoggingLevel())
+		        && level.getLoggingLevel().intValue() >= loggingLevel.intValue(); // This class uses the main bukkit logger, therefore the levels must be managed here.
 	}
 
 	@Override
-	public void warn(Supplier<?> message) {
-		log(Level.WARNING, message);
-	}
-
-	@Override
-	public void error(String message) {
-		log(Level.SEVERE, MessageUtils.LINE);
-		log(Level.SEVERE, message);
-		log(Level.SEVERE, MessageUtils.LINE);
-	}
-
-	@Override
-	public void error(String message, Throwable thrown) {
-		log(Level.SEVERE, message, thrown);
-	}
-
-	public void log(Level level, Supplier<?> messageSupplier) {
-		if (isLoggable(level)) {
-			log(level, messageSupplier.get().toString(), null);
-		}
-	}
-
-	public void log(Level level, String message) {
-		log(level, message, null);
-	}
-
 	public void log(Level level, String message, Throwable thrown) {
 		if (isLoggable(level)) {
-			message = getFormattedMessage(getColoredMessage(message, level), level);
+			if (useColors) {
+				message = level.getColoredMessage(message);
+			}
+
+			if (level.getLoggingLevel().intValue() <= java.util.logging.Level.INFO.intValue()) {
+				// fix levels lower than INFO not printed by Bukkit
+				level = Level.INFO;
+			}
+
+			message = getFormattedMessage(message, level);
 			if (thrown != null) {
-				logger.log(level, message, thrown);
+				logger.log(level.getLoggingLevel(), message, thrown);
 			} else {
-				logger.log(level, message);
+				logger.log(level.getLoggingLevel(), message);
 			}
 		}
 	}
@@ -81,55 +61,13 @@ public class BukkitLogger extends Logger {
 	private String getFormattedMessage(String message, Level level) {
 		String formattedMsg;
 		if (showName) {
-			String adjustementForLevelLength = Level.SEVERE.equals(level) ? "" : " ";
+			String adjustementForLevelLength = level.getDisplayName().length() == 4 ? " " : "";
 			formattedMsg = String.format("[%s] " + adjustementForLevelLength + "%20.20s - %s", pluginName, name,
 			        message);
 		} else {
 			formattedMsg = String.format("[%s] %s", pluginName, message);
 		}
 		return formattedMsg;
-	}
-
-	private String getColoredMessage(String message, Level level) {
-		String color = getLevelColor(level);
-		if (color != null && !color.isEmpty()) {
-			return color + message + "\033[0m";
-		} else {
-			return message;
-		}
-	}
-
-	private String getLevelColor(Level level) {
-		if (!useColors) {
-			return "";
-		}
-
-		if (Level.WARNING.equals(level)) {
-			return "\033[33m";
-		} else if (Level.SEVERE.equals(level)) {
-			return "\033[31m";
-		} else {
-			return "";
-		}
-	}
-
-	@Override
-	public boolean isInfoLoggable() {
-		return isLoggable(Level.INFO);
-	}
-
-	@Override
-	public boolean isWarnLoggable() {
-		return isLoggable(Level.WARNING);
-	}
-
-	@Override
-	public boolean isErrorLoggable() {
-		return isLoggable(Level.SEVERE);
-	}
-
-	public boolean isLoggable(Level level) {
-		return logger.isLoggable(level) && level.intValue() >= this.level.intValue(); // This class uses the main bukkit logger, therefore the levels must be managed here.
 	}
 
 }

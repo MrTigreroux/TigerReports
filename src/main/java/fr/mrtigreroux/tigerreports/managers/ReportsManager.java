@@ -3,6 +3,7 @@ package fr.mrtigreroux.tigerreports.managers;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -15,7 +16,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.inventory.Inventory;
 
-import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.MenuItem;
 import fr.mrtigreroux.tigerreports.data.constants.MenuRawItem;
@@ -39,6 +39,8 @@ import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.ReportUtils;
 
 /**
+ * This class doesn't support multithreading, it must only be accessed by the main thread.
+ * 
  * @author MrTigreroux
  */
 
@@ -49,8 +51,8 @@ public class ReportsManager {
 	private static final String PAGE_CHARACTERISTICS_FAKE_COLUMN = "page_characteristics";
 	public static final int PAGE_MAX_COMMENTS_AMOUNT = 27;
 
-	private static final long DATA_UPDATE_COOLDOWN = 1000L; // in ms
-	private static final long DATA_UPDATE_MAX_TIME = 5 * 60 * 1000L; // in ms
+	public static final long DATA_UPDATE_COOLDOWN = 1000L; // in ms
+	public static final long DATA_UPDATE_MAX_TIME = 5 * 60 * 1000L; // in ms
 
 	private long lastDataUpdateTime = 0;
 	private boolean pendingDataUpdate = false;
@@ -79,9 +81,11 @@ public class ReportsManager {
 			cachedReportsIdBefore = null;
 		}
 
-		synchronized (reports) {
-			Set<Integer> listenedReportsId = reportsListeners.keySet();
-			reports.keySet().retainAll(listenedReportsId);
+		Set<Integer> reportsId = new HashSet<>(reports.keySet());
+		for (int reportId : reportsId) {
+			if (!hasReportListener(reportId)) {
+				removeReportFromCache(reportId);
+			}
 		}
 
 		LOGGER.info(() -> {
@@ -92,9 +96,17 @@ public class ReportsManager {
 		});
 	}
 
-	public boolean addReportListener(int reportId, ReportListener listener, boolean updateIfNoListener, Database db,
+	public void freeUnlistenedReportsPagesFromCache() {
+		for (ReportsPage page : new ArrayList<>(reportsPages.values())) {
+			if (!page.hasListener()) {
+				page.destroy(this);
+			}
+		}
+	}
+
+	public boolean addReportListener(int reportId, ReportListener listener, boolean updateDataIfNoListener, Database db,
 	        TaskScheduler taskScheduler, UsersManager um) {
-		return addListener(reportId, reportsListeners, listener, updateIfNoListener, db, taskScheduler, um);
+		return addListener(reportId, reportsListeners, listener, updateDataIfNoListener, db, taskScheduler, um);
 	}
 
 	public boolean hasReportListener(int reportId) {
@@ -102,53 +114,62 @@ public class ReportsManager {
 		return listeners != null && !listeners.isEmpty();
 	}
 
+	public boolean isReportListenerListeningToReport(int reportId, ReportListener listener) {
+		Set<ReportListener> listeners = reportsListeners.get(reportId);
+		return listeners != null && listeners.contains(listener);
+	}
+
 	public boolean removeReportListener(int reportId, ReportListener listener) {
 		return removeListener(reportId, reportsListeners, listener);
 	}
 
 	public ReportsPage getAndListenReportsPage(ReportsCharacteristics reportsCharacteristics, int page,
-	        boolean initialize, ReportsPageListener listener, Database db, TaskScheduler taskScheduler,
-	        UsersManager um) {
+	        ReportsPageListener listener, Database db, TaskScheduler taskScheduler, UsersManager um) {
 		ReportsPageCharacteristics pageCharac = new ReportsPageCharacteristics(reportsCharacteristics, page);
-		ReportsPage reportsPage = getReportsPage(pageCharac, initialize);
+		ReportsPage reportsPage = getReportsPage(pageCharac, true, db, taskScheduler, um);
 		// reportsPage could be removed from cache between that 2 lines of code because there would be no listener
 		reportsPage.addListener(listener, db, taskScheduler, this, um);
 		if (reportsPages.get(pageCharac) != reportsPage) { // Ensures that the returned reports page is kept in cache and is unique
-			LOGGER.info(
-			        () -> "getAndListenReportsPage(): cached reports page != local reports page, calls getAndListenReportsPage()");
-			return getAndListenReportsPage(reportsCharacteristics, page, initialize, listener, db, taskScheduler, um);
+			throw new ConcurrentModificationException(
+			        "reportsPages was concurrently modified while getting and listening to " + pageCharac);
+			// LOGGER.info(
+//			        () -> "getAndListenReportsPage(): cached reports page != local reports page, calls getAndListenReportsPage()");
+//			return getAndListenReportsPage(reportsCharacteristics, page, initialize, listener, db, taskScheduler, um);
 		} else {
 			return reportsPage;
 		}
 	}
 
 	public ReportsPage getReportsPage(UUID reporterUUID, UUID reportedUUID, boolean archived, int page,
-	        boolean initialize) {
+	        boolean initialize, Database db, TaskScheduler taskScheduler, UsersManager um) {
 		ReportsCharacteristics charac = new ReportsCharacteristics(reporterUUID, reportedUUID, archived);
-		return getReportsPage(charac, page, initialize);
+		return getReportsPage(charac, page, initialize, db, taskScheduler, um);
 	}
 
-	public ReportsPage getReportsPage(ReportsCharacteristics reportsCharacteristics, int page, boolean initialize) {
+	public ReportsPage getReportsPage(ReportsCharacteristics reportsCharacteristics, int page, boolean initialize,
+	        Database db, TaskScheduler taskScheduler, UsersManager um) {
 		ReportsPageCharacteristics pageCharac = new ReportsPageCharacteristics(reportsCharacteristics, page);
-		return getReportsPage(pageCharac, initialize);
+		return getReportsPage(pageCharac, initialize, db, taskScheduler, um);
 	}
 
-	public ReportsPage getReportsPage(ReportsPageCharacteristics pageCharacteristics, boolean initialize) {
+	public ReportsPage getReportsPage(ReportsPageCharacteristics pageCharacteristics, boolean initialize, Database db,
+	        TaskScheduler taskScheduler, UsersManager um) {
 		ReportsPage reportsPage = reportsPages.get(pageCharacteristics);
 		if (reportsPage == null && initialize) {
 			LOGGER.info(() -> "getReportsPage(): initialize page " + pageCharacteristics);
-			reportsPage = new ReportsPage(pageCharacteristics);
+			reportsPage = new ReportsPage(pageCharacteristics, this, db, taskScheduler, um);
 			reportsPages.put(pageCharacteristics, reportsPage);
 		}
 		return reportsPage;
 	}
 
-	public void removeReportsPage(ReportsPageCharacteristics pageCharacteristics) {
+	public void removeReportsPageFromCache(ReportsPageCharacteristics pageCharacteristics) {
+		LOGGER.info(() -> "removeReportsPageFromCache(" + pageCharacteristics + ")");
 		reportsPages.remove(pageCharacteristics);
 	}
 
-	public <L> boolean addListener(int key, Map<Integer, Set<L>> keysListeners, L listener, boolean updateIfNoListener,
-	        Database db, TaskScheduler taskScheduler, UsersManager um) {
+	private <L> boolean addListener(int key, Map<Integer, Set<L>> keysListeners, L listener,
+	        boolean updateDataIfNoListener, Database db, TaskScheduler taskScheduler, UsersManager um) {
 
 		Set<L> listeners = keysListeners.get(key);
 		if (listeners == null) {
@@ -164,14 +185,14 @@ public class ReportsManager {
 			        + CollectionUtils.toString(keysListeners.keySet()));
 		}
 
-		if (wasEmpty && updateIfNoListener && db != null && taskScheduler != null && um != null) { // Data is potentially expired or has never been collected
+		if (wasEmpty && updateDataIfNoListener && db != null && taskScheduler != null && um != null) { // Data is potentially expired or has never been collected
 			updateDataWhenPossible(db, taskScheduler, um);
 			MenuUpdater.startIfNeeded(this, db, taskScheduler, um);
 		}
 		return success;
 	}
 
-	public <L> boolean removeListener(int key, Map<Integer, Set<L>> keysListeners, L listener) {
+	private <L> boolean removeListener(int key, Map<Integer, Set<L>> keysListeners, L listener) {
 		LOGGER.info(() -> "removeListener(): remove listener " + listener + " from " + key);
 		Set<L> listeners = keysListeners.get(key);
 		boolean success = false;
@@ -179,10 +200,11 @@ public class ReportsManager {
 			success = listeners.remove(listener);
 			if (listeners.isEmpty()) {
 				keysListeners.remove(key);
-				if (listener instanceof ReportListener) {
-					LOGGER.info(() -> "removeListener(): remove report " + key + " from cache");
-					reports.remove(key);
-				}
+//				if (listener instanceof ReportListener) {
+//					LOGGER.info(() -> "removeListener(): remove report " + key + " from cache");
+//					reports.remove(key);
+//				}
+				// removed from cache at the end of #updateData
 			}
 		} else {
 			success = true;
@@ -215,38 +237,32 @@ public class ReportsManager {
 	}
 
 	public void updateDataWhenPossible(Database db, TaskScheduler taskScheduler, UsersManager um) {
-		long timeBeforeNextUpdateData = getTimeBeforeNextDataUpdate();
-		LOGGER.info(() -> "updateDataWhenPossible(): timeBeforeNextUpdate=" + timeBeforeNextUpdateData);
-		if (timeBeforeNextUpdateData == 0) {
+		long timeBeforeNextDataUpdate = getTimeBeforeNextDataUpdate();
+		LOGGER.info(() -> "updateDataWhenPossible(): timeBeforeNextDataUpdate = " + timeBeforeNextDataUpdate);
+		if (timeBeforeNextDataUpdate == 0) {
 			try {
 				updateData(db, taskScheduler, um);
 			} catch (IllegalStateException underCooldown) {
 				LOGGER.info(() -> "updateDataWhenPossible(): calls updateDataWhenPossible()");
 				updateDataWhenPossible(db, taskScheduler, um);
 			}
-		} else if (timeBeforeNextUpdateData == -1) {
+		} else if (timeBeforeNextDataUpdate == -1) {
 			dataUpdateRequested = true;
 		} else {
 			if (!pendingDataUpdateWhenPossible) {
 				pendingDataUpdateWhenPossible = true;
 				long now = System.currentTimeMillis();
-				taskScheduler.runTaskDelayedly(timeBeforeNextUpdateData, new Runnable() {
-
-					@Override
-					public void run() {
-						pendingDataUpdateWhenPossible = false;
-						LOGGER.info(() -> "updateDataWhenPossible(): calls updateData() (after having waited "
-						        + (System.currentTimeMillis() - now) + "ms)");
-						try {
-							updateData(db, taskScheduler, um);
-						} catch (IllegalStateException underCooldown) {
-							updateDataWhenPossible(db, taskScheduler, um);
-						}
+				taskScheduler.runTaskDelayedly(timeBeforeNextDataUpdate, () -> {
+					pendingDataUpdateWhenPossible = false;
+					LOGGER.info(() -> "updateDataWhenPossible(): calls updateData() (after having waited "
+					        + (System.currentTimeMillis() - now) + "ms)");
+					try {
+						updateData(db, taskScheduler, um);
+					} catch (IllegalStateException underCooldown) {
+						updateDataWhenPossible(db, taskScheduler, um);
 					}
-
 				});
 			}
-
 		}
 	}
 
@@ -255,11 +271,11 @@ public class ReportsManager {
 	 * 
 	 * @return -1 if undefined, 0 if no cooldown
 	 */
-	private long getTimeBeforeNextDataUpdate() {
+	public long getTimeBeforeNextDataUpdate() {
 		long now = System.currentTimeMillis();
 
 		long timeSinceLastUpdate = now - lastDataUpdateTime;
-		if (pendingDataUpdate) {
+		if (isPendingDataUpdate()) {
 			if (timeSinceLastUpdate <= DATA_UPDATE_MAX_TIME) {
 				LOGGER.info(() -> "getTimeBeforeNextDataUpdate(): pending update, undefined next data update time");
 				return -1;
@@ -271,8 +287,8 @@ public class ReportsManager {
 		}
 
 		if (timeSinceLastUpdate < DATA_UPDATE_COOLDOWN) {
-			LOGGER.info(
-			        () -> "getTimeBeforeNextDataUpdate(): under cooldown, timeSinceLastUpdate=" + timeSinceLastUpdate);
+			LOGGER.info(() -> "getTimeBeforeNextDataUpdate(): under cooldown, timeSinceLastUpdate = "
+			        + timeSinceLastUpdate);
 			return DATA_UPDATE_COOLDOWN - timeSinceLastUpdate;
 		}
 
@@ -280,6 +296,7 @@ public class ReportsManager {
 	}
 
 	private static class ReportCommentsPagesQuery {
+
 		int reportId, minPage, maxPage;
 		QueryResult qr;
 
@@ -303,151 +320,100 @@ public class ReportsManager {
 	public boolean updateData(Database db, TaskScheduler taskScheduler, UsersManager um) throws IllegalStateException {
 		long timeBeforeNextUpdateData = getTimeBeforeNextDataUpdate();
 		if (timeBeforeNextUpdateData != 0) {
-			LOGGER.info(() -> "updateData(): cancelled because under cooldown, timeBeforeNextUpdateData="
+			LOGGER.info(() -> "updateData(): cancelled because under cooldown, timeBeforeNextUpdateData = "
 			        + timeBeforeNextUpdateData);
-			throw new IllegalStateException("Data update is under cooldown.");
+			throw new IllegalStateException("data update is under cooldown");
 		}
-		lastDataUpdateTime = System.currentTimeMillis();
 		pendingDataUpdate = true;
+		lastDataUpdateTime = System.currentTimeMillis();
 
 		Map<Integer, Set<Integer>> reportsCommentsPagesWithSubs = getReportsCommentsWithSubscribers();
 
 		if (reportsListeners.isEmpty() && reportsPages.isEmpty() && reportsCommentsPagesWithSubs == null) {
 			pendingDataUpdate = false;
-			LOGGER.info(() -> "updateData(): cancelled because useless, calls freeUnlistenedReportsFromCache()");
+			LOGGER.info(() -> "updateData(): cancelled because useless");
+			// TODO clear comments from cache ?
+			freeUnlistenedReportsPagesFromCache(); // remove unlistened reports pages before unlistened reports because some reports could be only listened by an unlistened page
 			freeUnlistenedReportsFromCache();
 			return false;
 		}
 
-		taskScheduler.runTaskAsynchronously(new Runnable() {
+		Set<ReportsPageCharacteristics> cachedReportsPagesCharac = new HashSet<>(reportsPages.keySet());
+		taskScheduler.runTaskAsynchronously(() -> {
+			final QueryResult reportsPagesQR = collectReportsPages(cachedReportsPagesCharac, db);
 
-			@Override
-			public void run() {
-				final QueryResult reportsPagesQR = collectReportsPages(new HashSet<>(reportsPages.keySet()), db);
+			final List<ReportCommentsPagesQuery> reportCommentsPagesQueries;
+			if (reportsCommentsPagesWithSubs != null) {
+				reportCommentsPagesQueries = new ArrayList<>();
+				for (Entry<Integer, Set<Integer>> entry : reportsCommentsPagesWithSubs.entrySet()) {
+					Set<Integer> pages = entry.getValue();
+					if (pages != null && !pages.isEmpty()) {
+						ReportCommentsPagesQuery query = new ReportCommentsPagesQuery(entry.getKey(),
+						        Collections.min(pages), Collections.max(pages));
 
-				final List<ReportCommentsPagesQuery> reportCommentsPagesQueries;
-				if (reportsCommentsPagesWithSubs != null) {
-					reportCommentsPagesQueries = new ArrayList<>();
-					for (Entry<Integer, Set<Integer>> entry : reportsCommentsPagesWithSubs.entrySet()) {
-						Set<Integer> pages = entry.getValue();
-						if (pages != null && !pages.isEmpty()) {
-							ReportCommentsPagesQuery query = new ReportCommentsPagesQuery(entry.getKey(),
-							        Collections.min(pages), Collections.max(pages));
-
-							query.qr = collectReportCommentsPages(query.reportId, query.minPage, query.maxPage, db);
-							if (query.qr != null) {
-								reportCommentsPagesQueries.add(query);
-							}
+						query.qr = collectReportCommentsPages(query.reportId, query.minPage, query.maxPage, db);
+						if (query.qr != null) {
+							reportCommentsPagesQueries.add(query);
 						}
 					}
-				} else {
-					reportCommentsPagesQueries = null;
 				}
-
-				taskScheduler.runTask(new Runnable() {
-
-					@Override
-					public void run() {
-						if (reportsPagesQR != null) {
-							updateReportsPages(reportsPagesQR.getResultList(), db, taskScheduler, um);
-							LOGGER.info(() -> "updateData(): updated reports pages (not yet their reports)");
-						}
-
-						Set<Integer> reportsToCollect = getKeysWithSubscribers(reportsListeners);
-
-						if (reportCommentsPagesQueries != null && !reportCommentsPagesQueries.isEmpty()) {
-							if (reportsToCollect == null) {
-								reportsToCollect = new HashSet<>();
-							}
-							for (ReportCommentsPagesQuery query : reportCommentsPagesQueries) {
-								reportsToCollect.add(query.reportId);
-							}
-						}
-
-						final Set<Integer> freportsToCollect = reportsToCollect;
-						LOGGER.info(() -> "updateData(): start collecting reports: "
-						        + CollectionUtils.toString(freportsToCollect));
-						collectReportsAsynchronously(reportsToCollect, db, taskScheduler,
-						        new ResultCallback<QueryResult>() {
-
-							        @Override
-							        public void onResultReceived(QueryResult reportsQR) {
-								        List<Map<String, Object>> results = reportsQR != null
-								                ? reportsQR.getResultList()
-								                : new ArrayList<>();
-								        LOGGER.info(
-								                () -> "updateData(): end collecting reports, start updating reports");
-
-								        updateReports(results, db, taskScheduler, um,
-								                new ResultCallback<List<Report>>() {
-
-									                @Override
-									                public void onResultReceived(List<Report> updatedReports) {
-										                if (LOGGER.isWarnLoggable()) {
-											                int failedUpdateReportsAmount = 0;
-											                StringBuilder failedUpdateReportsData = new StringBuilder();
-											                for (int i = 0; i < updatedReports.size(); i++) {
-												                Report r = updatedReports.get(i);
-												                if (r == null) {
-													                failedUpdateReportsAmount++;
-													                failedUpdateReportsData.append(
-													                        CollectionUtils.toString(results.get(i)));
-												                }
-											                }
-											                final int ffailedUpdateReportsAmount = failedUpdateReportsAmount;
-											                if (failedUpdateReportsAmount > 0) {
-												                LOGGER.warn(
-												                        () -> "updateData(): failed update of reports ("
-												                                + ffailedUpdateReportsAmount + "): ["
-												                                + failedUpdateReportsData + "]");
-											                }
-										                }
-
-										                LOGGER.info(
-										                        () -> "updateData(): start updating reports comments pages");
-										                if (reportCommentsPagesQueries != null
-										                        && !reportCommentsPagesQueries.isEmpty()) {
-											                for (ReportCommentsPagesQuery query : reportCommentsPagesQueries) {
-												                updateReportCommentsPages(query.reportId, query.minPage,
-												                        query.qr.getResultList(), db, taskScheduler,
-												                        um);
-											                }
-										                }
-
-										                LOGGER.info(
-										                        () -> "updateData(): updated reports (overall time spent: "
-										                                + (System.currentTimeMillis()
-										                                        - lastDataUpdateTime)
-										                                + "ms), cached reports: "
-										                                + CollectionUtils.toString(reports.keySet()));
-
-										                LOGGER.info(
-										                        () -> "updateData(): broadcastChangedReportsCommentsPages()");
-										                broadcastChangedReportsCommentsPages();
-										                LOGGER.info(
-										                        () -> "updateData(): broadcastChangedReportsPages()");
-										                broadcastChangedReportsPages();
-
-										                pendingDataUpdate = false;
-
-										                if (dataUpdateRequested) {
-											                dataUpdateRequested = false;
-											                updateDataWhenPossible(db, taskScheduler, um);
-										                }
-									                }
-
-								                });
-							        }
-
-						        });
-
-					}
-
-				});
-
+			} else {
+				reportCommentsPagesQueries = null;
 			}
 
+			taskScheduler.runTask(() -> {
+				if (reportsPagesQR != null) {
+					updateReportsPages(reportsPagesQR.getResultList(), db, taskScheduler);
+					LOGGER.info(() -> "updateData(): updated reports pages (not yet their reports)");
+				}
+
+				Set<Integer> reportsToUpdate = getKeysWithSubscribers(reportsListeners);
+
+				if (reportCommentsPagesQueries != null && !reportCommentsPagesQueries.isEmpty()) {
+					if (reportsToUpdate == null) {
+						reportsToUpdate = new HashSet<>();
+					}
+					for (ReportCommentsPagesQuery query : reportCommentsPagesQueries) {
+						reportsToUpdate.add(query.reportId);
+					}
+				}
+
+				final Set<Integer> freportsToUpdate = reportsToUpdate;
+				LOGGER.info(() -> "updateData(): start collecting and updating reports: "
+				        + CollectionUtils.toString(freportsToUpdate));
+
+				getReportsByIdAsynchronously(reportsToUpdate, false, db, taskScheduler, um, (updatedReports) -> {
+					LOGGER.info(() -> "updateData(): start updating reports comments pages");
+					if (reportCommentsPagesQueries != null && !reportCommentsPagesQueries.isEmpty()) {
+						for (ReportCommentsPagesQuery query : reportCommentsPagesQueries) {
+							updateReportCommentsPages(query.reportId, query.minPage, query.qr.getResultList(), db,
+							        taskScheduler, um);
+						}
+					}
+
+					LOGGER.info(() -> "updateData(): updated reports (overall time spent: "
+					        + (System.currentTimeMillis() - lastDataUpdateTime) + "ms), cached reports: "
+					        + CollectionUtils.toString(reports.keySet()));
+
+					LOGGER.info(() -> "updateData(): broadcastChangedReportsCommentsPages()");
+					broadcastChangedReportsCommentsPages();
+					LOGGER.info(() -> "updateData(): broadcastChangedReportsPages()");
+					broadcastChangedReportsPages();
+
+					freeUnlistenedReportsPagesFromCache(); // remove unlistened reports pages before unlistened reports because some reports could be only listened by an unlistened page
+					freeUnlistenedReportsFromCache();
+
+					pendingDataUpdate = false;
+
+					if (isDataUpdateRequested()) {
+						dataUpdateRequested = false;
+						updateDataWhenPossible(db, taskScheduler, um);
+					}
+				});
+			});
+
 		});
+
 		return true;
 	}
 
@@ -467,7 +433,7 @@ public class ReportsManager {
 		}
 	}
 
-	public <L> Set<Integer> getKeysWithSubscribers(Map<Integer, Set<L>> subscribers) {
+	private static <L> Set<Integer> getKeysWithSubscribers(Map<Integer, Set<L>> subscribers) {
 		if (!areAnyKeyWithSubscriber(subscribers)) {
 			return null;
 		} else {
@@ -475,25 +441,47 @@ public class ReportsManager {
 		}
 	}
 
-	private <L> boolean areAnyKeyWithSubscriber(Map<Integer, Set<L>> subscribers) {
+	private static <L> boolean areAnyKeyWithSubscriber(Map<Integer, Set<L>> subscribers) {
 		return subscribers != null && !subscribers.isEmpty();
 	}
 
-	private void collectReportsAsynchronously(Set<Integer> reportsIds, Database db, TaskScheduler taskScheduler,
-	        ResultCallback<QueryResult> resultCallback) {
-		if (reportsIds == null || reportsIds.isEmpty()) {
+	/**
+	 * Get reports by their id from the database, without using the cache, and then if {@code saveInCache} is true, save or update the reports in cache.
+	 * 
+	 * @param reportsId
+	 * @param withAdvancedData
+	 * @param saveInCache
+	 * @param db
+	 * @param taskScheduler
+	 * @param um
+	 * @param resultCallback
+	 */
+	public void getReportsByIdAsynchronously(Set<Integer> reportsId, boolean withAdvancedData, Database db,
+	        TaskScheduler taskScheduler, UsersManager um, ResultCallback<List<Report>> resultCallback) {
+		collectReportsByIdAsynchronously(reportsId, db, taskScheduler, (reportsQR) -> {
+			List<Map<String, Object>> reportsData = reportsQR != null ? reportsQR.getResultList() : null;
+			LOGGER.info(() -> "getReportsByIdAsynchronously(): reports data received, updateAndGetReports()");
+
+			updateAndGetReports(reportsData, withAdvancedData, db, taskScheduler, um, resultCallback);
+		});
+	}
+
+	private static void collectReportsByIdAsynchronously(Set<Integer> reportsId, Database db,
+	        TaskScheduler taskScheduler, ResultCallback<QueryResult> resultCallback) {
+		if (reportsId == null || reportsId.isEmpty()) {
+			LOGGER.info(() -> "collectReportsByIdAsynchronously(): reportsId = null or empty");
 			resultCallback.onResultReceived(null);
 			return;
 		}
 
-		List<Object> queryParams = Arrays.asList(reportsIds.toArray());
+		List<Object> queryParams = Arrays.asList(reportsId.toArray());
 		StringBuilder query = new StringBuilder("SELECT * FROM tigerreports_reports WHERE report_id IN (?");
 		for (int i = 1; i < queryParams.size(); i++) {
 			query.append(",?");
 		}
-		query.append(")");
+		query.append(") ORDER BY report_id ASC");
 
-		LOGGER.info(() -> "collectReportsAsynchronously(): " + CollectionUtils.toString(queryParams));
+		LOGGER.info(() -> "collectReportsByIdAsynchronously(): " + CollectionUtils.toString(queryParams));
 		db.queryAsynchronously(query.toString(), queryParams, taskScheduler, resultCallback);
 	}
 
@@ -570,8 +558,8 @@ public class ReportsManager {
 		}
 		LOGGER.info(() -> "broadcastReportDataChanged(" + r.getId() + ")");
 		Set<ReportListener> listeners = reportsListeners.get(r.getId());
-		if (listeners != null) {
-			listeners = new HashSet<>(listeners);
+		if (listeners != null && !listeners.isEmpty()) {
+//			listeners = new HashSet<>(listeners);
 			for (ReportListener l : listeners) {
 				l.onReportDataChange(r);
 			}
@@ -581,8 +569,14 @@ public class ReportsManager {
 	public void reportIsDeleted(int reportId) {
 		LOGGER.info(() -> "reportIsDeleted(" + reportId + ")");
 
-		reports.remove(reportId);
 		broadcastReportDeleted(reportId);
+		removeReportFromCache(reportId);
+	}
+
+	public void removeReportFromCache(int reportId) {
+		LOGGER.info(() -> "removeReportFromCache(" + reportId + ")");
+		// TODO rm report comments data from cache ?
+		reports.remove(reportId);
 		reportsListeners.remove(reportId);
 	}
 
@@ -601,7 +595,7 @@ public class ReportsManager {
 		LOGGER.info(() -> "broadcastReportDeleted(" + reportId + ")");
 		Set<ReportListener> listeners = reportsListeners.get(reportId);
 		if (listeners != null) {
-			listeners = new HashSet<>(listeners);
+//			listeners = new HashSet<>(listeners);
 			for (ReportListener l : listeners) {
 				l.onReportDelete(reportId);
 			}
@@ -627,81 +621,90 @@ public class ReportsManager {
 		}
 	}
 
-	public void getReportByIdAsynchronously(int reportId, boolean withAdvancedData, boolean useCache,
-	        boolean saveInCache, Database db, TaskScheduler taskScheduler, UsersManager um,
-	        ResultCallback<Report> resultCallback) {
+	public void getReportByIdAsynchronously(int reportId, boolean withAdvancedData, boolean useCache, Database db,
+	        TaskScheduler taskScheduler, UsersManager um, ResultCallback<Report> resultCallback) {
+		LOGGER.debug(() -> "getReportByIdAsynchronously()");
+		checkValidReportId(reportId);
+
 		if (useCache) {
+			LOGGER.debug(() -> "getReportByIdAsynchronously(): useCache");
 			Report r = getCachedReportById(reportId);
 			if (r != null && (!withAdvancedData || r.hasAdvancedData())) {
+				LOGGER.info(() -> "getReportByIdAsynchronously(): return cached");
 				resultCallback.onResultReceived(r);
 				return;
 			}
 		}
 
+		LOGGER.debug(() -> "getReportByIdAsynchronously(): query to db");
 		db.queryAsynchronously("SELECT * FROM tigerreports_reports WHERE report_id = ? LIMIT 1",
-		        Collections.singletonList(reportId), taskScheduler, new ResultCallback<QueryResult>() {
-
-			        @Override
-			        public void onResultReceived(QueryResult qr) {
-				        updateAndGetReport(reportId, qr, withAdvancedData, saveInCache, db, taskScheduler, um,
-				                resultCallback);
-			        }
-
+		        Collections.singletonList(reportId), taskScheduler, (qr) -> {
+			        LOGGER.debug(() -> "getReportByIdAsynchronously: onResultReceived()");
+			        updateAndGetReport(reportId, qr, withAdvancedData, db, taskScheduler, um, resultCallback);
 		        });
 	}
 
-	public void updateReports(final List<Map<String, Object>> reportsData, int index, Database db,
-	        TaskScheduler taskScheduler, UsersManager um, ResultCallback<Boolean> resultCallback) {
-		if (index < reportsData.size()) {
-			updateAndGetReport(reportsData.get(index), false, true, db, taskScheduler, um,
-			        new ResultCallback<Report>() {
-
-				        @Override
-				        public void onResultReceived(Report r) {
-					        LOGGER.info(() -> "updateReports(): update " + index + "th report "
-					                + (r != null ? "succeeded, id=" + r.getId() : "failed"));
-					        updateReports(reportsData, index + 1, db, taskScheduler, um, resultCallback);
-				        }
-
-			        });
-		} else {
-			resultCallback.onResultReceived(true);
+	private void updateAndGetReports(final List<Map<String, Object>> reportsData, boolean saveAdvancedData, Database db,
+	        TaskScheduler taskScheduler, UsersManager um, ResultCallback<List<Report>> resultCallback) {
+		if (reportsData == null || reportsData.isEmpty()) {
+			LOGGER.info(() -> "updateAndGetReports(): reportsData = null or empty");
+			resultCallback.onResultReceived(null);
+			return;
 		}
-	}
 
-	public void updateReports(final List<Map<String, Object>> reportsData, Database db, TaskScheduler taskScheduler,
-	        UsersManager um, ResultCallback<List<Report>> resultCallback) {
 		SeveralTasksHandler<Report> reportsTaskHandler = new SeveralTasksHandler<>();
 
 		for (Map<String, Object> reportData : reportsData) {
-			updateAndGetReport(reportData, false, true, db, taskScheduler, um, reportsTaskHandler.newTaskResultSlot());
+			updateAndGetReport(reportData, saveAdvancedData, db, taskScheduler, um,
+			        reportsTaskHandler.newTaskResultSlot());
 		}
 
-		reportsTaskHandler.whenAllTasksDone(false, resultCallback);
+		reportsTaskHandler.whenAllTasksDone(false, (reports) -> {
+			if (LOGGER.isWarnLoggable()) {
+				int failedUpdateReportsAmount = 0;
+				StringBuilder failedUpdateReportsData = new StringBuilder();
+				if (reports != null) {
+					for (int i = 0; i < reports.size(); i++) {
+						Report r = reports.get(i);
+						if (r == null) {
+							failedUpdateReportsAmount++;
+							failedUpdateReportsData.append(CollectionUtils.toString(reportsData.get(i)));
+						}
+					}
+				}
+				final int ffailedUpdateReportsAmount = failedUpdateReportsAmount;
+				if (failedUpdateReportsAmount > 0) {
+					LOGGER.warn(() -> "updateAndGetReports(): failed update of reports (" + ffailedUpdateReportsAmount
+					        + "): [" + failedUpdateReportsData + "]");
+				}
+			}
+
+			resultCallback.onResultReceived(reports);
+		});
 	}
 
-	public void updateAndGetReport(Map<String, Object> reportData, boolean saveAdvancedData, boolean saveInCache,
-	        Database db, TaskScheduler taskScheduler, UsersManager um, ResultCallback<Report> resultCallback) {
+	public void updateAndGetReport(Map<String, Object> reportData, boolean saveAdvancedData, Database db,
+	        TaskScheduler taskScheduler, UsersManager um, ResultCallback<Report> resultCallback) {
+		LOGGER.debug(() -> "updateAndGetReport(reportData)");
 		if (reportData == null) {
 			LOGGER.info(() -> "updateAndGetReport(): reportData = null");
 			resultCallback.onResultReceived(null);
 			return;
 		}
 
-		Integer reportId = (Integer) reportData.get("report_id");
+		Integer reportId = (Integer) reportData.get(Report.REPORT_ID);
 		if (reportId != null) {
-			updateAndGetReport(reportId, reportData, saveAdvancedData, saveInCache, db, taskScheduler, um,
-			        resultCallback);
+			updateAndGetReport(reportId, reportData, saveAdvancedData, db, taskScheduler, um, resultCallback);
 		} else {
 			LOGGER.info(() -> "updateAndGetReport(): reportId = null");
 			resultCallback.onResultReceived(null);
 		}
 	}
 
-	public void updateAndGetReport(int reportId, QueryResult qr, boolean saveAdvancedData, boolean saveInCache,
-	        Database db, TaskScheduler taskScheduler, UsersManager um, ResultCallback<Report> resultCallback) {
-		updateAndGetReport(reportId, qr.getResult(0), saveAdvancedData, saveInCache, db, taskScheduler, um,
-		        resultCallback);
+	public void updateAndGetReport(int reportId, QueryResult qr, boolean saveAdvancedData, Database db,
+	        TaskScheduler taskScheduler, UsersManager um, ResultCallback<Report> resultCallback) {
+		LOGGER.debug(() -> "updateAndGetReport(reportId, qr)");
+		updateAndGetReport(reportId, qr.getResult(0), saveAdvancedData, db, taskScheduler, um, resultCallback);
 	}
 
 	/**
@@ -715,73 +718,60 @@ public class ReportsManager {
 	 * @param um
 	 * @param resultCallback
 	 */
-	public void updateAndGetReport(int reportId, Map<String, Object> reportData, boolean saveAdvancedData,
-	        boolean saveInCache, Database db, TaskScheduler taskScheduler, UsersManager um,
-	        ResultCallback<Report> resultCallback) {
+	public void updateAndGetReport(int reportId, Map<String, Object> reportData, boolean saveAdvancedData, Database db,
+	        TaskScheduler taskScheduler, UsersManager um, ResultCallback<Report> resultCallback) {
+		LOGGER.debug(() -> "updateAndGetReport(reportId, reportData)");
 		boolean archived = false;
 		if (reportData != null) {
-			Object archivedObj = reportData.get("archived");
-			if (archivedObj != null) {
-				archived = ((int) archivedObj) == 1;
-			}
+			archived = QueryResult.isTrue(reportData.get(Report.ARCHIVED));
+			final boolean farchived = archived;
+			LOGGER.debug(() -> "updateAndGetReport(reportId, reportData): archived = " + farchived + ", data = "
+			        + reportData.get(Report.ARCHIVED));
 		}
-		updateAndGetReport(reportId, reportData, archived, saveAdvancedData, saveInCache, db, taskScheduler, um,
-		        resultCallback);
+		updateAndGetReport(reportId, reportData, archived, saveAdvancedData, db, taskScheduler, um, resultCallback);
 	}
 
 	/**
 	 * 
 	 * @param reportId
-	 * @param reportData       used to update the report if it is cached, or create the report if it isn't cached.
+	 * @param reportData               used to update the report if it is cached, or create the report if it isn't cached.
 	 * @param archived
 	 * @param saveAdvancedData
-	 * @param saveInCache      if true, the report will be cached if it isn't yet
+	 * @param saveInCacheIfListened    if true and the report has at least one listener, the report will be cached if it isn't yet
+	 * @param saveInCacheIfNotListened if true and the report has not any listener, the report will be cached if it isn't yet
 	 * @param db
 	 * @param taskScheduler
 	 * @param um
 	 * @param resultCallback
 	 */
 	public void updateAndGetReport(int reportId, Map<String, Object> reportData, boolean archived,
-	        boolean saveAdvancedData, boolean saveInCache, Database db, TaskScheduler taskScheduler, UsersManager um,
+	        boolean saveAdvancedData, Database db, TaskScheduler taskScheduler, UsersManager um,
 	        ResultCallback<Report> resultCallback) {
 		final Report r = getCachedReportById(reportId);
 		if (r == null) {
-			LOGGER.info(() -> "updateAndGetReport(): CREATE " + reportId + " (r = null), saveInCache = " + saveInCache);
-			Report.asynchronouslyFrom(reportData, archived, saveAdvancedData, db, taskScheduler, um,
-			        saveInCache ? new ResultCallback<Report>() {
+			LOGGER.info(() -> "updateAndGetReport(): CREATE " + reportId + " (r = null)");
 
-				        @Override
-				        public void onResultReceived(Report newR) {
-					        Report r = getCachedReportById(reportId, newR);
+			Report.asynchronouslyFrom(reportData, archived, saveAdvancedData, db, taskScheduler, um, (newR) -> {
+				Report newCachedR = getCachedReportById(reportId, newR);
 
-					        if (r != null) {
-						        broadcastReportDataChanged(r);
-					        }
-					        resultCallback.onResultReceived(r);
-				        }
-
-			        } : resultCallback);
+				if (newCachedR != null) {
+					broadcastReportDataChanged(newCachedR);
+				}
+				resultCallback.onResultReceived(newCachedR);
+			});
 		} else if (reportData != null) {
 			LOGGER.info(() -> "updateAndGetReport(): UPDATE " + reportId
 			        + " (r != null, reportData != null), report before update: " + r);
-			r.update(reportData, archived, saveAdvancedData, db, taskScheduler, um, new ResultCallback<Boolean>() {
-
-				@Override
-				public void onResultReceived(Boolean changed) {
-					if (changed) {
-						broadcastReportDataChanged(r);
-					}
-					resultCallback.onResultReceived(r);
+			r.update(reportData, archived, saveAdvancedData, db, taskScheduler, um, (changed) -> {
+				if (changed) {
+					broadcastReportDataChanged(r);
 				}
-
+				resultCallback.onResultReceived(r);
 			});
 		} else {
 			LOGGER.info(() -> "updateAndGetReport(): DELETED " + reportId + " (r = " + r + ")");
 
-			TigerReports tr = TigerReports.getInstance();
-			VaultManager vm = tr.getVaultManager();
-			BungeeManager bm = tr.getBungeeManager();
-			r.delete(null, false, db, taskScheduler, this, vm, bm);
+			r.delete(null, false, db, taskScheduler, this, null, null);
 			resultCallback.onResultReceived(null);
 		}
 	}
@@ -791,9 +781,7 @@ public class ReportsManager {
 	}
 
 	private Report getCachedReportById(int reportId, Report valueForInitialization) {
-		if (reportId <= 0) {
-			throw new IllegalArgumentException("Report id cannot be negative.");
-		}
+		checkValidReportId(reportId);
 
 		Report r = reports.get(reportId);
 		if (valueForInitialization != null && r == null) {
@@ -803,6 +791,12 @@ public class ReportsManager {
 		}
 
 		return r;
+	}
+
+	private static void checkValidReportId(int reportId) throws IllegalArgumentException {
+		if (reportId < 0) {
+			throw new IllegalArgumentException("Report id cannot be negative.");
+		}
 	}
 
 	public Comment getCommentAtIndexInPage(int reportId, int page, int commentIndexInPage) {
@@ -825,18 +819,17 @@ public class ReportsManager {
 
 	public List<Report> getReportsPageCachedReports(ReportsPage reportsPage) {
 		List<Report> pageReports = new ArrayList<>();
-		List<Integer> pageReportsIds = reportsPage.getReportsId();
+		List<Integer> pageReportsId = reportsPage.getReportsId();
 
-		LOGGER.info(
-		        () -> "getReportsPageCachedReports(): pageReportsIds = " + CollectionUtils.toString(pageReportsIds));
+		LOGGER.info(() -> "getReportsPageCachedReports(): pageReportsId = " + CollectionUtils.toString(pageReportsId));
 
-		for (Integer reportId : pageReportsIds) {
+		for (Integer reportId : pageReportsId) {
 			if (reportId != null) {
 				Report r = getCachedReportById(reportId);
 				if (r != null) {
 					pageReports.add(r);
 				} else {
-					LOGGER.info(() -> "getReportsPageCachedReports(): report " + reportId + " = null");
+					LOGGER.info(() -> "getReportsPageCachedReports(): report " + reportId + " is not (yet) cached");
 				}
 			}
 		}
@@ -921,7 +914,7 @@ public class ReportsManager {
 				whereClause = "";
 				whereClauseParam = null;
 			}
-			final String orderClause = reportsCharacteristics.archived ? " ORDER BY report_id DESC" : "";
+			final String orderClause = " ORDER BY report_id " + (reportsCharacteristics.archived ? "DESC" : "ASC");
 
 			params.add(reportsCharacteristics.archived ? 1 : 0);
 			if (!whereClause.isEmpty()) {
@@ -991,58 +984,52 @@ public class ReportsManager {
 			setReportCommentsPageAsChanged(reportId, page);
 		}
 
-		commentsTaskHandler.whenAllTasksDone(false, new ResultCallback<List<Comment>>() {
+		commentsTaskHandler.whenAllTasksDone(false, (newComments) -> {
+			LOGGER.info(() -> "updateReportCommentsPages(" + reportId + "): took " + (System.currentTimeMillis() - now)
+			        + "ms to process all comments data received from db");
 
-			@Override
-			public void onResultReceived(List<Comment> newComments) {
-				LOGGER.info(() -> "updateReportCommentsPages(" + reportId + "): took "
-				        + (System.currentTimeMillis() - now) + "ms to process all comments data received from db");
+			int lastIndex;
 
-				int lastIndex;
-
-				synchronized (reportComments) {
-					int i = 0;
-					int commentIndex = firstCommentIndex;
-					for (Iterator<Comment> it = newComments.iterator(); it.hasNext(); i++) {
-						Comment c = it.next();
-						commentIndex = newCommentsIndex.get(i);
-						if (c == null) {
-							final int fcommentIndex = commentIndex;
-							LOGGER.warn(() -> "updateReportCommentsPages(): comment at index " + fcommentIndex
-							        + " (first comment index = " + firstCommentIndex + ") = null");
-						}
-
-						if (commentIndex < reportComments.size()) {
-							reportComments.set(commentIndex, c);
-						} else if (commentIndex == reportComments.size()) {
-							reportComments.add(c);
-						} else {
-							throw new IllegalStateException("index " + commentIndex + " (first comment index = "
-							        + firstCommentIndex + ") > reportComments size " + reportComments.size());
-						}
+			synchronized (reportComments) {
+				int i = 0;
+				int commentIndex = firstCommentIndex;
+				for (Iterator<Comment> it = newComments.iterator(); it.hasNext(); i++) {
+					Comment c = it.next();
+					commentIndex = newCommentsIndex.get(i);
+					if (c == null) {
+						final int fcommentIndex = commentIndex;
+						LOGGER.warn(() -> "updateReportCommentsPages(): comment at index " + fcommentIndex
+						        + " (first comment index = " + firstCommentIndex + ") = null");
 					}
 
-					lastIndex = reportComments.size() - 1;
-
-					// Remove previous remaining reports starting from the end of the last report of the max page.
-					for (int oldIndex = lastIndex; oldIndex > maxCommentIndex; oldIndex--) {
-						reportComments.remove(oldIndex);
+					if (commentIndex < reportComments.size()) {
+						reportComments.set(commentIndex, c);
+					} else if (commentIndex == reportComments.size()) {
+						reportComments.add(c);
+					} else {
+						throw new IllegalStateException("index " + commentIndex + " (first comment index = "
+						        + firstCommentIndex + ") > reportComments size " + reportComments.size());
 					}
 				}
 
-				// Broadcast changes after all remove done.
-				for (int pageWithOneRemovedComment = pageOfCommentIndex(
-				        maxCommentIndex + 1); pageWithOneRemovedComment <= pageOfCommentIndex(
-				                lastIndex); pageWithOneRemovedComment++) {
-					setReportCommentsPageAsChanged(reportId, pageWithOneRemovedComment);
+				lastIndex = reportComments.size() - 1;
+
+				// Remove previous remaining reports starting from the end of the last report of the max page.
+				for (int oldIndex = lastIndex; oldIndex > maxCommentIndex; oldIndex--) {
+					reportComments.remove(oldIndex);
 				}
 			}
 
+			// Broadcast changes after all remove done.
+			for (int pageWithOneRemovedComment = pageOfCommentIndex(
+			        maxCommentIndex + 1); pageWithOneRemovedComment <= pageOfCommentIndex(
+			                lastIndex); pageWithOneRemovedComment++) {
+				setReportCommentsPageAsChanged(reportId, pageWithOneRemovedComment);
+			}
 		});
 	}
 
-	private void updateReportsPages(List<Map<String, Object>> results, Database db, TaskScheduler taskScheduler,
-	        UsersManager um) {
+	private void updateReportsPages(List<Map<String, Object>> results, Database db, TaskScheduler taskScheduler) {
 		if (results == null || results.isEmpty()) {
 			LOGGER.info(() -> "updateReportsPages(): empty result");
 			return;
@@ -1066,7 +1053,7 @@ public class ReportsManager {
 				}
 
 				pageCharac = ReportsPageCharacteristics.fromString(reportsPageCharacteristics);
-				reportsPage = getReportsPage(pageCharac, false); // The page could no longer be listened, there is no reason to initialize it.
+				reportsPage = getReportsPage(pageCharac, false, db, taskScheduler, null); // The page could no longer be listened, there is no reason to initialize it (um is useless because no initialization).
 				if (reportsPage == null) { // The page is no longer in cache (no longer listened), results are not saved.
 					continue;
 				}
@@ -1118,6 +1105,14 @@ public class ReportsManager {
 
 		inv.setItem(size - 3,
 		        reportsPage.isNextPageNotEmpty() ? MenuItem.PAGE_SWITCH_NEXT.get() : MenuRawItem.GUI.create());
+	}
+
+	public boolean isDataUpdateRequested() {
+		return dataUpdateRequested;
+	}
+
+	public boolean isPendingDataUpdate() {
+		return pendingDataUpdate;
 	}
 
 }

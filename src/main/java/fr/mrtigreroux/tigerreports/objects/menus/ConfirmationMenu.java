@@ -67,8 +67,9 @@ public class ConfirmationMenu extends ReportManagerMenu {
 		        Message.valueOf("CONFIRM_" + actionDisplayed + "_TITLE").get().replace("_Report_", report), false);
 
 		ItemStack gui = MenuRawItem.GUI.create();
-		for (int position : new int[] { 1, 2, 3, 5, 6, 7, 10, 12, 14, 16, 19, 20, 21, 23, 24, 25 })
+		for (int position : new int[] { 1, 2, 3, 5, 6, 7, 10, 12, 14, 16, 19, 20, 21, 23, 24, 25 }) {
 			inv.setItem(position, gui);
+		}
 
 		inv.setItem(11,
 		        MenuRawItem.GREEN_CLAY.clone()
@@ -108,7 +109,7 @@ public class ConfirmationMenu extends ReportManagerMenu {
 				r.deleteFromArchives(u, false, db, taskScheduler, rm, vm, bm);
 				break;
 			default:
-				r.archive(u, false, db);
+				r.archive(u, false, db, rm, vm, bm);
 				break;
 			}
 		} else if (slot == 15) {

@@ -24,12 +24,21 @@ public class ReportsPage implements Report.ReportListener {
 	public static final int PAGE_MAX_REPORTS_AMOUNT = 27;
 
 	public final ReportsPageCharacteristics characteristics;
+	private final ReportsManager rm;
+	private final Database db;
+	private final TaskScheduler taskScheduler;
+	private final UsersManager um;
 	private final List<Integer> reportsId = new ArrayList<>();
 	private final Set<ReportsPageListener> listeners = new HashSet<>();
 	private boolean changed = false;
 
-	public ReportsPage(ReportsPageCharacteristics characteristics) {
+	public ReportsPage(ReportsPageCharacteristics characteristics, ReportsManager rm, Database db,
+	        TaskScheduler taskScheduler, UsersManager um) {
 		this.characteristics = Objects.requireNonNull(characteristics);
+		this.rm = rm;
+		this.db = db;
+		this.taskScheduler = taskScheduler;
+		this.um = um;
 	}
 
 	public interface ReportsPageListener {
@@ -55,9 +64,10 @@ public class ReportsPage implements Report.ReportListener {
 	public boolean removeListener(ReportsPageListener listener, ReportsManager rm) {
 		LOGGER.info(() -> characteristics + ": removeListener(" + listener + ")");
 		boolean success = listeners.remove(listener);
-		if (listeners.isEmpty()) {
-			destroy(rm);
-		}
+//		if (listeners.isEmpty()) {
+//			destroy(rm);
+//		}
+		// destroyed at the end of rm.updateData
 
 		return success;
 	}
@@ -92,7 +102,7 @@ public class ReportsPage implements Report.ReportListener {
 			maxAllowed--;
 		}
 		if (index < 0 || index > maxAllowed) {
-			throw new IndexOutOfBoundsException("Index " + index + " is out of [0, " + maxAllowed + "]");
+			throw new IndexOutOfBoundsException("Index " + index + " is out of [0; " + maxAllowed + "]");
 		}
 	}
 
@@ -108,20 +118,19 @@ public class ReportsPage implements Report.ReportListener {
 		}
 	}
 
-	public boolean removeReportAtIndex(int index, ReportsManager rm) {
+	public void removeReportAtIndex(int index, ReportsManager rm) {
 		if (index < 0 || index >= reportsId.size()) {
-			return false;
+			return;
 		}
 
 		Integer previousReportId = reportsId.get(index);
 		reportsId.remove(index);
-		if (previousReportId != null && !reportsId.contains(previousReportId)) { // previousReportId can still be in reportsIds at other index
+		if (rm != null && previousReportId != null && !reportsId.contains(previousReportId)) { // previousReportId can still be in reportsId at other index
 			LOGGER.info(
 			        () -> characteristics + ": removeReportAtIndex(): remove report listener of " + previousReportId);
 			rm.removeReportListener(previousReportId, this);
 		}
 		changed = true;
-		return true;
 	}
 
 	public int getReportIdAtIndex(int index) {
@@ -131,11 +140,11 @@ public class ReportsPage implements Report.ReportListener {
 	}
 
 	public List<Integer> getReportsId() {
-		List<Integer> pageReportsIds = reportsId;
-		if (pageReportsIds.size() > PAGE_MAX_REPORTS_AMOUNT) {
-			pageReportsIds = reportsId.subList(0, PAGE_MAX_REPORTS_AMOUNT);
+		List<Integer> pageReportsId = reportsId;
+		if (pageReportsId.size() > PAGE_MAX_REPORTS_AMOUNT) {
+			pageReportsId = reportsId.subList(0, PAGE_MAX_REPORTS_AMOUNT);
 		}
-		return new ArrayList<>(reportsId);
+		return new ArrayList<>(pageReportsId);
 	}
 
 	public boolean isEmpty() {
@@ -152,12 +161,35 @@ public class ReportsPage implements Report.ReportListener {
 
 	@Override
 	public void onReportDataChange(Report r) {
-		changed = true;
+		processReportChange(r);
 	}
 
 	@Override
 	public void onReportDelete(int reportId) {
-		changed = true;
+		processReportChange(null);
+	}
+
+	private void processReportChange(Report r) {
+		if (rm.isPendingDataUpdate()) { // group all changes to avoid several page change notifications
+			LOGGER.debug(() -> characteristics + ": processReportChange(): changed set to true");
+			changed = true;
+		} else {
+			if (couldContainReport(r)) { // report is still in the page
+				LOGGER.debug(() -> characteristics + ": processReportChange(): broadcastPageChanged()");
+				broadcastPageChanged();
+			} else { // need to collect the eventually new report coming from the old next page
+				LOGGER.debug(() -> characteristics + ": processReportChange(): rm.updateDataWhenPossible()");
+				rm.updateDataWhenPossible(db, taskScheduler, um);
+			}
+		}
+	}
+
+	boolean couldContainReport(Report r) {
+		return r != null && characteristics.reportsCharacteristics.archived == r.isArchived()
+		        && (characteristics.reportsCharacteristics.reportedUUID == null
+		                || characteristics.reportsCharacteristics.reportedUUID.equals(r.getReportedUniqueId()))
+		        && (characteristics.reportsCharacteristics.reporterUUID == null
+		                || r.getReportersUUID().contains(characteristics.reportsCharacteristics.reporterUUID));
 	}
 
 	public void broadcastIfPageChanged() {
@@ -165,16 +197,18 @@ public class ReportsPage implements Report.ReportListener {
 			changed = false;
 
 			LOGGER.info(() -> characteristics + ": broadcastIfPageChanged(): page changed, broadcast");
-			int page = characteristics.page;
-			if (listeners != null) {
-				for (ReportsPageListener l : new HashSet<>(listeners)) {
-					l.onReportsPageChange(page);
-				}
-			}
+			broadcastPageChanged();
 		} else {
 			LOGGER.info(() -> characteristics + ": broadcastIfPageChanged(): page has not changed");
 		}
-		changed = false;
+	}
+
+	private void broadcastPageChanged() {
+		if (listeners != null) {
+			for (ReportsPageListener l : listeners) {
+				l.onReportsPageChange(characteristics.page);
+			}
+		}
 	}
 
 	@Override
@@ -199,13 +233,18 @@ public class ReportsPage implements Report.ReportListener {
 		return "ReportsPage [characteristics=" + characteristics + ", reportsIds=" + reportsId + "]";
 	}
 
+	public boolean hasListener() {
+		return !listeners.isEmpty();
+	}
+
 	public void destroy(ReportsManager rm) {
+		LOGGER.info(() -> characteristics + ": destroy()");
 		for (Integer reportId : reportsId) {
 			if (reportId != null) {
 				rm.removeReportListener(reportId, this);
 			}
 		}
-		rm.removeReportsPage(characteristics);
+		rm.removeReportsPageFromCache(characteristics);
 		listeners.clear();
 		reportsId.clear();
 	}
@@ -218,6 +257,14 @@ public class ReportsPage implements Report.ReportListener {
 	 */
 	public static int firstGlobalIndexOfPage(int page) {
 		return (page - 1) * PAGE_MAX_REPORTS_AMOUNT;
+	}
+
+	public static int lastGlobalIndexOfPage(int page) {
+		return firstGlobalIndexOfPage(page) + ReportsPage.PAGE_MAX_REPORTS_AMOUNT - 1;
+	}
+
+	public static boolean isGlobalIndexInPage(int index, int page) {
+		return firstGlobalIndexOfPage(page) <= index && index <= lastGlobalIndexOfPage(page);
 	}
 
 }

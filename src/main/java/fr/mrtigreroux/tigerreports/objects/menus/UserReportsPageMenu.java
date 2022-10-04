@@ -93,7 +93,7 @@ public abstract class UserReportsPageMenu extends ReportsPageMenu implements Upd
 			if (reportId == -1) {
 				update(false);
 			} else {
-				rm.getReportByIdAsynchronously(reportId, false, true, true, db, taskScheduler, um,
+				rm.getReportByIdAsynchronously(reportId, false, true, db, taskScheduler, um,
 				        new ResultCallback<Report>() {
 
 					        @Override
@@ -130,7 +130,7 @@ public abstract class UserReportsPageMenu extends ReportsPageMenu implements Upd
 		} else if (click == ClickType.DROP && u.hasPermission(Permission.STAFF_DELETE)) {
 			u.openConfirmationMenu(r, ConfirmationMenu.Action.DELETE_ARCHIVE, rm, db, taskScheduler, vm, bm, um);
 		} else {
-			r.unarchive(u, false, db);
+			r.unarchive(u, false, db, rm, vm, bm);
 		}
 	}
 

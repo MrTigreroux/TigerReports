@@ -97,8 +97,7 @@ public class TigerReports extends JavaPlugin implements TaskScheduler {
 				if (bungeeManager == null) {
 					bungeeManager = new BungeeManager(instance, reportsManager, db, vaultManager, usersManager);
 				}
-				bungeeManager.collectServerName();
-				bungeeManager.collectOnlinePlayers();
+				bungeeManager.startSetupCommunicationSession(true);
 
 				pm.registerEvents(new InventoryListener(db, usersManager), instance);
 				pm.registerEvents(

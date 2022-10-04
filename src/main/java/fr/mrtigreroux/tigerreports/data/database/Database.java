@@ -23,49 +23,75 @@ import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 
 public abstract class Database {
 
+	public static final String REPORTS_COLUMNS = "report_id, status, appreciation, date, reported_uuid, reporter_uuid, reason, reported_ip, reported_location, reported_messages, reported_gamemode, reported_on_ground, reported_sneak, reported_sprint, reported_health, reported_food, reported_effects, reporter_ip, reporter_location, reporter_messages, archived";
+
 	private static final long CLOSING_DELAY = 10L * 1000L;
 	protected final TaskScheduler taskScheduler;
 	protected Connection connection;
 	private int closingTaskId = -1;
 	private boolean forcedClosing = false;
+	private boolean autoCommit = true;
+	private boolean requestedAutoCommit = true;
 
 	public Database(TaskScheduler taskScheduler) {
 		this.taskScheduler = taskScheduler;
 	}
 
-	public abstract void openConnection() throws Exception;
+	protected abstract void openConnection() throws Exception;
 
 	public abstract void initialize();
 
 	public abstract boolean isConnectionValid() throws SQLException;
 
 	private boolean checkConnection() {
+		return checkConnection(true);
+	}
+
+	private synchronized boolean checkConnection(boolean checkAutoCommit) {
 		cancelClosing();
 		try {
 			if (isConnectionValid()) {
-				return true;
+				return !checkAutoCommit || checkAutoCommit();
 			}
 		} catch (SQLException ignored) {
 			Logger.SQL.warn(() -> "checkConnection(): isConnectionValid() failed");
 		}
-		try {
-			openConnection();
-			Logger.SQL.info(() -> "checkConnection(): openConnection() succeeded");
-		} catch (Exception ignored) {
-			Logger.SQL.warn(() -> "checkConnection(): openConnection() failed");
+
+		openNewConnection();
+
+		if (connection == null) {
+			return false;
+		} else {
+			return !checkAutoCommit || checkAutoCommit();
 		}
-		return connection != null;
 	}
 
-	public void update(final String query, final List<Object> parameters) {
-		Logger.SQL.info(() -> "update(" + query + ", " + CollectionUtils.toString(parameters) + ")");
-		if (checkConnection()) {
-			try (PreparedStatement ps = connection.prepareStatement(query)) {
-				prepare(ps, parameters);
-				ps.executeUpdate();
-			} catch (SQLException ex) {
-				logDatabaseError(ex);
-			}
+	private synchronized boolean checkAutoCommit() {
+		if (autoCommit != requestedAutoCommit) {
+			Logger.SQL
+			        .info(() -> "checkAutoCommit(): this.autoCommit != requested autoCommit, attempt to change it...");
+			return setAutoCommit(requestedAutoCommit);
+		} else {
+			return true;
+		}
+	}
+
+	/**
+	 * Must be accessed with the lock of the connection.
+	 */
+	private synchronized void openNewConnection() {
+		Logger.SQL.debug(() -> "openNewConnection(): start");
+		closeConnection(); // prevents to have several connections at the same time
+		Logger.SQL.debug(() -> "openNewConnection(): closed connection, try to open a new connection");
+		try {
+			openConnection();
+			autoCommit = true;
+		} catch (Exception ignored) {} // exceptions are thrown in implementation classes
+
+		if (connection != null) {
+			Logger.SQL.debug(() -> "openNewConnection(): openConnection() succeeded");
+		} else {
+			Logger.SQL.warn(() -> "openNewConnection(): openConnection() failed");
 		}
 	}
 
@@ -80,24 +106,58 @@ public abstract class Database {
 	}
 
 	public void updateAsynchronously(final String query, final List<Object> parameters) {
-		taskScheduler.runTaskAsynchronously(new Runnable() {
+		updateAsynchronously(query, parameters, null);
+	}
 
-			@Override
-			public void run() {
-				update(query, parameters);
+	public void updateAsynchronously(final String query, final List<Object> parameters, Runnable doneCallback) {
+		Logger.SQL.debug(() -> "updateAsynchronously(" + query + ")");
+		taskScheduler.runTaskAsynchronously(() -> {
+			update(query, parameters);
+			if (doneCallback != null) {
+				taskScheduler.runTask(doneCallback);
 			}
-
 		});
+	}
+
+	public synchronized void update(final String query, final List<Object> parameters) {
+		boolean success = false;
+		if (checkConnection()) {
+			try (PreparedStatement ps = connection.prepareStatement(query)) {
+				prepare(ps, parameters);
+				ps.executeUpdate();
+				success = true;
+			} catch (SQLException ex) {
+				logDatabaseError(ex);
+			}
+		}
+		final boolean fsuccess = success;
+		Logger.SQL.info(
+		        () -> "update(" + query + ", " + CollectionUtils.toString(parameters) + "): success = " + fsuccess);
 	}
 
 	public abstract void updateUserName(String uuid, String name);
 
-	public QueryResult query(final String query, final List<Object> parameters) {
+	public void queryAsynchronously(final String query, final List<Object> parameters, TaskScheduler taskScheduler,
+	        ResultCallback<QueryResult> resultCallback) {
+		Objects.requireNonNull(resultCallback);
+
+		taskScheduler.runTaskAsynchronously(() -> {
+			QueryResult qr = query(query, parameters);
+
+			taskScheduler.runTask(() -> {
+				resultCallback.onResultReceived(qr);
+			});
+		});
+	}
+
+	public synchronized QueryResult query(final String query, final List<Object> parameters) {
+		Logger.SQL.debug(() -> "query(" + query + ", " + CollectionUtils.toString(parameters) + ")");
+
+		List<Map<String, Object>> resultList = new ArrayList<>();
 		if (checkConnection()) {
 			try (PreparedStatement ps = connection.prepareStatement(query)) {
 				prepare(ps, parameters);
 				try (ResultSet rs = ps.executeQuery()) {
-					List<Map<String, Object>> resultList = new ArrayList<>();
 					Map<String, Object> row = null;
 					ResultSetMetaData metaData = rs.getMetaData();
 					int columnCount = metaData.getColumnCount();
@@ -108,45 +168,43 @@ public abstract class Database {
 						}
 						resultList.add(row);
 					}
-
-					Logger.SQL.info(() -> "query(" + query + ", " + CollectionUtils.toString(parameters) + "): result: "
-					        + CollectionUtils.toString(resultList));
-					return new QueryResult(resultList);
 				}
 			} catch (SQLException ex) {
 				logDatabaseError(ex);
-				return new QueryResult(new ArrayList<>());
 			}
-		} else {
-			return new QueryResult(new ArrayList<>());
 		}
+
+		QueryResult qr = new QueryResult(resultList);
+		Logger.SQL.info(() -> "query(" + query + ", " + CollectionUtils.toString(parameters) + "): result: "
+		        + CollectionUtils.toString(resultList));
+		return qr;
 	}
 
-	public void queryAsynchronously(final String query, final List<Object> parameters, TaskScheduler taskScheduler,
-	        ResultCallback<QueryResult> resultCallback) {
-		Objects.requireNonNull(resultCallback);
-
-		taskScheduler.runTaskAsynchronously(new Runnable() {
-
-			@Override
-			public void run() {
-				QueryResult qr = query(query, parameters);
-
-				taskScheduler.runTask(new Runnable() {
-
-					@Override
-					public void run() {
-						resultCallback.onResultReceived(qr);
-					}
-
+	public void insertAsynchronously(final String query, final List<Object> parameters, TaskScheduler taskScheduler,
+	        ResultCallback<Integer> resultCallback) {
+		Logger.SQL.debug(() -> "insertAsynchronously(" + query + ")");
+		taskScheduler.runTaskAsynchronously(() -> {
+			int generatedKey = insert(query, parameters);
+			if (resultCallback != null) {
+				Logger.SQL.debug(() -> "insertAsynchronously(" + query + "): resultCallback != null");
+				taskScheduler.runTask(() -> {
+					resultCallback.onResultReceived(generatedKey);
 				});
 			}
-
 		});
 	}
 
-	public int insert(final String query, final List<Object> parameters) {
-		Logger.SQL.info(() -> "insert(" + query + ", " + CollectionUtils.toString(parameters) + ")");
+	/**
+	 * This method must be synchronized because the queries generated keys are bound to the (unique) connection and not directly to the PreparedStatement.
+	 * 
+	 * @param query
+	 * @param parameters
+	 * @return
+	 */
+	public synchronized int insert(final String query, final List<Object> parameters) {
+		Logger.SQL.debug(() -> "insert(" + query + ", " + CollectionUtils.toString(parameters) + ")");
+
+		int inserted = -1;
 		if (checkConnection()) {
 			try (PreparedStatement ps = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS)) {
 				prepare(ps, parameters);
@@ -154,47 +212,41 @@ public abstract class Database {
 
 				try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
 					if (generatedKeys.next()) {
-						return generatedKeys.getInt(1);
-					} else {
-						return -1;
+						inserted = generatedKeys.getInt(1);
 					}
 				}
 			} catch (SQLException ex) {
 				logDatabaseError(ex);
-				return -1;
 			}
-		} else {
-			return -1;
 		}
+
+		final int finserted = inserted;
+		Logger.SQL.info(() -> "insert(" + query + ", " + CollectionUtils.toString(parameters) + "): inserted id = "
+		        + finserted);
+		return inserted;
 	}
 
-	public void insertAsynchronously(final String query, final List<Object> parameters, TaskScheduler taskScheduler,
-	        ResultCallback<Integer> resultCallback) {
-		taskScheduler.runTaskAsynchronously(new Runnable() {
+	public synchronized void executeTransaction(Runnable operations) {
+		boolean disabledAutoCommit = setAutoCommit(false);
+		if (disabledAutoCommit) {
+			Logger.SQL.info(() -> "executeTransaction(): transaction start, setAutoCommit(false) succeeded");
+			operations.run();
 
-			@Override
-			public void run() {
-				int generatedKey = insert(query, parameters);
-				if (resultCallback != null) {
-					taskScheduler.runTask(new Runnable() {
-
-						@Override
-						public void run() {
-							resultCallback.onResultReceived(generatedKey);
-						}
-
-					});
-				}
-			}
-
-		});
+			Logger.SQL.debug(() -> "executeTransaction(): transaction operations run, commit...");
+			commit();
+			Logger.SQL.debug(() -> "executeTransaction(): committed");
+			Logger.SQL.info(() -> "executeTransaction(): transaction end, setAutoCommit(true)");
+			setAutoCommit(true);
+		} else {
+			Logger.SQL.warn(() -> "executeTransaction(): failed to change autoCommit, cancel transaction");
+		}
 	}
 
 	public void startClosing() {
 		startClosing(false);
 	}
 
-	public void startClosing(boolean forceClosing) {
+	public synchronized void startClosing(boolean forceClosing) {
 		if (closingTaskId != -1 || connection == null) {
 			return;
 		}
@@ -221,7 +273,7 @@ public abstract class Database {
 	/**
 	 * Cancel closing connection task except if {@link forcedClosing} is true.
 	 */
-	public void cancelClosing() {
+	public synchronized void cancelClosing() {
 		if (forcedClosing || closingTaskId == -1) {
 			return;
 		}
@@ -229,7 +281,7 @@ public abstract class Database {
 		closingTaskId = -1;
 	}
 
-	public void closeConnection() {
+	public synchronized void closeConnection() {
 		try {
 			if (connection != null) {
 				connection.close();
@@ -239,8 +291,63 @@ public abstract class Database {
 			Logger.SQL.info(() -> "closeConnection(): succeeded");
 
 			cancelClosing();
-		} catch (SQLException ignored) {
-			Logger.SQL.info(() -> "closeConnection(): failed");
+		} catch (SQLException ex) {
+			Logger.SQL.warn(() -> "closeConnection(): failed", ex);
+		}
+	}
+
+	private synchronized boolean setAutoCommit(boolean state) {
+		requestedAutoCommit = state;
+		if (autoCommit == state) {
+			return true;
+		}
+
+		if (checkConnection(false)) { // checkAutoCommit = false to avoid infinite loop
+			try {
+				connection.setAutoCommit(state);
+				autoCommit = state;
+				Logger.SQL.debug(() -> "setAutoCommit(" + state + "): success");
+				return true;
+			} catch (SQLException e) {
+				logDatabaseError(e);
+			}
+		}
+		return false;
+	}
+
+	private synchronized void rollback() {
+		if (autoCommit) {
+			Logger.SQL.warn(() -> "rollback(): autoCommit is enabled, rollback cancelled");
+			return;
+		}
+
+		Logger.SQL.debug(() -> "rollback(): checkConnection()");
+		if (checkConnection()) {
+			try {
+				connection.rollback();
+				Logger.SQL.info(() -> "rollback(): success");
+			} catch (SQLException e) {
+				logDatabaseError(e);
+			}
+		}
+	}
+
+	private synchronized void commit() {
+		if (autoCommit) {
+			Logger.SQL.warn(() -> "commit(): autoCommit is enabled, commit cancelled");
+			return;
+		}
+
+		Logger.SQL.debug(() -> "commit(): checkConnection()");
+		if (checkConnection()) {
+			try {
+				connection.commit();
+				Logger.SQL.debug(() -> "commit(): success");
+			} catch (SQLException e) {
+				Logger.SQL.debug(() -> "commit(): failed, therefore rollback()");
+				rollback();
+				logDatabaseError(e);
+			}
 		}
 	}
 

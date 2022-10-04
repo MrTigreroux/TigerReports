@@ -76,15 +76,14 @@ public class ReportMenu extends ReportManagerMenu implements User.UserListener {
 		int statusPosition = 29;
 		boolean archive = u.canArchive(r);
 		for (Status status : Status.values()) {
-			inv.setItem(statusPosition,
-			        status.getButtonItem()
-			                .glow(status.equals(r.getStatus()))
-			                .name(status == Status.DONE ? Message.PROCESS_STATUS.get()
-			                        : Message.CHANGE_STATUS.get().replace("_Status_", status.getWord(null)))
-			                .lore((status == Status.DONE ? Message.PROCESS_STATUS_DETAILS.get()
-			                        : Message.CHANGE_STATUS_DETAILS.get()).replace("_Status_", status.getWord(null))
-			                                .split(ConfigUtils.getLineBreakSymbol()))
-			                .create());
+			inv.setItem(statusPosition, status.getButtonItem()
+			        .glow(status.equals(r.getStatus()))
+			        .name(status == Status.DONE ? Message.PROCESS_STATUS.get()
+			                : Message.CHANGE_STATUS.get().replace("_Status_", status.getDisplayName(null)))
+			        .lore((status == Status.DONE ? Message.PROCESS_STATUS_DETAILS.get()
+			                : Message.CHANGE_STATUS_DETAILS.get()).replace("_Status_", status.getDisplayName(null))
+			                        .split(ConfigUtils.getLineBreakSymbol()))
+			        .create());
 			statusPosition += status == Status.IN_PROGRESS && !archive ? 2 : 1;
 		}
 		if (archive) {
@@ -159,8 +158,9 @@ public class ReportMenu extends ReportManagerMenu implements User.UserListener {
 			break;
 		case 21:
 		case 23:
-			if (!u.hasPermission(Permission.STAFF_TELEPORT) || click == null)
+			if (!u.hasPermission(Permission.STAFF_TELEPORT) || click == null) {
 				return;
+			}
 
 			Report.ParticipantType targetType = slot == 21 ? Report.ParticipantType.REPORTER
 			        : Report.ParticipantType.REPORTED;
@@ -178,7 +178,7 @@ public class ReportMenu extends ReportManagerMenu implements User.UserListener {
 		case 22:
 			u.openReportsMenu(1, false, rm, db, taskScheduler, vm, bm, um);
 			r.processAbusive(u, false, u.hasPermission(Permission.STAFF_ARCHIVE_AUTO),
-			        ReportUtils.getAbusiveReportCooldown(), true, db);
+			        ReportUtils.getAbusiveReportCooldown(), true, db, rm, um, bm, vm, taskScheduler);
 			break;
 		case 26:
 			if (click.isLeftClick()) {
@@ -190,20 +190,21 @@ public class ReportMenu extends ReportManagerMenu implements User.UserListener {
 				Map<Long, String> sortedMessages = new TreeMap<>();
 				for (Report.ParticipantType type : new Report.ParticipantType[] { Report.ParticipantType.REPORTED,
 				        Report.ParticipantType.REPORTER }) {
-					for (String message : r.getMessagesHistory(type)) {
-						if (message != null && message.length() >= 20) {
-							String date = message.substring(0, 19);
-							sortedMessages.put(DatetimeUtils.getSeconds(date),
+					String playerName = r.getPlayerName(type, false, true, vm, bm);
+					for (User.SavedMessage savedMsg : r.getMessagesHistory(type)) {
+						if (savedMsg != null) {
+							sortedMessages.put(DatetimeUtils.getSeconds(savedMsg.getDatetime()),
 							        Message.REPORT_MESSAGE_FORMAT.get()
-							                .replace("_Date_", date)
-							                .replace("_Player_", r.getPlayerName(type, false, true, vm, bm))
-							                .replace("_Message_", message.substring(20)));
+							                .replace("_Date_", savedMsg.getDatetime())
+							                .replace("_Player_", playerName)
+							                .replace("_Message_", savedMsg.getMessage()));
 						}
 					}
 				}
 				StringBuilder messages = new StringBuilder();
-				for (String message : sortedMessages.values())
+				for (String message : sortedMessages.values()) {
 					messages.append(message);
+				}
 				u.sendLinesWithReportButton(Message.REPORT_MESSAGES_HISTORY.get()
 				        .replace("_Report_", r.getName())
 				        .replace("_Messages_",
@@ -219,8 +220,9 @@ public class ReportMenu extends ReportManagerMenu implements User.UserListener {
 			break;
 		default:
 			if ((slot == 32 || slot == 33) && !(u.hasPermission(Permission.STAFF_ARCHIVE)
-			        && (r.getStatus() == Status.DONE || !ReportUtils.onlyDoneArchives())))
+			        && (r.getStatus() == Status.DONE || !ReportUtils.onlyDoneArchives()))) {
 				slot--;
+			}
 			switch (slot) {
 			case 29:
 			case 30:

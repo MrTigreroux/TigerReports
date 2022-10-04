@@ -40,15 +40,10 @@ public class SeveralTasksHandler<R> {
 
 		LOGGER.info(() -> this + ": added result slot of index " + taskIndex);
 
-		return new ResultCallback<R>() {
-
-			@Override
-			public void onResultReceived(R result) {
-				LOGGER.info(() -> SeveralTasksHandler.this + ": received result of task " + taskIndex);
-				saveTaskResult(result, taskIndex);
-				checkAllTasksDone();
-			}
-
+		return (result) -> {
+			LOGGER.info(() -> SeveralTasksHandler.this + ": received result of task " + taskIndex);
+			saveTaskResult(result, taskIndex);
+			checkAllTasksDone();
 		};
 	}
 

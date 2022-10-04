@@ -14,6 +14,7 @@ import org.bukkit.plugin.Plugin;
 
 import fr.mrtigreroux.tigerreports.data.database.Database;
 import fr.mrtigreroux.tigerreports.data.database.MySQL;
+import fr.mrtigreroux.tigerreports.data.database.SQLite;
 import fr.mrtigreroux.tigerreports.logs.Logger;
 import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
@@ -28,6 +29,8 @@ public class UpdatesManager {
 	private static final Logger LOGGER = Logger.fromClass(UpdatesManager.class);
 
 	public static final String DEFAULT_LAST_USED_VERSION = "0";
+
+	private static boolean recreatedReportsTable = false;
 
 	private UpdatesManager() {}
 
@@ -128,6 +131,7 @@ public class UpdatesManager {
 	private static Map<Integer, BiConsumer<TaskScheduler, Database>> getUpdatesInstructions() {
 		Map<Integer, BiConsumer<TaskScheduler, Database>> updatesInstructions = new LinkedHashMap<>();
 
+		recreatedReportsTable = false;
 		updatesInstructions.put(VersionUtils.toInt("5.0.16"), (ts, db) -> {
 			if (db instanceof MySQL) {
 				ts.runTaskAsynchronously(() -> {
@@ -135,11 +139,33 @@ public class UpdatesManager {
 					db.update("ALTER TABLE tigerreports_reports MODIFY reported_on_ground INT(2)", null);
 					db.update("ALTER TABLE tigerreports_reports MODIFY reported_sneak INT(2)", null);
 					db.update("ALTER TABLE tigerreports_reports MODIFY reported_sprint INT(2)", null);
+					db.update("ALTER TABLE tigerreports_reports MODIFY reporter_ip VARCHAR(46)", null);
+					db.update("ALTER TABLE tigerreports_reports MODIFY reporter_location VARCHAR(510)", null);
+				});
+			} else {
+				ts.runTaskAsynchronously(() -> {
+					recreateReportsTable((SQLite) db);
 				});
 			}
 		});
 
 		return updatesInstructions;
+	}
+
+	private static void recreateReportsTable(SQLite db) {
+		if (recreatedReportsTable) {
+			LOGGER.info(() -> "recreateReportsTable(): already recreated, ignored");
+			return;
+		}
+
+		recreatedReportsTable = true;
+		db.executeTransaction(() -> {
+			db.update("CREATE TABLE tmp_tigerreports_reports " + SQLite.REPORTS_TABLE, null);
+			db.update("INSERT INTO tmp_tigerreports_reports(" + Database.REPORTS_COLUMNS + ") SELECT "
+			        + Database.REPORTS_COLUMNS + " FROM tigerreports_reports", null);
+			db.update("DROP TABLE tigerreports_reports", null);
+			db.update("ALTER TABLE tmp_tigerreports_reports RENAME TO tigerreports_reports", null);
+		});
 	}
 
 }

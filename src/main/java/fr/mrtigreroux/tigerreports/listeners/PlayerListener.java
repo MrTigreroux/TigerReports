@@ -82,6 +82,7 @@ public class PlayerListener implements Listener {
 				if (p.isOnline()) {
 					u.updateBasicData(db, bm, um);
 					um.processUserConnection(p); // In case that PlayerQuitEvent is fired after PlayerJoinEvent (for a reconnection it should be the opposite)
+					bm.processPlayerConnection(p);
 				} else {
 					Logger.EVENTS.info(() -> "onPlayerJoin(): after the delay, player " + u.getName()
 					        + " is no longer online, cancel any update");
@@ -163,8 +164,6 @@ public class PlayerListener implements Listener {
 				p.spigot().sendMessage(updateMessage);
 			}
 		}
-
-		bm.processPlayerConnection(p.getName());
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST)
@@ -172,7 +171,7 @@ public class PlayerListener implements Listener {
 		Player p = e.getPlayer();
 		Logger.EVENTS.info(() -> "onPlayerQuit(): " + p.getName());
 		um.processUserDisconnection(p.getUniqueId(), vm);
-		bm.processPlayerDisconnection(p.getName());
+		bm.processPlayerDisconnection(p.getName(), p.getUniqueId());
 		Logger.EVENTS.info(() -> "onPlayerQuit(): " + p.getName() + ", end");
 	}
 

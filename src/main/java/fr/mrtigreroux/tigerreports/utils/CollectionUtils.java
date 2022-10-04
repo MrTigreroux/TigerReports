@@ -1,8 +1,12 @@
 package fr.mrtigreroux.tigerreports.utils;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.BiConsumer;
@@ -50,6 +54,15 @@ public class CollectionUtils {
 					@Override
 					public void accept(StringBuilder sb, T element) {
 						sb.append(CollectionUtils.toString((Collection<?>) element));
+					}
+
+				};
+			} else if (firstElement instanceof Object[]) {
+				consumer = new BiConsumer<StringBuilder, T>() {
+
+					@Override
+					public void accept(StringBuilder sb, T element) {
+						sb.append(Arrays.deepToString((Object[]) element));
 					}
 
 				};
@@ -108,6 +121,17 @@ public class CollectionUtils {
 					}
 
 				};
+			} else if (firstValue instanceof Object[]) {
+				consumer = new BiConsumer<StringBuilder, Entry<K, V>>() {
+
+					@Override
+					public void accept(StringBuilder sb, Entry<K, V> element) {
+						sb.append(element.getKey())
+						        .append(": ")
+						        .append(Arrays.deepToString((Object[]) element.getValue()));
+					}
+
+				};
 			}
 		}
 
@@ -144,6 +168,125 @@ public class CollectionUtils {
 		}
 
 		return sb.append("](").append(size).append(")").toString();
+	}
+
+	public static <T> Collection<T> requireNotEmpty(Collection<T> collection) throws IllegalArgumentException {
+		if (collection == null || collection.isEmpty()) {
+			throw new IllegalArgumentException("Collection is null or empty");
+		}
+		return collection;
+	}
+
+	public static class ReversedList<T> implements Iterable<T> {
+
+		private final List<T> original;
+
+		public ReversedList(List<T> original) {
+			this.original = original;
+		}
+
+		@Override
+		public Iterator<T> iterator() {
+			final ListIterator<T> i = original.listIterator(original.size());
+
+			return new Iterator<T>() {
+				@Override
+				public boolean hasNext() {
+					return i.hasPrevious();
+				}
+
+				@Override
+				public T next() {
+					return i.previous();
+				}
+
+				@Override
+				public void remove() {
+					i.remove();
+				}
+			};
+		}
+
+	}
+
+	public static <T> ReversedList<T> reversedList(List<T> original) {
+		return new ReversedList<T>(original);
+	}
+
+	public static class LimitedOrderedList<T> extends LinkedList<T> {
+
+		private static final long serialVersionUID = 4924376041583169739L;
+
+		private final int maxSize;
+
+		public LimitedOrderedList(int maxSize) {
+			super();
+			this.maxSize = maxSize;
+		}
+
+		@Override
+		public boolean offerLast(T e) {
+			return add(e);
+		}
+
+		@Override
+		public boolean offer(T e) {
+			return add(e);
+		}
+
+		@Override
+		public void addLast(T e) {
+			add(e);
+		}
+
+		@Override
+		public boolean add(T e) {
+			if (this.size() >= maxSize) {
+				super.removeFirst();
+			}
+			return super.add(e);
+		}
+
+		@Override
+		public void addFirst(T e) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public void push(T e) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public void add(int index, T element) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public boolean offerFirst(T e) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public T set(int index, T element) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public boolean addAll(Collection<? extends T> c) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public boolean addAll(int index, Collection<? extends T> c) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public void sort(Comparator<? super T> c) {
+			throw new UnsupportedOperationException();
+		}
+
 	}
 
 }

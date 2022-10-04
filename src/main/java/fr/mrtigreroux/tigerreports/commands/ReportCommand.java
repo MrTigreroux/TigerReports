@@ -1,11 +1,7 @@
 package fr.mrtigreroux.tigerreports.commands;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -20,7 +16,6 @@ import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.data.constants.Statistic;
-import fr.mrtigreroux.tigerreports.data.constants.Status;
 import fr.mrtigreroux.tigerreports.data.database.Database;
 import fr.mrtigreroux.tigerreports.logs.Logger;
 import fr.mrtigreroux.tigerreports.managers.BungeeManager;
@@ -31,10 +26,8 @@ import fr.mrtigreroux.tigerreports.objects.reports.Report;
 import fr.mrtigreroux.tigerreports.objects.users.User;
 import fr.mrtigreroux.tigerreports.tasks.ResultCallback;
 import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
-import fr.mrtigreroux.tigerreports.utils.CollectionUtils;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.DatetimeUtils;
-import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 import fr.mrtigreroux.tigerreports.utils.ReportUtils;
 import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
@@ -192,160 +185,56 @@ public class ReportCommand implements TabExecutor {
 					}
 				}
 
-				String freason = reason;
-				String date = DatetimeUtils.getNowDate();
+				final String freason = reason;
+				final String date = DatetimeUtils.getNowDatetime();
 
-				String reporterUUID = u.getUniqueId().toString();
+				if (ReportUtils.stackReports()) {
+					LOGGER.info(() -> "processReportCommand(): stackReports, checking if similar existing report");
+					ReportUtils.stackReportAsynchronously(u.getUniqueId().toString(), ru.getUniqueId().toString(),
+					        freason, date, ConfigUtils.isEnabled(configFile, "Config.UpdateDateOfStackedReports"),
+					        taskScheduler, db, rm, um, (result) -> {
+						        if (result != null) {
+							        if (result instanceof Boolean) {
+								        if (Boolean.FALSE.equals(result)) {
+									        LOGGER.info(
+									                () -> "processReportCommand(): stackReport failed, player already reporter");
+									        u.sendErrorMessage(
+									                Message.get("ErrorMessages.Player-already-reported-by-you")
+									                        .replace("_Player_", ru.getName())
+									                        .replace("_Reason_", freason));
+									        return;
+								        }
+							        } else if (result instanceof Report) {
+								        LOGGER.info(() -> "processReportCommand(): stackReport succeeded");
+								        finishReportCommandProcess((Report) result, false, u, ru, db, configFile);
+								        return;
+							        }
+						        }
 
-				LOGGER.info(() -> "processReportCommand(): checking if similar existing report");
-				taskScheduler.runTaskAsynchronously(new Runnable() {
-
-					@Override
-					public void run() {
-						if (ReportUtils.stackReports()) {
-							Map<String, Object> reportData = db.query(
-							        "SELECT report_id,status,appreciation,date,reported_uuid,reporter_uuid,reason FROM tigerreports_reports WHERE status NOT LIKE ? AND reported_uuid = ? AND archived = ? AND LOWER(reason) = LOWER(?) LIMIT 1",
-							        Arrays.asList(Status.DONE.getRawName() + "%", ru.getUniqueId().toString(), 0,
-							                freason))
-							        .getResult(0);
-							if (reportData != null) {
-								LOGGER.info(() -> "processReportCommand(): found a similar report: "
-								        + CollectionUtils.toString(reportData));
-								try {
-									String reportReporterUUID = (String) reportData.get("reporter_uuid");
-									if (reportReporterUUID.contains(reporterUUID.toString())) {
-										taskScheduler.runTask(new Runnable() {
-
-											@Override
-											public void run() {
-												u.sendErrorMessage(
-												        Message.get("ErrorMessages.Player-already-reported-by-you")
-												                .replace("_Player_", ru.getName())
-												                .replace("_Reason_", freason));
-											}
-
-										});
-										return;
-									}
-
-									reportReporterUUID += "," + reporterUUID;
-									reportData.put("reporter_uuid", reportReporterUUID);
-
-									int reportId = (int) reportData.get("report_id");
-									if (ConfigUtils.isEnabled(configFile, "Config.UpdateDateOfStackedReports")) {
-										reportData.put("date", date);
-										db.update(
-										        "UPDATE tigerreports_reports SET reporter_uuid = ?, date = ? WHERE report_id = ?",
-										        Arrays.asList(reportReporterUUID, date, reportId));
-									} else {
-										db.update(
-										        "UPDATE tigerreports_reports SET reporter_uuid = ? WHERE report_id = ?",
-										        Arrays.asList(reportReporterUUID, reportId));
-									}
-									rm.updateAndGetReport(reportId, reportData, false, false, false, db, taskScheduler,
-									        um, new ResultCallback<Report>() {
-
-										        @Override
-										        public void onResultReceived(Report r) {
-											        finalReportCommandProcess(r, false, u, ru, db, configFile);
-										        }
-
-									        });
-									return;
-								} catch (Exception invalidReport) {}
-							}
-						}
-
-						LOGGER.info(() -> "processReportCommand(): creating a new report...");
-						final boolean maxReportsReached = ReportUtils.getTotalReports(db) + 1 > ReportUtils
-						        .getMaxReports();
-
-						taskScheduler.runTask(new Runnable() {
-
-							@Override
-							public void run() {
-								Map<String, Object> reportData = new HashMap<>();
-								reportData.put("status", Status.WAITING.getRawName());
-								reportData.put("appreciation", "None");
-								reportData.put("date", date);
-								reportData.put("reported_uuid", ru.getUniqueId().toString());
-								reportData.put("reporter_uuid", reporterUUID);
-								reportData.put("reason", freason);
-								if (!maxReportsReached) {
-									reportData.put("reporter_ip", p.getAddress().getAddress().toString());
-									reportData.put("reporter_location",
-									        MessageUtils.formatConfigLocation(p.getLocation(), bm));
-									reportData.put("reporter_messages", u.getLastMessages());
-
-									boolean missingData = !ReportUtils.collectAndFillReportedData(ru, bm, reportData);
-									if (missingData) {
-										reportData.put("reported_messages", ru.getLastMessages());
-									}
-
-									StringBuilder queryColumnsName = new StringBuilder();
-									StringBuilder queryColumnsValue = new StringBuilder();
-									List<Object> queryParams = new ArrayList<>();
-									for (Entry<String, Object> data : reportData.entrySet()) {
-										if (queryColumnsName.length() > 0) {
-											queryColumnsName.append(",");
-											queryColumnsValue.append(",");
-										}
-										queryColumnsName.append('`').append(data.getKey()).append('`');
-										queryColumnsValue.append("?");
-										queryParams.add(data.getValue());
-									}
-
-									String query = "INSERT INTO tigerreports_reports (" + queryColumnsName
-									        + ") VALUES (" + queryColumnsValue + ")";
-
-									db.insertAsynchronously(query, queryParams, taskScheduler,
-									        new ResultCallback<Integer>() {
-
-										        @Override
-										        public void onResultReceived(Integer reportId) {
-											        reportData.put("report_id", reportId);
-											        Report.asynchronouslyFrom(reportData, false, false, db,
-											                taskScheduler, um, new ResultCallback<Report>() {
-
-												                @Override
-												                public void onResultReceived(Report r) {
-													                finalReportCommandProcess(r, missingData, u, ru, db,
-													                        configFile);
-												                }
-
-											                });
-										        }
-
-									        });
-								} else {
-									LOGGER.info(() -> "processReportCommand(): max reports reached");
-									reportData.put("report_id", -1);
-									Report.asynchronouslyFrom(reportData, false, false, db, taskScheduler, um,
-									        new ResultCallback<Report>() {
-
-										        @Override
-										        public void onResultReceived(Report r) {
-											        if (r != null) {
-												        finalReportCommandProcess(r, false, u, ru, db, configFile);
-											        } else {
-												        LOGGER.error(ConfigUtils.getInfoMessage(
-												                "An error occurred while creating a report (the max reports amount is reached)",
-												                "Une erreur est survenue pendant la creation d'un signalement (le nombre maximum de signalements est atteint)"));
-											        }
-										        }
-
-									        });
-								}
-
-							}
-						});
-
-					}
-
-				});
-
+						        LOGGER.info(() -> "processReportCommand(): stackReport failed, create new report");
+						        createNewReportThenFinish(u, ru, configFile, freason, date);
+					        });
+				} else {
+					LOGGER.info(() -> "processReportCommand(): !stackReports, create new report");
+					createNewReportThenFinish(u, ru, configFile, freason, date);
+				}
 			}
 
+		});
+	}
+
+	private void createNewReportThenFinish(User u, User ru, FileConfiguration configFile, String freason, String date) {
+		ReportUtils.checkMaxReportsReachedAsynchronously(taskScheduler, db, (maxReportsReached) -> {
+			ReportUtils.createReportAsynchronously(u, ru, freason, date, maxReportsReached, taskScheduler, db, bm, um,
+			        (ReportUtils.CreatedReport cr) -> {
+				        if (cr.r != null) {
+					        finishReportCommandProcess(cr.r, cr.missingData, u, ru, db, configFile);
+				        } else {
+					        LOGGER.error(ConfigUtils.getInfoMessage("An error occurred while creating a report",
+					                "Une erreur est survenue pendant la creation d'un signalement")
+					                + " (maxReportsReached = " + maxReportsReached + ")");
+				        }
+			        });
 		});
 	}
 
@@ -357,7 +246,7 @@ public class ReportCommand implements TabExecutor {
 		return sb.toString().trim();
 	}
 
-	private void finalReportCommandProcess(Report r, boolean missingData, User u, User ru, Database db,
+	private void finishReportCommandProcess(Report r, boolean missingData, User u, User ru, Database db,
 	        FileConfiguration configFile) {
 		LOGGER.info(() -> "finalReportCommandProcess(): report id = " + r.getId());
 		String server = bm.getServerName();
@@ -368,13 +257,14 @@ public class ReportCommand implements TabExecutor {
 		u.sendMessage(Message.REPORT_SENT.get()
 		        .replace("_Player_", r.getPlayerName(Report.ParticipantType.REPORTED, false, true, vm, bm))
 		        .replace("_Reason_", reason));
-		bm.sendPluginNotificationToAll(server, "new_report", Boolean.toString(missingData), r.getBasicDataAsString());
+		bm.sendPluginNotificationToAll(false, server, BungeeManager.NotificationType.NEW_REPORT,
+		        Boolean.toString(missingData), r.getBasicDataAsString());
 
 		u.startCooldown(ReportUtils.getCooldown(), db, null);
 		ru.startImmunity(false, db, null, um);
 		u.changeStatistic(Statistic.REPORTS, 1, db, null);
 		ru.changeStatistic(Statistic.REPORTED_TIMES, 1, db, null);
-		bm.sendUsersDataChanged(u.getUniqueId().toString(), ru.getUniqueId().toString());
+		bm.sendUsersDataChangedNotification(u.getUniqueId().toString(), ru.getUniqueId().toString());
 
 		String reportIdStr = Integer.toString(r.getId());
 		for (String command : configFile.getStringList("Config.AutoCommands")) {

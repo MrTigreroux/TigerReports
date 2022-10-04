@@ -125,11 +125,13 @@ public class UsersManager {
 	public void getUsersAsynchronously(String[] uuids, Database db, TaskScheduler taskScheduler,
 	        ResultCallback<List<User>> resultCallback) {
 		if (uuids == null || uuids.length == 0) {
+			LOGGER.debug(() -> "getUsersAsynchronously(): uuids = null | empty");
 			resultCallback.onResultReceived(null);
 			return;
 		}
 
 		if (uuids.length == 1) {
+			LOGGER.debug(() -> "getUsersAsynchronously(): uuids length = 1");
 			getUserAsynchronously(uuids[0], db, taskScheduler, u -> {
 				List<User> result = new ArrayList<>();
 				result.add(u);
@@ -138,6 +140,7 @@ public class UsersManager {
 			return;
 		}
 
+		LOGGER.debug(() -> "getUsersAsynchronously(): several uuids");
 		SeveralTasksHandler<User> usersTaskHandler = new SeveralTasksHandler<>();
 
 		for (String uuid : uuids) {
@@ -223,7 +226,7 @@ public class UsersManager {
 		return u;
 	}
 
-	private User getCachedUser(UUID uuid) {
+	public User getCachedUser(UUID uuid) {
 		User u = users.get(uuid);
 		if (u != null) {
 			u.updateLastDayUsed();
@@ -495,7 +498,7 @@ public class UsersManager {
 				u.startCooldown(seconds, db, bm);
 			}
 		} else {
-			String cooldown = DatetimeUtils.getRelativeDate(seconds);
+			String cooldown = DatetimeUtils.getRelativeDatetime(seconds);
 
 			StringBuilder query = new StringBuilder("UPDATE tigerreports_users SET cooldown = ? WHERE uuid IN (");
 			int size = users.size();
@@ -518,7 +521,7 @@ public class UsersManager {
 			db.updateAsynchronously(query.toString(), queryParams);
 
 			queryParams.remove(0);
-			bm.sendUsersDataChanged((String[]) queryParams.toArray());
+			bm.sendUsersDataChangedNotification((String[]) queryParams.toArray());
 		}
 	}
 

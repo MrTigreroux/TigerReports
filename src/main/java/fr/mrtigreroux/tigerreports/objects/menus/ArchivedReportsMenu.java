@@ -64,7 +64,7 @@ public class ArchivedReportsMenu extends ReportsPageMenu implements UpdatedMenu 
 			if (reportId == -1) {
 				update(false);
 			} else {
-				rm.getReportByIdAsynchronously(reportId, false, true, true, db, taskScheduler, um,
+				rm.getReportByIdAsynchronously(reportId, false, true, db, taskScheduler, um,
 				        new ResultCallback<Report>() {
 
 					        @Override
@@ -75,7 +75,7 @@ public class ArchivedReportsMenu extends ReportsPageMenu implements UpdatedMenu 
 							        u.openConfirmationMenu(r, ConfirmationMenu.Action.DELETE_ARCHIVE, rm, db,
 							                taskScheduler, vm, bm, um);
 						        } else {
-							        r.unarchive(u, false, db);
+							        r.unarchive(u, false, db, rm, vm, bm);
 							        u.openReportsMenu(1, false, rm, db, taskScheduler, vm, bm, um);
 						        }
 					        }

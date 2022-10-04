@@ -31,7 +31,7 @@ public abstract class ReportsPageMenu extends Menu implements ReportsPage.Report
 		this.db = db;
 		this.taskScheduler = taskScheduler;
 		this.um = um;
-		reportsPage = rm.getAndListenReportsPage(reportsCharacteristics, page, true, this, db, taskScheduler, um);
+		reportsPage = rm.getAndListenReportsPage(reportsCharacteristics, page, this, db, taskScheduler, um);
 	}
 
 	@Override
@@ -49,8 +49,8 @@ public abstract class ReportsPageMenu extends Menu implements ReportsPage.Report
 		ReportsPage oldReportsPage = reportsPage;
 		oldReportsPage.removeListener(this, rm);
 
-		reportsPage = rm.getAndListenReportsPage(oldReportsPage.characteristics.reportsCharacteristics, newPage, true,
-		        this, db, taskScheduler, um);
+		reportsPage = rm.getAndListenReportsPage(oldReportsPage.characteristics.reportsCharacteristics, newPage, this,
+		        db, taskScheduler, um);
 
 		super.onPageChange(oldPage, newPage);
 	}

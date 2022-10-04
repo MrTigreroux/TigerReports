@@ -2,23 +2,24 @@ package fr.mrtigreroux.tigerreports.objects.reports;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
 
-import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
+import fr.mrtigreroux.tigerreports.data.constants.Appreciation;
 import fr.mrtigreroux.tigerreports.data.constants.Statistic;
 import fr.mrtigreroux.tigerreports.data.constants.Status;
 import fr.mrtigreroux.tigerreports.data.database.Database;
@@ -31,37 +32,44 @@ import fr.mrtigreroux.tigerreports.managers.ReportsManager;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
 import fr.mrtigreroux.tigerreports.managers.VaultManager;
 import fr.mrtigreroux.tigerreports.objects.Comment;
+import fr.mrtigreroux.tigerreports.objects.DeeplyCloneable;
 import fr.mrtigreroux.tigerreports.objects.users.User;
+import fr.mrtigreroux.tigerreports.objects.users.User.SavedMessage;
 import fr.mrtigreroux.tigerreports.tasks.ResultCallback;
 import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
+import fr.mrtigreroux.tigerreports.utils.CollectionUtils;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.DatetimeUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
+import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 /**
  * @author MrTigreroux
  */
-public class Report {
+public class Report implements DeeplyCloneable<Report> {
 
 	private static final Logger LOGGER = Logger.fromClass(Report.class);
 
-	private static final char APPRECIATION_PUNISHMENT_SEPARATOR = '/';
-	private static final String REPORTERS_SEPARATOR = ",";
-	private static final String EFFECTS_SEPARATOR = ",";
-	private static final String STATUS_IN_PROGRESS_SEPARATOR = "-";
-	private static final String STATUS_DONE_SEPARATOR = " by ";
-	private static final String DATA_SEPARATOR = "##";
-	private static final List<String> REPORT_BASIC_DATA_KEYS = Arrays.asList("report_id", "status", "appreciation",
-	        "date", "reported_uuid", "reporter_uuid", "reason", "archived");
+	public static final String REPORTERS_SEPARATOR = ",";
+	public static final String DATA_SEPARATOR = "##";
+
+	public static final String REPORT_ID = "report_id";
+	public static final String STATUS = "status";
+	public static final String APPRECIATION = "appreciation";
+	public static final String DATE = "date";
+	public static final String REASON = "reason";
+	public static final String REPORTED_UUID = "reported_uuid";
+	public static final String REPORTER_UUID = "reporter_uuid";
+	public static final String ARCHIVED = "archived";
 
 	private final int reportId;
 	private StatusDetails statusDetails;
-	private String appreciation;
+	private AppreciationDetails appreciationDetails;
 	private String date;
 	private final String reason;
 	private final User reported;
 	private List<User> reporters;
-	private Map<String, String> advancedData = null;
+	private AdvancedData advancedData = null;
 	private boolean archived;
 
 	/**
@@ -73,11 +81,12 @@ public class Report {
 	public static void asynchronouslyFrom(Map<String, Object> reportData, boolean saveAdvancedData, Database db,
 	        TaskScheduler taskScheduler, UsersManager um, ResultCallback<Report> resultCallback) {
 		if (reportData == null) {
+			LOGGER.info(() -> "asynchronouslyFrom(): reportData = null");
 			resultCallback.onResultReceived(null);
 			return;
 		}
 
-		boolean archived = ((int) Objects.requireNonNull(reportData.get("archived"))) == 1;
+		boolean archived = QueryResult.isTrue(Objects.requireNonNull(reportData.get(ARCHIVED)));
 
 		asynchronouslyFrom(reportData, archived, saveAdvancedData, db, taskScheduler, um, resultCallback);
 	}
@@ -85,47 +94,56 @@ public class Report {
 	public static void asynchronouslyFrom(Map<String, Object> reportData, boolean archived, boolean saveAdvancedData,
 	        Database db, TaskScheduler taskScheduler, UsersManager um, ResultCallback<Report> resultCallback) {
 		if (reportData == null) {
+			LOGGER.info(() -> "asynchronouslyFrom(): reportData = null");
 			resultCallback.onResultReceived(null);
 			return;
 		}
 
-		String reportedUUID = (String) reportData.get("reported_uuid");
+		String reportedUUID = (String) reportData.get(REPORTED_UUID);
 
+		LOGGER.debug(() -> "asynchronouslyFrom(): um.getUserAsynchronously(reportedUUID)");
 		um.getUserAsynchronously(reportedUUID, db, taskScheduler, new ResultCallback<User>() {
 
 			@Override
 			public void onResultReceived(User reported) {
+				LOGGER.debug(() -> "asynchronouslyFrom(): reported = " + reported);
 				if (reported == null) {
+					LOGGER.debug(() -> "asynchronouslyFrom(): reported = null, uuid = " + reportedUUID);
 					resultCallback.onResultReceived(null);
 					return;
 				}
 
-				String configReporter = (String) reportData.get("reporter_uuid");
+				String configReporter = (String) reportData.get(REPORTER_UUID);
 				String[] reportersUUID = configReporter.split(REPORTERS_SEPARATOR);
+				LOGGER.debug(() -> "asynchronouslyFrom(): reportersUUID = " + configReporter);
 				um.getUsersAsynchronously(reportersUUID, db, taskScheduler, new ResultCallback<List<User>>() {
 
 					@Override
 					public void onResultReceived(List<User> reporters) {
+						LOGGER.debug(() -> "asynchronouslyFrom(): reporters = " + CollectionUtils.toString(reporters));
 						if (reporters == null || reporters.isEmpty()) {
+							LOGGER.debug(() -> "asynchronouslyFrom(): reporters = null | empty");
 							resultCallback.onResultReceived(null);
 							return;
 						}
 
-						String configStatus = (String) reportData.get("status");
-						StatusDetails.asynchronouslyFrom(configStatus, db, taskScheduler, um,
+						String statusDetails = (String) reportData.get(STATUS);
+						StatusDetails.asynchronouslyFrom(statusDetails, db, taskScheduler, um,
 						        new ResultCallback<Report.StatusDetails>() {
 
 							        @Override
 							        public void onResultReceived(StatusDetails sd) {
-								        Report r = new Report((int) reportData.get("report_id"), sd,
-								                (String) reportData.get("appreciation"),
-								                (String) reportData.get("date"), reported, reporters,
-								                (String) reportData.get("reason"), archived);
+								        LOGGER.debug(() -> "asynchronouslyFrom(): sd = " + sd);
+								        Report r = new Report((int) reportData.get(REPORT_ID), sd,
+								                AppreciationDetails.from((String) reportData.get(APPRECIATION)),
+								                (String) reportData.get(DATE), reported, reporters,
+								                (String) reportData.get(REASON), archived);
 
 								        if (saveAdvancedData) {
 									        r.extractAndSaveAdvancedData(reportData);
 								        }
 
+								        LOGGER.debug(() -> "asynchronouslyFrom(): result = " + r);
 								        resultCallback.onResultReceived(r);
 							        }
 						        });
@@ -139,27 +157,81 @@ public class Report {
 		});
 	}
 
-	public Report(int reportId, StatusDetails statusDetails, String appreciation, String date, User reported,
-	        List<User> reporters, String reason) {
-		this(reportId, statusDetails, appreciation, date, reported, reporters, reason, false);
+	public Report(int reportId, StatusDetails statusDetails, AppreciationDetails appreciationDetails, String date,
+	        User reported, List<User> reporters, String reason) {
+		this(reportId, statusDetails, appreciationDetails, date, reported, reporters, reason, false);
 	}
 
-	public Report(int reportId, StatusDetails statusDetails, String appreciation, String date, User reported,
-	        List<User> reporters, String reason, boolean archived) {
+	public Report(int reportId, StatusDetails statusDetails, AppreciationDetails appreciationDetails, String date,
+	        User reported, List<User> reporters, String reason, boolean archived) {
 		this.reportId = reportId;
 		this.statusDetails = Objects.requireNonNull(statusDetails);
-		this.appreciation = appreciation;
+		this.appreciationDetails = Objects.requireNonNull(appreciationDetails);
 		this.date = date;
 		this.reported = Objects.requireNonNull(reported);
-		this.reporters = Objects.requireNonNull(reporters);
+		this.reporters = reporters;
+		CollectionUtils.requireNotEmpty(reporters);
 		this.reason = reason;
 		this.archived = archived;
 	}
 
-	public static class StatusDetails {
+	public static class StatusDetails implements DeeplyCloneable<StatusDetails> {
 
-		Status status;
-		User staff;
+		public static final String STATUS_IN_PROGRESS_SEPARATOR = "-";
+		public static final String STATUS_DONE_SEPARATOR = " by ";
+
+		private final Status status;
+		/**
+		 * Can be null, even if status is IN_PROGRESS or DONE.
+		 */
+		private final User staff;
+
+		public static StatusDetails from(Status status, User staff) {
+			if (status != Status.IN_PROGRESS && status != Status.DONE) {
+				staff = null;
+			}
+			return new StatusDetails(status, staff);
+		}
+
+		public static void asynchronouslyFrom(String statusDetails, Database db, TaskScheduler taskScheduler,
+		        UsersManager um, ResultCallback<StatusDetails> resultCallback) {
+			Status status = Status.from(statusDetails);
+			String statusPrefix = null;
+			UUID staffUUID = null;
+			if (status == Status.IN_PROGRESS) {
+				statusPrefix = Status.IN_PROGRESS.getConfigName() + StatusDetails.STATUS_IN_PROGRESS_SEPARATOR;
+			} else if (status == Status.DONE) {
+				statusPrefix = Status.DONE.getConfigName() + StatusDetails.STATUS_DONE_SEPARATOR;
+			}
+
+			if (statusPrefix != null) {
+				try {
+					staffUUID = UUID.fromString(statusDetails.replaceFirst(statusPrefix, ""));
+				} catch (IllegalArgumentException e) {
+					String fstatusPrefix = statusPrefix;
+					LOGGER.info(() -> "StatusDetails: asynchronouslyFrom(): invalid staff uuid: "
+					        + statusDetails.replaceFirst(fstatusPrefix, ""));
+				}
+			}
+
+			if (staffUUID != null) {
+				String fstaffUUID = staffUUID.toString();
+				LOGGER.debug(() -> "StatusDetails: asynchronouslyFrom(): staffUUID != null, getUserAsynchronously("
+				        + fstaffUUID + ")");
+				um.getUserAsynchronously(staffUUID, db, taskScheduler, new ResultCallback<User>() {
+
+					@Override
+					public void onResultReceived(User u) {
+						LOGGER.debug(() -> "StatusDetails: asynchronouslyFrom(): staff user received: " + u);
+						resultCallback.onResultReceived(new StatusDetails(status, u));
+					}
+
+				});
+			} else {
+				LOGGER.debug(() -> "StatusDetails: asynchronouslyFrom(): staffUUID = null");
+				resultCallback.onResultReceived(new StatusDetails(status, null));
+			}
+		}
 
 		private StatusDetails(Status status, User staff) {
 			this.status = status;
@@ -168,15 +240,15 @@ public class Report {
 
 		@Override
 		public String toString() {
-			String configStatus = status.getRawName();
+			String configStatus = status.getConfigName();
 			if (status == Status.IN_PROGRESS) {
-				configStatus += STATUS_IN_PROGRESS_SEPARATOR;
+				configStatus += StatusDetails.STATUS_IN_PROGRESS_SEPARATOR;
 			} else if (status == Status.DONE) {
-				configStatus += STATUS_DONE_SEPARATOR;
+				configStatus += StatusDetails.STATUS_DONE_SEPARATOR;
 			} else {
 				return configStatus;
 			}
-			return configStatus + staff.getUniqueId();
+			return configStatus + (staff != null ? staff.getUniqueId() : "null");
 		}
 
 		@Override
@@ -196,40 +268,77 @@ public class Report {
 			return Objects.equals(staff, other.staff) && status == other.status;
 		}
 
-		public static StatusDetails from(Status status, User staff) {
-			if (status != Status.IN_PROGRESS && status != Status.DONE) {
-				staff = null;
-			}
+		@Override
+		public StatusDetails deepClone() {
 			return new StatusDetails(status, staff);
 		}
 
-		public static void asynchronouslyFrom(String configStatus, Database db, TaskScheduler taskScheduler,
-		        UsersManager um, ResultCallback<StatusDetails> resultCallback) {
-			Status status = Status.from(configStatus);
-			String statusPrefix = null;
-			UUID staffUUID = null;
-			if (status == Status.IN_PROGRESS) {
-				statusPrefix = Status.IN_PROGRESS.getRawName() + STATUS_IN_PROGRESS_SEPARATOR;
-			} else if (status == Status.DONE) {
-				statusPrefix = Status.DONE.getRawName() + STATUS_DONE_SEPARATOR;
+	}
+
+	public static class AppreciationDetails implements DeeplyCloneable<AppreciationDetails> {
+
+		public static final String APPRECIATION_PUNISHMENT_SEPARATOR = "/";
+
+		private final Appreciation appreciation;
+		private final String punishment;
+
+		public static AppreciationDetails from(Appreciation appreciation, String punishment) {
+			if (appreciation != Appreciation.TRUE) {
+				punishment = null;
+			}
+			return new AppreciationDetails(appreciation, punishment);
+		}
+
+		public static AppreciationDetails from(String appreciationDetails) {
+			if (appreciationDetails == null) {
+				return null;
 			}
 
-			if (statusPrefix != null) {
-				staffUUID = UUID.fromString(configStatus.replaceFirst(statusPrefix, ""));
+			String[] tokens = appreciationDetails.split(AppreciationDetails.APPRECIATION_PUNISHMENT_SEPARATOR, 2);
+			if (tokens.length == 0) {
+				return null;
 			}
+			return new AppreciationDetails(Appreciation.from(tokens[0]), tokens.length >= 2 ? tokens[1] : null);
+		}
 
-			if (staffUUID != null) {
-				um.getUserAsynchronously(staffUUID, db, taskScheduler, new ResultCallback<User>() {
+		private AppreciationDetails(Appreciation appreciation) {
+			this(appreciation, null);
+		}
 
-					@Override
-					public void onResultReceived(User u) {
-						resultCallback.onResultReceived(new StatusDetails(status, u));
-					}
+		private AppreciationDetails(Appreciation appreciation, String punishment) {
+			this.appreciation = Objects.requireNonNull(appreciation);
+			this.punishment = punishment;
+		}
 
-				});
+		@Override
+		public String toString() {
+			if (punishment == null) {
+				return appreciation.toString();
 			} else {
-				resultCallback.onResultReceived(new StatusDetails(status, null));
+				return appreciation + AppreciationDetails.APPRECIATION_PUNISHMENT_SEPARATOR + punishment;
 			}
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(appreciation, punishment);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (!(obj instanceof AppreciationDetails)) {
+				return false;
+			}
+			AppreciationDetails other = (AppreciationDetails) obj;
+			return appreciation == other.appreciation && Objects.equals(punishment, other.punishment);
+		}
+
+		@Override
+		public AppreciationDetails deepClone() {
+			return new AppreciationDetails(appreciation, punishment);
 		}
 
 	}
@@ -362,13 +471,28 @@ public class Report {
 
 	public void setStatus(StatusDetails statusDetails, boolean bungee, Database db, ReportsManager rm,
 	        BungeeManager bm) {
-		updateStatusDetailsWithBroadcast(statusDetails, rm);
+		boolean changed = false;
+		changed |= updateStatusDetails(statusDetails);
+		boolean isUndone = getStatus() != Status.DONE;
+		if (isUndone) {
+			changed |= updateAppreciationDetails(AppreciationDetails.from(Appreciation.NONE, null));
+		}
+
+		if (changed) {
+			rm.broadcastReportDataChanged(this);
+		}
 
 		if (!bungee) {
-			String configStatus = getConfigStatus();
-			bm.sendPluginNotificationToAll(configStatus + " new_status " + reportId);
-			db.updateAsynchronously("UPDATE tigerreports_reports SET status = ? WHERE report_id = ?",
-			        Arrays.asList(configStatus, reportId));
+			String configStatus = getStatusDetails();
+			bm.sendNewStatusNotification(configStatus, reportId);
+			if (isUndone) { // removes any previous appreciation
+				db.updateAsynchronously(
+				        "UPDATE tigerreports_reports SET status = ?,appreciation = ? WHERE report_id = ?",
+				        Arrays.asList(configStatus, getAppreciationDetails(), reportId));
+			} else {
+				db.updateAsynchronously("UPDATE tigerreports_reports SET status = ? WHERE report_id = ?",
+				        Arrays.asList(configStatus, reportId));
+			}
 		}
 
 		try {
@@ -380,24 +504,25 @@ public class Report {
 		return statusDetails.status;
 	}
 
-	public String getConfigStatus() {
+	public String getStatusDetails() {
 		return statusDetails.toString();
 	}
 
 	public String getStatusWithDetails(VaultManager vm) {
 		Status status = getStatus();
 		if (status == Status.DONE) {
-			String suffix = getAppreciation(true).equalsIgnoreCase("true")
+			Appreciation appreciation = appreciationDetails.appreciation;
+			String suffix = appreciation == Appreciation.TRUE
 			        ? Message.get("Words.Done-suffix.True-appreciation").replace("_Punishment_", getPunishment())
 			        : Message.get("Words.Done-suffix.Other-appreciation")
-			                .replace("_Appreciation_", getAppreciation(false));
-			String processorName = getInvolvedStaffDisplayName(getProcessorStaff(), vm);
-			return status.getWord(processorName) + suffix;
+			                .replace("_Appreciation_", appreciation.getDisplayName());
+			String processorName = UserUtils.getStaffDisplayName(getProcessorStaff(), vm);
+			return status.getDisplayName(processorName) + suffix;
 		} else if (status == Status.IN_PROGRESS) {
-			String processingName = getInvolvedStaffDisplayName(getProcessingStaff(), vm);
-			return status.getWord(processingName, true);
+			String processingName = UserUtils.getStaffDisplayName(getProcessingStaff(), vm);
+			return status.getDisplayName(processingName, true);
 		} else {
-			return status.getWord(null);
+			return status.getDisplayName(null);
 		}
 	}
 
@@ -407,19 +532,12 @@ public class Report {
 		        : Message.NOT_FOUND_FEMALE.get();
 	}
 
-	public String getAppreciation(boolean config) {
-		int pos = appreciation != null ? appreciation.indexOf(APPRECIATION_PUNISHMENT_SEPARATOR) : -1;
-		String appreciationWord = pos != -1 ? appreciation.substring(0, pos) : appreciation;
-		if (config) {
-			return appreciationWord;
-		}
-		try {
-			return appreciation != null && !appreciation.equalsIgnoreCase("None")
-			        ? Message.valueOf(appreciationWord.toUpperCase()).get()
-			        : Message.NONE_FEMALE.get();
-		} catch (Exception invalidAppreciation) {
-			return Message.NONE_FEMALE.get();
-		}
+	public Appreciation getAppreciation() {
+		return appreciationDetails.appreciation;
+	}
+
+	public String getAppreciationDetails() {
+		return appreciationDetails.toString();
 	}
 
 	public User getProcessorStaff() {
@@ -430,19 +548,8 @@ public class Report {
 		return getStatus() == Status.IN_PROGRESS ? statusDetails.staff : null;
 	}
 
-	public String getInvolvedStaffDisplayName(User u, VaultManager vm) {
-		String name;
-		if (u == null) {
-			name = Message.NOT_FOUND_MALE.get();
-		} else {
-			name = u.getDisplayName(vm, true);
-		}
-		return name;
-	}
-
 	public String getPunishment() {
-		int pos = appreciation != null ? appreciation.indexOf(APPRECIATION_PUNISHMENT_SEPARATOR) : -1;
-		return pos != -1 && appreciation != null ? appreciation.substring(pos + 1) : Message.NONE_FEMALE.get();
+		return appreciationDetails.punishment != null ? appreciationDetails.punishment : Message.NONE_FEMALE.get();
 	}
 
 	public String implementDetails(String message, boolean menu, VaultManager vm, BungeeManager bm) {
@@ -456,12 +563,16 @@ public class Report {
 		        .replace("_Reason_", getReason(menu));
 	}
 
+	public AdvancedData getAdvancedData() {
+		return advancedData;
+	}
+
 	public boolean hasAdvancedData() {
 		return advancedData != null;
 	}
 
-	private void setAdvancedData(Map<String, String> advancedData) {
-		if (advancedData != null && !advancedData.isEmpty()) {
+	private void setAdvancedData(AdvancedData advancedData) {
+		if (advancedData != null) {
 			this.advancedData = advancedData;
 		}
 	}
@@ -474,14 +585,180 @@ public class Report {
 		if (isArchived()) {
 			return;
 		}
-		Map<String, String> advancedData = new HashMap<>();
-		Set<String> advancedKeys = new HashSet<>(reportData.keySet());
-		advancedKeys.removeAll(REPORT_BASIC_DATA_KEYS);
-		for (String key : advancedKeys) {
-			Object data = reportData.get(key);
-			advancedData.put(key, data != null ? data.toString() : null);
+
+		setAdvancedData(AdvancedData.fromMap(reportData));
+	}
+
+	public static class AdvancedData {
+
+		public static final String MESSAGES_SEPARATOR = "#next#";
+		public static final String EFFECTS_SEPARATOR = ",";
+
+		public static final String REPORTER_IP = "reporter_ip";
+		public static final String REPORTER_LOCATION = "reporter_location";
+		public static final String REPORTER_MESSAGES = "reporter_messages";
+
+		public static final String REPORTED_IP = "reported_ip";
+		public static final String REPORTED_LOCATION = "reported_location";
+		public static final String REPORTED_MESSAGES = "reported_messages";
+		public static final String REPORTED_GAMEMODE = "reported_gamemode";
+		public static final String REPORTED_ON_GROUND = "reported_on_ground";
+		public static final String REPORTED_SNEAK = "reported_sneak";
+		public static final String REPORTED_SPRINT = "reported_sprint";
+		public static final String REPORTED_HEALTH = "reported_health";
+		public static final String REPORTED_FOOD = "reported_food";
+		public static final String REPORTED_EFFECTS = "reported_effects";
+
+		final String reporterIP;
+		final String reporterLocation;
+		final String reporterMessages;
+		final String reportedIP;
+		final String reportedLocation;
+		final String reportedMessages;
+		final String reportedGamemode;
+		final boolean reportedOnGround;
+		final boolean reportedSneak;
+		final boolean reportedSprint;
+		final String reportedHealth;
+		final String reportedFood;
+		final String reportedEffects;
+
+		public static AdvancedData fromMap(Map<String, Object> advancedData) {
+			return new AdvancedData(getAdvancedDataAsString(advancedData, REPORTER_IP),
+			        getAdvancedDataAsString(advancedData, REPORTER_LOCATION),
+			        getAdvancedDataAsString(advancedData, REPORTER_MESSAGES),
+			        getAdvancedDataAsString(advancedData, REPORTED_IP),
+			        getAdvancedDataAsString(advancedData, REPORTED_LOCATION),
+			        getAdvancedDataAsString(advancedData, REPORTED_MESSAGES),
+			        getAdvancedDataAsString(advancedData, REPORTED_GAMEMODE),
+			        getAdvancedDataAsBoolean(advancedData, REPORTED_ON_GROUND),
+			        getAdvancedDataAsBoolean(advancedData, REPORTED_SNEAK),
+			        getAdvancedDataAsBoolean(advancedData, REPORTED_SPRINT),
+			        getAdvancedDataAsString(advancedData, REPORTED_HEALTH),
+			        getAdvancedDataAsString(advancedData, REPORTED_FOOD),
+			        getAdvancedDataAsString(advancedData, REPORTED_EFFECTS));
 		}
-		setAdvancedData(advancedData);
+
+		private static String getAdvancedDataAsString(Map<String, Object> advancedData, String key) {
+			Object data = advancedData.get(key);
+			return data != null ? data.toString() : null;
+		}
+
+		private static boolean getAdvancedDataAsBoolean(Map<String, Object> advancedData, String key) {
+			return QueryResult.isTrue(advancedData.get(key));
+		}
+
+		public AdvancedData(String reporterIP, String reporterLocation, String reporterMessages, String reportedIP,
+		        String reportedLocation, String reportedMessages, String reportedGamemode, boolean reportedOnGround,
+		        boolean reportedSneak, boolean reportedSprint, String reportedHealth, String reportedFood,
+		        String reportedEffects) {
+			this.reporterIP = reporterIP;
+			this.reporterLocation = reporterLocation;
+			this.reporterMessages = reporterMessages;
+			this.reportedIP = reportedIP;
+			this.reportedLocation = reportedLocation;
+			this.reportedMessages = reportedMessages;
+			this.reportedGamemode = reportedGamemode;
+			this.reportedOnGround = reportedOnGround;
+			this.reportedSneak = reportedSneak;
+			this.reportedSprint = reportedSprint;
+			this.reportedHealth = reportedHealth;
+			this.reportedFood = reportedFood;
+			this.reportedEffects = reportedEffects;
+		}
+
+		public boolean hasOnlineReportedData() {
+			return reportedGamemode != null;
+		}
+
+		@Override
+		public String toString() {
+			return "AdvancedData [reporterIP=" + reporterIP + ", reporterLocation=" + reporterLocation
+			        + ", reporterMessages=" + reporterMessages + ", reportedIP=" + reportedIP + ", reportedLocation="
+			        + reportedLocation + ", reportedMessages=" + reportedMessages + ", reportedGamemode="
+			        + reportedGamemode + ", reportedOnGround=" + reportedOnGround + ", reportedSneak=" + reportedSneak
+			        + ", reportedSprint=" + reportedSprint + ", reportedHealth=" + reportedHealth + ", reportedFood="
+			        + reportedFood + ", reportedEffects=" + reportedEffects + "]";
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(reportedEffects, reportedFood, reportedGamemode, reportedHealth, reportedIP,
+			        reportedLocation, reportedMessages, reportedOnGround, reportedSneak, reportedSprint, reporterIP,
+			        reporterLocation, reporterMessages);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (!(obj instanceof AdvancedData)) {
+				return false;
+			}
+			AdvancedData other = (AdvancedData) obj;
+			return Objects.equals(reportedEffects, other.reportedEffects)
+			        && Objects.equals(reportedFood, other.reportedFood)
+			        && Objects.equals(reportedGamemode, other.reportedGamemode)
+			        && Objects.equals(reportedHealth, other.reportedHealth)
+			        && Objects.equals(reportedIP, other.reportedIP)
+			        && Objects.equals(reportedLocation, other.reportedLocation)
+			        && Objects.equals(reportedMessages, other.reportedMessages)
+			        && reportedOnGround == other.reportedOnGround && reportedSneak == other.reportedSneak
+			        && reportedSprint == other.reportedSprint && Objects.equals(reporterIP, other.reporterIP)
+			        && Objects.equals(reporterLocation, other.reporterLocation)
+			        && Objects.equals(reporterMessages, other.reporterMessages);
+		}
+
+		public static String formatConfigEffects(Collection<PotionEffect> effects) {
+			StringBuilder configEffects = new StringBuilder();
+			for (PotionEffect effect : effects) {
+				configEffects.append(effect.getType().getName())
+				        .append(":")
+				        .append(effect.getAmplifier() + 1)
+				        .append("/")
+				        .append(effect.getDuration())
+				        .append(",");
+			}
+			int length = configEffects.length();
+			return length > 1 ? configEffects.deleteCharAt(length - 1).toString() : null;
+		}
+
+		public static String formatMessages(List<SavedMessage> messages) {
+			return messages != null && !messages.isEmpty()
+			        ? MessageUtils.joinElements(MESSAGES_SEPARATOR, messages, false)
+			        : null;
+		}
+
+		public static SavedMessage[] unformatMessages(String messages) {
+			if (messages == null || messages.isEmpty()) {
+				return new SavedMessage[0];
+			} else {
+				String[] tokens = messages.split(MESSAGES_SEPARATOR);
+				SavedMessage[] result = new SavedMessage[tokens.length];
+				for (int i = 0; i < tokens.length; i++) {
+					result[i] = SavedMessage.from(tokens[i]);
+				}
+				return result;
+			}
+		}
+
+		public static String formatGamemode(GameMode gamemode) {
+			return gamemode.toString().toLowerCase();
+		}
+
+		public static String unformatGamemode(String gamemode) {
+			if (gamemode == null) {
+				return null;
+			}
+
+			try {
+				return Message.valueOf(gamemode.toUpperCase()).get();
+			} catch (Exception invalidGamemode) {
+				return gamemode.substring(0, 1).toUpperCase() + gamemode.substring(1).toLowerCase();
+			}
+		}
+
 	}
 
 	public String implementData(String message, boolean advanced, VaultManager vm, BungeeManager bm) {
@@ -491,12 +768,12 @@ public class Report {
 
 		String defaultData;
 		String reportedAdvancedData = "";
-		try {
+		if (advancedData.hasOnlineReportedData()) {
 			String effects;
-			String effectsList = advancedData.get("reported_effects");
+			String effectsList = advancedData.reportedEffects;
 			if (effectsList != null && effectsList.contains(":") && effectsList.contains("/")) {
 				StringBuilder effectsLines = new StringBuilder();
-				for (String effect : effectsList.split(EFFECTS_SEPARATOR)) {
+				for (String effect : effectsList.split(AdvancedData.EFFECTS_SEPARATOR)) {
 					String type = effect.split(":")[0].replace("_", " ");
 					String duration = effect.split("/")[1];
 					effectsLines.append(Message.EFFECT.get()
@@ -509,23 +786,20 @@ public class Report {
 				effects = Message.NONE_MALE.get();
 			}
 			defaultData = Message.DEFAULT_DATA.get()
-			        .replace("_Gamemode_", MessageUtils.getGamemodeWord(advancedData.get("reported_gamemode")))
-			        .replace("_OnGround_",
-			                (advancedData.get("reported_on_ground").equals("1") ? Message.YES : Message.NO).get())
-			        .replace("_Sneak_",
-			                (advancedData.get("reported_sneak").equals("1") ? Message.YES : Message.NO).get())
-			        .replace("_Sprint_",
-			                (advancedData.get("reported_sprint").equals("1") ? Message.YES : Message.NO).get())
-			        .replace("_Health_", advancedData.get("reported_health"))
-			        .replace("_Food_", advancedData.get("reported_food"))
+			        .replace("_Gamemode_", AdvancedData.unformatGamemode(advancedData.reportedGamemode))
+			        .replace("_OnGround_", (advancedData.reportedOnGround ? Message.YES : Message.NO).get())
+			        .replace("_Sneak_", (advancedData.reportedSneak ? Message.YES : Message.NO).get())
+			        .replace("_Sprint_", (advancedData.reportedSprint ? Message.YES : Message.NO).get())
+			        .replace("_Health_", advancedData.reportedHealth)
+			        .replace("_Food_", advancedData.reportedFood)
 			        .replace("_Effects_", effects);
 			reportedAdvancedData = !advanced ? ""
 			        : Message.ADVANCED_DATA_REPORTED.get()
 			                .replace("_UUID_",
 			                        MessageUtils.getMenuSentence(getReportedUniqueId().toString(),
 			                                Message.ADVANCED_DATA_REPORTED, "_UUID_", false))
-			                .replace("_IP_", advancedData.get("reported_ip"));
-		} catch (Exception dataNotFound) {
+			                .replace("_IP_", advancedData.reportedIP);
+		} else {
 			defaultData = Message.PLAYER_WAS_OFFLINE.get();
 		}
 
@@ -537,21 +811,24 @@ public class Report {
 		                        .replace("_UUID_",
 		                                MessageUtils.getMenuSentence(getReporterUniqueId().toString(),
 		                                        Message.ADVANCED_DATA_REPORTER, "_UUID_", false))
-		                        .replace("_IP_",
-		                                advancedData.get("reporter_ip") != null ? advancedData.get("reporter_ip")
-		                                        : Message.NOT_FOUND_FEMALE.get()));
+		                        .replace("_IP_", advancedData.reporterIP != null ? advancedData.reporterIP
+		                                : Message.NOT_FOUND_FEMALE.get()));
 	}
 
 	public String getOldLocation(ParticipantType type) {
 		if (advancedData == null) {
 			return null;
 		}
-		return advancedData.get(type.configName + "_location");
+		return type == ParticipantType.REPORTER ? advancedData.reporterLocation : advancedData.reportedLocation;
 	}
 
-	public String[] getMessagesHistory(ParticipantType type) {
-		String messages = advancedData.get(type.configName + "_messages");
-		return messages != null ? messages.split("#next#") : new String[0];
+	public User.SavedMessage[] getMessagesHistory(ParticipantType type) {
+		if (advancedData == null) {
+			return new User.SavedMessage[0];
+		}
+		String messages = type == ParticipantType.REPORTER ? advancedData.reporterMessages
+		        : advancedData.reportedMessages;
+		return AdvancedData.unformatMessages(messages);
 	}
 
 	public ItemStack getItem(String actions, VaultManager vm, BungeeManager bm) {
@@ -576,39 +853,43 @@ public class Report {
 		return archived;
 	}
 
-	// TODO: create Appreciation object
-	public void process(User staff, String appreciation, boolean bungee, boolean autoArchive, boolean notifyStaff,
-	        Database db) {
-		processing(staff, appreciation, bungee, autoArchive,
+	public void process(User staff, Appreciation appreciation, boolean bungee, boolean autoArchive, boolean notifyStaff,
+	        Database db, ReportsManager rm, VaultManager vm, BungeeManager bm, TaskScheduler taskScheduler) {
+		processing(staff, AppreciationDetails.from(appreciation, null), bungee, autoArchive,
 		        (autoArchive ? Message.STAFF_PROCESS_AUTO : Message.STAFF_PROCESS).get()
-		                .replace("_Appreciation_", Message.valueOf(appreciation.toUpperCase()).get()),
-		        "process", notifyStaff, null, db);
+		                .replace("_Appreciation_", appreciation.getDisplayName()),
+		        BungeeManager.NotificationType.PROCESS, notifyStaff, null, db, rm, bm, vm, taskScheduler);
 	}
 
 	public void processWithPunishment(User staff, boolean bungee, boolean autoArchive, String punishment,
-	        boolean notifyStaff, Database db, VaultManager vm, BungeeManager bm) {
-		processing(staff, "True" + APPRECIATION_PUNISHMENT_SEPARATOR + punishment, bungee, autoArchive,
+	        boolean notifyStaff, Database db, ReportsManager rm, VaultManager vm, BungeeManager bm,
+	        TaskScheduler taskScheduler) {
+		if (punishment == null || punishment.isEmpty()) {
+			process(staff, Appreciation.TRUE, bungee, autoArchive, notifyStaff, db, rm, vm, bm, taskScheduler);
+			return;
+		}
+
+		processing(staff, AppreciationDetails.from(Appreciation.TRUE, punishment), bungee, autoArchive,
 		        (autoArchive ? Message.STAFF_PROCESS_PUNISH_AUTO : Message.STAFF_PROCESS_PUNISH).get()
 		                .replace("_Punishment_", punishment)
 		                .replace("_Reported_", getPlayerName(ParticipantType.REPORTED, false, true, vm, bm)),
-		        "process_punish", notifyStaff, null, db);
+		        BungeeManager.NotificationType.PROCESS_PUNISH, notifyStaff, null, db, rm, bm, vm, taskScheduler);
 	}
 
 	public void processAbusive(User staff, boolean bungee, boolean archive, long punishSeconds, boolean notifyStaff,
-	        Database db) {
+	        Database db, ReportsManager rm, UsersManager um, BungeeManager bm, VaultManager vm,
+	        TaskScheduler taskScheduler) {
 		String time = DatetimeUtils.convertToSentence(punishSeconds);
-		processing(staff, "False", bungee, archive, Message.STAFF_PROCESS_ABUSIVE.get().replace("_Time_", time),
-		        "process_abusive", notifyStaff, Long.toString(punishSeconds), db);
+		processing(staff, new AppreciationDetails(Appreciation.FALSE), bungee, archive,
+		        Message.STAFF_PROCESS_ABUSIVE.get().replace("_Time_", time),
+		        BungeeManager.NotificationType.PROCESS_ABUSIVE, notifyStaff, punishSeconds, db, rm, bm, vm,
+		        taskScheduler);
 
-		TigerReports tr = TigerReports.getInstance();
-		UsersManager um = tr.getUsersManager();
 		if (!bungee) {
-			BungeeManager bm = tr.getBungeeManager();
 			um.startCooldownForUsers(reporters, punishSeconds, db, bm);
 			if (staff != null) {
 				Player p = staff.getPlayer();
 				if (p != null) {
-					VaultManager vm = tr.getVaultManager();
 					ConfigUtils.processCommands(ConfigFile.CONFIG.get(), "Config.AbusiveReport.Commands", this, p, vm,
 					        bm);
 				}
@@ -623,22 +904,21 @@ public class Report {
 		}
 	}
 
-	private void processing(User staff, String appreciation, boolean bungee, boolean archive, String staffMessage,
-	        String bungeeAction, boolean notifyStaff, String bungeeExtraData, Database db) {
+	private void processing(User staff, AppreciationDetails appreciationDetails, boolean bungee, boolean archive,
+	        String staffMessage, String bungeeAction, boolean notifyStaff, Long punishSeconds, Database db,
+	        ReportsManager rm, BungeeManager bm, VaultManager vm, TaskScheduler taskScheduler) {
+		Objects.requireNonNull(staff); // Eventually, create a special User CONSOLE in the future, but not null.
+
 		boolean changed = false;
-		changed |= updateStatusDetails(new StatusDetails(Status.DONE, staff));
-		changed |= updateAppreciation(appreciation);
+		changed |= updateStatusDetails(StatusDetails.from(Status.DONE, staff));
+		changed |= updateAppreciationDetails(appreciationDetails);
 		changed |= updateArchived(archive);
 
-		TigerReports tr = TigerReports.getInstance();
 		if (changed) {
-			tr.getReportsManager().broadcastReportDataChanged(this);
+			rm.broadcastReportDataChanged(this);
 		}
 
-		BungeeManager bm = tr.getBungeeManager();
-		VaultManager vm = tr.getVaultManager();
-
-		if (notifyStaff && staff != null) {
+		if (notifyStaff) {
 			MessageUtils.sendStaffMessage(
 			        MessageUtils.getAdvancedMessage(staffMessage.replace("_Player_", staff.getDisplayName(vm, true)),
 			                "_Report_", getName(), getText(vm, bm), null),
@@ -646,37 +926,38 @@ public class Report {
 		}
 
 		if (!bungee) {
-			if (staff != null) {
-				db.updateAsynchronously(
-				        "UPDATE tigerreports_reports SET status = ?,appreciation = ?,archived = ? WHERE report_id = ?",
-				        Arrays.asList(getConfigStatus(), appreciation, archive ? 1 : 0, reportId));
+			db.updateAsynchronously(
+			        "UPDATE tigerreports_reports SET status = ?,appreciation = ?,archived = ? WHERE report_id = ?",
+			        Arrays.asList(getStatusDetails(), getAppreciationDetails(), archive ? 1 : 0, reportId));
 
-				staff.changeStatistic(Statistic.PROCESSED_REPORTS, 1, db, null);
+			staff.changeStatistic(Statistic.PROCESSED_REPORTS, 1, db, null);
 
-				String appreciationStatisticConfigName = getAppreciation(true).toLowerCase() + "_appreciations";
-				String[] uuidOfChangedStatsUsers = new String[reporters.size() + 1];
-				uuidOfChangedStatsUsers[0] = staff.getUniqueId().toString();
-				int i = 1;
-				for (User reporter : reporters) {
-					// TODO: group stat change
-					reporter.changeStatistic(appreciationStatisticConfigName, 1, false, db, null);
-					uuidOfChangedStatsUsers[i] = reporter.getUniqueId().toString();
-					if (ConfigUtils.playersNotifications()) {
-						if (reporter.isOnline()) {
-							reporter.sendReportNotification(this, true, db, vm, bm);
-						} else if (!bm.isOnline(reporter.getName())) {
-							reporter.addReportNotification(getId(), db, tr);
-						}
+			String appreciationStatisticConfigName = getAppreciation().getStatisticsName();
+			String[] uuidOfChangedStatsUsers = new String[reporters.size() + 1];
+			uuidOfChangedStatsUsers[0] = staff.getUniqueId().toString();
+			int i = 1;
+			for (User reporter : reporters) {
+				// TODO: group stat change
+				reporter.changeStatistic(appreciationStatisticConfigName, 1, false, db, null);
+				uuidOfChangedStatsUsers[i] = reporter.getUniqueId().toString();
+				if (ConfigUtils.playersNotifications()) {
+					if (reporter.isOnline()) {
+						reporter.sendReportNotification(this, true, db, vm, bm);
+					} else if (!bm.isPlayerOnline(reporter.getName())) {
+						reporter.addReportNotification(getId(), db, taskScheduler);
 					}
-					i++;
 				}
-				bm.sendPluginNotificationToAll(
-				        String.join(BungeeManager.MESSAGE_DATA_SEPARATOR, staff.getUniqueId().toString(), bungeeAction,
-				                "" + reportId, archive ? "1" : "0", appreciation) + bungeeExtraData != null
-				                        ? " " + bungeeExtraData
-				                        : "");
-				bm.sendUsersDataChanged(uuidOfChangedStatsUsers);
+				i++;
 			}
+
+			if (BungeeManager.NotificationType.PROCESS_ABUSIVE.equals(bungeeAction)) {
+				bm.sendProcessAbusiveNotification(staff.getUniqueId().toString(), reportId, archive,
+				        appreciationDetails, punishSeconds);
+			} else {
+				bm.sendProcessNotification(staff.getUniqueId().toString(), bungeeAction, reportId, archive,
+				        appreciationDetails);
+			}
+			bm.sendUsersDataChangedNotification(uuidOfChangedStatsUsers);
 		} else {
 			if (ConfigUtils.playersNotifications()) {
 				for (User reporter : reporters) {
@@ -687,9 +968,7 @@ public class Report {
 			}
 		}
 
-		Bukkit.getServer()
-		        .getPluginManager()
-		        .callEvent(new ProcessReportEvent(Report.this, staff != null ? staff.getName() : null, bungee));
+		Bukkit.getServer().getPluginManager().callEvent(new ProcessReportEvent(Report.this, staff.getName(), bungee));
 	}
 
 	public void addComment(User u, String message, Database db, TaskScheduler taskScheduler,
@@ -701,7 +980,7 @@ public class Report {
 	        ResultCallback<Integer> resultCallback) {
 		db.insertAsynchronously(
 		        "INSERT INTO tigerreports_comments (report_id,status,date,author,message) VALUES (?,?,?,?,?)",
-		        Arrays.asList(reportId, "Private", DatetimeUtils.getNowDate(), author, message), taskScheduler,
+		        Arrays.asList(reportId, "Private", DatetimeUtils.getNowDatetime(), author, message), taskScheduler,
 		        resultCallback);
 	}
 
@@ -767,7 +1046,7 @@ public class Report {
 			        "_Report_", getName(), getText(vm, bm), null), ConfigSound.STAFF.get());
 
 			if (!bungee) {
-				bm.sendPluginNotificationToAll(staff.getUniqueId(), "delete", getBasicDataAsString());
+				bm.sendDeleteNotification(staff.getUniqueId(), getBasicDataAsString());
 				taskScheduler.runTaskAsynchronously(new Runnable() {
 
 					@Override
@@ -784,31 +1063,24 @@ public class Report {
 		rm.reportIsDeleted(reportId);
 	}
 
-	public void archive(User staff, boolean bungee, Database db) {
-		TigerReports tr = TigerReports.getInstance();
-		updateArchivedWithBroadcast(true, tr.getReportsManager());
-
-		VaultManager vm = tr.getVaultManager();
-		BungeeManager bm = tr.getBungeeManager();
+	public void archive(User staff, boolean bungee, Database db, ReportsManager rm, VaultManager vm, BungeeManager bm) {
+		updateArchivedWithBroadcast(true, rm);
 
 		if (staff != null) {
 			MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage(
 			        Message.STAFF_ARCHIVE.get().replace("_Player_", staff.getDisplayName(vm, true)), "_Report_",
 			        getName(), getText(vm, bm), null), ConfigSound.STAFF.get());
 			if (!bungee) {
-				bm.sendPluginNotificationToAll(staff.getUniqueId(), "archive", reportId);
+				bm.sendArchiveNotification(staff.getUniqueId(), reportId);
 				db.updateAsynchronously("UPDATE tigerreports_reports SET archived = ? WHERE report_id = ?",
 				        Arrays.asList(1, reportId));
 			}
 		}
 	}
 
-	public void unarchive(User staff, boolean bungee, Database db) {
-		TigerReports tr = TigerReports.getInstance();
-		updateArchivedWithBroadcast(false, tr.getReportsManager());
-
-		VaultManager vm = tr.getVaultManager();
-		BungeeManager bm = tr.getBungeeManager();
+	public void unarchive(User staff, boolean bungee, Database db, ReportsManager rm, VaultManager vm,
+	        BungeeManager bm) {
+		updateArchivedWithBroadcast(false, rm);
 
 		if (staff != null) {
 			MessageUtils.sendStaffMessage(MessageUtils.getAdvancedMessage(
@@ -816,7 +1088,7 @@ public class Report {
 			        getName(), getText(vm, bm), null), ConfigSound.STAFF.get());
 
 			if (!bungee) {
-				bm.sendPluginNotificationToAll(staff.getUniqueId(), "unarchive", reportId);
+				bm.sendUnarchiveNotification(staff.getUniqueId(), reportId);
 				db.updateAsynchronously("UPDATE tigerreports_reports SET archived = ? WHERE report_id = ?",
 				        Arrays.asList(0, reportId));
 			}
@@ -843,14 +1115,18 @@ public class Report {
 
 	private void updateStatusDetails(String newStatusDetails, Database db, TaskScheduler taskScheduler, UsersManager um,
 	        ResultCallback<Boolean> resultCallback) {
-		if (!Objects.equals(statusDetails.toString(), newStatusDetails)) {
+		if (!Objects.equals(statusDetails.toString(), Objects.requireNonNull(newStatusDetails))) {
 			StatusDetails.asynchronouslyFrom(newStatusDetails, db, taskScheduler, um,
 			        new ResultCallback<Report.StatusDetails>() {
 
 				        @Override
 				        public void onResultReceived(StatusDetails sd) {
-					        statusDetails = sd;
-					        resultCallback.onResultReceived(true);
+					        if (sd != null) {
+						        statusDetails = sd;
+						        resultCallback.onResultReceived(true);
+					        } else {
+						        resultCallback.onResultReceived(false);
+					        }
 				        }
 
 			        });
@@ -859,9 +1135,9 @@ public class Report {
 		}
 	}
 
-	private boolean updateAppreciation(String newAppreciation) {
-		if (!Objects.equals(appreciation, newAppreciation)) {
-			appreciation = newAppreciation;
+	private boolean updateAppreciationDetails(AppreciationDetails newAppreciationDetails) {
+		if (!Objects.equals(appreciationDetails, Objects.requireNonNull(newAppreciationDetails))) {
+			appreciationDetails = newAppreciationDetails;
 			return true;
 		} else {
 			return false;
@@ -872,7 +1148,9 @@ public class Report {
 	        UsersManager um, ResultCallback<Boolean> resultCallback) {
 		String[] newReportersUUID = newReporters.split(REPORTERS_SEPARATOR);
 		int newReportersUUIDLength = newReportersUUID.length;
+
 		boolean changed = !Objects.equals(date, newDate);
+		changed |= newReportersUUIDLength != reporters.size();
 		if (!changed) {
 			for (int i = 0; i < reporters.size(); i++) {
 				User reporter = reporters.get(i);
@@ -888,9 +1166,13 @@ public class Report {
 
 				@Override
 				public void onResultReceived(List<User> reporters) {
-					Report.this.reporters = reporters;
-					date = newDate;
-					resultCallback.onResultReceived(true);
+					if (reporters != null && !reporters.isEmpty()) {
+						Report.this.reporters = reporters;
+						date = newDate;
+						resultCallback.onResultReceived(true);
+					} else {
+						resultCallback.onResultReceived(false);
+					}
 				}
 
 			});
@@ -913,24 +1195,12 @@ public class Report {
 		}
 	}
 
-	private boolean updateStatusDetailsWithBroadcast(StatusDetails newStatusDetails, ReportsManager rm) {
-		if (!Objects.equals(statusDetails, Objects.requireNonNull(newStatusDetails))) {
-			statusDetails = newStatusDetails;
-			rm.broadcastReportDataChanged(this);
-			return true;
-		} else {
-			return false;
-		}
-	}
-
 	private boolean updateArchivedWithBroadcast(boolean newArchived, ReportsManager rm) {
-		if (!Objects.equals(archived, newArchived)) {
-			archived = newArchived;
+		boolean changed = updateArchived(newArchived);
+		if (changed) {
 			rm.broadcastReportDataChanged(this);
-			return true;
-		} else {
-			return false;
 		}
+		return changed;
 	}
 
 	@Override
@@ -954,32 +1224,33 @@ public class Report {
 	        TaskScheduler taskScheduler, UsersManager um, ResultCallback<Boolean> resultCallback) {
 		boolean archived = false;
 		if (reportData != null) {
-			archived = (int) reportData.get("archived") == 1;
+			archived = QueryResult.isTrue(reportData.get(ARCHIVED));
 		}
 		update(reportData, archived, saveAdvancedData, db, taskScheduler, um, resultCallback);
 	}
 
 	public void update(Map<String, Object> reportData, boolean archived, boolean saveAdvancedData, Database db,
 	        TaskScheduler taskScheduler, UsersManager um, ResultCallback<Boolean> resultCallback) {
-		int reportId = (int) reportData.get("report_id");
+		int reportId = (int) reportData.get(REPORT_ID);
 		if (this.reportId != reportId) {
 			throw new IllegalArgumentException("Report data concerns another report");
 		}
 
-		String newStatusDetails = (String) reportData.get("status");
+		String newStatusDetails = (String) reportData.get(STATUS);
 		updateStatusDetails(newStatusDetails, db, taskScheduler, um, new ResultCallback<Boolean>() {
 
 			@Override
 			public void onResultReceived(Boolean changed) {
-				String newReporters = (String) reportData.get("reporter_uuid");
-				updateReportersAndDate(newReporters, (String) reportData.get("date"), db, taskScheduler, um,
+				String newReporters = (String) reportData.get(REPORTER_UUID);
+				updateReportersAndDate(newReporters, (String) reportData.get(DATE), db, taskScheduler, um,
 				        new ResultCallback<Boolean>() {
 
 					        @Override
 					        public void onResultReceived(Boolean changed2) {
 						        changed2 |= changed;
 
-						        changed2 |= updateAppreciation((String) reportData.get("appreciation"));
+						        changed2 |= updateAppreciationDetails(
+						                AppreciationDetails.from((String) reportData.get(APPRECIATION)));
 						        changed2 |= updateArchived(archived);
 
 						        if (saveAdvancedData) {
@@ -1000,15 +1271,24 @@ public class Report {
 	}
 
 	@Override
+	public Report deepClone() {
+		Report clone = new Report(reportId, statusDetails.deepClone(), appreciationDetails.deepClone(), date, reported,
+		        new ArrayList<>(reporters), reason, archived);
+		clone.setAdvancedData(advancedData);
+		return clone;
+	}
+
+	@Override
 	public String toString() {
-		return "Report [reportId=" + reportId + ", statusDetails=" + statusDetails + ", appreciation=" + appreciation
-		        + ", date=" + date + ", reason=" + reason + ", reported=" + reported + ", reporters=" + reporters
-		        + ", advancedData=" + advancedData + ", archived=" + archived + "]";
+		return "Report [reportId=" + reportId + ", statusDetails=" + statusDetails + ", appreciationDetails="
+		        + appreciationDetails + ", date=" + date + ", reason=" + reason + ", reported=" + reported
+		        + ", reporters=" + reporters + ", advancedData=" + advancedData + ", archived=" + archived + "]";
 	}
 
 	public String getBasicDataAsString() {
-		String[] basicData = new String[] { Integer.toString(reportId), getConfigStatus(), appreciation, date,
-		        reported.getUniqueId().toString(), getReportersUUIDStr(), reason, Integer.toString(archived ? 1 : 0) };
+		String[] basicData = new String[] { Integer.toString(reportId), getStatusDetails(), getAppreciationDetails(),
+		        date, reported.getUniqueId().toString(), getReportersUUIDStr(), reason,
+		        Integer.toString(archived ? 1 : 0) };
 		for (int i = 0; i < basicData.length; i++) {
 			basicData[i].replace(DATA_SEPARATOR, "");
 		}
@@ -1028,20 +1308,20 @@ public class Report {
 
 		Map<String, Object> result = new HashMap<>();
 		try {
-			result.put("report_id", Integer.parseInt(data[0]));
+			result.put(REPORT_ID, Integer.parseInt(data[0]));
 		} catch (NumberFormatException ex) {
 			LOGGER.info(() -> "parseBasicDataFromString(" + dataAsString + "): invalid report id: " + data[0]);
 			return null;
 		}
 
-		result.put("status", data[1]);
-		result.put("appreciation", data[2]);
-		result.put("date", data[3]);
-		result.put("reported_uuid", data[4]);
-		result.put("reporter_uuid", data[5]);
-		result.put("reason", data[6]);
+		result.put(STATUS, data[1]);
+		result.put(APPRECIATION, data[2]);
+		result.put(DATE, data[3]);
+		result.put(REPORTED_UUID, data[4]);
+		result.put(REPORTER_UUID, data[5]);
+		result.put(REASON, data[6]);
 		try {
-			result.put("archived", Integer.parseInt(data[7]));
+			result.put(ARCHIVED, Integer.parseInt(data[7]));
 		} catch (NumberFormatException ex) {
 			LOGGER.info(() -> "parseBasicDataFromString(" + dataAsString + "): invalid archived value: " + data[7]);
 			return null;

@@ -79,7 +79,7 @@ public class ReportsCommand implements TabExecutor {
 			if (reportId < 0) {
 				return true;
 			}
-			rm.getReportByIdAsynchronously(reportId, false, true, true, db, tr, um, new ResultCallback<Report>() {
+			rm.getReportByIdAsynchronously(reportId, false, true, db, tr, um, new ResultCallback<Report>() {
 
 				@Override
 				public void onResultReceived(Report r) {
@@ -202,7 +202,7 @@ public class ReportsCommand implements TabExecutor {
 						@Override
 						public void onResultReceived(Report r) {
 							if (r != null && !r.isArchived()) {
-								r.archive(u, false, db);
+								r.archive(u, false, db, rm, vm, bm);
 							}
 						}
 					});
@@ -257,7 +257,7 @@ public class ReportsCommand implements TabExecutor {
 	        ResultCallback<Report> resultCallback) {
 		int id = getReportIdOrSendError(reportId, s);
 		if (id >= 0) {
-			rm.getReportByIdAsynchronously(id, false, false, true, db, tr, um, resultCallback);
+			rm.getReportByIdAsynchronously(id, false, false, db, tr, um, resultCallback);
 		} else {
 			resultCallback.onResultReceived(null);
 		}

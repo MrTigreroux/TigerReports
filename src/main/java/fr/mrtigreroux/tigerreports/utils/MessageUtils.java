@@ -1,6 +1,7 @@
 package fr.mrtigreroux.tigerreports.utils;
 
 import java.text.Normalizer;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -12,7 +13,6 @@ import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.potion.PotionEffect;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
@@ -194,15 +194,11 @@ public class MessageUtils {
 		return new TextComponent(advancedText);
 	}
 
-	public static String getGamemodeWord(String gamemode) {
-		try {
-			return Message.valueOf(gamemode.toUpperCase()).get();
-		} catch (Exception invalidGamemode) {
-			return gamemode.substring(0, 1).toUpperCase() + gamemode.substring(1).toLowerCase();
-		}
+	public static String getServer(String configLoc) {
+		return configLoc != null ? configLoc.split("/")[0] : null;
 	}
 
-	public static String formatConfigLocation(Location loc, BungeeManager bm) {
+	public static String formatLocation(Location loc, BungeeManager bm) {
 		StringBuilder configLoc = new StringBuilder(bm.getServerName()).append("/").append(loc.getWorld().getName());
 		for (Object coords : new Object[] { loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch() }) {
 			String coord = String.valueOf(coords);
@@ -212,31 +208,13 @@ public class MessageUtils {
 		return configLoc.toString();
 	}
 
-	public static String getServer(String configLoc) {
-		return configLoc != null ? configLoc.split("/")[0] : null;
-	}
-
-	public static Location getLocation(String configLoc) {
+	public static Location unformatLocation(String configLoc) {
 		if (configLoc == null) {
 			return null;
 		}
 		String[] coords = configLoc.split("/");
 		return new Location(Bukkit.getWorld(coords[1]), Double.parseDouble(coords[2]), Double.parseDouble(coords[3]),
 		        Double.parseDouble(coords[4]), Float.parseFloat(coords[5]), Float.parseFloat(coords[6]));
-	}
-
-	public static String formatConfigEffects(Collection<PotionEffect> effects) {
-		StringBuilder configEffects = new StringBuilder();
-		for (PotionEffect effect : effects) {
-			configEffects.append(effect.getType().getName())
-			        .append(":")
-			        .append(effect.getAmplifier() + 1)
-			        .append("/")
-			        .append(effect.getDuration())
-			        .append(",");
-		}
-		int length = configEffects.length();
-		return length > 1 ? configEffects.deleteCharAt(length - 1).toString() : null;
 	}
 
 	public static String getServerName(String server) {
@@ -258,13 +236,22 @@ public class MessageUtils {
 		return TRANSLATE_COLOR_CODES_METHOD.apply(message);
 	}
 
-	public static String joinElements(String separator, Object[] elements) {
-		if (elements == null || elements.length == 0) {
+	public static <T> String joinElements(String separator, T[] elements, boolean keepNullElements) {
+		return joinElements(separator, elements != null ? Arrays.asList(elements) : null, keepNullElements);
+	}
+
+	public static <T> String joinElements(String separator, Collection<T> elements, boolean keepNullElements) {
+		if (elements == null || elements.size() == 0) {
 			return "";
 		}
+
 		StringBuilder sb = new StringBuilder();
 		boolean firstElementAdded = false;
-		for (Object ele : elements) {
+		for (T ele : elements) {
+			if (!keepNullElements && ele == null) {
+				continue;
+			}
+
 			if (firstElementAdded) {
 				sb.append(separator);
 			} else {

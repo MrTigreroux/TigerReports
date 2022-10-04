@@ -22,23 +22,24 @@ public enum Statistic {
 	private final Message name, appreciation;
 	private final Material material;
 	private final short durability;
-	private CustomItem customItem = null;
+	private final CustomItem customItem;
 
 	Statistic(int position, Message name, Material material) {
-		this(position, name, null, material, (short) 0);
+		this(position, name, null, material, (short) 0, null);
 	}
 
 	Statistic(int position, Message name, Message appreciation, CustomItem customItem) {
-		this(position, name, appreciation, null, (short) 0);
-		this.customItem = customItem;
+		this(position, name, appreciation, null, (short) 0, customItem);
 	}
 
-	Statistic(int position, Message name, Message appreciation, Material material, short durability) {
+	Statistic(int position, Message name, Message appreciation, Material material, short durability,
+	        CustomItem customItem) {
 		this.position = position;
 		this.name = name;
 		this.appreciation = appreciation;
 		this.material = material;
 		this.durability = durability;
+		this.customItem = customItem;
 	}
 
 	public int getPosition() {

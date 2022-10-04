@@ -60,19 +60,12 @@ public class MySQL extends Database {
 
 	@Override
 	public void initialize() {
-		taskScheduler.runTaskAsynchronously(new Runnable() {
-
-			@Override
-			public void run() {
-				update("CREATE TABLE IF NOT EXISTS tigerreports_users (uuid CHAR(36) NOT NULL, name VARCHAR(20), cooldown VARCHAR(20), immunity VARCHAR(20), notifications TEXT, true_appreciations INT DEFAULT 0, uncertain_appreciations INT DEFAULT 0, false_appreciations INT DEFAULT 0, reports INT DEFAULT 0, reported_times INT DEFAULT 0, processed_reports INT DEFAULT 0, PRIMARY KEY (uuid)) ENGINE=InnoDB CHARACTER SET=utf8mb4",
-				        null);
-				update("CREATE TABLE IF NOT EXISTS tigerreports_reports (report_id INT NOT NULL AUTO_INCREMENT, status VARCHAR(50) NOT NULL DEFAULT 'Waiting', appreciation VARCHAR(255), date VARCHAR(20) NOT NULL, reported_uuid CHAR(36) NOT NULL, reporter_uuid VARCHAR(255) NOT NULL, reason VARCHAR(255), reported_ip VARCHAR(46), reported_location VARCHAR(510), reported_messages TEXT, reported_gamemode CHAR(10), reported_on_ground INT(2), reported_sneak INT(2), reported_sprint INT(2), reported_health VARCHAR(10), reported_food VARCHAR(10), reported_effects TEXT, reporter_ip VARCHAR(46) NOT NULL, reporter_location VARCHAR(510) NOT NULL, reporter_messages TEXT, archived INT(2) NOT NULL DEFAULT 0, PRIMARY KEY (report_id)) ENGINE=InnoDB CHARACTER SET=utf8mb4",
-				        null);
-				update("CREATE TABLE IF NOT EXISTS tigerreports_comments (report_id INT NOT NULL, comment_id INT NOT NULL AUTO_INCREMENT, status VARCHAR(25), date VARCHAR(20), author VARCHAR(255), message TEXT, PRIMARY KEY (comment_id)) ENGINE=InnoDB CHARACTER SET=utf8mb4",
-				        null);
-			}
-
-		});
+		update("CREATE TABLE IF NOT EXISTS tigerreports_users (uuid CHAR(36) NOT NULL, name VARCHAR(20), cooldown VARCHAR(20), immunity VARCHAR(20), notifications TEXT, true_appreciations INT DEFAULT 0, uncertain_appreciations INT DEFAULT 0, false_appreciations INT DEFAULT 0, reports INT DEFAULT 0, reported_times INT DEFAULT 0, processed_reports INT DEFAULT 0, PRIMARY KEY (uuid)) ENGINE=InnoDB CHARACTER SET=utf8mb4",
+		        null);
+		update("CREATE TABLE IF NOT EXISTS tigerreports_reports (report_id INT NOT NULL AUTO_INCREMENT, status VARCHAR(50) NOT NULL DEFAULT 'Waiting', appreciation VARCHAR(255), date VARCHAR(20) NOT NULL, reported_uuid CHAR(36) NOT NULL, reporter_uuid VARCHAR(255) NOT NULL, reason VARCHAR(255), reported_ip VARCHAR(46), reported_location VARCHAR(510), reported_messages TEXT, reported_gamemode CHAR(10), reported_on_ground INT(2), reported_sneak INT(2), reported_sprint INT(2), reported_health VARCHAR(10), reported_food VARCHAR(10), reported_effects TEXT, reporter_ip VARCHAR(46), reporter_location VARCHAR(510), reporter_messages TEXT, archived INT(2) NOT NULL DEFAULT 0, PRIMARY KEY (report_id)) ENGINE=InnoDB CHARACTER SET=utf8mb4",
+		        null);
+		update("CREATE TABLE IF NOT EXISTS tigerreports_comments (report_id INT NOT NULL, comment_id INT NOT NULL AUTO_INCREMENT, status VARCHAR(25), date VARCHAR(20), author VARCHAR(255), message TEXT, PRIMARY KEY (comment_id)) ENGINE=InnoDB CHARACTER SET=utf8mb4",
+		        null);
 	}
 
 	@Override

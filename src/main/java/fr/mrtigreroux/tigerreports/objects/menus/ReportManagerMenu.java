@@ -64,7 +64,7 @@ public abstract class ReportManagerMenu extends Menu implements Report.ReportLis
 		} else if (!reportCollectionRequested) {
 			reportCollectionRequested = true;
 			LOGGER.info(() -> this + ": open(): start collection of report " + reportId);
-			rm.getReportByIdAsynchronously(reportId, withAdvancedData, true, true, db, taskScheduler, um,
+			rm.getReportByIdAsynchronously(reportId, withAdvancedData, true, db, taskScheduler, um,
 			        new ResultCallback<Report>() {
 
 				        @Override

@@ -36,4 +36,16 @@ public final class QueryResult {
 		}
 	}
 
+	public static boolean isTrue(Object resultValue) {
+		if (resultValue != null) {
+			if (resultValue instanceof Boolean) {
+				return ((Boolean) resultValue).booleanValue();
+			} else {
+				return "1".equals(resultValue.toString());
+			}
+		} else {
+			return false;
+		}
+	}
+
 }

@@ -18,6 +18,7 @@ import fr.mrtigreroux.tigerreports.data.database.QueryResult;
 import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
 import fr.mrtigreroux.tigerreports.managers.VaultManager;
+import fr.mrtigreroux.tigerreports.objects.users.User;
 import fr.mrtigreroux.tigerreports.tasks.ResultCallback;
 import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
 
@@ -166,11 +167,11 @@ public class UserUtils {
 	}
 
 	public static boolean isOnline(String name, BungeeManager bm) {
-		return Bukkit.getPlayer(name) != null ? true : bm.isOnline(name);
+		return Bukkit.getPlayer(name) != null ? true : bm.isPlayerOnline(name);
 	}
 
 	/**
-	 * Return the players that player p can see (not vanished). Doesn't take in consideration vanished players on a different server, who are therefore considered as online for the player p, because no
+	 * Returns the players that player p can see (not vanished). Doesn't take in consideration vanished players on a different server, who are therefore considered as online for the player p, because no
 	 * official check can be used.
 	 * 
 	 * @param p            - Viewer of players
@@ -194,6 +195,16 @@ public class UserUtils {
 		}
 
 		return players;
+	}
+
+	public static String getStaffDisplayName(User u, VaultManager vm) {
+		String name;
+		if (u == null) {
+			name = Message.NOT_FOUND_MALE.get();
+		} else {
+			name = u.getDisplayName(vm, true);
+		}
+		return name;
 	}
 
 }

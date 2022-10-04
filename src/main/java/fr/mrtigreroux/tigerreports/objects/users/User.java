@@ -1,5 +1,8 @@
 package fr.mrtigreroux.tigerreports.objects.users;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -10,6 +13,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -20,6 +24,7 @@ import fr.mrtigreroux.tigerreports.TigerReports;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
+import fr.mrtigreroux.tigerreports.data.constants.Appreciation;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.data.constants.Statistic;
 import fr.mrtigreroux.tigerreports.data.constants.Status;
@@ -66,15 +71,15 @@ public class User {
 	public static final String IMMUNITY_ALWAYS = "always";
 	private static final String COOLDOWN_QUERY = "SELECT cooldown FROM tigerreports_users WHERE uuid = ?";
 	private static final String NOTIFICATIONS_QUERY = "SELECT notifications FROM tigerreports_users WHERE uuid = ?";
-	private static final String NOTIFICATIONS_SEPARATOR = "#next#";
-	private static final String COMMENT_NOTIFICATION_DATA_SEPARATOR = ":";
+	public static final String NOTIFICATIONS_SEPARATOR = "#next#";
+	public static final String COMMENT_NOTIFICATION_DATA_SEPARATOR = ":";
 
 	protected final UUID uuid;
 	private UserData data;
 	private String immunity = null;
 	protected String cooldown = null;
 	private Map<String, Integer> statistics = null;
-	public List<String> lastMessages = new ArrayList<>();
+	public List<SavedMessage> lastMessages = new ArrayList<>();
 	private final Set<UserListener> listeners = new HashSet<>();
 
 	public User(UUID uuid, UserData data) {
@@ -257,15 +262,12 @@ public class User {
 			return;
 		}
 
-		sendMessage(
-		        MessageUtils
-		                .getAdvancedMessage(
-		                        Message.REPORT_NOTIFICATION.get()
-		                                .replace("_Player_", r.getInvolvedStaffDisplayName(r.getProcessorStaff(), vm))
-		                                .replace("_Appreciation_",
-		                                        Message.valueOf(r.getAppreciation(true).toUpperCase()).get())
-		                                .replace("_Time_", DatetimeUtils.getTimeAgo(r.getDate())),
-		                        "_Report_", r.getName(), r.getText(vm, bm), null));
+		sendMessage(MessageUtils.getAdvancedMessage(
+		        Message.REPORT_NOTIFICATION.get()
+		                .replace("_Player_", UserUtils.getStaffDisplayName(r.getProcessorStaff(), vm))
+		                .replace("_Appreciation_", r.getAppreciation().getDisplayName())
+		                .replace("_Time_", DatetimeUtils.getTimeAgo(r.getDate())),
+		        "_Report_", r.getName(), r.getText(vm, bm), null));
 	}
 
 	public void setImmunity(String immunity, boolean bungee, Database db, BungeeManager bm, UsersManager um) {
@@ -273,8 +275,7 @@ public class User {
 
 		if (!bungee) {
 			if (bm != null) {
-				bm.sendPluginNotificationToAll((this.immunity != null ? this.immunity.replace(" ", "_") : "null")
-				        + " new_immunity user " + uuid);
+				bm.sendPlayerNewImmunityNotification(this.immunity, uuid);
 			}
 			db.updateAsynchronously("UPDATE tigerreports_users SET immunity = ? WHERE uuid = ?",
 			        Arrays.asList(this.immunity, uuid.toString()));
@@ -302,7 +303,7 @@ public class User {
 	}
 
 	public void startImmunity(boolean bungee, Database db, BungeeManager bm, UsersManager um) {
-		setImmunity(DatetimeUtils.getRelativeDate(ConfigFile.CONFIG.get().getLong("Config.ReportedImmunity", 120)),
+		setImmunity(DatetimeUtils.getRelativeDatetime(ConfigFile.CONFIG.get().getLong("Config.ReportedImmunity", 120)),
 		        bungee, db, bm, um);
 	}
 
@@ -340,7 +341,7 @@ public class User {
 		if (IMMUNITY_ALWAYS.equals(immunity)) {
 			return immunity;
 		} else {
-			double seconds = DatetimeUtils.getSecondsBetweenNowAndDate(immunity);
+			double seconds = DatetimeUtils.getSecondsBetweenNowAndDatetime(immunity);
 			return seconds > 0 ? DatetimeUtils.convertToSentence(seconds) : null;
 		}
 	}
@@ -350,8 +351,7 @@ public class User {
 
 		if (!bungee) {
 			if (bm != null) {
-				bm.sendPluginNotificationToAll(
-				        (cooldown != null ? cooldown.replace(" ", "_") : "null") + " new_cooldown user " + uuid);
+				bm.sendPlayerNewCooldownNotification(cooldown, uuid);
 			}
 			db.updateAsynchronously("UPDATE tigerreports_users SET cooldown = ? WHERE uuid = ?",
 			        Arrays.asList(cooldown, uuid.toString()));
@@ -370,7 +370,7 @@ public class User {
 	}
 
 	public void startCooldown(long seconds, Database db, BungeeManager bm) {
-		setCooldown(DatetimeUtils.getRelativeDate(seconds), false, db, bm);
+		setCooldown(DatetimeUtils.getRelativeDatetime(seconds), false, db, bm);
 	}
 
 	public void punish(long seconds, User staff, boolean bungee, Database db, BungeeManager bm, VaultManager vm) {
@@ -378,7 +378,7 @@ public class User {
 		if (!bungee) {
 			startCooldown(seconds, db, bm);
 			if (staff != null) {
-				bm.sendPluginNotificationToAll(staff.getUniqueId() + " punish user " + uuid + " " + seconds);
+				bm.sendPlayerPunishNotification(staff.getUniqueId(), uuid, seconds);
 			}
 		}
 		if (staff != null) {
@@ -409,7 +409,7 @@ public class User {
 			return null;
 		}
 
-		double seconds = DatetimeUtils.getSecondsBetweenNowAndDate(cooldown);
+		double seconds = DatetimeUtils.getSecondsBetweenNowAndDatetime(cooldown);
 		return seconds > 0 ? DatetimeUtils.convertToSentence(seconds) : null;
 	}
 
@@ -424,7 +424,7 @@ public class User {
 			sendMessage(Message.COOLDOWN_STOPPED.get());
 
 			if (!bungee) {
-				bm.sendPluginNotificationToAll(staff.getUniqueId() + " stop_cooldown user " + uuid);
+				bm.sendPlayerStopCooldownNotification(staff.getUniqueId(), uuid);
 			}
 		}
 	}
@@ -443,7 +443,7 @@ public class User {
 
 		if (!bungee) {
 			if (bm != null) {
-				bm.sendPluginNotificationToAll(relativeValue + " change_statistic " + statisticName + " " + uuid);
+				bm.sendChangeStatisticNotification(relativeValue, statisticName, uuid);
 			}
 			db.updateAsynchronously("UPDATE tigerreports_users SET `" + statisticName + "` = `" + statisticName
 			        + "` + ? WHERE uuid = ?", Arrays.asList(relativeValue, uuid.toString()));
@@ -514,20 +514,130 @@ public class User {
 		}
 	}
 
+	public static class SavedMessage {
+
+		private final String datetime;
+		private final String message;
+
+		public static SavedMessage from(String savedMessage) {
+			int datetimeLength = DatetimeUtils.DATETIME_FORMAT.length();
+			if (savedMessage != null && savedMessage.length() >= datetimeLength) {
+				return new SavedMessage(savedMessage.substring(0, datetimeLength),
+				        savedMessage.substring(datetimeLength + 1));
+			} else {
+				return null;
+			}
+		}
+
+		public SavedMessage(String message) {
+			this(DatetimeUtils.getNowDatetime(), message);
+		}
+
+		private SavedMessage(String datetime, String message) {
+			this.datetime = datetime;
+			this.message = message;
+		}
+
+		public String getDatetime() {
+			return datetime;
+		}
+
+		public String getMessage() {
+			return message;
+		}
+
+		@Override
+		public String toString() {
+			return datetime + ":" + message;
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(datetime, message);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (!(obj instanceof SavedMessage)) {
+				return false;
+			}
+			SavedMessage other = (SavedMessage) obj;
+			return Objects.equals(datetime, other.datetime) && Objects.equals(message, other.message);
+		}
+
+	}
+
 	public void updateLastMessages(String newMessage) {
-		int lastMessagesAmount = ConfigFile.CONFIG.get().getInt("Config.MessagesHistory", 5);
-		if (lastMessagesAmount <= 0) {
+		updateLastMessages(() -> {
+			lastMessages.add(new SavedMessage(DatetimeUtils.getNowDatetime(), newMessage));
+		});
+	}
+
+	public void updateLastMessages(SavedMessage[] messages) {
+		updateLastMessages(() -> {
+			for (SavedMessage savedMsg : messages) {
+				insertMessageToLastMessages(savedMsg);
+			}
+		});
+	}
+
+	private void updateLastMessages(Runnable actions) {
+		int lastMessagesMaxAmount = ReportUtils.getMessagesHistory();
+		if (lastMessagesMaxAmount <= 0) {
 			return;
 		}
 
-		if (lastMessages.size() >= lastMessagesAmount) {
-			lastMessages.remove(0);
+		actions.run();
+
+		int lastMsgsToRemoveAmount = lastMessages.size() - lastMessagesMaxAmount;
+		if (lastMsgsToRemoveAmount > 0) {
+			for (int i = 0; i < lastMsgsToRemoveAmount; i++) {
+				lastMessages.remove(0);
+			}
 		}
-		lastMessages.add(DatetimeUtils.getNowDate() + ":" + newMessage);
 	}
 
-	public String getLastMessages() {
-		return !lastMessages.isEmpty() ? String.join(NOTIFICATIONS_SEPARATOR, lastMessages) : null;
+	private void insertMessageToLastMessages(SavedMessage savedMessage) {
+		ZonedDateTime msgDatetime = DatetimeUtils.getZonedDateTime(savedMessage.getDatetime());
+		int i = 0;
+		for (SavedMessage lastMsg : lastMessages) {
+			if (msgDatetime.isBefore(DatetimeUtils.getZonedDateTime(lastMsg.getDatetime()))) {
+				lastMessages.add(i, savedMessage);
+				break;
+			}
+			i++;
+		}
+		lastMessages.add(savedMessage);
+	}
+
+	public List<SavedMessage> getLastMessages() {
+		return lastMessages;
+	}
+
+	public List<SavedMessage> getLastMessagesAfterDatetime(String datetime) {
+		ZonedDateTime startDatetime = DatetimeUtils.getZonedDateTime(datetime);
+		if (startDatetime == null) {
+			return lastMessages;
+		} else {
+			return lastMessages.stream()
+			        .filter((msg) -> DatetimeUtils.getZonedDateTime(msg.getDatetime()).isAfter(startDatetime))
+			        .collect(Collectors.toList());
+		}
+	}
+
+	/**
+	 * 
+	 * @return null if any message could be added to current last messages (enough space)
+	 */
+	public String getLastMessagesMinDatetimeOfInsertableMessages() {
+		if (lastMessages.isEmpty()) {
+			return null;
+		} else {
+			return lastMessages.get(0).getDatetime();
+		}
 	}
 
 	public void openReasonMenu(int page, User tu, Database db, VaultManager vm) {
@@ -589,7 +699,8 @@ public class User {
 		}
 		String command = ConfigFile.CONFIG.get().getString("Config.Punishments.PunishmentsCommand");
 		if (command != null && !command.equalsIgnoreCase("none")) {
-			r.process(this, "True", false, this.hasPermission(Permission.STAFF_ARCHIVE_AUTO), true, db);
+			r.process(this, Appreciation.TRUE, false, this.hasPermission(Permission.STAFF_ARCHIVE_AUTO), true, db, rm,
+			        vm, bm, taskScheduler);
 			try {
 				Bukkit.dispatchCommand(p, command
 				        .replace("_Reported_", r.getPlayerName(Report.ParticipantType.REPORTED, false, false, vm, bm))
@@ -824,7 +935,7 @@ public class User {
 		if (isPrivate && isOnline()) {
 			sendCommentNotification(r, c, true, db, vm, bm);
 		} else if (isPrivate && isOnlineInNetwork(bm)) {
-			bm.sendPluginNotificationToAll(reportId + " comment " + commentId + " " + getName());
+			bm.sendReportCommentNotification(reportId, commentId, getName());
 		} else {
 			ReportsManager rm = TigerReports.getInstance().getReportsManager();
 			if (isPrivate) {
@@ -852,7 +963,7 @@ public class User {
 						if (notification.contains(COMMENT_NOTIFICATION_DATA_SEPARATOR)) {
 							String[] parts = notification.split(COMMENT_NOTIFICATION_DATA_SEPARATOR);
 							try {
-								rm.getReportByIdAsynchronously(Integer.parseInt(parts[0]), false, true, false, db,
+								rm.getReportByIdAsynchronously(Integer.parseInt(parts[0]), false, true, db,
 								        taskScheduler, um, new ResultCallback<Report>() {
 
 									        @Override
@@ -872,7 +983,7 @@ public class User {
 							} catch (NumberFormatException invalidNotification) {}
 						} else if (ConfigUtils.playersNotifications()) {
 							try {
-								rm.getReportByIdAsynchronously(Integer.parseInt(notification), false, true, false, db,
+								rm.getReportByIdAsynchronously(Integer.parseInt(notification), false, true, db,
 								        taskScheduler, um, new ResultCallback<Report>() {
 
 									        @Override
@@ -910,7 +1021,7 @@ public class User {
 		        .replace("_Reported_", r.getPlayerName(Report.ParticipantType.REPORTED, false, true, vm, bm))
 		        .replace("_Time_", DatetimeUtils.getTimeAgo(r.getDate()))
 		        .replace("_Message_", c.getMessage()));
-		c.setStatus("Read " + DatetimeUtils.getNowDate(), db, TigerReports.getInstance().getReportsManager());
+		c.setStatus("Read " + DatetimeUtils.getNowDatetime(), db, TigerReports.getInstance().getReportsManager());
 	}
 
 	public void startCreatingComment(Report r) {
@@ -1001,7 +1112,7 @@ public class User {
 
 		if (currentLocation) {
 			if (t == null) {
-				if (bm.isOnline(target)) {
+				if (bm.isPlayerOnline(target)) {
 					tpToOnlineTargetInDifferentServer = true;
 				} else {
 					MessageUtils.sendErrorMessage(p, Message.PLAYER_OFFLINE.get().replace("_Player_", target));
@@ -1014,7 +1125,7 @@ public class User {
 			locType = "CURRENT";
 		} else {
 			configLoc = r.getOldLocation(targetType);
-			loc = MessageUtils.getLocation(configLoc);
+			loc = MessageUtils.unformatLocation(configLoc);
 			if (loc == null) {
 				MessageUtils.sendErrorMessage(p, Message.LOCATION_UNKNOWN.get().replace("_Player_", target));
 				return;
@@ -1031,13 +1142,12 @@ public class User {
 		        .replace("_Report_", r.getName()), r);
 
 		if (tpToOnlineTargetInDifferentServer) {
-			bm.sendPluginNotificationToAll(p.getName() + " tp_player " + target);
+			bm.tpPlayerToPlayerInOtherServer(p.getName(), target);
 		} else if (serverName.equals("localhost") || bm.getServerName().equals(serverName)) {
 			p.teleport(loc);
 			ConfigSound.TELEPORT.play(p);
-		} else {
-			bm.sendBungeeMessage("ConnectOther", p.getName(), serverName);
-			bm.sendPluginNotificationTo(serverName, p.getName(), "tp_loc", configLoc);
+		} else if (configLoc != null) {
+			bm.tpPlayerToOtherServerLocation(p.getName(), serverName, configLoc);
 		}
 	}
 
@@ -1066,7 +1176,7 @@ public class User {
 		}
 		afterProcessingAReport(false, rm, db, taskScheduler, vm, bm, TigerReports.getInstance().getUsersManager());
 		r.processWithPunishment(this, false, this.hasPermission(Permission.STAFF_ARCHIVE_AUTO), punishmentName, true,
-		        db, vm, bm);
+		        db, rm, vm, bm, taskScheduler);
 	}
 
 	public void startProcessPunishingWithStaffReason(Report r, String punishmentConfigPath) {
@@ -1150,6 +1260,21 @@ public class User {
 		} else {
 			return true;
 		}
+	}
+
+	public String getIPAddress() {
+		Player p = getPlayer();
+		if (p == null) {
+			return null;
+		}
+		InetSocketAddress address = p.getAddress();
+		if (address != null) {
+			InetAddress address2 = address.getAddress();
+			if (address2 != null) {
+				return address2.toString();
+			}
+		}
+		return null;
 	}
 
 	public void updateBasicData(Database db, BungeeManager bm, UsersManager um) {
