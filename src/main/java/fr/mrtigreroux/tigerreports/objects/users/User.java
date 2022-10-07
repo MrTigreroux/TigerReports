@@ -1269,9 +1269,9 @@ public class User {
 		}
 		InetSocketAddress address = p.getAddress();
 		if (address != null) {
-			InetAddress address2 = address.getAddress();
-			if (address2 != null) {
-				return address2.toString();
+			InetAddress inetAddress = address.getAddress();
+			if (inetAddress != null) {
+				return inetAddress.getHostAddress();
 			}
 		}
 		return null;

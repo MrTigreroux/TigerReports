@@ -1083,7 +1083,7 @@ public class BungeeManager implements PluginMessageListener {
 				if (queryArguments.length() > 0) {
 					queryArguments.append(",");
 				}
-				queryArguments.append("'").append(data.getKey()).append("'=?");
+				queryArguments.append("`").append(data.getKey()).append("`=?");
 				queryParams.add(data.getValue());
 			}
 			queryParams.add(r.getId());
@@ -1094,7 +1094,7 @@ public class BungeeManager implements PluginMessageListener {
 	}
 
 	public boolean isValidDifferentServerName(String serverName) {
-		return serverName != null && !serverName.equals(localServerName);
+		return serverName != null && !serverName.isEmpty() && !serverName.equals(localServerName);
 	}
 
 	private Collection<KnownServer> getKnownServers() {

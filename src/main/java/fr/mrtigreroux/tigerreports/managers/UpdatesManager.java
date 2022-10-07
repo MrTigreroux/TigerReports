@@ -140,7 +140,9 @@ public class UpdatesManager {
 					db.update("ALTER TABLE tigerreports_reports MODIFY reported_sneak INT(2)", null);
 					db.update("ALTER TABLE tigerreports_reports MODIFY reported_sprint INT(2)", null);
 					db.update("ALTER TABLE tigerreports_reports MODIFY reporter_ip VARCHAR(46)", null);
+					db.update("ALTER TABLE tigerreports_reports MODIFY reported_ip VARCHAR(46)", null);
 					db.update("ALTER TABLE tigerreports_reports MODIFY reporter_location VARCHAR(510)", null);
+					db.update("ALTER TABLE tigerreports_reports MODIFY reported_location VARCHAR(510)", null);
 				});
 			} else {
 				ts.runTaskAsynchronously(() -> {
