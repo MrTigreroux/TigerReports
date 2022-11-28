@@ -49,6 +49,9 @@ public class TestsSQLite extends SQLite {
 		}
 	}
 
+	/**
+	 * Should be executed synchronously.
+	 */
 	public void whenNoAsyncUpdate(Runnable callback) {
 		if (pendingAsyncUpdatesAmount.get() == 0) {
 			callback.run();
@@ -62,16 +65,18 @@ public class TestsSQLite extends SQLite {
 		}
 	}
 
+	/**
+	 * Should be executed synchronously.
+	 */
 	private void checkAndBroadcastNoAsyncUpdate() {
 		if (pendingAsyncUpdatesAmount.get() == 0) {
+			List<Runnable> callbacksToExecute;
 			synchronized (noAsyncUpdateCallbacks) {
-				LOGGER.debug(() -> "checkAndBroadcastNoAsyncUpdate(): broadcast no async update...");
-				List<Runnable> callbacksToExecute = new ArrayList<>(noAsyncUpdateCallbacks);
+				callbacksToExecute = new ArrayList<>(noAsyncUpdateCallbacks);
 				noAsyncUpdateCallbacks.clear();
-				taskScheduler.runTask(() -> {
-					callbacksToExecute.forEach(c -> c.run());
-				});
 			}
+			LOGGER.debug(() -> "checkAndBroadcastNoAsyncUpdate(): broadcast no async update...");
+			callbacksToExecute.forEach(c -> c.run());
 		}
 	}
 

@@ -557,6 +557,7 @@ public class BungeeManager implements PluginMessageListener {
 			case "GetServer":
 				localServerName = in.readUTF();
 				Logger.BUNGEE.info(() -> "--> RECEIVED (from: Bungee server): GetServer - " + localServerName);
+				knownServers.remove(localServerName); // the current server could have been added when localServerName is null
 				localServerNameResultCallbacks.forEach((callback) -> callback.onResultReceived(localServerName));
 				localServerNameResultCallbacks.clear();
 				break;
