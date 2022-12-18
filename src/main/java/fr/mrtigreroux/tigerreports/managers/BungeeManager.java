@@ -355,9 +355,10 @@ public class BungeeManager implements PluginMessageListener {
 
 		if (playerOfflineNotBroadcastedUUID != null) {
 			if (playerOfflineNotBroadcastedUUID != p.getUniqueId()) {
+				UUID curPlayerOfflineNotBroadcastedUUID = playerOfflineNotBroadcastedUUID;
 				getServerName((localServerName) -> {
 					sendPlayerOnlineNotification(playerOfflineNotBroadcastedName, false, localServerName,
-					        playerOfflineNotBroadcastedUUID, null);
+					        curPlayerOfflineNotBroadcastedUUID, null);
 				});
 			} // else the player is now online, playerOfflineNotBroadcasted must be ignored
 			playerOfflineNotBroadcastedUUID = null;
