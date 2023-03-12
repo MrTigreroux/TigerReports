@@ -32,7 +32,7 @@ public class VaultManager {
 	private final Map<UUID, String> displayNames = new HashMap<>();
 
 	public VaultManager(boolean isVaultInstalled) {
-		this.enabled = isVaultInstalled && ConfigUtils.isEnabled("VaultChat.Enabled");
+		enabled = isVaultInstalled && ConfigUtils.isEnabled("VaultChat.Enabled");
 		if (enabled) {
 			initialize();
 		}
@@ -46,10 +46,12 @@ public class VaultManager {
 	}
 
 	private boolean setupChat() {
-		if (!enabled)
+		if (!enabled) {
 			return false;
-		if (chat != null)
+		}
+		if (chat != null) {
 			return true;
+		}
 
 		RegisteredServiceProvider<Chat> rsp = Bukkit.getServer().getServicesManager().getRegistration(Chat.class);
 
@@ -116,14 +118,17 @@ public class VaultManager {
 	 */
 	private String getVaultDisplayName(OfflinePlayer p) {
 		String name = p.getName();
-		if (name == null || !setupChat())
+		if (name == null || !setupChat()) {
 			return null;
+		}
 
+		String playerPrefix = (playerPrefix = chat.getPlayerPrefix(null, p)) != null ? playerPrefix : "";
+		String playerSuffix = (playerSuffix = chat.getPlayerSuffix(null, p)) != null ? playerSuffix : "";
 		String vaultDisplayName = MessageUtils.translateColorCodes(ConfigFile.CONFIG.get()
 		        .getString("VaultChat.Format")
-		        .replace("_Prefix_", chat.getPlayerPrefix(null, p))
+		        .replace("_Prefix_", playerPrefix)
 		        .replace("_Name_", name)
-		        .replace("_Suffix_", chat.getPlayerSuffix(null, p)));
+		        .replace("_Suffix_", playerSuffix));
 
 		displayNames.put(p.getUniqueId(), vaultDisplayName);
 		return vaultDisplayName;
