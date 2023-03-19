@@ -279,8 +279,8 @@ public class Report implements DeeplyCloneable<Report> {
 
 		public static final String APPRECIATION_PUNISHMENT_SEPARATOR = "/";
 
-		private final Appreciation appreciation;
-		private final String punishment;
+		public final Appreciation appreciation;
+		public final String punishment;
 
 		public static AppreciationDetails from(Appreciation appreciation, String punishment) {
 			if (appreciation != Appreciation.TRUE) {

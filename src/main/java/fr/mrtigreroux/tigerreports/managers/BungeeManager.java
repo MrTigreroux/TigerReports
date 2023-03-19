@@ -681,10 +681,23 @@ public class BungeeManager implements PluginMessageListener {
 				break;
 			case NotificationType.PROCESS_PUNISH:
 				boolean auto = parts[3].equals("1");
-				String punishment = message.substring(parts[4].indexOf("/") + 1);
+				int appreciationDetailsIndex = message.indexOf(parts[4]);
+				if (appreciationDetailsIndex < 0) {
+					LOGGER.error("PROCESS_PUNISH: cannot find appreciationDetails index (" + appreciationDetailsIndex
+					        + "), msg: " + message);
+					break;
+				}
+				AppreciationDetails appreciationDetails = AppreciationDetails
+				        .from(message.substring(appreciationDetailsIndex));
+				if (appreciationDetails == null || appreciationDetails.punishment == null) {
+					LOGGER.error("PROCESS_PUNISH: invalid appreciationDetails (" + parts[4] + ", " + appreciationDetails
+					        + "), msg: " + message);
+					break;
+				}
 				getReportAndUserIfNotifyAsynchronously(parts, notify, db, (r, u) -> {
 					if (r != null && u != null) {
-						r.processWithPunishment(u, true, auto, punishment, notify, db, rm, vm, BungeeManager.this, tr);
+						r.processWithPunishment(u, true, auto, appreciationDetails.punishment, notify, db, rm, vm,
+						        BungeeManager.this, tr);
 					} else {
 						LOGGER.info(() -> "PROCESS_PUNISH: invalid r (" + r + ") or u (" + u + "), msg: " + message);
 					}
@@ -985,22 +998,27 @@ public class BungeeManager implements PluginMessageListener {
 
 		int reportId = (int) reportData.get(Report.REPORT_ID);
 
-		LOGGER.info(() -> "processNewReportMessage(): reportData = " + CollectionUtils.toString(reportData)
-		        + ", isRecentMsg = " + isRecentMsg + ", notify = " + notify);
-		if (isRecentMsg) {
-			rm.updateAndGetReport(reportId, reportData, false, false, db, tr, um, createNewReportResultCallback(notify,
-			        reportServer, reportMissingData, reportDataAsString, reportData));
-		} else if (notify) {
-			getReportAsynchronously(reportId, false, db, createNewReportResultCallback(notify, reportServer,
-			        reportMissingData, reportDataAsString, reportData));
+		if (reportId < 0) {
+			LOGGER.info(() -> "processNewReportMessage(): unsaved report (reportId < 0), reportData = "
+			        + CollectionUtils.toString(reportData) + ", isRecentMsg = " + isRecentMsg + ", notify = " + notify);
+			sendReportWithReportData(reportData, reportServer, notify, false);
 		} else {
-			getReportAsynchronously(reportId, false, db, (r) -> {
-				if (r != null) {
-					ReportUtils.sendReport(r, reportServer, notify, db, vm, BungeeManager.this);
-				}
-			});
+			LOGGER.info(() -> "processNewReportMessage(): reportData = " + CollectionUtils.toString(reportData)
+			        + ", isRecentMsg = " + isRecentMsg + ", notify = " + notify);
+			if (isRecentMsg) {
+				rm.updateAndGetReport(reportId, reportData, false, false, db, tr, um, createNewReportResultCallback(
+				        notify, reportServer, reportMissingData, reportDataAsString, reportData));
+			} else if (notify) {
+				getReportAsynchronously(reportId, false, db, createNewReportResultCallback(notify, reportServer,
+				        reportMissingData, reportDataAsString, reportData));
+			} else {
+				getReportAsynchronously(reportId, false, db, (r) -> {
+					if (r != null) {
+						ReportUtils.sendReport(r, reportServer, notify, db, vm, BungeeManager.this);
+					}
+				});
+			}
 		}
-
 	}
 
 	private ResultCallback<Report> createNewReportResultCallback(boolean notify, String reportServer,
