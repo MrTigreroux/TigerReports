@@ -16,6 +16,15 @@ public interface TaskScheduler {
 	int runTaskDelayedly(long delay, Runnable task);
 
 	/**
+	 * Run task in an asynchronous thread after {@code delay} ms.
+	 * 
+	 * @param delay time in ms to wait before running the task
+	 * @param task
+	 * @return taskId
+	 */
+	int runTaskDelayedlyAsynchronously(long delay, Runnable task);
+
+	/**
 	 * Run task in main thread after {@code delay} and every {@code period} ms.
 	 * 
 	 * @param delay  time in ms to wait before running the task

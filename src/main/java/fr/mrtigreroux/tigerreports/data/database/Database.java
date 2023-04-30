@@ -24,12 +24,12 @@ import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 public abstract class Database {
 
 	public static final String REPORTS_COLUMNS = "report_id, status, appreciation, date, reported_uuid, reporter_uuid, reason, reported_ip, reported_location, reported_messages, reported_gamemode, reported_on_ground, reported_sneak, reported_sprint, reported_health, reported_food, reported_effects, reporter_ip, reporter_location, reporter_messages, archived";
+	private static final int NO_CLOSING_TASK_VALUE = -1;
+	private static final long CLOSING_DELAY = 10L * 1000L; // in ms
 
-	private static final long CLOSING_DELAY = 10L * 1000L;
 	protected final TaskScheduler taskScheduler;
 	protected Connection connection;
-	private int closingTaskId = -1;
-	private boolean forcedClosing = false;
+	private int closingTaskId = NO_CLOSING_TASK_VALUE;
 	private boolean autoCommit = true;
 	private boolean requestedAutoCommit = true;
 
@@ -76,9 +76,6 @@ public abstract class Database {
 		}
 	}
 
-	/**
-	 * Must be accessed with the lock of the connection.
-	 */
 	private synchronized void openNewConnection() {
 		Logger.SQL.debug(() -> "openNewConnection(): start");
 		closeConnection(); // prevents to have several connections at the same time
@@ -86,7 +83,7 @@ public abstract class Database {
 		try {
 			openConnection();
 			autoCommit = true;
-		} catch (Exception ignored) {} // exceptions are thrown in implementation classes
+		} catch (Exception ignored) {} // exceptions are printed in implementation classes
 
 		if (connection != null) {
 			Logger.SQL.debug(() -> "openNewConnection(): openConnection() succeeded");
@@ -242,43 +239,25 @@ public abstract class Database {
 		}
 	}
 
-	public void startClosing() {
-		startClosing(false);
-	}
-
-	public synchronized void startClosing(boolean forceClosing) {
-		if (closingTaskId != -1 || connection == null) {
+	public synchronized void startClosing() {
+		if (closingTaskId != NO_CLOSING_TASK_VALUE || connection == null) {
 			return;
 		}
-		try {
-			if (connection.isClosed()) {
-				return;
+
+		closingTaskId = taskScheduler.runTaskDelayedlyAsynchronously(CLOSING_DELAY, () -> {
+			if (closingTaskId != NO_CLOSING_TASK_VALUE) {
+				closingTaskId = NO_CLOSING_TASK_VALUE;
+				closeConnection();
 			}
-		} catch (SQLException ignored) {}
-
-		forcedClosing = true;
-		closingTaskId = taskScheduler.runTaskDelayedly(CLOSING_DELAY, new Runnable() {
-
-			@Override
-			public void run() {
-				if (closingTaskId != -1) {
-					closingTaskId = -1;
-					closeConnection();
-				}
-			}
-
 		});
 	}
 
-	/**
-	 * Cancel closing connection task except if {@link forcedClosing} is true.
-	 */
 	public synchronized void cancelClosing() {
-		if (forcedClosing || closingTaskId == -1) {
+		if (closingTaskId == NO_CLOSING_TASK_VALUE) {
 			return;
 		}
 		taskScheduler.cancelTask(closingTaskId);
-		closingTaskId = -1;
+		closingTaskId = NO_CLOSING_TASK_VALUE;
 	}
 
 	public synchronized void closeConnection() {
@@ -287,7 +266,6 @@ public abstract class Database {
 				connection.close();
 			}
 			connection = null;
-			forcedClosing = false;
 			Logger.SQL.info(() -> "closeConnection(): succeeded");
 
 			cancelClosing();

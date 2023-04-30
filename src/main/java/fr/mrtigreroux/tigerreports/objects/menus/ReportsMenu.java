@@ -13,10 +13,8 @@ import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.managers.ReportsManager;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
 import fr.mrtigreroux.tigerreports.managers.VaultManager;
-import fr.mrtigreroux.tigerreports.objects.reports.Report;
 import fr.mrtigreroux.tigerreports.objects.reports.ReportsCharacteristics;
 import fr.mrtigreroux.tigerreports.objects.users.User;
-import fr.mrtigreroux.tigerreports.tasks.ResultCallback;
 import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
 
 /**
@@ -67,23 +65,15 @@ public class ReportsMenu extends ReportsPageMenu implements UpdatedMenu {
 			if (reportId == -1) {
 				update(false);
 			} else {
-				rm.getReportByIdAsynchronously(reportId, false, true, db, taskScheduler, um,
-				        new ResultCallback<Report>() {
-
-					        @Override
-					        public void onResultReceived(Report r) {
-						        if (click == ClickType.MIDDLE && u.canArchive(r)) {
-							        u.openConfirmationMenu(r, ConfirmationMenu.Action.ARCHIVE, rm, db, taskScheduler,
-							                vm, bm, um);
-						        } else if (click == ClickType.DROP && u.hasPermission(Permission.STAFF_DELETE)) {
-							        u.openConfirmationMenu(r, ConfirmationMenu.Action.DELETE, rm, db, taskScheduler, vm,
-							                bm, um);
-						        } else {
-							        u.openReportMenu(r, rm, db, taskScheduler, vm, bm, um);
-						        }
-					        }
-
-				        });
+				rm.getReportByIdAsynchronously(reportId, false, true, db, taskScheduler, um, (r) -> {
+					if ((click == ClickType.RIGHT || click == ClickType.SHIFT_RIGHT) && u.canArchive(r)) {
+						u.openConfirmationMenu(r, ConfirmationMenu.Action.ARCHIVE, rm, db, taskScheduler, vm, bm, um);
+					} else if (click == ClickType.DROP && u.hasPermission(Permission.STAFF_DELETE)) {
+						u.openConfirmationMenu(r, ConfirmationMenu.Action.DELETE, rm, db, taskScheduler, vm, bm, um);
+					} else {
+						u.openReportMenu(r, rm, db, taskScheduler, vm, bm, um);
+					}
+				});
 
 			}
 		}

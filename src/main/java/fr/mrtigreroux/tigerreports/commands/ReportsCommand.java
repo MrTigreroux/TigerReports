@@ -61,7 +61,7 @@ public class ReportsCommand implements TabExecutor {
 	public boolean onCommand(CommandSender s, Command cmd, String label, String[] args) {
 		if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
 			if (Permission.MANAGE.check(s)) {
-				tr.unload(false);
+				tr.unload();
 				tr.load();
 
 				if (s instanceof Player) {

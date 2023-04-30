@@ -133,6 +133,11 @@ public class TestsTaskScheduler implements TaskScheduler {
 	}
 
 	@Override
+	public int runTaskDelayedlyAsynchronously(long delay, Runnable task) {
+		return saveScheduledTask(asyncExecutor.schedule(task, delay, TimeUnit.MILLISECONDS));
+	}
+
+	@Override
 	public int runTaskRepeatedly(long delay, long period, Runnable task) {
 		return saveScheduledTask(mainExecutor.scheduleAtFixedRate(task, delay, period, TimeUnit.MILLISECONDS));
 	}

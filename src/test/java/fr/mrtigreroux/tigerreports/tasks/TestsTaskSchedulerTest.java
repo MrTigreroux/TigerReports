@@ -95,6 +95,18 @@ class TestsTaskSchedulerTest extends TestClass {
 	}
 
 	/**
+	 * Test method for {@link fr.mrtigreroux.tigerreports.tasks.TestsTaskScheduler#runTaskDelayedlyAsynchronously(long, java.lang.Runnable)}.
+	 */
+	@Test
+	void testRunTaskDelayedlyAsynchronously() {
+		final long start = System.currentTimeMillis();
+		long delay = 250;
+		taskScheduler.runTaskDelayedlyAsynchronously(delay, SUCCESS_TASK);
+		checkSuccess();
+		assertTrue(CheckUtils.longRightValue(System.currentTimeMillis() - start, delay, 5));
+	}
+
+	/**
 	 * Test method for {@link fr.mrtigreroux.tigerreports.tasks.TestsTaskScheduler#runTaskRepeatedly(long, long, java.lang.Runnable)}.
 	 */
 	@Test

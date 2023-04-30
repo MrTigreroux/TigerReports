@@ -114,7 +114,7 @@ public abstract class UserReportsPageMenu extends ReportsPageMenu implements Upd
 		if (r == null) {
 			update(false);
 		} else {
-			if (click == ClickType.MIDDLE && u.canArchive(r)) {
+			if ((click == ClickType.RIGHT || click == ClickType.SHIFT_RIGHT) && u.canArchive(r)) {
 				u.openConfirmationMenu(r, ConfirmationMenu.Action.ARCHIVE, rm, db, taskScheduler, vm, bm, um);
 			} else if (click == ClickType.DROP && u.hasPermission(Permission.STAFF_DELETE)) {
 				u.openConfirmationMenu(r, ConfirmationMenu.Action.DELETE, rm, db, taskScheduler, vm, bm, um);

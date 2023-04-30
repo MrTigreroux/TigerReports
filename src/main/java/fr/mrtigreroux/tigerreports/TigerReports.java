@@ -222,14 +222,12 @@ public class TigerReports extends JavaPlugin implements TaskScheduler {
 
 	@Override
 	public int runTaskDelayedly(long delay, Runnable task) {
-		return Bukkit.getScheduler().runTaskLaterAsynchronously(this, new Runnable() {
+		return Bukkit.getScheduler().runTaskLater(this, task, msToTicks(delay)).getTaskId();
+	}
 
-			@Override
-			public void run() {
-				Bukkit.getScheduler().runTask(TigerReports.this, task);
-			}
-
-		}, msToTicks(delay)).getTaskId();
+	@Override
+	public int runTaskDelayedlyAsynchronously(long delay, Runnable task) {
+		return Bukkit.getScheduler().runTaskLaterAsynchronously(this, task, msToTicks(delay)).getTaskId();
 	}
 
 	/**
@@ -264,10 +262,10 @@ public class TigerReports extends JavaPlugin implements TaskScheduler {
 
 	@Override
 	public void onDisable() {
-		unload(true);
+		unload();
 	}
 
-	public void unload(boolean closeImmediatelyDatabaseConnection) {
+	public void unload() {
 		MenuUpdater.stop(true, this);
 		ReportsNotifier.stop(this);
 
@@ -297,17 +295,9 @@ public class TigerReports extends JavaPlugin implements TaskScheduler {
 
 		vaultManager = null;
 
-		// Free memory to remove database dependency
-		System.gc();
-		System.gc();
-
 		Database db = getDatabase(false);
 		if (db != null) {
-			if (closeImmediatelyDatabaseConnection) {
-				db.closeConnection();
-			} else {
-				db.startClosing(true);
-			}
+			db.closeConnection();
 		}
 
 		setLoaded(false);
