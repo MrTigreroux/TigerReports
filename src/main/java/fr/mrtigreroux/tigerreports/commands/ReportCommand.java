@@ -2,7 +2,6 @@ package fr.mrtigreroux.tigerreports.commands;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -75,51 +74,32 @@ public class ReportCommand implements TabExecutor {
 		LOGGER.info(
 		        () -> "user = " + u + ", user name = " + u.getName() + ", p = u.getPlayer() ? " + (p == u.getPlayer()));
 
-		u.getCooldownAsynchronously(db, taskScheduler, new ResultCallback<String>() {
-
-			@Override
-			public void onResultReceived(String cooldown) {
-				LOGGER.info(() -> "user cooldown = " + cooldown);
-				if (cooldown != null) {
-					LOGGER.info(() -> "under cooldown, cancelled");
-					u.sendErrorMessage(Message.COOLDOWN.get().replace("_Time_", cooldown));
-					return;
-				}
-
-				final String reportedName = args[0];
-				boolean reportOneself = reportedName.equalsIgnoreCase(p.getName());
-				if (reportOneself && !u.hasPermission(Permission.MANAGE)) {
-					LOGGER.info(() -> "report oneself no permission");
-					u.sendErrorMessage(Message.REPORT_ONESELF.get());
-					return;
-				}
-
-				UUID ruuid = UserUtils.getUniqueId(reportedName);
-				LOGGER.info(() -> "reported uuid = " + ruuid);
-				um.getUserAsynchronously(ruuid, db, taskScheduler, new ResultCallback<User>() {
-
-					@Override
-					public void onResultReceived(User ru) {
-						LOGGER.info(() -> "reported user = " + ru.getName() + ", is online: " + ru.isOnline());
-						ru.checkExistsAsynchronously(db, taskScheduler, um, new ResultCallback<Boolean>() {
-
-							@Override
-							public void onResultReceived(Boolean reportedExists) {
-								if (!reportedExists) {
-									LOGGER.info(() -> "reported user does not exists");
-									u.sendErrorMessage(Message.INVALID_PLAYER.get().replace("_Player_", reportedName));
-									return;
-								}
-
-								processReportCommand(args, u, ru, reportOneself, configFile);
-							}
-
-						});
-					}
-
-				});
+		u.getCooldownAsynchronously(db, taskScheduler, (cooldown) -> {
+			LOGGER.info(() -> "user cooldown = " + cooldown);
+			if (cooldown != null) {
+				LOGGER.info(() -> "under cooldown, cancelled");
+				u.sendErrorMessage(Message.COOLDOWN.get().replace("_Time_", cooldown));
+				return;
 			}
 
+			final String reportedName = args[0];
+			boolean reportOneself = reportedName.equalsIgnoreCase(p.getName());
+			if (reportOneself && !u.hasPermission(Permission.MANAGE)) {
+				LOGGER.info(() -> "report oneself no permission");
+				u.sendErrorMessage(Message.REPORT_ONESELF.get());
+				return;
+			}
+
+			um.getUserByNameAsynchronously(reportedName, db, taskScheduler, (ru) -> {
+				if (ru == null) {
+					LOGGER.info(() -> "reported user does not exists");
+					u.sendErrorMessage(Message.INVALID_PLAYER.get().replace("_Player_", reportedName));
+					return;
+				}
+				LOGGER.info(() -> "reported user = " + ru.getName() + ", is online: " + ru.isOnline());
+
+				processReportCommand(args, u, ru, reportOneself, configFile);
+			});
 		});
 		return true;
 	}

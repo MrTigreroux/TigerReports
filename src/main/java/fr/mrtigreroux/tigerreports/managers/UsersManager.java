@@ -30,6 +30,7 @@ import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
 import fr.mrtigreroux.tigerreports.utils.CollectionUtils;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.DatetimeUtils;
+import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 /**
  * @author MrTigreroux
@@ -51,8 +52,6 @@ public class UsersManager {
 	private boolean pendingDataUpdateWhenPossible = false;
 	private boolean dataUpdateRequested = false;
 
-	private final Map<UUID, String> lastNameFound = new ConcurrentHashMap<>();
-	private final Map<String, UUID> lastUniqueIdFound = new ConcurrentHashMap<>();
 	private final List<String> exemptedPlayers = new ArrayList<>();
 
 	public UsersManager() {}
@@ -77,17 +76,17 @@ public class UsersManager {
 			LOGGER.info(() -> "processUserConnection(" + p.getName() + "): player is not online, cancelled");
 			return;
 		}
-		updateAndGetUser(p.getUniqueId(), new OnlineUserData(p));
+		updateAndGetOnlineUser(p.getUniqueId(), new OnlineUserData(p));
 	}
 
-	public void processUserDisconnection(UUID uuid, VaultManager vm) {
+	public void processUserDisconnection(UUID uuid, VaultManager vm, TaskScheduler taskScheduler) {
 		User u = getCachedUser(uuid);
 		LOGGER.info(() -> "processUserDisconnection(" + uuid + "): u = " + u);
 		if (u == null) {
 			return;
 		}
 
-		u.setUserData(new OfflineUserData(u.getName(), u.getDisplayName(vm)));
+		u.setOffline();
 	}
 
 	public void freeUsersCacheIfPossible() {
@@ -122,7 +121,7 @@ public class UsersManager {
 		});
 	}
 
-	public void getUsersAsynchronously(String[] uuids, Database db, TaskScheduler taskScheduler,
+	public void getUsersByUniqueIdAsynchronously(String[] uuids, Database db, TaskScheduler taskScheduler,
 	        ResultCallback<List<User>> resultCallback) {
 		if (uuids == null || uuids.length == 0) {
 			LOGGER.debug(() -> "getUsersAsynchronously(): uuids = null | empty");
@@ -132,7 +131,7 @@ public class UsersManager {
 
 		if (uuids.length == 1) {
 			LOGGER.debug(() -> "getUsersAsynchronously(): uuids length = 1");
-			getUserAsynchronously(uuids[0], db, taskScheduler, u -> {
+			getUserByUniqueIdAsynchronously(uuids[0], db, taskScheduler, u -> {
 				List<User> result = new ArrayList<>();
 				result.add(u);
 				resultCallback.onResultReceived(result);
@@ -144,56 +143,99 @@ public class UsersManager {
 		SeveralTasksHandler<User> usersTaskHandler = new SeveralTasksHandler<>();
 
 		for (String uuid : uuids) {
-			getUserAsynchronously(uuid, db, taskScheduler, usersTaskHandler.newTaskResultSlot());
+			getUserByUniqueIdAsynchronously(uuid, db, taskScheduler, usersTaskHandler.newTaskResultSlot());
 		}
 
 		usersTaskHandler.whenAllTasksDone(true, resultCallback);
 	}
 
-	public void getUserAsynchronously(String uuid, Database db, TaskScheduler taskScheduler,
+	public void getUserByNameAsynchronously(String name, Database db, TaskScheduler taskScheduler,
 	        ResultCallback<User> resultCallback) {
-		getUserAsynchronously(UUID.fromString(uuid), db, taskScheduler, resultCallback);
+		Objects.requireNonNull(name);
+
+		UUID uuid = UserUtils.getOnlinePlayerUniqueId(name);
+
+		if (uuid != null) {
+			LOGGER.debug(() -> "getUserByNameAsynchronously(" + name + "): online player uuid = " + uuid);
+			getUserByUniqueIdAsynchronously(uuid, db, taskScheduler, resultCallback);
+		} else {
+			db.queryAsynchronously("SELECT uuid,name FROM tigerreports_users WHERE name LIKE ?",
+			        Collections.singletonList(name), taskScheduler, (qr) -> {
+				        Map<String, Object> userDataResult = qr.getResult(0);
+				        if (userDataResult == null) {
+					        LOGGER.debug(() -> "getUserByNameAsynchronously(" + name + "): db result = null");
+					        resultCallback.onResultReceived(null);
+					        return;
+				        }
+
+				        String userUniqueIdStr = (String) userDataResult.get("uuid");
+				        if (userUniqueIdStr == null || userUniqueIdStr.isEmpty()) {
+					        LOGGER.debug(() -> "getUserByNameAsynchronously(" + name + "): db uuid result = null");
+					        resultCallback.onResultReceived(null);
+					        return;
+				        }
+				        UUID userUniqueId = UUID.fromString(userUniqueIdStr);
+				        String userName = (String) userDataResult.get("name");
+				        LOGGER.debug(() -> "getUserByNameAsynchronously(" + name + "): db result: uuid = "
+				                + userUniqueId + ", name = " + userName);
+
+				        VaultManager vm = TigerReports.getInstance().getVaultManager();
+				        getOfflineUserAsynchronously(userUniqueId, userName, vm, taskScheduler, resultCallback);
+			        });
+		}
 	}
 
-	public void getUserAsynchronously(UUID uuid, Database db, TaskScheduler taskScheduler,
+	public void getUserByUniqueIdAsynchronously(String uuid, Database db, TaskScheduler taskScheduler,
 	        ResultCallback<User> resultCallback) {
+		getUserByUniqueIdAsynchronously(UUID.fromString(uuid), db, taskScheduler, resultCallback);
+	}
+
+	public void getUserByUniqueIdAsynchronously(UUID uuid, Database db, TaskScheduler taskScheduler,
+	        ResultCallback<User> resultCallback) {
+		Objects.requireNonNull(uuid);
 		User u = getOnlineUser(uuid);
 		if (u != null) {
 			resultCallback.onResultReceived(u);
-		} else {
+		} else { // if user is cached, getOnlineUser() has set it to offline if necessary
 			u = getCachedUser(uuid);
-			if (u != null && u.hasOfflineUserData()) {
+			if (u != null) {
 				resultCallback.onResultReceived(u);
 			} else {
 				VaultManager vm = TigerReports.getInstance().getVaultManager();
-				getNameAsynchronously(uuid, db, taskScheduler, new NameResultCallback() {
-
-					@Override
-					public void onNameReceived(String name) {
-						if (name == null) {
-							resultCallback.onResultReceived(null);
-							return;
-						}
-
-						vm.getVaultDisplayNameAsynchronously(Bukkit.getOfflinePlayer(uuid), taskScheduler,
-						        new VaultManager.DisplayNameResultCallback() {
-
-							        @Override
-							        public void onDisplayNameReceived(String displayName) {
-								        User u = updateAndGetUser(uuid, new OfflineUserData(name, displayName));
-
-								        resultCallback.onResultReceived(u);
-							        }
-
-						        });
-					}
+				getNameAsynchronously(uuid, db, taskScheduler, (name) -> {
+					getOfflineUserAsynchronously(uuid, name, vm, taskScheduler, resultCallback);
 				});
 			}
 		}
 	}
 
+	private void getOfflineUserAsynchronously(UUID uuid, String name, VaultManager vm, TaskScheduler taskScheduler,
+	        ResultCallback<User> resultCallback) {
+		if (uuid == null || name == null) {
+			LOGGER.debug(() -> "getOfflineUserAsynchronously(" + uuid + ", " + name + "): uuid or name is null");
+			resultCallback.onResultReceived(null);
+			return;
+		}
+
+		vm.getVaultDisplayNameAsynchronously(Bukkit.getOfflinePlayer(uuid), name, taskScheduler, (displayName) -> {
+			LOGGER.debug(() -> "getOfflineUserAsynchronously(" + uuid + ", " + name + "): got display name ("
+			        + displayName + "), save offline user to cache");
+			User u = updateAndGetUser(uuid, displayName, new OfflineUserData(name));
+			resultCallback.onResultReceived(u);
+		});
+	}
+
 	public User getOnlineUser(String uuid) {
 		return getOnlineUser(UUID.fromString(uuid));
+	}
+
+	public User getOnlineUser(UUID uuid) {
+		User u = getCachedOnlineUser(uuid);
+		if (u != null) {
+			return u;
+		} else {
+			return getOnlineUser(Bukkit.getPlayer(uuid));
+		}
 	}
 
 	public User getOnlineUser(Player p) {
@@ -201,19 +243,48 @@ public class UsersManager {
 			return null;
 		}
 
-		return getOnlineUser(p.getUniqueId());
+		User u = getCachedOnlineUser(p.getUniqueId());
+		if (u != null) {
+			return u;
+		} else if (p.isOnline()) {
+			LOGGER.debug(
+			        () -> "getOnlineUser(Player " + p.getName() + "): player is online but not saved in cache, add it");
+			return updateAndGetOnlineUser(p.getUniqueId(), new OnlineUserData(p));
+		} else {
+			return null;
+		}
 	}
 
-	public User getOnlineUser(UUID uuid) {
+	public User getCachedOnlineUser(UUID uuid) {
 		User u = getCachedUser(uuid);
-		return u != null && u.isOnline() ? u : null;
+		if (u != null && u.isOnline()) {
+			return u;
+		} else {
+			return null;
+		}
 	}
 
-	private User updateAndGetUser(UUID uuid, UserData userData) {
+	private User updateAndGetOnlineUser(UUID uuid, OnlineUserData userData) {
+		return updateAndGetUser(uuid, null, userData);
+	}
+
+	/**
+	 * The display name of an online player will be retrieved if {@code displayName} is null. But if the player is offline, the display name must be passed to {@code displayName} (null is allowed).
+	 * 
+	 * @param uuid
+	 * @param displayName null for online player, or if unknown by Vault and Bukkit
+	 * @param userData
+	 * @return
+	 */
+	private User updateAndGetUser(UUID uuid, String displayName, UserData userData) {
 		User u = getCachedUser(uuid);
 		if (u == null) {
 			LOGGER.info(() -> "updateAndGetUser(" + uuid + "): cached u = null, create new");
-			u = new User(uuid, userData);
+			if (displayName == null) {
+				VaultManager vm = TigerReports.getInstance().getVaultManager();
+				displayName = userData.getDisplayName(vm);
+			}
+			u = new User(uuid, displayName, userData);
 			users.put(uuid, u);
 		} else if (!u.hasSameUserDataType(userData)) {
 			LOGGER.info(() -> "updateAndGetUser(" + uuid + "): not same user data type, change it");
@@ -255,24 +326,6 @@ public class UsersManager {
 		return onlineUsers;
 	}
 
-	public UUID getUniqueId(String name) {
-		UUID uuid = lastUniqueIdFound.get(name);
-		if (uuid == null) {
-			@SuppressWarnings("deprecation")
-			OfflinePlayer p = Bukkit.getOfflinePlayer(name);
-			if (p != null) {
-				uuid = p.getUniqueId();
-			}
-		}
-		if (uuid != null) {
-			lastUniqueIdFound.put(name, uuid);
-			return uuid;
-		}
-		LOGGER.warn(() -> ConfigUtils.getInfoMessage("The UUID of the name <" + name + "> was not found.",
-		        "L'UUID du pseudo <" + name + "> n'a pas ete trouve."));
-		return null;
-	}
-
 	public interface NameResultCallback {
 		void onNameReceived(String name);
 	}
@@ -286,32 +339,28 @@ public class UsersManager {
 	        NameResultCallback resultCallback) {
 		Objects.requireNonNull(uuid);
 
-		String name = lastNameFound.get(uuid);
-		if (name == null) {
-			if (p == null) {
-				p = Bukkit.getOfflinePlayer(uuid);
-			}
-			name = p.getName();
-			if (name != null && !name.isEmpty()) {
-				lastNameFound.put(uuid, name);
-			}
+		User u = getCachedUser(uuid);
+		if (u != null) {
+			resultCallback.onNameReceived(u.getName());
+			return;
 		}
 
-		if (name != null) {
+		if (p == null) {
+			p = Bukkit.getOfflinePlayer(uuid);
+		}
+		String name = p.getName();
+
+		if (name != null && !name.isEmpty()) {
+			LOGGER.debug(() -> "getNameAsynchronously(" + uuid + "): found name (" + name + ") with OfflinePlayer");
 			resultCallback.onNameReceived(name);
 		} else {
+			LOGGER.debug(() -> "getNameAsynchronously(" + uuid
+			        + "): did not found name with cache and OfflinePlayer, query db");
 			db.queryAsynchronously("SELECT name FROM tigerreports_users WHERE uuid = ?",
-			        Collections.singletonList(uuid.toString()), taskScheduler, new ResultCallback<QueryResult>() {
-
-				        @Override
-				        public void onResultReceived(QueryResult qr) {
-					        String name = (String) qr.getResult(0, "name");
-					        if (name != null && !name.isEmpty()) {
-						        lastNameFound.put(uuid, name);
-					        }
-					        resultCallback.onNameReceived(name);
-				        }
-
+			        Collections.singletonList(uuid.toString()), taskScheduler, (qr) -> {
+				        String dbName = (String) qr.getResult(0, "name");
+				        LOGGER.debug(() -> "getNameAsynchronously(" + uuid + "): found name (" + dbName + ") from db");
+				        resultCallback.onNameReceived(dbName);
 			        });
 		}
 	}

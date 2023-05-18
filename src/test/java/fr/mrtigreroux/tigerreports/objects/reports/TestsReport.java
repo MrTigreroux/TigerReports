@@ -47,6 +47,8 @@ import fr.mrtigreroux.tigerreports.utils.CollectionUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 import fr.mrtigreroux.tigerreports.utils.RandomUtils;
 import fr.mrtigreroux.tigerreports.utils.TestsMessageUtils;
+import fr.mrtigreroux.tigerreports.utils.TestsUserUtils;
+import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 /**
  * @author MrTigreroux
@@ -154,7 +156,7 @@ public class TestsReport {
 			}
 			return null;
 		}).when(um)
-		        .getUserAsynchronously(anyString(), any(Database.class), any(TaskScheduler.class),
+		        .getUserByUniqueIdAsynchronously(anyString(), any(Database.class), any(TaskScheduler.class),
 		                ArgumentMatchers.<ResultCallback<User>>any());
 
 		doAnswer((invocation) -> {
@@ -170,7 +172,7 @@ public class TestsReport {
 			}
 			return null;
 		}).when(um)
-		        .getUserAsynchronously(any(UUID.class), any(Database.class), any(TaskScheduler.class),
+		        .getUserByUniqueIdAsynchronously(any(UUID.class), any(Database.class), any(TaskScheduler.class),
 		                ArgumentMatchers.<ResultCallback<User>>any());
 
 		doAnswer((invocation) -> {
@@ -185,17 +187,19 @@ public class TestsReport {
 			}
 			return null;
 		}).when(um)
-		        .getUsersAsynchronously(any(String[].class), any(Database.class), any(TaskScheduler.class),
+		        .getUsersByUniqueIdAsynchronously(any(String[].class), any(Database.class), any(TaskScheduler.class),
 		                ArgumentMatchers.<ResultCallback<List<User>>>any());
 	}
 
 	public static void mockSendStaffMessageAndRunReportAction(Report r, VaultManager vm,
 	        Holder<Object> sentStaffMessage, Consumer<Report> reportAction) {
-		when(vm.useVaultDisplayName(anyBoolean())).thenReturn(true);
 		when(r.getReporter().getDisplayName(any(VaultManager.class), anyBoolean())).thenReturn("reporter display name");
 		when(r.getReported().getDisplayName(any(VaultManager.class), anyBoolean())).thenReturn("reported display name");
 
-		try (MockedStatic<MessageUtils> messageUtilsMock = mockStatic(MessageUtils.class, Mockito.CALLS_REAL_METHODS)) {
+		try (MockedStatic<UserUtils> userUtilsMock = mockStatic(UserUtils.class, Mockito.CALLS_REAL_METHODS);
+		        MockedStatic<MessageUtils> messageUtilsMock = mockStatic(MessageUtils.class,
+		                Mockito.CALLS_REAL_METHODS)) {
+			TestsUserUtils.mockUseDisplayName(userUtilsMock, true);
 			TestsMessageUtils.mockSendStaffMessage(messageUtilsMock, sentStaffMessage);
 			reportAction.accept(r);
 		}
@@ -223,10 +227,8 @@ public class TestsReport {
 		return (report) -> {
 			TestsReport.mockSendStaffMessageAndRunReportAction(report, vm, new Holder<Object>(), (r) -> {
 				// Use a valid staff and !bungee in order to have a successful archive action
-				r.archive(
-				        new User(UUID.randomUUID(),
-				                new OfflineUserData("archive staff name", "archive staff display name")),
-				        false, db, rm, vm, bm);
+				r.archive(new User(UUID.randomUUID(), "archive staff display name",
+				        new OfflineUserData("archive staff name")), false, db, rm, vm, bm);
 				clearInvocations(bm, rm);
 			});
 		};
@@ -247,7 +249,7 @@ public class TestsReport {
 	        BungeeManager bm, VaultManager vm) {
 		TestsReport.mockSendStaffMessageAndRunReportAction(report, vm, new Holder<Object>(), (r) -> {
 		    // Use a valid staff and !bungee in order to have a successful archive action
-		    r.delete(new User(UUID.randomUUID(), new OfflineUserData("delete staff name", "delete staff display name")),
+		    r.delete(new User(UUID.randomUUID(), "delete staff display name", new OfflineUserData("delete staff name")),
 		            false, db, taskScheduler, rm, vm, bm);
 		});
 	}
@@ -256,10 +258,8 @@ public class TestsReport {
 	        BungeeManager bm, VaultManager vm) {
 		TestsReport.mockSendStaffMessageAndRunReportAction(report, vm, new Holder<Object>(), (r) -> {
 		    // Use a valid staff and !bungee in order to have a successful archive action
-		    r.archive(
-		            new User(UUID.randomUUID(),
-		                    new OfflineUserData("archive staff name", "archive staff display name")),
-		            false, db, rm, vm, bm);
+		    r.archive(new User(UUID.randomUUID(), "archive staff display name",
+		            new OfflineUserData("archive staff name")), false, db, rm, vm, bm);
 		});
 	}
 
@@ -267,10 +267,8 @@ public class TestsReport {
 	        BungeeManager bm, VaultManager vm) {
 		TestsReport.mockSendStaffMessageAndRunReportAction(report, vm, new Holder<Object>(), (r) -> {
 		    // Use a valid staff and !bungee in order to have a successful archive action
-		    r.unarchive(
-		            new User(UUID.randomUUID(),
-		                    new OfflineUserData("archive staff name", "archive staff display name")),
-		            false, db, rm, vm, bm);
+		    r.unarchive(new User(UUID.randomUUID(), "archive staff display name",
+		            new OfflineUserData("archive staff name")), false, db, rm, vm, bm);
 		});
 	}
 

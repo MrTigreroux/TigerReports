@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -96,7 +95,7 @@ public class ReportsCommand implements TabExecutor {
 					}
 					String message = sb.toString().trim();
 
-					r.addComment(author, message, db, tr, ResultCallback.NOTHING);
+					r.addComment(author, message, db, tr, (id) -> {});
 					if (p != null) {
 						um.getOnlineUser(p).openCommentsMenu(1, r, rm, db, tr, um, bm, vm);
 					}
@@ -264,35 +263,18 @@ public class ReportsCommand implements TabExecutor {
 	}
 
 	private void processCommandWithTarget(User u, String target, String command, long punishSeconds) {
-		UUID tuuid = UserUtils.getUniqueId(target);
-		UserUtils.checkUserExistsAsynchronously(tuuid, db, tr, new ResultCallback<Boolean>() {
+		um.getUserByNameAsynchronously(target, db, tr, (tu) -> {
+			if (tu == null) {
+				u.sendErrorMessage(Message.INVALID_PLAYER.get().replace("_Player_", target));
+				return;
+			}
 
-			@Override
-			public void onResultReceived(Boolean targetExists) {
-				if (!targetExists) {
-					u.sendErrorMessage(Message.INVALID_PLAYER.get().replace("_Player_", target));
-					return;
-				}
-
-				um.getUserAsynchronously(tuuid, db, tr, new ResultCallback<User>() {
-
-					@Override
-					public void onResultReceived(User tu) {
-						if (tu == null) {
-							u.sendErrorMessage(Message.INVALID_PLAYER.get().replace("_Player_", target));
-							return;
-						}
-
-						if (command.equalsIgnoreCase("stopcooldown")) {
-							tu.stopCooldown(u, false, db, bm);
-						} else if (command.equalsIgnoreCase("punish")) {
-							tu.punish(punishSeconds, u, false, db, bm, vm);
-						} else {
-							u.openUserMenu(tu, rm, db, tr, vm, um);
-						}
-					}
-				});
-
+			if (command.equalsIgnoreCase("stopcooldown")) {
+				tu.stopCooldown(u, false, db, bm);
+			} else if (command.equalsIgnoreCase("punish")) {
+				tu.punish(punishSeconds, u, false, db, bm, vm);
+			} else {
+				u.openUserMenu(tu, rm, db, tr, vm, um);
 			}
 		});
 	}

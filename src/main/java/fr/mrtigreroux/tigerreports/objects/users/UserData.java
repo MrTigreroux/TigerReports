@@ -11,6 +11,4 @@ public interface UserData {
 
 	public String getDisplayName(VaultManager vm);
 
-	public String getDisplayName(VaultManager vm, boolean staff);
-
 }

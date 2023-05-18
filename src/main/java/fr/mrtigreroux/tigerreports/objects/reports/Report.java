@@ -102,7 +102,7 @@ public class Report implements DeeplyCloneable<Report> {
 		String reportedUUID = (String) reportData.get(REPORTED_UUID);
 
 		LOGGER.debug(() -> "asynchronouslyFrom(): um.getUserAsynchronously(reportedUUID)");
-		um.getUserAsynchronously(reportedUUID, db, taskScheduler, new ResultCallback<User>() {
+		um.getUserByUniqueIdAsynchronously(reportedUUID, db, taskScheduler, new ResultCallback<User>() {
 
 			@Override
 			public void onResultReceived(User reported) {
@@ -116,7 +116,7 @@ public class Report implements DeeplyCloneable<Report> {
 				String configReporter = (String) reportData.get(REPORTER_UUID);
 				String[] reportersUUID = configReporter.split(REPORTERS_SEPARATOR);
 				LOGGER.debug(() -> "asynchronouslyFrom(): reportersUUID = " + configReporter);
-				um.getUsersAsynchronously(reportersUUID, db, taskScheduler, new ResultCallback<List<User>>() {
+				um.getUsersByUniqueIdAsynchronously(reportersUUID, db, taskScheduler, new ResultCallback<List<User>>() {
 
 					@Override
 					public void onResultReceived(List<User> reporters) {
@@ -218,7 +218,7 @@ public class Report implements DeeplyCloneable<Report> {
 				String fstaffUUID = staffUUID.toString();
 				LOGGER.debug(() -> "StatusDetails: asynchronouslyFrom(): staffUUID != null, getUserAsynchronously("
 				        + fstaffUUID + ")");
-				um.getUserAsynchronously(staffUUID, db, taskScheduler, new ResultCallback<User>() {
+				um.getUserByUniqueIdAsynchronously(staffUUID, db, taskScheduler, new ResultCallback<User>() {
 
 					@Override
 					public void onResultReceived(User u) {
@@ -1024,7 +1024,7 @@ public class Report implements DeeplyCloneable<Report> {
 			resultCallback.onResultReceived(null);
 		} else {
 			String authorUUID = (String) result.get("author");
-			um.getUserAsynchronously(authorUUID, db, taskScheduler, new ResultCallback<User>() {
+			um.getUserByUniqueIdAsynchronously(authorUUID, db, taskScheduler, new ResultCallback<User>() {
 
 				@Override
 				public void onResultReceived(User author) {
@@ -1162,7 +1162,7 @@ public class Report implements DeeplyCloneable<Report> {
 		}
 
 		if (changed) {
-			um.getUsersAsynchronously(newReportersUUID, db, taskScheduler, new ResultCallback<List<User>>() {
+			um.getUsersByUniqueIdAsynchronously(newReportersUUID, db, taskScheduler, new ResultCallback<List<User>>() {
 
 				@Override
 				public void onResultReceived(List<User> reporters) {

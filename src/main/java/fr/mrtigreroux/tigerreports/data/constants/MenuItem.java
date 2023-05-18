@@ -54,11 +54,11 @@ public enum MenuItem {
 	}
 
 	public CustomItem getCustomItem() {
-		return new CustomItem().type(material).damage(durability).hideFlags(hideFlags);
+		return new CustomItem().name(name.get()).type(material).damage(durability).hideFlags(hideFlags);
 	}
 
 	public ItemStack getWithDetails(String details) {
-		return getCustomItem().name(name.get()).details(details).create();
+		return getCustomItem().details(details).create();
 	}
 
 	public ItemStack get() {

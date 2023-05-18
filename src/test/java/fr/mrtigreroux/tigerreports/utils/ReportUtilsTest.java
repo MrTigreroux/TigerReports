@@ -194,8 +194,8 @@ class ReportUtilsTest extends TestClass {
 			String stackReportDate = DatetimeUtils.getRelativeDatetime(5);
 			if (newReporter) {
 				for (int i = 0; i < newReportersAmount; i++) {
-					reporters.add(new User(UUID.randomUUID(), new OfflineUserData("stackReportReporter" + i + " name",
-					        "stackReportReporter" + i + " display name")));
+					reporters.add(new User(UUID.randomUUID(), "stackReportReporter" + i + " display name",
+					        new OfflineUserData("stackReportReporter" + i + " name")));
 				}
 			}
 

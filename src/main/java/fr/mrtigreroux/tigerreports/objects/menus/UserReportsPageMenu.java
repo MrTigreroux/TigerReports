@@ -42,6 +42,12 @@ public abstract class UserReportsPageMenu extends ReportsPageMenu implements Upd
 	}
 
 	@Override
+	public CustomItem getPageDisplayerItem() {
+		return new CustomItem().type(Material.BOOKSHELF)
+		        .name(Message.get(tag).replace("_Target_", tu.getDisplayName(vm, false)));
+	}
+
+	@Override
 	public Inventory onOpen() {
 		String name = tu.getName();
 		String displayName = tu.getDisplayName(vm, false);
@@ -55,16 +61,14 @@ public abstract class UserReportsPageMenu extends ReportsPageMenu implements Upd
 		                        .replace("_Target_", displayName)
 		                        .split(ConfigUtils.getLineBreakSymbol()))
 		                .create());
-		inv.setItem(4,
-		        new CustomItem().type(Material.BOOKSHELF)
-		                .name(Message.get(tag).replace("_Target_", displayName))
-		                .create());
 
 		return inv;
 	}
 
 	@Override
 	public void onUpdate(Inventory inv) {
+		super.onUpdate(inv);
+
 		String actionsBefore;
 		boolean archiveAction;
 		String actionsAfter;

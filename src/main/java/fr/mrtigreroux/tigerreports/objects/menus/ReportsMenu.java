@@ -13,6 +13,7 @@ import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.managers.ReportsManager;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
 import fr.mrtigreroux.tigerreports.managers.VaultManager;
+import fr.mrtigreroux.tigerreports.objects.CustomItem;
 import fr.mrtigreroux.tigerreports.objects.reports.ReportsCharacteristics;
 import fr.mrtigreroux.tigerreports.objects.users.User;
 import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
@@ -36,10 +37,14 @@ public class ReportsMenu extends ReportsPageMenu implements UpdatedMenu {
 	}
 
 	@Override
+	public CustomItem getPageDisplayerItem() {
+		return MenuItem.REPORTS.getCustomItem();
+	}
+
+	@Override
 	public Inventory onOpen() {
 		Inventory inv = getInventory(Message.REPORTS_TITLE.get().replace("_Page_", Integer.toString(page)), true);
 
-		inv.setItem(4, MenuItem.REPORTS.get());
 		if (u.hasPermission(Permission.STAFF_ARCHIVE)) {
 			inv.setItem(8, MenuItem.ARCHIVED_REPORTS.getWithDetails(Message.ARCHIVED_REPORTS_DETAILS.get()));
 		}
@@ -49,6 +54,7 @@ public class ReportsMenu extends ReportsPageMenu implements UpdatedMenu {
 
 	@Override
 	public void onUpdate(Inventory inv) {
+		super.onUpdate(inv);
 		LOGGER.info(() -> this + ": onUpdate()");
 		rm.fillInventoryWithReportsPage(inv, reportsPage, Message.REPORT_SHOW_ACTION.get(),
 		        u.hasPermission(Permission.STAFF_ARCHIVE),

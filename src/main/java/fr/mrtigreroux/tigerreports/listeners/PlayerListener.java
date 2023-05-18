@@ -170,7 +170,7 @@ public class PlayerListener implements Listener {
 	private void onPlayerQuit(PlayerQuitEvent e) {
 		Player p = e.getPlayer();
 		Logger.EVENTS.info(() -> "onPlayerQuit(): " + p.getName());
-		um.processUserDisconnection(p.getUniqueId(), vm);
+		um.processUserDisconnection(p.getUniqueId(), vm, tr);
 		bm.processPlayerDisconnection(p.getName(), p.getUniqueId());
 		Logger.EVENTS.info(() -> "onPlayerQuit(): " + p.getName() + ", end");
 	}

@@ -46,7 +46,6 @@ public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu, Repo
 		Inventory inv = getInventory(Message.COMMENTS_TITLE.get().replace("_Report_", r.getName()), true);
 
 		inv.setItem(0, r.getItem(Message.REPORT_SHOW_ACTION.get(), vm, bm));
-		inv.setItem(4, MenuItem.COMMENTS.get());
 		inv.setItem(8, MenuItem.WRITE_COMMENT.create());
 
 		return inv;
@@ -54,6 +53,11 @@ public class CommentsMenu extends ReportManagerMenu implements UpdatedMenu, Repo
 
 	@Override
 	public void onUpdate(Inventory inv) {
+		inv.setItem(4,
+		        MenuItem.COMMENTS.getCustomItem()
+		                .details(Message.PAGE_INFO.get().replace("_Page_", Integer.toString(page)))
+		                .amount(page)
+		                .create());
 		List<Comment> pageComments = rm.getReportCommentsCachedPageComments(reportId, page);
 		int index = 0;
 		boolean deletePerm = u.hasPermission(Permission.STAFF_DELETE);

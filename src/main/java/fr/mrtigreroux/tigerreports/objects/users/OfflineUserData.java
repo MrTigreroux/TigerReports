@@ -11,15 +11,13 @@ import fr.mrtigreroux.tigerreports.utils.DatetimeUtils;
 public class OfflineUserData implements UserData {
 
 	private String name;
-	private String displayName;
 	/**
 	 * Last day this cached instance was used.
 	 */
 	protected byte lastDayUsed;
 
-	public OfflineUserData(String name, String displayName) {
+	public OfflineUserData(String name) {
 		this.name = Objects.requireNonNull(name);
-		this.displayName = displayName != null && !displayName.isEmpty() ? displayName : name;
 		lastDayUsed = DatetimeUtils.getCurrentDayOfMonth();
 	}
 
@@ -30,12 +28,7 @@ public class OfflineUserData implements UserData {
 
 	@Override
 	public String getDisplayName(VaultManager vm) {
-		return displayName;
-	}
-
-	@Override
-	public String getDisplayName(VaultManager vm, boolean staff) {
-		return vm.useVaultDisplayName(staff) ? displayName : name;
+		return null;
 	}
 
 }

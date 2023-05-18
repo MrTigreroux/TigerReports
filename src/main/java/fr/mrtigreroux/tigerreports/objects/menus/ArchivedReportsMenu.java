@@ -12,6 +12,7 @@ import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.managers.ReportsManager;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
 import fr.mrtigreroux.tigerreports.managers.VaultManager;
+import fr.mrtigreroux.tigerreports.objects.CustomItem;
 import fr.mrtigreroux.tigerreports.objects.reports.Report;
 import fr.mrtigreroux.tigerreports.objects.reports.ReportsCharacteristics;
 import fr.mrtigreroux.tigerreports.objects.users.User;
@@ -36,18 +37,23 @@ public class ArchivedReportsMenu extends ReportsPageMenu implements UpdatedMenu 
 	}
 
 	@Override
+	public CustomItem getPageDisplayerItem() {
+		return MenuItem.ARCHIVED_REPORTS.getCustomItem();
+	}
+
+	@Override
 	protected Inventory onOpen() {
 		Inventory inv = getInventory(Message.ARCHIVED_REPORTS_TITLE.get().replace("_Page_", Integer.toString(page)),
 		        true);
 
 		inv.setItem(0, MenuItem.REPORTS.getWithDetails(Message.REPORTS_DETAILS.get()));
-		inv.setItem(4, MenuItem.ARCHIVED_REPORTS.get());
 
 		return inv;
 	}
 
 	@Override
 	public void onUpdate(Inventory inv) {
+		super.onUpdate(inv);
 		rm.fillInventoryWithReportsPage(inv, reportsPage,
 		        Message.REPORT_RESTORE_ACTION.get()
 		                + (u.hasPermission(Permission.STAFF_DELETE) ? Message.REPORT_DELETE_ACTION.get() : ""),

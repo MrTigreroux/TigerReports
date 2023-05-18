@@ -76,15 +76,21 @@ public class User {
 
 	protected final UUID uuid;
 	private UserData data;
+	private String lastDisplayName;
 	private String immunity = null;
 	protected String cooldown = null;
 	private Map<String, Integer> statistics = null;
 	public List<SavedMessage> lastMessages = new ArrayList<>();
 	private final Set<UserListener> listeners = new HashSet<>();
 
-	public User(UUID uuid, UserData data) {
+	public static User fromOnlineUserData(UUID uuid, VaultManager vm, OnlineUserData data) {
+		return new User(uuid, data.getDisplayName(vm), data);
+	}
+
+	public User(UUID uuid, String lastDisplayName, UserData data) {
 		this.uuid = Objects.requireNonNull(uuid);
 		this.data = Objects.requireNonNull(data);
+		this.lastDisplayName = lastDisplayName != null && !lastDisplayName.isEmpty() ? lastDisplayName : null;
 	}
 
 	public interface UserListener {
@@ -167,26 +173,10 @@ public class User {
 		this.data = Objects.requireNonNull(data);
 	}
 
-	public void checkExistsAsynchronously(Database db, TaskScheduler taskScheduler, UsersManager um,
-	        ResultCallback<Boolean> resultCallback) {
-		Player p = getPlayer();
-		if (p != null) {
-			resultCallback.onResultReceived(true);
-		} else {
-			db.queryAsynchronously("SELECT uuid FROM tigerreports_users WHERE uuid = ?",
-			        Collections.singletonList(uuid.toString()), taskScheduler, new ResultCallback<QueryResult>() {
-
-				        @Override
-				        public void onResultReceived(QueryResult qr) {
-					        Object o = qr.getResult(0, "uuid");
-					        boolean exists = o != null;
-					        if (!exists) {
-						        um.removeCachedUser(uuid);
-					        }
-					        resultCallback.onResultReceived(exists);
-				        }
-
-			        });
+	public void setOffline() {
+		if (!hasOfflineUserData()) {
+			LOGGER.info(() -> getName() + ": setOffline()");
+			setUserData(new OfflineUserData(getName()));
 		}
 	}
 
@@ -195,25 +185,52 @@ public class User {
 	}
 
 	public String getDisplayName(VaultManager vm) {
-		return data.getDisplayName(vm);
+		String displayName = data.getDisplayName(vm);
+		if (displayName != null && !displayName.isEmpty()) {
+			lastDisplayName = displayName;
+			LOGGER.debug(() -> getName() + ": getDisplayName(): save lastDisplayName = " + lastDisplayName);
+		}
+
+		if (lastDisplayName != null) {
+			LOGGER.debug(() -> getName() + ": getDisplayName(): return lastDisplayName = " + lastDisplayName);
+			return lastDisplayName;
+		} else {
+			LOGGER.debug(() -> getName() + ": getDisplayName(): return name = " + getName());
+			return getName();
+		}
 	}
 
 	public String getDisplayName(VaultManager vm, boolean staff) {
-		return data.getDisplayName(vm, staff);
+		if (UserUtils.useDisplayName(staff)) {
+			LOGGER.debug(() -> getName() + ": getDisplayName(staff = " + staff + "): return display name");
+			return getDisplayName(vm);
+		} else {
+			LOGGER.debug(() -> getName() + ": getDisplayName(staff = " + staff + "): return name");
+			return getName();
+		}
 	}
 
 	public boolean isOnline() {
-		OnlineUserData onData = getOnlineUserData();
-		return onData != null && onData.p.isOnline();
+		Player p = getPlayer();
+		if (p != null) {
+			if (p.isOnline()) {
+				return true;
+			} else {
+				LOGGER.debug(() -> getName() + ": isOnline(): false but online data, setOffline()");
+				setOffline();
+				return false;
+			}
+		}
+		return false;
 	}
 
 	public boolean isOnlineInNetwork(BungeeManager bm) {
-		return UserUtils.isOnline(getName(), bm);
+		return isOnline() || bm.isPlayerOnline(getName());
 	}
 
 	public Player getPlayer() {
 		OnlineUserData onData = getOnlineUserData();
-		LOGGER.info(() -> getName() + ": getPlayer(): onData = " + onData);
+		LOGGER.debug(() -> getName() + ": getPlayer(): onData = " + onData);
 		return onData != null ? onData.p : null;
 	}
 

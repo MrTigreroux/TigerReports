@@ -141,6 +141,7 @@ public enum Message {
 	ARCHIVED_REPORTS_DETAILS("Menus.Archived-reports-details"),
 	ARCHIVED_REPORTS_TITLE("Menus.Archived-reports-title"),
 	REPORT_RESTORE_ACTION("Menus.Report-restore-action"),
+	PAGE_INFO("Menus.Page-info"),
 	PAGE_SWITCH_PREVIOUS("Menus.Switch-to-previous-page"),
 	PAGE_SWITCH_NEXT("Menus.Switch-to-next-page"),
 	CLOSE("Menus.Close"),

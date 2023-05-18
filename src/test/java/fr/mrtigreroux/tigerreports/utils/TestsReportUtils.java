@@ -250,7 +250,7 @@ public class TestsReportUtils {
 			}
 			return null;
 		}).when(um)
-		        .getUserAsynchronously(anyString(), any(Database.class), any(TaskScheduler.class),
+		        .getUserByUniqueIdAsynchronously(anyString(), any(Database.class), any(TaskScheduler.class),
 		                ArgumentMatchers.<ResultCallback<User>>any());
 
 		doAnswer((invocation) -> {
@@ -265,7 +265,7 @@ public class TestsReportUtils {
 			}
 			return null;
 		}).when(um)
-		        .getUserAsynchronously(any(UUID.class), any(Database.class), any(TaskScheduler.class),
+		        .getUserByUniqueIdAsynchronously(any(UUID.class), any(Database.class), any(TaskScheduler.class),
 		                ArgumentMatchers.<ResultCallback<User>>any());
 
 		doAnswer((invocation) -> {
@@ -281,7 +281,7 @@ public class TestsReportUtils {
 			}
 			return null;
 		}).when(um)
-		        .getUsersAsynchronously(any(String[].class), any(Database.class), any(TaskScheduler.class),
+		        .getUsersByUniqueIdAsynchronously(any(String[].class), any(Database.class), any(TaskScheduler.class),
 		                ArgumentMatchers.<ResultCallback<List<User>>>any());
 	}
 

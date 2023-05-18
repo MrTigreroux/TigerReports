@@ -6,7 +6,6 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
@@ -15,6 +14,7 @@ import fr.mrtigreroux.tigerreports.logs.Logger;
 import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
+import fr.mrtigreroux.tigerreports.utils.UserUtils;
 import net.milkbowl.vault.chat.Chat;
 
 /**
@@ -23,26 +23,16 @@ import net.milkbowl.vault.chat.Chat;
 
 public class VaultManager {
 
+	private static final Logger LOGGER = Logger.fromClass(VaultManager.DisplayNameResultCallback.class);
+
 	private final boolean enabled;
 	private Chat chat = null;
-
-	private boolean displayForStaff = false;
-	private boolean displayForPlayers = false;
 
 	private final Map<UUID, String> displayNames = new HashMap<>();
 
 	public VaultManager(boolean isVaultInstalled) {
 		enabled = isVaultInstalled && ConfigUtils.isEnabled("VaultChat.Enabled");
-		if (enabled) {
-			initialize();
-		}
-	}
-
-	private void initialize() {
 		setupChat();
-		FileConfiguration configFile = ConfigFile.CONFIG.get();
-		displayForStaff = ConfigUtils.isEnabled(configFile, "VaultChat.DisplayForStaff");
-		displayForPlayers = ConfigUtils.isEnabled(configFile, "VaultChat.DisplayForPlayers");
 	}
 
 	private boolean setupChat() {
@@ -74,9 +64,10 @@ public class VaultManager {
 		void onDisplayNameReceived(String displayName);
 	}
 
+	// TODO Unused
 	public void getPlayerDisplayNameAsynchronously(OfflinePlayer p, boolean staff, TaskScheduler taskScheduler,
 	        DisplayNameResultCallback resultCallback) {
-		if (!useVaultDisplayName(staff)) {
+		if (!UserUtils.useDisplayName(staff)) {
 			resultCallback.onDisplayNameReceived(p.getName());
 		}
 
@@ -86,39 +77,34 @@ public class VaultManager {
 			if (lastDisplayName != null) {
 				resultCallback.onDisplayNameReceived(lastDisplayName);
 			} else {
-				getVaultDisplayNameAsynchronously(p, taskScheduler, resultCallback);
+				// should add String name as param and use it
+				getVaultDisplayNameAsynchronously(p, null, taskScheduler, resultCallback);
 			}
 		} else {
-			resultCallback.onDisplayNameReceived(getVaultDisplayName(p));
+			resultCallback.onDisplayNameReceived(getVaultDisplayName(p, null));
 		}
 	}
 
-	public void getVaultDisplayNameAsynchronously(OfflinePlayer p, TaskScheduler taskScheduler,
+	public void getVaultDisplayNameAsynchronously(OfflinePlayer p, String name, TaskScheduler taskScheduler,
 	        DisplayNameResultCallback resultCallback) {
-		taskScheduler.runTaskAsynchronously(new Runnable() {
-
-			@Override
-			public void run() {
-				String displayName = getVaultDisplayName(p);
-				taskScheduler.runTask(new Runnable() {
-
-					@Override
-					public void run() {
-						resultCallback.onDisplayNameReceived(displayName);
-					}
-
-				});
-			}
-
+		taskScheduler.runTaskAsynchronously(() -> {
+			String displayName = getVaultDisplayName(p, name);
+			taskScheduler.runTask(() -> {
+				resultCallback.onDisplayNameReceived(displayName);
+			});
 		});
 	}
 
 	/**
 	 * Must be accessed asynchronously if player is offline
 	 */
-	private String getVaultDisplayName(OfflinePlayer p) {
-		String name = p.getName();
+	private String getVaultDisplayName(OfflinePlayer p, String name) {
+		if (name == null) {
+			name = p.getName();
+		}
 		if (name == null || !setupChat()) {
+			final String fname = name;
+			LOGGER.info(() -> "getVaultDisplayName(" + p + ", name=" + fname + "): return null");
 			return null;
 		}
 
@@ -134,16 +120,8 @@ public class VaultManager {
 		return vaultDisplayName;
 	}
 
-	public boolean useVaultDisplayName(boolean staff) {
-		return ((staff && displayForStaff) || (!staff && displayForPlayers)) && setupChat();
-	}
-
 	public String getOnlinePlayerDisplayName(Player p) {
-		return setupChat() ? getVaultDisplayName(p) : p.getDisplayName();
-	}
-
-	public String getOnlinePlayerDisplayName(Player p, boolean staff) {
-		return useVaultDisplayName(staff) ? getVaultDisplayName(p) : p.getDisplayName();
+		return setupChat() ? getVaultDisplayName(p, p.getName()) : p.getDisplayName();
 	}
 
 }

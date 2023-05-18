@@ -959,7 +959,7 @@ public class BungeeManager implements PluginMessageListener {
 	}
 
 	private void getUserAsynchronously(String uuid, ResultCallback<User> resultCallback) {
-		um.getUserAsynchronously(uuid, db, tr, resultCallback);
+		um.getUserByUniqueIdAsynchronously(uuid, db, tr, resultCallback);
 	}
 
 	private void getReportFromData(String message, String firstPart, ResultCallback<Report> resultCallback) {

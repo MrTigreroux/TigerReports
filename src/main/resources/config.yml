@@ -110,6 +110,12 @@ Config:
   CollectSkulls: yes
   # Collect player's skull from Mojang. If disabled the skulls will have no skin / Collecter les têtes de joueurs depuis Mojang. Si désactivé, les têtes n'auront pas d'apparence (skin).
   
+  DisplayNameForStaff: yes
+  # Use display name of Bukkit or chat of Vault plugin to display staff names / Utiliser les noms personnalisés de Bukkit ou du chat du plugin Vault pour afficher les noms des membres de l'équipe (staff)
+  
+  DisplayNameForPlayers: no
+  # Use display name of Bukkit or chat of Vault plugin to display reported and reporters names / Utiliser les noms personnalisés de Bukkit ou du chat du plugin Vault pour afficher les noms des joueurs signalés et signaleurs
+  
   DefaultReasons:
     Reason1:
       Name: "Fly"
@@ -276,9 +282,3 @@ VaultChat:
   
   Format: "_Prefix__Name__Suffix_"
   # Format used to display player names / Format utilisé pour afficher les noms des joueurs
-  
-  DisplayForStaff: yes
-  # Use prefixes and suffixes from the chat of Vault plugin to display staff names / Utiliser les préfixes et suffixes du chat du plugin Vault pour afficher les noms des membres de l'équipe (staff)
-  
-  DisplayForPlayers: no
-  # Use prefixes and suffixes from the chat of Vault plugin to display reported and reporters names / Utiliser les préfixes et suffixes du chat du plugin Vault pour afficher les noms des joueurs signalés et signaleurs

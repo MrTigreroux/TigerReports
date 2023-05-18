@@ -1,10 +1,14 @@
 package fr.mrtigreroux.tigerreports.objects.menus;
 
+import org.bukkit.inventory.Inventory;
+
+import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.data.database.Database;
 import fr.mrtigreroux.tigerreports.logs.Logger;
 import fr.mrtigreroux.tigerreports.managers.ReportsManager;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
+import fr.mrtigreroux.tigerreports.objects.CustomItem;
 import fr.mrtigreroux.tigerreports.objects.reports.ReportsCharacteristics;
 import fr.mrtigreroux.tigerreports.objects.reports.ReportsPage;
 import fr.mrtigreroux.tigerreports.objects.users.User;
@@ -13,7 +17,7 @@ import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
 /**
  * @author MrTigreroux
  */
-public abstract class ReportsPageMenu extends Menu implements ReportsPage.ReportsPageListener {
+public abstract class ReportsPageMenu extends Menu implements ReportsPage.ReportsPageListener, UpdatedMenu {
 
 	private static final Logger LOGGER = Logger.fromClass(ReportsPageMenu.class);
 
@@ -32,6 +36,16 @@ public abstract class ReportsPageMenu extends Menu implements ReportsPage.Report
 		this.taskScheduler = taskScheduler;
 		this.um = um;
 		reportsPage = rm.getAndListenReportsPage(reportsCharacteristics, page, this, db, taskScheduler, um);
+	}
+
+	public abstract CustomItem getPageDisplayerItem();
+
+	@Override
+	public void onUpdate(Inventory inv) {
+		inv.setItem(4,
+		        getPageDisplayerItem().details(Message.PAGE_INFO.get().replace("_Page_", Integer.toString(page)))
+		                .amount(page)
+		                .create());
 	}
 
 	@Override

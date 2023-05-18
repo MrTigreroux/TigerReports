@@ -105,10 +105,10 @@ public class ReportTest extends TestClass {
 			String date = DatetimeUtils.getNowDatetime();
 
 			Player reportedPlayer = mock(Player.class);
-			User reported = new User(UUID.randomUUID(), new OnlineUserData(reportedPlayer));
+			User reported = new User(UUID.randomUUID(), null, new OnlineUserData(reportedPlayer));
 
 			Player reporterPlayer = mock(Player.class);
-			List<User> reporters = Arrays.asList(new User(UUID.randomUUID(), new OnlineUserData(reporterPlayer)));
+			List<User> reporters = Arrays.asList(new User(UUID.randomUUID(), null, new OnlineUserData(reporterPlayer)));
 			String reportedUUID = reported.getUniqueId().toString();
 			String reportersUUID = TestsReport.getReportersStr(reporters);
 
@@ -229,10 +229,10 @@ public class ReportTest extends TestClass {
 			String date = DatetimeUtils.getNowDatetime();
 
 			Player reportedPlayer = mock(Player.class);
-			User reported = new User(UUID.randomUUID(), new OnlineUserData(reportedPlayer));
+			User reported = new User(UUID.randomUUID(), null, new OnlineUserData(reportedPlayer));
 
 			Player reporterPlayer = mock(Player.class);
-			List<User> reporters = Arrays.asList(new User(UUID.randomUUID(), new OnlineUserData(reporterPlayer)));
+			List<User> reporters = Arrays.asList(new User(UUID.randomUUID(), null, new OnlineUserData(reporterPlayer)));
 
 			String reason = "report reason";
 			boolean archived = false;
@@ -271,7 +271,7 @@ public class ReportTest extends TestClass {
 
 			Status status = Status.IN_PROGRESS;
 			Player staffPlayer = mock(Player.class);
-			User staff = new User(UUID.randomUUID(), new OnlineUserData(staffPlayer));
+			User staff = new User(UUID.randomUUID(), null, new OnlineUserData(staffPlayer));
 			StatusDetails statusDetails = StatusDetails.from(status, staff);
 
 			Appreciation appreciation = Appreciation.NONE;
@@ -279,10 +279,10 @@ public class ReportTest extends TestClass {
 			String date = DatetimeUtils.getNowDatetime();
 
 			Player reportedPlayer = mock(Player.class);
-			User reported = new User(UUID.randomUUID(), new OnlineUserData(reportedPlayer));
+			User reported = new User(UUID.randomUUID(), null, new OnlineUserData(reportedPlayer));
 
 			Player reporterPlayer = mock(Player.class);
-			List<User> reporters = Arrays.asList(new User(UUID.randomUUID(), new OnlineUserData(reporterPlayer)));
+			List<User> reporters = Arrays.asList(new User(UUID.randomUUID(), null, new OnlineUserData(reporterPlayer)));
 
 			String reason = "report reason";
 			boolean archived = false;
@@ -328,10 +328,10 @@ public class ReportTest extends TestClass {
 			String date = DatetimeUtils.getNowDatetime();
 
 			Player reportedPlayer = mock(Player.class);
-			User reported = new User(UUID.randomUUID(), new OnlineUserData(reportedPlayer));
+			User reported = new User(UUID.randomUUID(), null, new OnlineUserData(reportedPlayer));
 
 			Player reporterPlayer = mock(Player.class);
-			List<User> reporters = Arrays.asList(new User(UUID.randomUUID(), new OnlineUserData(reporterPlayer)));
+			List<User> reporters = Arrays.asList(new User(UUID.randomUUID(), null, new OnlineUserData(reporterPlayer)));
 
 			String reason = "report reason";
 			boolean archived = false;
@@ -370,7 +370,7 @@ public class ReportTest extends TestClass {
 
 			Status status = Status.DONE;
 			Player staffPlayer = mock(Player.class);
-			User staff = new User(UUID.randomUUID(), new OnlineUserData(staffPlayer));
+			User staff = new User(UUID.randomUUID(), null, new OnlineUserData(staffPlayer));
 			StatusDetails statusDetails = StatusDetails.from(status, staff);
 
 			Appreciation appreciation = Appreciation.TRUE;
@@ -378,10 +378,10 @@ public class ReportTest extends TestClass {
 			String date = DatetimeUtils.getNowDatetime();
 
 			Player reportedPlayer = mock(Player.class);
-			User reported = new User(UUID.randomUUID(), new OnlineUserData(reportedPlayer));
+			User reported = new User(UUID.randomUUID(), null, new OnlineUserData(reportedPlayer));
 
 			Player reporterPlayer = mock(Player.class);
-			List<User> reporters = Arrays.asList(new User(UUID.randomUUID(), new OnlineUserData(reporterPlayer)));
+			List<User> reporters = Arrays.asList(new User(UUID.randomUUID(), null, new OnlineUserData(reporterPlayer)));
 
 			String reason = "report reason";
 			boolean archived = false;
@@ -420,7 +420,7 @@ public class ReportTest extends TestClass {
 
 			Status status = Status.DONE;
 			Player staffPlayer = mock(Player.class);
-			User staff = new User(UUID.randomUUID(), new OnlineUserData(staffPlayer));
+			User staff = new User(UUID.randomUUID(), null, new OnlineUserData(staffPlayer));
 			StatusDetails statusDetails = StatusDetails.from(status, staff);
 
 			Appreciation appreciation = Appreciation.TRUE;
@@ -428,12 +428,12 @@ public class ReportTest extends TestClass {
 			String date = DatetimeUtils.getNowDatetime();
 
 			Player reportedPlayer = mock(Player.class);
-			User reported = new User(UUID.randomUUID(), new OnlineUserData(reportedPlayer));
+			User reported = new User(UUID.randomUUID(), null, new OnlineUserData(reportedPlayer));
 
 			Player reporterPlayer1 = mock(Player.class);
 			Player reporterPlayer2 = mock(Player.class);
-			List<User> reporters = Arrays.asList(new User(UUID.randomUUID(), new OnlineUserData(reporterPlayer1)),
-			        new User(UUID.randomUUID(), new OnlineUserData(reporterPlayer2)));
+			List<User> reporters = Arrays.asList(new User(UUID.randomUUID(), null, new OnlineUserData(reporterPlayer1)),
+			        new User(UUID.randomUUID(), null, new OnlineUserData(reporterPlayer2)));
 
 			String reason = "report reason";
 			boolean archived = false;
@@ -472,7 +472,7 @@ public class ReportTest extends TestClass {
 
 			Status status = Status.DONE;
 			Player staffPlayer = mock(Player.class);
-			User staff = new User(UUID.randomUUID(), new OnlineUserData(staffPlayer));
+			User staff = new User(UUID.randomUUID(), null, new OnlineUserData(staffPlayer));
 			StatusDetails statusDetails = StatusDetails.from(status, staff);
 
 			Appreciation appreciation = Appreciation.TRUE;
@@ -481,14 +481,14 @@ public class ReportTest extends TestClass {
 			String date = DatetimeUtils.getNowDatetime();
 
 			Player reportedPlayer = mock(Player.class);
-			User reported = new User(UUID.randomUUID(), new OnlineUserData(reportedPlayer));
+			User reported = new User(UUID.randomUUID(), null, new OnlineUserData(reportedPlayer));
 
 			Player reporterPlayer1 = mock(Player.class);
 			Player reporterPlayer2 = mock(Player.class);
 			Player reporterPlayer3 = mock(Player.class);
-			List<User> reporters = Arrays.asList(new User(UUID.randomUUID(), new OnlineUserData(reporterPlayer1)),
-			        new User(UUID.randomUUID(), new OnlineUserData(reporterPlayer2)),
-			        new User(UUID.randomUUID(), new OnlineUserData(reporterPlayer3)));
+			List<User> reporters = Arrays.asList(new User(UUID.randomUUID(), null, new OnlineUserData(reporterPlayer1)),
+			        new User(UUID.randomUUID(), null, new OnlineUserData(reporterPlayer2)),
+			        new User(UUID.randomUUID(), null, new OnlineUserData(reporterPlayer3)));
 
 			String reason = "report reason";
 			boolean archived = false;
@@ -527,7 +527,7 @@ public class ReportTest extends TestClass {
 
 			Status status = Status.DONE;
 			Player staffPlayer = mock(Player.class);
-			User staff = new User(UUID.randomUUID(), new OnlineUserData(staffPlayer));
+			User staff = new User(UUID.randomUUID(), null, new OnlineUserData(staffPlayer));
 			StatusDetails statusDetails = StatusDetails.from(status, staff);
 
 			Appreciation appreciation = Appreciation.UNCERTAIN;
@@ -535,14 +535,14 @@ public class ReportTest extends TestClass {
 			String date = DatetimeUtils.getNowDatetime();
 
 			Player reportedPlayer = mock(Player.class);
-			User reported = new User(UUID.randomUUID(), new OnlineUserData(reportedPlayer));
+			User reported = new User(UUID.randomUUID(), null, new OnlineUserData(reportedPlayer));
 
 			Player reporterPlayer1 = mock(Player.class);
 			Player reporterPlayer2 = mock(Player.class);
 			Player reporterPlayer3 = mock(Player.class);
-			List<User> reporters = Arrays.asList(new User(UUID.randomUUID(), new OnlineUserData(reporterPlayer1)),
-			        new User(UUID.randomUUID(), new OnlineUserData(reporterPlayer2)),
-			        new User(UUID.randomUUID(), new OnlineUserData(reporterPlayer3)));
+			List<User> reporters = Arrays.asList(new User(UUID.randomUUID(), null, new OnlineUserData(reporterPlayer1)),
+			        new User(UUID.randomUUID(), null, new OnlineUserData(reporterPlayer2)),
+			        new User(UUID.randomUUID(), null, new OnlineUserData(reporterPlayer3)));
 
 			String reason = "report reason";
 			boolean archived = false;
@@ -581,7 +581,7 @@ public class ReportTest extends TestClass {
 
 			Status status = Status.DONE;
 			Player staffPlayer = mock(Player.class);
-			User staff = new User(UUID.randomUUID(), new OnlineUserData(staffPlayer));
+			User staff = new User(UUID.randomUUID(), null, new OnlineUserData(staffPlayer));
 			StatusDetails statusDetails = StatusDetails.from(status, staff);
 
 			Appreciation appreciation = Appreciation.FALSE;
@@ -589,14 +589,14 @@ public class ReportTest extends TestClass {
 			String date = DatetimeUtils.getNowDatetime();
 
 			Player reportedPlayer = mock(Player.class);
-			User reported = new User(UUID.randomUUID(), new OnlineUserData(reportedPlayer));
+			User reported = new User(UUID.randomUUID(), null, new OnlineUserData(reportedPlayer));
 
 			Player reporterPlayer1 = mock(Player.class);
 			Player reporterPlayer2 = mock(Player.class);
 			Player reporterPlayer3 = mock(Player.class);
-			List<User> reporters = Arrays.asList(new User(UUID.randomUUID(), new OnlineUserData(reporterPlayer1)),
-			        new User(UUID.randomUUID(), new OnlineUserData(reporterPlayer2)),
-			        new User(UUID.randomUUID(), new OnlineUserData(reporterPlayer3)));
+			List<User> reporters = Arrays.asList(new User(UUID.randomUUID(), null, new OnlineUserData(reporterPlayer1)),
+			        new User(UUID.randomUUID(), null, new OnlineUserData(reporterPlayer2)),
+			        new User(UUID.randomUUID(), null, new OnlineUserData(reporterPlayer3)));
 
 			String reason = "report reason";
 			boolean archived = false;
@@ -644,7 +644,7 @@ public class ReportTest extends TestClass {
 			User reported = null;
 
 			Player reporterPlayer = mock(Player.class);
-			List<User> reporters = Arrays.asList(new User(UUID.randomUUID(), new OnlineUserData(reporterPlayer)));
+			List<User> reporters = Arrays.asList(new User(UUID.randomUUID(), null, new OnlineUserData(reporterPlayer)));
 
 			String reason = "report reason";
 			boolean archived = false;
@@ -667,7 +667,7 @@ public class ReportTest extends TestClass {
 			String date = DatetimeUtils.getNowDatetime();
 
 			Player reportedPlayer = mock(Player.class);
-			User reported = new User(UUID.randomUUID(), new OnlineUserData(reportedPlayer));
+			User reported = new User(UUID.randomUUID(), null, new OnlineUserData(reportedPlayer));
 
 			List<User> reporters = null;
 
@@ -692,7 +692,7 @@ public class ReportTest extends TestClass {
 			String date = DatetimeUtils.getNowDatetime();
 
 			Player reportedPlayer = mock(Player.class);
-			User reported = new User(UUID.randomUUID(), new OnlineUserData(reportedPlayer));
+			User reported = new User(UUID.randomUUID(), null, new OnlineUserData(reportedPlayer));
 
 			List<User> reporters = new ArrayList<>();
 
@@ -715,7 +715,7 @@ public class ReportTest extends TestClass {
 			String date = DatetimeUtils.getNowDatetime();
 
 			Player reportedPlayer = mock(Player.class);
-			User reported = new User(UUID.randomUUID(), new OnlineUserData(reportedPlayer));
+			User reported = new User(UUID.randomUUID(), null, new OnlineUserData(reportedPlayer));
 
 			List<User> reporters = new ArrayList<>();
 
@@ -761,31 +761,31 @@ public class ReportTest extends TestClass {
 
 		@Test
 		void test2() {
-			User staff = new User(UUID.randomUUID(), new OfflineUserData("staff name", "staff display name"));
+			User staff = new User(UUID.randomUUID(), "staff display name", new OfflineUserData("staff name"));
 			testSetStatus(StatusDetails.from(Status.IN_PROGRESS, staff), true, false);
 		}
 
 		@Test
 		void test3() {
-			User staff = new User(UUID.randomUUID(), new OfflineUserData("staff name", "staff display name"));
+			User staff = new User(UUID.randomUUID(), "staff display name", new OfflineUserData("staff name"));
 			testSetStatus(StatusDetails.from(Status.IMPORTANT, staff), true, false);
 		}
 
 		@Test
 		void test4() {
-			User staff = new User(UUID.randomUUID(), new OfflineUserData("staff name", "staff display name"));
+			User staff = new User(UUID.randomUUID(), "staff display name", new OfflineUserData("staff name"));
 			testSetStatus(StatusDetails.from(Status.DONE, staff), true, false);
 		}
 
 		@Test
 		void test5() {
-			User staff = new User(UUID.randomUUID(), new OfflineUserData("staff name", "staff display name"));
+			User staff = new User(UUID.randomUUID(), "staff display name", new OfflineUserData("staff name"));
 			testSetStatus(StatusDetails.from(Status.DONE, staff), false, false);
 		}
 
 		@Test
 		void test6() {
-			User staff = new User(UUID.randomUUID(), new OfflineUserData("staff name", "staff display name"));
+			User staff = new User(UUID.randomUUID(), "staff display name", new OfflineUserData("staff name"));
 			testSetStatus(StatusDetails.from(Status.DONE, staff), false, false);
 		}
 
@@ -801,7 +801,7 @@ public class ReportTest extends TestClass {
 
 		@Test
 		void test9() {
-			User staff = new User(UUID.randomUUID(), new OfflineUserData("staff name", "staff display name"));
+			User staff = new User(UUID.randomUUID(), "staff display name", new OfflineUserData("staff name"));
 			testSetStatus(StatusDetails.from(Status.DONE, staff), false, true);
 		}
 
@@ -993,7 +993,7 @@ public class ReportTest extends TestClass {
 
 			void testProcessWithValidStaff(Appreciation appreciation, boolean bungee, boolean autoArchive,
 			        boolean notifyStaff, boolean alreadyProcessed) {
-				User staff = new User(UUID.randomUUID(), new OfflineUserData("staff name", "staff display name"));
+				User staff = new User(UUID.randomUUID(), "staff display name", new OfflineUserData("staff name"));
 				testProcess(staff, appreciation, bungee, autoArchive, notifyStaff, alreadyProcessed);
 			}
 
@@ -1086,7 +1086,7 @@ public class ReportTest extends TestClass {
 
 			void testProcessWithPunishmentWithValidStaff(boolean bungee, boolean autoArchive, String punishment,
 			        boolean notifyStaff, boolean alreadyProcessed) {
-				User staff = new User(UUID.randomUUID(), new OfflineUserData("staff name", "staff display name"));
+				User staff = new User(UUID.randomUUID(), "staff display name", new OfflineUserData("staff name"));
 				testProcessWithPunishment(staff, bungee, autoArchive, punishment, notifyStaff, alreadyProcessed);
 			}
 
@@ -1170,7 +1170,7 @@ public class ReportTest extends TestClass {
 
 			void testProcessAbusiveWithValidStaff(boolean bungee, boolean autoArchive, long punishSeconds,
 			        boolean notifyStaff, boolean alreadyProcessed) {
-				User staff = new User(UUID.randomUUID(), new OfflineUserData("staff name", "staff display name"));
+				User staff = new User(UUID.randomUUID(), "staff display name", new OfflineUserData("staff name"));
 				testProcessAbusive(staff, bungee, autoArchive, punishSeconds, notifyStaff, alreadyProcessed);
 			}
 
@@ -1502,7 +1502,7 @@ public class ReportTest extends TestClass {
 
 			ReportsManager rm = spy(ReportsManager.class);
 			User staff = validStaff
-			        ? new User(UUID.randomUUID(), new OfflineUserData("staff name", "staff display name"))
+			        ? new User(UUID.randomUUID(), "staff display name", new OfflineUserData("staff name"))
 			        : null;
 
 			UsersManager um = mock(UsersManager.class);
@@ -1627,7 +1627,7 @@ public class ReportTest extends TestClass {
 
 			ReportsManager rm = spy(ReportsManager.class);
 			User staff = validStaff
-			        ? new User(UUID.randomUUID(), new OfflineUserData("staff name", "staff display name"))
+			        ? new User(UUID.randomUUID(), "staff display name", new OfflineUserData("staff name"))
 			        : null;
 
 			UsersManager um = mock(UsersManager.class);
@@ -1755,7 +1755,7 @@ public class ReportTest extends TestClass {
 
 			ReportsManager rm = spy(ReportsManager.class);
 			User staff = validStaff
-			        ? new User(UUID.randomUUID(), new OfflineUserData("staff name", "staff display name"))
+			        ? new User(UUID.randomUUID(), "staff display name", new OfflineUserData("staff name"))
 			        : null;
 
 			UsersManager um = mock(UsersManager.class);
@@ -1842,7 +1842,7 @@ public class ReportTest extends TestClass {
 
 			ReportsManager rm = spy(ReportsManager.class);
 			User staff = validStaff
-			        ? new User(UUID.randomUUID(), new OfflineUserData("staff name", "staff display name"))
+			        ? new User(UUID.randomUUID(), "staff display name", new OfflineUserData("staff name"))
 			        : null;
 
 			UsersManager um = mock(UsersManager.class);
@@ -2004,10 +2004,10 @@ public class ReportTest extends TestClass {
 		String date = DatetimeUtils.getNowDatetime();
 
 		Player reportedPlayer = mock(Player.class);
-		User reported = new User(UUID.randomUUID(), new OnlineUserData(reportedPlayer));
+		User reported = new User(UUID.randomUUID(), null, new OnlineUserData(reportedPlayer));
 
 		Player reporterPlayer = mock(Player.class);
-		List<User> reporters = Arrays.asList(new User(UUID.randomUUID(), new OnlineUserData(reporterPlayer)));
+		List<User> reporters = Arrays.asList(new User(UUID.randomUUID(), null, new OnlineUserData(reporterPlayer)));
 
 		String reason = "report reason";
 		boolean archived = false;

@@ -34,11 +34,6 @@ public class OnlineUserData implements UserData {
 		return vm.getOnlinePlayerDisplayName(p);
 	}
 
-	@Override
-	public String getDisplayName(VaultManager vm, boolean staff) {
-		return vm.getOnlinePlayerDisplayName(p, staff);
-	}
-
 	static class PendingProcessPunishingData {
 
 		final Report r;
