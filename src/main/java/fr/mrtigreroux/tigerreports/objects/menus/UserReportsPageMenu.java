@@ -51,8 +51,7 @@ public abstract class UserReportsPageMenu extends ReportsPageMenu implements Upd
 	public Inventory onOpen() {
 		String name = tu.getName();
 		String displayName = tu.getDisplayName(vm, false);
-		Inventory inv = getInventory(
-		        Message.get(tag + "-title").replace("_Target_", name).replace("_Page_", Integer.toString(page)), true);
+		Inventory inv = getInventory(Message.get(tag + "-title").replace("_Target_", name), true);
 
 		inv.setItem(0,
 		        new CustomItem().skullOwner(name)

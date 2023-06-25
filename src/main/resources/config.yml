@@ -274,6 +274,14 @@ MySQL:
   Password: ""
   UseSSL: no
   VerifyServerCertificate: no
+  Custom:
+    DriverClassName: ""
+    # Java class name of the database driver to use. / Nom de la classe Java du pilote de base de données à utiliser.
+    # Example: "com.mysql.jdbc.Driver"
+    ConnectionUrl: ""
+    # Connection URL to use in DriverManager#getConnection. / URL de connexion à utiliser dans DriverManager#getConnection.
+    # cf. https://docs.oracle.com/javase/8/docs/api/java/sql/DriverManager.html
+  # Custom JDBC database connection settings. Leave empty ("") to use the default MySQL connection settings. / Paramètres JDBC de connexion à une base de données. Laisser vide ("") pour utiliser les paramètres par défaut pour se connecter à une base de données MySQL. 
 # Login IDs of connection to a MySQL database / Identifiants de connexion à une base de données MySQL
 
 VaultChat:

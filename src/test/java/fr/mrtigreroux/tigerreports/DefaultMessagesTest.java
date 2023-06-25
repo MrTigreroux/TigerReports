@@ -8,57 +8,69 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
+
+import fr.mrtigreroux.tigerreports.utils.AssertionUtils;
 
 /**
  * @author MrTigreroux
  */
 public class DefaultMessagesTest extends TestClass {
 
-	private final String DEFAULT_MESSAGES_DIRECTORY_NAME = "default-messages";
-	private final int EXPECTED_LINES_AMOUNT = 220;
+	private static final int EXPECTED_LINES_AMOUNT = 220;
+	private static final String DEFAULT_MESSAGES_FILE_PATH = "src/main/resources/messages.yml";
+	private static final String DEFAULT_MESSAGES_DIRECTORY_NAME = "default-messages";
+	private static final String LINE_TO_IGNORE_ADDED_TO_MAKE_INDEX_EQUALS_TO_LINE_NUMBER = "Line to ignore, added to make index = line number";
 
 	@Test
-	public void testDefaultMessagesFileLinesAmount() throws IOException {
-		URL resourceURL = getClass().getResource("/messages.yml");
-
-		if (resourceURL == null) {
-			throw new IllegalArgumentException("The file messages.yml was not found.");
+	public void testDefaultMessagesFilesLinesKeys() throws IOException {
+		Path refMessagesPath = Paths.get(System.getProperty("user.dir"), DEFAULT_MESSAGES_FILE_PATH);
+		if (!Files.isRegularFile(refMessagesPath)) {
+			throw new IllegalArgumentException("The file " + DEFAULT_MESSAGES_FILE_PATH + " was not found.");
 		}
 
-		File messagesFile = new File(resourceURL.getFile());
-		assertNotNull(messagesFile);
-		testMessagesFileLinesAmount(messagesFile);
-	}
+		File refMessagesFile = refMessagesPath.toFile();
+		assertNotNull(refMessagesFile);
+		List<String> refLinesKeys = getMessagesFileLinesKeys(refMessagesFile);
+		assertNotNull(refLinesKeys);
+		assertEquals(EXPECTED_LINES_AMOUNT, refLinesKeys.size() - 1,
+		        DEFAULT_MESSAGES_FILE_PATH + ": Incorrect amount of lines"); // -1 for LINE_TO_IGNORE_ADDED_TO_MAKE_INDEX_EQUALS_TO_LINE_NUMBER
 
-	@Test
-	public void testDefaultMessagesFilesLinesAmount() throws IOException {
-		Path directory = Paths.get(System.getProperty("user.dir"), DEFAULT_MESSAGES_DIRECTORY_NAME);
-		if (!Files.isDirectory(directory)) {
+		Path defMessagesDir = Paths.get(System.getProperty("user.dir"), DEFAULT_MESSAGES_DIRECTORY_NAME);
+		if (!Files.isDirectory(defMessagesDir)) {
 			throw new IllegalArgumentException("The directory " + DEFAULT_MESSAGES_DIRECTORY_NAME + " was not found.");
 		}
 
-		Files.list(directory)
-		        .filter(Files::isRegularFile)
-		        .forEach((file) -> testMessagesFileLinesAmount(file.toFile()));
+		Files.list(defMessagesDir).filter(Files::isRegularFile).forEach((file) -> {
+			File defMessagesFile = file.toFile();
+			List<String> linesKeys = getMessagesFileLinesKeys(defMessagesFile);
+			AssertionUtils.assertListEquals(refLinesKeys, linesKeys, defMessagesFile.getPath());
+		});
 	}
 
-	private void testMessagesFileLinesAmount(File file) {
+	private List<String> getMessagesFileLinesKeys(File file) {
 		try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-			int linesAmount = 0;
-			while (reader.readLine() != null) {
-				linesAmount++;
+			List<String> linesKeys = new ArrayList<>();
+			linesKeys.add(LINE_TO_IGNORE_ADDED_TO_MAKE_INDEX_EQUALS_TO_LINE_NUMBER);
+			String line = reader.readLine();
+			while (line != null) {
+				try {
+					linesKeys.add(line.split(":")[0]);
+				} catch (ArrayIndexOutOfBoundsException ex) {
+					fail(file.getPath() + ": Missing key in line " + linesKeys.size(), ex);
+				}
+				line = reader.readLine();
 			}
-
-			assertEquals(EXPECTED_LINES_AMOUNT, linesAmount,
-			        "The messages file " + file.getAbsolutePath() + " has an incorrect amount of lines");
+			return linesKeys;
 		} catch (IOException e) {
 			fail(e);
+			return null;
 		}
 	}
 }

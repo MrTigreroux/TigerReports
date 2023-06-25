@@ -187,9 +187,11 @@ public class TigerReports extends JavaPlugin implements TaskScheduler {
 				Database database;
 				try {
 					FileConfiguration config = ConfigFile.CONFIG.get();
-					MySQL mysql = new MySQL(config.getString("MySQL.Host"), config.getInt("MySQL.Port"),
-					        config.getString("MySQL.Database"), config.getString("MySQL.Username"),
-					        config.getString("MySQL.Password"), ConfigUtils.isEnabled(config, "MySQL.UseSSL"),
+					MySQL mysql = new MySQL(config.getString("MySQL.Custom.DriverClassName"),
+					        config.getString("MySQL.Custom.ConnectionUrl"), config.getString("MySQL.Host"),
+					        config.getInt("MySQL.Port"), config.getString("MySQL.Database"),
+					        config.getString("MySQL.Username"), config.getString("MySQL.Password"),
+					        ConfigUtils.isEnabled(config, "MySQL.UseSSL"),
 					        ConfigUtils.isEnabled(config, "MySQL.VerifyServerCertificate"), instance);
 					mysql.check();
 					database = mysql;
@@ -197,9 +199,12 @@ public class TigerReports extends JavaPlugin implements TaskScheduler {
 					        "Le plugin utilise une base de donnees MySQL."));
 				} catch (Exception invalidMySQL) {
 					database = new SQLite(instance, getDataFolder(), "tigerreports.db");
-					Logger.CONFIG
-					        .info(() -> ConfigUtils.getInfoMessage("The plugin is using the SQLite (default) database.",
-					                "Le plugin utilise la base de donnees SQLite (par defaut)."));
+					Logger.CONFIG.info(() -> ConfigUtils.getInfoMessage(
+					        "The plugin is using the SQLite (default) database (because the MySQL settings are invalid: "
+					                + invalidMySQL.getMessage() + ").",
+					        "Le plugin utilise la base de donnees SQLite (par defaut, car les parametres MySQL ne sont pas valides: "
+					                + invalidMySQL.getMessage() + ")."));
+					Logger.CONFIG.debug(() -> "Exception during MySQL connection attempt: ", invalidMySQL);
 				}
 				final Database db = database;
 				db.initialize();

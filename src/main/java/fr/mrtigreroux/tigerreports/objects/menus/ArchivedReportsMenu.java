@@ -43,8 +43,7 @@ public class ArchivedReportsMenu extends ReportsPageMenu implements UpdatedMenu 
 
 	@Override
 	protected Inventory onOpen() {
-		Inventory inv = getInventory(Message.ARCHIVED_REPORTS_TITLE.get().replace("_Page_", Integer.toString(page)),
-		        true);
+		Inventory inv = getInventory(Message.ARCHIVED_REPORTS_TITLE.get(), true);
 
 		inv.setItem(0, MenuItem.REPORTS.getWithDetails(Message.REPORTS_DETAILS.get()));
 

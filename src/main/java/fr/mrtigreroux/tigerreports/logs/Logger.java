@@ -174,8 +174,12 @@ public abstract class Logger {
 
 	public abstract boolean isLoggable(Level level);
 
-	public void debug(Supplier<?> message) {
-		log(Level.DEBUG, message);
+	public void debug(Supplier<?> messageSupplier) {
+		log(Level.DEBUG, messageSupplier);
+	}
+
+	public void debug(Supplier<?> messageSupplier, Throwable thrown) {
+		log(Level.DEBUG, messageSupplier, thrown);
 	}
 
 	public void info(Supplier<?> messageSupplier) {
@@ -187,9 +191,7 @@ public abstract class Logger {
 	}
 
 	public void warn(Supplier<?> messageSupplier, Throwable thrown) {
-		if (isLoggable(Level.WARN)) {
-			log(Level.WARN, messageSupplier.get().toString(), thrown);
-		}
+		log(Level.WARN, messageSupplier, thrown);
 	}
 
 	public void error(String message) {
@@ -203,6 +205,10 @@ public abstract class Logger {
 	}
 
 	public void log(Level level, Supplier<?> messageSupplier) {
+		log(level, messageSupplier, null);
+	}
+
+	public void log(Level level, Supplier<?> messageSupplier, Throwable thrown) {
 		if (isLoggable(level)) {
 			log(level, messageSupplier.get().toString(), null);
 		}

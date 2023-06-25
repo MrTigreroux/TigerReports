@@ -13,27 +13,35 @@ import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 
 public class MySQL extends Database {
 
-	private String host, database, username, password;
-	private int port;
-	private boolean useSsl, verifyServerCertificate;
+	private final String driverClassName;
+	private final String connectionUrl;
+	private final String username;
+	private final String password;
 
-	public MySQL(String host, int port, String database, String username, String password, boolean useSsl,
-	        boolean verifyServerCertificate, TaskScheduler taskScheduler) {
+	public MySQL(String driverClassName, String connectionUrl, String host, int port, String database, String username,
+	        String password, boolean useSsl, boolean verifyServerCertificate, TaskScheduler taskScheduler)
+	        throws IllegalArgumentException {
 		super(taskScheduler);
-		this.host = host;
-		this.port = port;
-		this.database = database;
+		this.driverClassName = driverClassName != null && !driverClassName.isEmpty() ? driverClassName
+		        : "com.mysql.jdbc.Driver";
+		if (connectionUrl != null && !connectionUrl.isEmpty()) {
+			this.connectionUrl = connectionUrl;
+		} else {
+			if (host == null || host.isEmpty() || database == null || database.isEmpty()) {
+				throw new IllegalArgumentException("Database host and name cannot be null or empty.");
+			}
+			this.connectionUrl = "jdbc:mysql://" + host + ":" + port + "/" + database
+			        + "?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&verifyServerCertificate="
+			        + (verifyServerCertificate ? "true" : "false") + "&useSSL=" + (useSsl ? "true" : "false");
+		}
+		if (username == null || username.isEmpty()) {
+			throw new IllegalArgumentException("Database username cannot be null or empty.");
+		}
 		this.username = username;
 		this.password = password;
-		this.useSsl = useSsl;
-		this.verifyServerCertificate = verifyServerCertificate;
 	}
 
 	public void check() throws Exception {
-		if (host == null || host.isEmpty() || database == null || database.isEmpty() || username == null
-		        || username.isEmpty()) {
-			throw new IllegalArgumentException("Invalid connection settings.");
-		}
 		openConnection();
 		connection.createStatement().close();
 	}
@@ -41,14 +49,11 @@ public class MySQL extends Database {
 	@Override
 	public void openConnection() throws Exception {
 		try {
-			Class.forName("com.mysql.jdbc.Driver");
-			connection = DriverManager.getConnection(
-			        "jdbc:mysql://" + host + ":" + port + "/" + database
-			                + "?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&verifyServerCertificate="
-			                + (verifyServerCertificate ? "true" : "false") + "&useSSL=" + (useSsl ? "true" : "false"),
-			        username, password);
+			Class.forName(driverClassName);
+			connection = DriverManager.getConnection(connectionUrl, username, password);
 		} catch (ClassNotFoundException missing) {
-			logError(ConfigUtils.getInfoMessage("MySQL is missing.", "MySQL n'est pas installe."), null);
+			logError(ConfigUtils.getInfoMessage("The JDBC driver '" + driverClassName + "' is missing.",
+			        "Le pilote JDBC '" + driverClassName + "' n'est pas installe."), null);
 			throw missing;
 		} catch (SQLException ex) {
 			logError(ConfigUtils.getInfoMessage("An error has occurred during the connection to the MySQL database:",

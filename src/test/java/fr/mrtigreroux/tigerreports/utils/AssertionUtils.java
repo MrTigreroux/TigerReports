@@ -134,7 +134,7 @@ public class AssertionUtils {
 
 	public static <T> void assertDeepListEquals(List<T> expectedList, List<T> actualList,
 	        String... fieldNamesToIgnore) {
-		assertEquals(expectedList, actualList);
+		assertListEquals(expectedList, actualList, null);
 		if (expectedList != null) {
 			Iterator<T> expectedListIt = expectedList.iterator();
 			Iterator<T> actualListIt = actualList.iterator();
@@ -144,6 +144,23 @@ public class AssertionUtils {
 				        .isEqualTo(expectedListIt.next());
 			}
 		}
+	}
+
+	public static <T> void assertListEquals(List<T> expectedList, List<T> actualList, String context) {
+		if (expectedList != null) {
+			String contextPrefix = context != null ? context + ": " : "";
+			assertEquals(expectedList.size(), actualList.size(), () -> contextPrefix + "Expected: "
+			        + CollectionUtils.toString(expectedList) + ", \nActual: " + CollectionUtils.toString(actualList));
+			int i = 0;
+			Iterator<T> expectedListIt = expectedList.iterator();
+			Iterator<T> actualListIt = actualList.iterator();
+			while (expectedListIt.hasNext()) {
+				assertEquals(expectedListIt.next(), actualListIt.next(),
+				        contextPrefix + "Index " + i + " is different");
+				i++;
+			}
+		}
+		assertEquals(expectedList, actualList);
 	}
 
 	public static <T> void assertDeepEquals(T expected, T actual, String... fieldNamesToIgnore) {
