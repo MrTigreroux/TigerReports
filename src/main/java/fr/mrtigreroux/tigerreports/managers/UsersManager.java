@@ -30,6 +30,7 @@ import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
 import fr.mrtigreroux.tigerreports.utils.CollectionUtils;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.DatetimeUtils;
+import fr.mrtigreroux.tigerreports.utils.LogUtils;
 import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 /**
@@ -209,6 +210,15 @@ public class UsersManager {
 		}
 	}
 
+	/**
+	 * Can return an online user if cached.
+	 * 
+	 * @param uuid
+	 * @param name
+	 * @param vm
+	 * @param taskScheduler
+	 * @param resultCallback
+	 */
 	private void getOfflineUserAsynchronously(UUID uuid, String name, VaultManager vm, TaskScheduler taskScheduler,
 	        ResultCallback<User> resultCallback) {
 		if (uuid == null || name == null) {
@@ -220,7 +230,10 @@ public class UsersManager {
 		vm.getVaultDisplayNameAsynchronously(Bukkit.getOfflinePlayer(uuid), name, taskScheduler, (displayName) -> {
 			LOGGER.debug(() -> "getOfflineUserAsynchronously(" + uuid + ", " + name + "): got display name ("
 			        + displayName + "), save offline user to cache");
-			User u = updateAndGetUser(uuid, displayName, new OfflineUserData(name));
+			User u = getOnlineUser(uuid);
+			if (u == null) {
+				u = updateAndGetUser(uuid, displayName, new OfflineUserData(name));
+			}
 			resultCallback.onResultReceived(u);
 		});
 	}
@@ -230,29 +243,14 @@ public class UsersManager {
 	}
 
 	public User getOnlineUser(UUID uuid) {
-		User u = getCachedOnlineUser(uuid);
-		if (u != null) {
-			return u;
-		} else {
-			return getOnlineUser(Bukkit.getPlayer(uuid));
-		}
+		return getCachedOnlineUser(uuid);
 	}
 
 	public User getOnlineUser(Player p) {
 		if (p == null) {
 			return null;
 		}
-
-		User u = getCachedOnlineUser(p.getUniqueId());
-		if (u != null) {
-			return u;
-		} else if (p.isOnline()) {
-			LOGGER.debug(
-			        () -> "getOnlineUser(Player " + p.getName() + "): player is online but not saved in cache, add it");
-			return updateAndGetOnlineUser(p.getUniqueId(), new OnlineUserData(p));
-		} else {
-			return null;
-		}
+		return getCachedOnlineUser(p.getUniqueId());
 	}
 
 	public User getCachedOnlineUser(UUID uuid) {
@@ -289,6 +287,13 @@ public class UsersManager {
 		} else if (!u.hasSameUserDataType(userData)) {
 			LOGGER.info(() -> "updateAndGetUser(" + uuid + "): not same user data type, change it");
 			u.setUserData(userData);
+		} else if (u.hasOnlineUserData()) {
+			OnlineUserData oud = (OnlineUserData) userData;
+			if (u.getPlayer() != oud.p) {
+				LOGGER.info(() -> "updateAndGetUser(" + uuid
+				        + "): same online user data type, but different player, change it");
+				u.setUserData(userData);
+			}
 		}
 
 		final User fu = u;
@@ -321,6 +326,8 @@ public class UsersManager {
 			User u = getOnlineUser(p);
 			if (u != null) {
 				onlineUsers.add(u);
+			} else {
+				LogUtils.logUnexpectedOfflineUser(LOGGER, "getOnlineUsers()", p);
 			}
 		}
 		return onlineUsers;

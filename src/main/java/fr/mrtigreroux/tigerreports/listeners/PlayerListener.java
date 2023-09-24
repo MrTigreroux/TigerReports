@@ -32,6 +32,7 @@ import fr.mrtigreroux.tigerreports.managers.VaultManager;
 import fr.mrtigreroux.tigerreports.objects.users.User;
 import fr.mrtigreroux.tigerreports.tasks.runnables.ReportsNotifier;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
+import fr.mrtigreroux.tigerreports.utils.LogUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -72,36 +73,30 @@ public class PlayerListener implements Listener {
 		Logger.EVENTS.info(() -> "onPlayerJoin(): " + p.getName());
 		um.processUserConnection(p);
 		User u = um.getOnlineUser(p);
+		if (u == null) {
+			LogUtils.logUnexpectedOfflineUser(Logger.EVENTS, "onPlayerJoin()", p);
+			return;
+		}
 		Logger.EVENTS.info(() -> "onPlayerJoin(): " + u.getName() + ", u = " + u);
 		FileConfiguration configFile = ConfigFile.CONFIG.get();
 
-		tr.runTaskDelayedly(2000L, new Runnable() {
-
-			@Override
-			public void run() {
-				if (p.isOnline()) {
-					u.updateBasicData(db, bm, um);
-					um.processUserConnection(p); // In case that PlayerQuitEvent is fired after PlayerJoinEvent (for a reconnection it should be the opposite)
-					bm.processPlayerConnection(p);
-				} else {
-					Logger.EVENTS.info(() -> "onPlayerJoin(): after the delay, player " + u.getName()
-					        + " is no longer online, cancel any update");
-				}
+		tr.runTaskDelayedly(2000L, () -> {
+			if (p.isOnline()) {
+				u.updateBasicData(db, bm, um);
+				um.processUserConnection(p); // In case that PlayerQuitEvent is fired after PlayerJoinEvent (for a reconnection it should be the opposite)
+				bm.processPlayerConnection(p);
+			} else {
+				Logger.EVENTS.info(() -> "onPlayerJoin(): after the delay, player " + u.getName()
+				        + " is no longer online, cancel any update");
 			}
-
 		});
 
-		tr.runTaskDelayedly(configFile.getInt("Config.Notifications.Delay", 2) * 1000L, new Runnable() {
-
-			@Override
-			public void run() {
-				u.sendNotifications(rm, db, tr, vm, bm, um);
-				if (u.hasPermission(Permission.STAFF)
-				        && ConfigUtils.isEnabled(configFile, "Config.Notifications.Staff.Connection")) {
-					ReportsNotifier.sendReportsNotification(p, db, tr);
-				}
+		tr.runTaskDelayedly(configFile.getInt("Config.Notifications.Delay", 2) * 1000L, () -> {
+			u.sendNotifications(rm, db, tr, vm, bm, um);
+			if (u.hasPermission(Permission.STAFF)
+			        && ConfigUtils.isEnabled(configFile, "Config.Notifications.Staff.Connection")) {
+				ReportsNotifier.sendReportsNotification(p, db, tr);
 			}
-
 		});
 
 		if (u.hasPermission(Permission.MANAGE)) {
@@ -177,7 +172,12 @@ public class PlayerListener implements Listener {
 
 	@EventHandler(priority = EventPriority.LOWEST)
 	private void onPlayerChat(AsyncPlayerChatEvent e) {
-		User u = um.getOnlineUser(e.getPlayer());
+		Player p = e.getPlayer();
+		User u = um.getOnlineUser(p);
+		if (u == null) {
+			LogUtils.logUnexpectedOfflineUser(Logger.EVENTS, "onPlayerChat()", p);
+			return;
+		}
 		Logger.EVENTS.info(() -> "onPlayerChat(): " + u.getName());
 		if (u.isEditingComment()) {
 			tr.runTask(() -> {
@@ -235,7 +235,13 @@ public class PlayerListener implements Listener {
 		if (checkHelpCommand(command, e.getPlayer())) {
 			e.setCancelled(true);
 		} else if (ConfigFile.CONFIG.get().getStringList("Config.CommandsHistory").contains(command.split(" ")[0])) {
-			um.getOnlineUser(e.getPlayer()).updateLastMessages("/" + command);
+			Player p = e.getPlayer();
+			User u = um.getOnlineUser(p);
+			if (u == null) {
+				LogUtils.logUnexpectedOfflineUser(Logger.EVENTS, "onPlayerCommandPreprocess()", p);
+				return;
+			}
+			u.updateLastMessages("/" + command);
 		}
 	}
 

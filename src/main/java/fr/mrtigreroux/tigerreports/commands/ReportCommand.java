@@ -27,6 +27,7 @@ import fr.mrtigreroux.tigerreports.tasks.ResultCallback;
 import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.DatetimeUtils;
+import fr.mrtigreroux.tigerreports.utils.LogUtils;
 import fr.mrtigreroux.tigerreports.utils.ReportUtils;
 import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
@@ -71,6 +72,10 @@ public class ReportCommand implements TabExecutor {
 
 		Player p = (Player) s;
 		User u = um.getOnlineUser(p);
+		if (u == null) {
+			LogUtils.logUnexpectedOfflineUser(LOGGER, "onCommand()", p);
+			return true;
+		}
 		LOGGER.info(
 		        () -> "user = " + u + ", user name = " + u.getName() + ", p = u.getPlayer() ? " + (p == u.getPlayer()));
 
@@ -92,7 +97,7 @@ public class ReportCommand implements TabExecutor {
 
 			um.getUserByNameAsynchronously(reportedName, db, taskScheduler, (ru) -> {
 				if (ru == null) {
-					LOGGER.info(() -> "reported user does not exists");
+					LOGGER.info(() -> "reported user does not exist");
 					u.sendErrorMessage(Message.INVALID_PLAYER.get().replace("_Player_", reportedName));
 					return;
 				}

@@ -19,6 +19,7 @@ import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
+import fr.mrtigreroux.tigerreports.logs.Logger;
 import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
 import fr.mrtigreroux.tigerreports.objects.users.User;
@@ -34,6 +35,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 
 public class MessageUtils {
 
+	private static final Logger LOGGER = Logger.fromClass(MessageUtils.class);
 	private static final Pattern COLOR_CODES_PATTERN = Pattern.compile("^[0-9a-f]$");
 	private static final Function<String, String> TRANSLATE_COLOR_CODES_METHOD;
 	public static final BiConsumer<BaseComponent, String> APPEND_TEXT_WITH_TRANSLATED_COLOR_CODES_TO_COMPONENT_BUILDER_METHOD;
@@ -74,6 +76,10 @@ public class MessageUtils {
 				continue;
 			}
 			User u = um.getOnlineUser(p);
+			if (u == null) {
+				LogUtils.logUnexpectedOfflineUser(LOGGER, "sendStaffMessage()", p);
+				continue;
+			}
 			if (!u.acceptsNotifications()) {
 				continue;
 			}

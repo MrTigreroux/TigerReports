@@ -10,6 +10,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,6 +72,14 @@ public class FileUtils {
 			for (String line : lines) {
 				writer.println(line);
 			}
+		}
+	}
+
+	public static FileTime getFileCreationTime(Path path) {
+		try {
+			return (FileTime) Files.getAttribute(path, "creationTime");
+		} catch (IOException e) {
+			return null;
 		}
 	}
 

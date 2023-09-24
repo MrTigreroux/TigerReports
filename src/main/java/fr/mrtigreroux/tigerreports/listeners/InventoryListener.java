@@ -17,6 +17,7 @@ import fr.mrtigreroux.tigerreports.data.database.Database;
 import fr.mrtigreroux.tigerreports.logs.Logger;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
 import fr.mrtigreroux.tigerreports.objects.users.User;
+import fr.mrtigreroux.tigerreports.utils.LogUtils;
 
 /**
  * @author MrTigreroux
@@ -64,13 +65,17 @@ public class InventoryListener implements Listener {
 			return;
 		}
 
-		User u = um.getOnlineUser((Player) e.getPlayer());
+		Logger.EVENTS.debug(() -> "onInventoryClose(): get online user");
+		Player p = (Player) e.getPlayer();
+		User u = um.getOnlineUser(p);
 		if (u != null) {
 			Logger.EVENTS.info(() -> "onInventoryClose(): " + u.getName());
 			u.setOpenedMenu(null);
 			try {
 				db.startClosing();
 			} catch (Exception ignored) {}
+		} else {
+			LogUtils.logUnexpectedOfflineUser(Logger.EVENTS, "onInventoryClose()", p);
 		}
 	}
 
@@ -78,7 +83,12 @@ public class InventoryListener implements Listener {
 		if (!(whoClicked instanceof Player) || inv == null) {
 			return null;
 		}
-		User u = um.getOnlineUser((Player) whoClicked);
+		Player p = (Player) whoClicked;
+		User u = um.getOnlineUser(p);
+		if (u == null) {
+			LogUtils.logUnexpectedOfflineUser(Logger.EVENTS, "checkMenuAction()", p);
+			return null;
+		}
 		return u.getOpenedMenu() != null ? u : null;
 	}
 

@@ -1081,6 +1081,7 @@ public class ReportsManager {
 		List<Report> pageReports = getReportsPageCachedReports(reportsPage);
 		int index = 0;
 		LOGGER.info(() -> "fillInventoryWithReportsPage(): reports = " + CollectionUtils.toString(pageReports));
+		LOGGER.info(() -> "fillInventoryWithReportsPage(): inv = " + inv);
 		for (int slot = 18; slot < 45; slot++) {
 			if (index >= pageReports.size()) {
 				inv.setItem(slot, null);
@@ -1105,6 +1106,7 @@ public class ReportsManager {
 
 		inv.setItem(size - 3,
 		        reportsPage.isNextPageNotEmpty() ? MenuItem.PAGE_SWITCH_NEXT.get() : MenuRawItem.GUI.create());
+		LOGGER.info(() -> "fillInventoryWithReportsPage(): end");
 	}
 
 	public boolean isDataUpdateRequested() {

@@ -5,14 +5,24 @@ package fr.mrtigreroux.tigerreports.logs;
  */
 public enum Level {
 
-	DEBUG("DEBUG", java.util.logging.Level.FINE, "\033[37m"),
-	INFO("INFO", java.util.logging.Level.INFO, null),
-	WARN("WARN", java.util.logging.Level.WARNING, "\033[33m"),
-	ERROR("ERROR", java.util.logging.Level.SEVERE, "\033[31m");
+	DEBUG('D', "DEBUG", java.util.logging.Level.FINE, "\033[37m"),
+	INFO('I', "INFO", java.util.logging.Level.INFO, null),
+	WARN('W', "WARN", java.util.logging.Level.WARNING, "\033[33m"),
+	ERROR('E', "ERROR", java.util.logging.Level.SEVERE, "\033[31m");
 
+	private final char id;
 	private final String displayName;
 	private final java.util.logging.Level loggingLevel;
 	final String ansiColor;
+
+	public static Level fromId(char id) {
+		for (Level level : values()) {
+			if (level.id == id) {
+				return level;
+			}
+		}
+		return null;
+	}
 
 	public static Level fromDisplayName(String name) {
 		for (Level level : values()) {
@@ -42,7 +52,8 @@ public enum Level {
 		}
 	}
 
-	private Level(String displayName, java.util.logging.Level loggingLevel, String ansiColor) {
+	private Level(char id, String displayName, java.util.logging.Level loggingLevel, String ansiColor) {
+		this.id = id;
 		this.displayName = displayName;
 		this.loggingLevel = loggingLevel;
 		this.ansiColor = ansiColor;

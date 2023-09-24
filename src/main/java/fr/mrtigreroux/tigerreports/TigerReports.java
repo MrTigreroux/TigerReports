@@ -1,6 +1,9 @@
 package fr.mrtigreroux.tigerreports;
 
 import java.lang.ref.WeakReference;
+import java.nio.file.attribute.FileTime;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -38,6 +41,8 @@ import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
 import fr.mrtigreroux.tigerreports.tasks.runnables.MenuUpdater;
 import fr.mrtigreroux.tigerreports.tasks.runnables.ReportsNotifier;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
+import fr.mrtigreroux.tigerreports.utils.FileUtils;
+import fr.mrtigreroux.tigerreports.utils.LogUtils;
 import fr.mrtigreroux.tigerreports.utils.WebUtils;
 
 /**
@@ -114,7 +119,11 @@ public class TigerReports extends JavaPlugin implements TaskScheduler {
 				for (Player p : Bukkit.getOnlinePlayers()) {
 					usersManager.processUserConnection(p);
 					User u = usersManager.getOnlineUser(p);
-					u.updateBasicData(db, bungeeManager, usersManager);
+					if (u != null) {
+						u.updateBasicData(db, bungeeManager, usersManager);
+					} else {
+						LogUtils.logUnexpectedOfflineUser(Logger.MAIN, "load()", p);
+					}
 				}
 
 				setLoaded(true);
@@ -346,6 +355,14 @@ public class TigerReports extends JavaPlugin implements TaskScheduler {
 			String oldVersionStr;
 			boolean english = ConfigUtils.getInfoLanguage().equalsIgnoreCase("English");
 			if (UpdatesManager.DEFAULT_LAST_USED_VERSION.equals(oldVersion)) {
+				FileTime pluginFolderCreationTime = FileUtils.getFileCreationTime(getDataFolder().toPath());
+				if (pluginFolderCreationTime != null
+				        && pluginFolderCreationTime.toInstant().until(Instant.now(), ChronoUnit.DAYS) <= 7) {
+					// Consider it is a fresh new installation.
+					UpdatesManager.updateLastVersionUsed(instance);
+					needUpdatesInstructions = false;
+					return;
+				}
 				oldVersionStr = english ? "unknown" : "inconnue";
 			} else {
 				oldVersionStr = oldVersion;

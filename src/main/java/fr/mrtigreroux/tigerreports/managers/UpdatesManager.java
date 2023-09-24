@@ -64,7 +64,7 @@ public class UpdatesManager {
 			}
 		} catch (FileNotFoundException e) {
 			LOGGER.info(() -> "version file " + versionFile.getName()
-			        + " do not exists, last used version is therefore unknown");
+			        + " does not exist, last used version is therefore unknown");
 		} catch (IOException | SecurityException e) {
 			LOGGER.error(ConfigUtils.getInfoMessage("An error occurred while trying to get the last version used:",
 			        "Une erreur est survenue en essayant de recuperer la derniere version utilisee:"), e);

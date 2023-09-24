@@ -14,7 +14,7 @@ import fr.mrtigreroux.tigerreports.objects.reports.Report;
  */
 public class OnlineUserData implements UserData {
 
-	final Player p;
+	public final Player p;
 	Menu openedMenu = null;
 	Comment editingComment = null;
 	PendingProcessPunishingData pendingProcessPunishingData = null;

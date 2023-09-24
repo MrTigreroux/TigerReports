@@ -1,9 +1,13 @@
 package fr.mrtigreroux.tigerreports.commands;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -16,6 +20,9 @@ import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.data.database.Database;
+import fr.mrtigreroux.tigerreports.logs.GlobalLogger;
+import fr.mrtigreroux.tigerreports.logs.Level;
+import fr.mrtigreroux.tigerreports.logs.Logger;
 import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.managers.ReportsManager;
 import fr.mrtigreroux.tigerreports.managers.UpdatesManager;
@@ -25,6 +32,8 @@ import fr.mrtigreroux.tigerreports.objects.reports.Report;
 import fr.mrtigreroux.tigerreports.objects.users.User;
 import fr.mrtigreroux.tigerreports.tasks.ResultCallback;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
+import fr.mrtigreroux.tigerreports.utils.FileUtils;
+import fr.mrtigreroux.tigerreports.utils.LogUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
@@ -34,6 +43,7 @@ import fr.mrtigreroux.tigerreports.utils.UserUtils;
 
 public class ReportsCommand implements TabExecutor {
 
+	private static final Logger LOGGER = Logger.fromClass(ReportsCommand.class);
 	private static final List<String> ACTIONS = Arrays.asList("reload", "notify", "archive", "delete", "comment",
 	        "archives", "archiveall", "deleteall", "user", "stopcooldown", "punish", "#1");
 	private static final List<String> USER_ACTIONS = Arrays.asList("user", "u", "stopcooldown", "sc", "punish");
@@ -78,31 +88,102 @@ public class ReportsCommand implements TabExecutor {
 			if (reportId < 0) {
 				return true;
 			}
-			rm.getReportByIdAsynchronously(reportId, false, true, db, tr, um, new ResultCallback<Report>() {
-
-				@Override
-				public void onResultReceived(Report r) {
-					if (r == null) {
-						MessageUtils.sendErrorMessage(s, Message.INVALID_REPORT_ID.get().replace("_Id_", reportIdStr));
-						return;
-					}
-
-					Player p = s instanceof Player ? (Player) s : null;
-					String author = p != null ? p.getUniqueId().toString() : s.getName();
-					StringBuilder sb = new StringBuilder();
-					for (int argIndex = 2; argIndex < args.length; argIndex++) {
-						sb.append(args[argIndex]).append(" ");
-					}
-					String message = sb.toString().trim();
-
-					r.addComment(author, message, db, tr, (id) -> {});
-					if (p != null) {
-						um.getOnlineUser(p).openCommentsMenu(1, r, rm, db, tr, um, bm, vm);
-					}
+			rm.getReportByIdAsynchronously(reportId, false, true, db, tr, um, (r) -> {
+				if (r == null) {
+					MessageUtils.sendErrorMessage(s, Message.INVALID_REPORT_ID.get().replace("_Id_", reportIdStr));
+					return;
 				}
 
+				Player p = s instanceof Player ? (Player) s : null;
+				String author = p != null ? p.getUniqueId().toString() : s.getName();
+				StringBuilder sb = new StringBuilder();
+				for (int argIndex = 2; argIndex < args.length; argIndex++) {
+					sb.append(args[argIndex]).append(" ");
+				}
+				String message = sb.toString().trim();
+
+				r.addComment(author, message, db, tr, (id) -> {});
+				if (p != null) {
+					User u = um.getOnlineUser(p);
+					if (u == null) {
+						LogUtils.logUnexpectedOfflineUser(LOGGER, "onCommand()", p);
+						return;
+					}
+					u.openCommentsMenu(1, r, rm, db, tr, um, bm, vm);
+				}
 			});
 			return true;
+		}
+
+		if (args.length >= 2 && args[0].equalsIgnoreCase("logs") && Permission.STAFF.check(s)) {
+			if (args.length == 2) {
+				if (args[1].equalsIgnoreCase("default")) {
+					try {
+						File logsConfigFile = FileUtils.getPluginDataFile(tr, Logger.LOGS_CONFIG_FILE_NAME);
+						logsConfigFile.delete();
+						s.sendMessage("\u00A77[\u00A76TigerReports\u00A77] " + ConfigUtils.getInfoMessage(
+						        "\u00A7eThe logs configuration has been set to default. Restart your server to use it.",
+						        "\u00A7eLa configuration des logs a \u00E9t\u00E9 remise par d\u00E9faut. Red\u00E9marrez votre serveur pour l'utiliser."));
+					} catch (SecurityException e) {
+						LOGGER.error("Could not edit the logs config file", e);
+						MessageUtils.sendErrorMessage(s,
+						        "\u00A77[\u00A76TigerReports\u00A77] " + ConfigUtils.getInfoMessage(
+						                "\u00A7cCould not set the logs configuration file to default. Read the error in the logs/console.",
+						                "\u00A7cLa configuration des logs n'a pas pu \u00EAtre remise par d\u00E9faut. Lisez l'erreur dans les logs/console."));
+					}
+					return true;
+				}
+			} else {
+				// /reports logs 1 1 class:D main:I sql:I bungee:I events:I config:I
+
+				List<String> newConfigLines = new ArrayList<>();
+				String bukkitLoggersShowName = Logger.LOGS_CONFIG_FILE_GLOBAL_SETTING_TRUE_VALUE.equals(args[1])
+				        ? Logger.LOGS_CONFIG_FILE_GLOBAL_SETTING_TRUE_VALUE
+				        : "0";
+				String bukkitLoggersUseColors = Logger.LOGS_CONFIG_FILE_GLOBAL_SETTING_TRUE_VALUE.equals(args[2])
+				        ? Logger.LOGS_CONFIG_FILE_GLOBAL_SETTING_TRUE_VALUE
+				        : "0";
+				newConfigLines.add(bukkitLoggersShowName + Logger.LOGS_CONFIG_FILE_GLOBAL_SETTINGS_SEPARATOR
+				        + bukkitLoggersUseColors);
+
+				Map<String, Level> providedGlobalLoggersLevel = new HashMap<>();
+				for (int i = 3; i < args.length; i++) {
+					String[] argParts = args[i].split(":");
+					if (argParts.length != 2) {
+						continue;
+					}
+					String levelId = argParts[1];
+					if (levelId == null || levelId.length() != 1) {
+						continue;
+					}
+					Level level = Level.fromId(levelId.charAt(0));
+					providedGlobalLoggersLevel.put(argParts[0], level);
+				}
+
+				for (GlobalLogger gl : GlobalLogger.values()) {
+					String loggerName = gl.getLoggerName();
+					Level loggerLevel = providedGlobalLoggersLevel.get(loggerName);
+					if (loggerLevel == null) {
+						loggerLevel = gl.getDefaultLevel();
+					}
+					newConfigLines.add(loggerName + Logger.LOGS_CONFIG_FILE_GLOBAL_LOGGER_DATA_SEPARATOR + loggerLevel);
+				}
+
+				try {
+					File logsConfigFile = FileUtils.getPluginDataFile(tr, Logger.LOGS_CONFIG_FILE_NAME);
+					FileUtils.setFileLines(logsConfigFile, newConfigLines);
+					s.sendMessage("\u00A77[\u00A76TigerReports\u00A77] " + ConfigUtils.getInfoMessage(
+					        "\u00A7eThe logs configuration has been changed. Restart your server to use it.",
+					        "\u00A7eLa configuration des logs a \u00E9t\u00E9 modifi\u00E9e. Red\u00E9marrez votre serveur pour l'utiliser."));
+				} catch (SecurityException | IOException e) {
+					LOGGER.error("Could not edit the logs config file", e);
+					MessageUtils.sendErrorMessage(s,
+					        "\u00A77[\u00A76TigerReports\u00A77] " + ConfigUtils.getInfoMessage(
+					                "\u00A7cCould not edit the logs configuration file. Read the error in the logs/console.",
+					                "\u00A7cLe fichier de configuration des logs n'a pas pu \u00EAtre modifi\u00E9. Lisez l'erreur dans les logs/console."));
+				}
+				return true;
+			}
 		}
 
 		if (args.length == 2 && args[0].equals("update_data") && Permission.MANAGE.check(s)) {
@@ -123,6 +204,10 @@ public class ReportsCommand implements TabExecutor {
 		}
 		Player p = (Player) s;
 		User u = um.getOnlineUser(p);
+		if (u == null) {
+			LogUtils.logUnexpectedOfflineUser(LOGGER, "onCommand()", p);
+			return true;
+		}
 
 		switch (args.length) {
 		case 0:
