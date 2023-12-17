@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Paths;
 
 import org.bukkit.Bukkit;
 import org.mockito.MockedStatic;
@@ -20,6 +21,7 @@ import fr.mrtigreroux.tigerreports.data.constants.MenuRawItem;
 import fr.mrtigreroux.tigerreports.logs.Level;
 import fr.mrtigreroux.tigerreports.logs.Logger;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
+import fr.mrtigreroux.tigerreports.utils.TestsFileUtils;
 
 /**
  * @author MrTigreroux
@@ -37,6 +39,12 @@ public class TigerReportsMock {
 		TESTS_PLUGIN_DATA_FOLDER.mkdir();
 		assertTrue(TESTS_PLUGIN_DATA_FOLDER.exists());
 
+		// try {
+		// 	Files.copy(TestsFileUtils.getProjectFile(Paths.get("src", "test", "resources", "config.yml")), TESTS_PLUGIN_DATA_FOLDER.toPath().resolve("config.yml").toFile());
+		// } catch (IOException e) {
+		// 	e.printStackTrace();
+		// }
+
 		MAIN_MOCK = new TigerReportsMock().mockDataFolder(TESTS_PLUGIN_DATA_FOLDER).get();
 		try (MockedStatic<TigerReports> tr = mockStatic(TigerReports.class);
 		        MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
@@ -49,14 +57,14 @@ public class TigerReportsMock {
 			MenuRawItem.init();
 		}
 
-		loadConfigFiles(MAIN_MOCK);
-
 		Logger.CONFIG.setLevel(Level.INFO);
 		Logger.BUNGEE.setLevel(Level.INFO);
 		Logger.EVENTS.setLevel(Level.INFO);
 		Logger.MAIN.setLevel(Level.INFO);
 		Logger.SQL.setLevel(Level.INFO);
-		Logger.setDefaultClassLoggerLevel(Level.DEBUG);
+		Logger.setDefaultClassLoggerLevel(Level.INFO);
+
+		loadConfigFiles(MAIN_MOCK);
 	}
 
 	@Deprecated
@@ -102,7 +110,7 @@ public class TigerReportsMock {
 			}
 
 			try {
-				URL url = new File("src/test/resources/" + filename).toURI().toURL();
+				URL url = TestsFileUtils.getProjectFile(Paths.get("src", "main", "resources", filename)).toURI().toURL();
 
 				if (url == null) {
 					return null;
@@ -121,6 +129,11 @@ public class TigerReportsMock {
 		return mock;
 	}
 
+	/**
+	 * NB: This method exists to load the current class static block before creating any logger for tests.
+	 * @param clazz
+	 * @return
+	 */
 	public static Logger getLoggerFromClass(Class<?> clazz) {
 		return getLoggerFromClass(clazz, Level.INFO);
 	}

@@ -17,6 +17,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import fr.mrtigreroux.tigerreports.utils.AssertionUtils;
+import fr.mrtigreroux.tigerreports.utils.TestsFileUtils;
 
 /**
  * @author MrTigreroux
@@ -24,28 +25,19 @@ import fr.mrtigreroux.tigerreports.utils.AssertionUtils;
 public class DefaultMessagesTest extends TestClass {
 
 	private static final int EXPECTED_LINES_AMOUNT = 220;
-	private static final String DEFAULT_MESSAGES_FILE_PATH = "src/main/resources/messages.yml";
-	private static final String DEFAULT_MESSAGES_DIRECTORY_NAME = "default-messages";
+	private static final Path DEFAULT_MESSAGES_FILE_PATH = Paths.get("src", "main", "resources", "messages.yml");
+	private static final Path DEFAULT_MESSAGES_DIRECTORY_PATH = Paths.get("default-messages");
 	private static final String LINE_TO_IGNORE_ADDED_TO_MAKE_INDEX_EQUALS_TO_LINE_NUMBER = "Line to ignore, added to make index = line number";
 
 	@Test
 	public void testDefaultMessagesFilesLinesKeys() throws IOException {
-		Path refMessagesPath = Paths.get(System.getProperty("user.dir"), DEFAULT_MESSAGES_FILE_PATH);
-		if (!Files.isRegularFile(refMessagesPath)) {
-			throw new IllegalArgumentException("The file " + DEFAULT_MESSAGES_FILE_PATH + " was not found.");
-		}
-
-		File refMessagesFile = refMessagesPath.toFile();
-		assertNotNull(refMessagesFile);
+		File refMessagesFile = TestsFileUtils.getProjectFile(DEFAULT_MESSAGES_FILE_PATH);
 		List<String> refLinesKeys = getMessagesFileLinesKeys(refMessagesFile);
 		assertNotNull(refLinesKeys);
 		assertEquals(EXPECTED_LINES_AMOUNT, refLinesKeys.size() - 1,
 		        DEFAULT_MESSAGES_FILE_PATH + ": Incorrect amount of lines"); // -1 for LINE_TO_IGNORE_ADDED_TO_MAKE_INDEX_EQUALS_TO_LINE_NUMBER
 
-		Path defMessagesDir = Paths.get(System.getProperty("user.dir"), DEFAULT_MESSAGES_DIRECTORY_NAME);
-		if (!Files.isDirectory(defMessagesDir)) {
-			throw new IllegalArgumentException("The directory " + DEFAULT_MESSAGES_DIRECTORY_NAME + " was not found.");
-		}
+		Path defMessagesDir = TestsFileUtils.getProjectDirectoryPath(DEFAULT_MESSAGES_DIRECTORY_PATH);
 
 		Files.list(defMessagesDir).filter(Files::isRegularFile).forEach((file) -> {
 			File defMessagesFile = file.toFile();

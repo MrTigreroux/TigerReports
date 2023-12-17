@@ -24,12 +24,12 @@ import fr.mrtigreroux.tigerreports.logs.Logger;
  */
 public class TestsTaskScheduler implements TaskScheduler {
 
-	private static final Logger LOGGER = TigerReportsMock.getLoggerFromClass(TestsTaskScheduler.class);
-
-//	private static final int TRIGGERING_CLEAN_ID = 25;
+	private static final Logger CLASS_LOGGER = TigerReportsMock.getLoggerFromClass(TestsTaskScheduler.class);
 
 	private static TestsTaskScheduler mainTaskScheduler;
 
+	private final Logger instanceLogger;
+	private final String name;
 	private final ScheduledExecutorService mainExecutor;
 	private final ScheduledExecutorService asyncExecutor;
 	private final List<Future<?>> basicTasks = new ArrayList<>();
@@ -39,35 +39,29 @@ public class TestsTaskScheduler implements TaskScheduler {
 
 	public static final long DEFAULT_TIMEOUT = 5 * 1000L;
 
-	class MainThreadFactory implements ThreadFactory {
+	private class MainThreadFactory implements ThreadFactory {
 
 		@Override
 		public Thread newThread(Runnable r) {
-			return new Thread(r, "main");
+			return new Thread(r, getThreadsNamePrefix() + "main");
 		}
 
 	}
 
-	class AsyncThreadFactory implements ThreadFactory {
+	private class AsyncThreadFactory implements ThreadFactory {
 
 		private AtomicInteger currentThreadIndex = new AtomicInteger(1);
 
 		@Override
 		public Thread newThread(Runnable r) {
-			return new Thread(r, "async" + currentThreadIndex.getAndIncrement());
+			return new Thread(r, getThreadsNamePrefix() + "async" + currentThreadIndex.getAndIncrement());
 		}
 
 	}
 
 	public static TestsTaskScheduler getCleanMainTaskScheduler() {
 		TestsTaskScheduler mainTaskScheduler = getMainTaskScheduler();
-		if (mainTaskScheduler.getTasksAmount() > 0) {
-			LOGGER.warn(() -> "getCleanMainTaskScheduler(): some tasks (" + mainTaskScheduler.basicTasks.size()
-			        + " basic, " + mainTaskScheduler.scheduledTasks.size()
-			        + " scheduled) of a previous use need to be stopped by force");
-		}
-		mainTaskScheduler.stopNow(true);
-		mainTaskScheduler.clear();
+		mainTaskScheduler.cleanBeforeUse();
 		return mainTaskScheduler;
 	}
 
@@ -75,8 +69,8 @@ public class TestsTaskScheduler implements TaskScheduler {
 		if (mainTaskScheduler == null) {
 			synchronized (TestsTaskScheduler.class) {
 				if (mainTaskScheduler == null) {
-					mainTaskScheduler = new TestsTaskScheduler();
-					LOGGER.debug(() -> "getMainTaskScheduler(): new main task scheduler created");
+					mainTaskScheduler = new TestsTaskScheduler("main", 2);
+					CLASS_LOGGER.debug(() -> "getMainTaskScheduler(): new main task scheduler created");
 				}
 			}
 		}
@@ -85,12 +79,18 @@ public class TestsTaskScheduler implements TaskScheduler {
 	}
 
 	public TestsTaskScheduler() {
-		this(2);
+		this("default", 2);
 	}
 
-	public TestsTaskScheduler(int asyncThreadsAmount) {
+	public TestsTaskScheduler(String name, int asyncThreadsAmount) {
+		this.name = name;
+		instanceLogger = CLASS_LOGGER.newChild(name);
 		mainExecutor = Executors.newSingleThreadScheduledExecutor(new MainThreadFactory());
 		asyncExecutor = Executors.newScheduledThreadPool(asyncThreadsAmount, new AsyncThreadFactory());
+	}
+
+	public String getThreadsNamePrefix() {
+		return name + "-";
 	}
 
 	/**
@@ -103,10 +103,12 @@ public class TestsTaskScheduler implements TaskScheduler {
 	 */
 	public boolean runTaskAndWait(Consumer<TaskCompletion> task, long timeout) {
 		TaskCompletion taskCompletion = new TaskCompletion();
-		runTask(() -> {
+		Future<?> taskFuture = runTaskAndGetFuture(() -> {
 			task.accept(taskCompletion);
 		});
-		return taskCompletion.waitForCompletion(timeout);
+		boolean taskDone = taskCompletion.waitForCompletion(timeout);
+		boolean taskWithoutError = checkTaskExecution(taskFuture, 0);
+		return taskWithoutError && taskDone;
 	}
 
 	@Override
@@ -119,10 +121,17 @@ public class TestsTaskScheduler implements TaskScheduler {
 		saveBasicTask(mainExecutor.submit(task));
 	}
 
+	public Future<?> runTaskAndGetFuture(Runnable task) {
+		Future<?> taskFuture = mainExecutor.submit(task);
+		saveBasicTask(taskFuture);
+		return taskFuture;
+	}
+
 	private void saveBasicTask(Future<?> basicTask) {
 		submittedTasksAmount.incrementAndGet();
 		synchronized (this) {
 			basicTasks.add(basicTask);
+			instanceLogger.debug(() -> "saveBasicTask(): " + basicTask);
 			this.notifyAll();
 		}
 	}
@@ -147,6 +156,7 @@ public class TestsTaskScheduler implements TaskScheduler {
 		synchronized (this) {
 			int taskId = getNewTaskId();
 			scheduledTasks.put(taskId, scheduledTask);
+			instanceLogger.debug(() -> "saveScheduledTask(): " + scheduledTask);
 			this.notifyAll();
 			return taskId;
 		}
@@ -180,7 +190,7 @@ public class TestsTaskScheduler implements TaskScheduler {
 				scheduledTask.cancel(true);
 				scheduledTasks.remove(taskId);
 			} else {
-				LOGGER.info(() -> "cancelTask(): task not found (id = " + taskId + ")");
+				instanceLogger.info(() -> "cancelTask(): task not found (id = " + taskId + ")");
 			}
 			this.notifyAll();
 		}
@@ -210,9 +220,10 @@ public class TestsTaskScheduler implements TaskScheduler {
 			try {
 				this.wait(timeout);
 				forced = true;
-				LOGGER.warn(() -> "waitForTerminationOrStop(): submitted tasks timeout reached => forced mode enabled");
+				instanceLogger.warn(
+				        () -> "waitForTerminationOrStop(): submitted tasks timeout reached => forced mode enabled");
 			} catch (InterruptedException e) {
-				LOGGER.error("waitForTerminationOrStop(): interrupted", e);
+				instanceLogger.error("waitForTerminationOrStop(): interrupted", e);
 			}
 		}
 
@@ -233,23 +244,23 @@ public class TestsTaskScheduler implements TaskScheduler {
 			}
 
 			final int ffailedTasks = failedTasks;
-			LOGGER.info(() -> "waitForTerminationOrStop(" + timeout + "ms): failed tasks: " + ffailedTasks + "/"
+			instanceLogger.info(() -> "waitForTerminationOrStop(" + timeout + "ms): failed tasks: " + ffailedTasks + "/"
 			        + tasksAmount);
 		} else {
 			if (!forced) {
-				LOGGER.warn(() -> "waitForTerminationOrStop(" + timeout + "ms): no task executed (yet)");
+				instanceLogger.warn(() -> "waitForTerminationOrStop(" + timeout + "ms): no task executed (yet)");
 			}
 		}
 
 		boolean success = failedTasks == 0;
 		if (success) {
 			clear();
-			LOGGER.debug(() -> "waitForTerminationOrStop(" + timeout + "ms): success => cleared");
+			instanceLogger.debug(() -> "waitForTerminationOrStop(" + timeout + "ms): success => cleared");
 		}
 		return success;
 	}
 
-	private long getRemainingTimeout(long timeout, long start) {
+	private static long getRemainingTimeout(long timeout, long start) {
 		long result = timeout - (System.currentTimeMillis() - start);
 		return result >= 0 ? result : 0L;
 	}
@@ -261,7 +272,7 @@ public class TestsTaskScheduler implements TaskScheduler {
 	/**
 	 * 
 	 * @param forced = true to don't wait for all submitted tasks to be saved
-	 * @return
+	 * @return true if all tasks have not failed (no error, no cancellation...).
 	 */
 	public synchronized boolean stopNow(boolean forced) {
 		return waitForTerminationOrStop(0, forced);
@@ -273,33 +284,51 @@ public class TestsTaskScheduler implements TaskScheduler {
 				taskFuture.get(timeout, TimeUnit.MILLISECONDS);
 				return true;
 			} catch (TimeoutException e) {
-				LOGGER.info(
+				instanceLogger.info(
 				        () -> "checkTaskExecution(): timeout (" + timeout + "ms) reached, cancel task " + taskFuture);
 				taskFuture.cancel(true);
 			}
 		} catch (CancellationException e) {
-			LOGGER.warn(() -> "checkTaskExecution(): task " + taskFuture + " was cancelled");
+			instanceLogger.warn(() -> "checkTaskExecution(): task " + taskFuture + " was cancelled");
+			return true;
 		} catch (InterruptedException e) {
-			LOGGER.error("checkTaskExecution(): current thread was interrupted while waiting", e);
+			instanceLogger.error("checkTaskExecution(): current thread was interrupted while waiting", e);
 		} catch (ExecutionException e) {
-			LOGGER.error("checkTaskExecution(): task " + taskFuture + " threw an exception: ", e);
+			instanceLogger.error("checkTaskExecution(): task " + taskFuture + " threw an exception: ", e);
 		}
 		return false;
 	}
 
-	public synchronized void clean() {
-		LOGGER.debug(() -> "clean()");
+	public synchronized void cleanBeforeUse() {
+		if (getTasksAmount() > 0) {
+			instanceLogger.warn(() -> "cleanBeforeUse(): some tasks (" + basicTasks.size() + " basic, "
+			        + scheduledTasks.size() + " scheduled) of a previous use need to be stopped by force");
+		}
+		stopNow(true);
+		clear();
+	}
+
+	/**
+	 * Clean this instance after having used it (typically after a test execution).
+	 * 
+	 * @return true if all tasks have not failed (no error, no cancellation...).
+	 */
+	public synchronized boolean cleanAfterUse() {
+		instanceLogger.debug(() -> "cleanAfterUse()");
 		int submitted = submittedTasksAmount.get();
 		if (submitted > 0 || getTasksAmount() > 0) {
-			LOGGER.debug(() -> "clean(): some tasks (" + submitted + " submitted, " + basicTasks.size() + " basic, "
-			        + scheduledTasks.size() + " scheduled) previously started will be stopped now");
-			stopNow(false);
+			instanceLogger.debug(() -> "cleanAfterUse(): some tasks (" + submitted + " submitted, " + basicTasks.size()
+			        + " basic, " + scheduledTasks.size() + " scheduled) previously started will be stopped now");
+			boolean noError = stopNow(false);
 			clear();
+			return noError;
+		} else {
+			return true;
 		}
 	}
 
 	private synchronized void clear() {
-		LOGGER.debug(() -> "clear()");
+		instanceLogger.debug(() -> "clear()");
 		basicTasks.clear();
 		scheduledTasks.clear();
 		lastId = 0;
@@ -333,10 +362,17 @@ public class TestsTaskScheduler implements TaskScheduler {
 		asyncExecutor.shutdownNow();
 	}
 
-	public static void cleanMainTaskScheduler() {
+	public static boolean cleanMainTaskSchedulerAfterUse() {
 		if (mainTaskScheduler != null) {
-			mainTaskScheduler.clean();
+			return mainTaskScheduler.cleanAfterUse();
+		} else {
+			return true;
 		}
+	}
+
+	@Override
+	public String toString() {
+		return name + " TestsTaskScheduler";
 	}
 
 }

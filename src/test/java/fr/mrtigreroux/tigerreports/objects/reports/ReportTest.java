@@ -33,6 +33,15 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import fr.mrtigreroux.tigerreports.TestClass;
+import fr.mrtigreroux.tigerreports.bungee.BungeeManager;
+import fr.mrtigreroux.tigerreports.bungee.TestsBungeeManager;
+import fr.mrtigreroux.tigerreports.bungee.notifications.ArchiveBungeeNotification;
+import fr.mrtigreroux.tigerreports.bungee.notifications.DeleteBungeeNotification;
+import fr.mrtigreroux.tigerreports.bungee.notifications.ProcessAbusiveBungeeNotification;
+import fr.mrtigreroux.tigerreports.bungee.notifications.ProcessBungeeNotification;
+import fr.mrtigreroux.tigerreports.bungee.notifications.ProcessPunishBungeeNotification;
+import fr.mrtigreroux.tigerreports.bungee.notifications.StatusBungeeNotification;
+import fr.mrtigreroux.tigerreports.bungee.notifications.UnarchiveBungeeNotification;
 import fr.mrtigreroux.tigerreports.data.Holder;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Appreciation;
@@ -42,9 +51,6 @@ import fr.mrtigreroux.tigerreports.data.database.TestsDatabaseManager;
 import fr.mrtigreroux.tigerreports.data.database.TestsSQLite;
 import fr.mrtigreroux.tigerreports.events.ProcessReportEvent;
 import fr.mrtigreroux.tigerreports.events.ReportStatusChangeEvent;
-import fr.mrtigreroux.tigerreports.logs.Level;
-import fr.mrtigreroux.tigerreports.logs.Logger;
-import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.managers.ReportsManager;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
 import fr.mrtigreroux.tigerreports.managers.VaultManager;
@@ -143,12 +149,12 @@ public class ReportTest extends TestClass {
 			reportAdvancedData.put(Report.AdvancedData.REPORTER_IP, reporterIP);
 			reportAdvancedData.put(Report.AdvancedData.REPORTER_LOCATION, reporterLocation);
 			reportAdvancedData.put(Report.AdvancedData.REPORTER_MESSAGES,
-			        Report.AdvancedData.formatMessages(Arrays.asList(reporterMessages)));
+			        Report.AdvancedData.serializeMessages(Arrays.asList(reporterMessages)));
 
 			reportAdvancedData.put(Report.AdvancedData.REPORTED_IP, reportedIP);
 			reportAdvancedData.put(Report.AdvancedData.REPORTED_LOCATION, reportedLocation);
 			reportAdvancedData.put(Report.AdvancedData.REPORTED_MESSAGES,
-			        Report.AdvancedData.formatMessages(Arrays.asList(reportedMessages)));
+			        Report.AdvancedData.serializeMessages(Arrays.asList(reportedMessages)));
 			reportAdvancedData.put(Report.AdvancedData.REPORTED_GAMEMODE, reportedGamemode);
 			reportAdvancedData.put(Report.AdvancedData.REPORTED_ON_GROUND, reportedOnGround);
 			reportAdvancedData.put(Report.AdvancedData.REPORTED_SNEAK, reportedSneaking);
@@ -674,7 +680,7 @@ public class ReportTest extends TestClass {
 			String reason = "report reason";
 			boolean archived = false;
 
-			assertThrows(IllegalArgumentException.class, () -> {
+			assertThrows(NullPointerException.class, () -> {
 				new Report(reportId, statusDetails, appreciationDetails, date, reported, reporters, reason, archived);
 			});
 		}
@@ -749,7 +755,7 @@ public class ReportTest extends TestClass {
 
 	/**
 	 * Test method for
-	 * {@link fr.mrtigreroux.tigerreports.objects.reports.Report#setStatus(fr.mrtigreroux.tigerreports.objects.reports.Report.StatusDetails, boolean, fr.mrtigreroux.tigerreports.data.database.Database, fr.mrtigreroux.tigerreports.managers.ReportsManager, fr.mrtigreroux.tigerreports.managers.BungeeManager)}.
+	 * {@link fr.mrtigreroux.tigerreports.objects.reports.Report#setStatus(fr.mrtigreroux.tigerreports.objects.reports.Report.StatusDetails, boolean, fr.mrtigreroux.tigerreports.data.database.Database, fr.mrtigreroux.tigerreports.managers.ReportsManager, fr.mrtigreroux.tigerreports.bungee.BungeeManager)}.
 	 */
 	@Nested
 	class SetStatus {
@@ -820,7 +826,6 @@ public class ReportTest extends TestClass {
 			BungeeManager bm = mock(BungeeManager.class);
 
 			Holder<Event> calledEvent = new Holder<>();
-			LOGGER.setLevel(Level.DEBUG);
 
 			testReportAction(newDifferentStatusDetails ? (report) -> {
 				if (statusDetails != null && statusDetails.toString().equals(report.getStatusDetails())) {
@@ -892,17 +897,12 @@ public class ReportTest extends TestClass {
 					        assertNull(sentStaffMessage);
 
 					        if (!bungee) {
-						        ArgumentCaptor<String> bungeeNotificationStatusDetails = ArgumentCaptor
-						                .forClass(String.class);
-						        ArgumentCaptor<Integer> bungeeArchiveNotificationReportId = ArgumentCaptor
-						                .forClass(Integer.class);
-						        verify(bm, times(1)).sendNewStatusNotification(
-						                bungeeNotificationStatusDetails.capture(),
-						                bungeeArchiveNotificationReportId.capture());
-						        assertEquals(statusDetails.toString(), bungeeNotificationStatusDetails.getValue());
-						        assertEquals(beforeReport.getId(), bungeeArchiveNotificationReportId.getValue());
+						        StatusBungeeNotification statusBungeeNotif = TestsBungeeManager
+						                .assertCalledOnceSendPluginNotificationToAll(bm, StatusBungeeNotification.class);
+						        assertEquals(statusDetails.toString(), statusBungeeNotif.statusDetails);
+						        assertEquals(beforeReport.getId(), statusBungeeNotif.reportId);
 					        } else {
-						        verify(bm, times(0)).sendNewStatusNotification(any(String.class), any(Integer.class));
+								TestsBungeeManager.assertNeverCalledSendPluginNotificationToAll(bm, StatusBungeeNotification.class);
 					        }
 
 					        assertNotNull(calledEvent.get());
@@ -1024,7 +1024,7 @@ public class ReportTest extends TestClass {
 
 		/**
 		 * Test method for
-		 * {@link fr.mrtigreroux.tigerreports.objects.reports.Report#processWithPunishment(fr.mrtigreroux.tigerreports.objects.users.User, boolean, boolean, java.lang.String, boolean, fr.mrtigreroux.tigerreports.data.database.Database, fr.mrtigreroux.tigerreports.managers.VaultManager, fr.mrtigreroux.tigerreports.managers.BungeeManager)}.
+		 * {@link fr.mrtigreroux.tigerreports.objects.reports.Report#processWithPunishment(fr.mrtigreroux.tigerreports.objects.users.User, boolean, boolean, java.lang.String, boolean, fr.mrtigreroux.tigerreports.data.database.Database, fr.mrtigreroux.tigerreports.managers.VaultManager, fr.mrtigreroux.tigerreports.bungee.BungeeManager)}.
 		 */
 		@Nested
 		class ProcessWithPunishment {
@@ -1323,59 +1323,38 @@ public class ReportTest extends TestClass {
 
 					        if (!bungee) {
 						        if (punishSeconds == null) {
-							        ArgumentCaptor<String> bungeeNotificationStaffUUID = ArgumentCaptor
-							                .forClass(String.class);
-							        ArgumentCaptor<String> bungeeNotificationProcessNotificationType = ArgumentCaptor
-							                .forClass(String.class);
-							        ArgumentCaptor<Integer> bungeeNotificationReportId = ArgumentCaptor
-							                .forClass(Integer.class);
-							        ArgumentCaptor<Boolean> bungeeNotificationArchive = ArgumentCaptor
-							                .forClass(Boolean.class);
-							        ArgumentCaptor<AppreciationDetails> bungeeNotificationAppreciationDetails = ArgumentCaptor
-							                .forClass(AppreciationDetails.class);
-							        verify(bm, times(1)).sendProcessNotification(bungeeNotificationStaffUUID.capture(),
-							                bungeeNotificationProcessNotificationType.capture(),
-							                bungeeNotificationReportId.capture(), bungeeNotificationArchive.capture(),
-							                bungeeNotificationAppreciationDetails.capture());
-							        assertEquals(staff.getUniqueId().toString(),
-							                bungeeNotificationStaffUUID.getValue());
-							        assertEquals(
-							                punishment != null ? BungeeManager.NotificationType.PROCESS_PUNISH
-							                        : BungeeManager.NotificationType.PROCESS,
-							                bungeeNotificationProcessNotificationType.getValue());
-							        assertEquals(beforeReport.getId(), bungeeNotificationReportId.getValue());
-							        assertEquals(autoArchive, bungeeNotificationArchive.getValue());
-							        assertEquals(AppreciationDetails.from(appreciation, punishment),
-							                bungeeNotificationAppreciationDetails.getValue());
+									if (punishment != null) {
+										ProcessPunishBungeeNotification bungeeNotif = TestsBungeeManager
+												.assertCalledOnceSendPluginNotificationToAll(bm, ProcessPunishBungeeNotification.class);
+										assertEquals(staff.getUniqueId().toString(),
+							                bungeeNotif.staffUniqueId);
+										assertEquals(beforeReport.getId(), bungeeNotif.reportId);
+										assertEquals(autoArchive, bungeeNotif.archive);
+										assertEquals(punishment, bungeeNotif.punishment);
+									} else {
+										ProcessBungeeNotification bungeeNotif = TestsBungeeManager
+												.assertCalledOnceSendPluginNotificationToAll(bm, ProcessBungeeNotification.class);
+										assertEquals(staff.getUniqueId().toString(),
+							                bungeeNotif.staffUniqueId);
+										assertEquals(beforeReport.getId(), bungeeNotif.reportId);
+										assertEquals(autoArchive, bungeeNotif.archive);
+										assertEquals(appreciation, bungeeNotif.getAppreciation());
+									}
 						        } else {
-							        ArgumentCaptor<String> bungeeNotificationStaffUUID = ArgumentCaptor
-							                .forClass(String.class);
-							        ArgumentCaptor<Integer> bungeeNotificationReportId = ArgumentCaptor
-							                .forClass(Integer.class);
-							        ArgumentCaptor<Boolean> bungeeNotificationArchive = ArgumentCaptor
-							                .forClass(Boolean.class);
-							        ArgumentCaptor<AppreciationDetails> bungeeNotificationAppreciationDetails = ArgumentCaptor
-							                .forClass(AppreciationDetails.class);
-							        ArgumentCaptor<Long> bungeeNotificationPunishSeconds = ArgumentCaptor
-							                .forClass(Long.class);
-							        verify(bm, times(1)).sendProcessAbusiveNotification(
-							                bungeeNotificationStaffUUID.capture(), bungeeNotificationReportId.capture(),
-							                bungeeNotificationArchive.capture(),
-							                bungeeNotificationAppreciationDetails.capture(),
-							                bungeeNotificationPunishSeconds.capture());
-							        assertEquals(staff.getUniqueId().toString(),
-							                bungeeNotificationStaffUUID.getValue());
-							        assertEquals(beforeReport.getId(), bungeeNotificationReportId.getValue());
-							        assertEquals(autoArchive, bungeeNotificationArchive.getValue());
-							        assertEquals(AppreciationDetails.from(appreciation, punishment),
-							                bungeeNotificationAppreciationDetails.getValue());
-							        assertEquals(punishSeconds, bungeeNotificationPunishSeconds.getValue());
+									ProcessAbusiveBungeeNotification bungeeNotif = TestsBungeeManager
+											.assertCalledOnceSendPluginNotificationToAll(bm, ProcessAbusiveBungeeNotification.class);
+									assertEquals(staff.getUniqueId().toString(),
+										bungeeNotif.staffUniqueId);
+									assertEquals(beforeReport.getId(), bungeeNotif.reportId);
+									assertEquals(autoArchive, bungeeNotif.archive);
+									assertEquals(punishSeconds, bungeeNotif.punishSeconds);
 						        }
 						        // TODO: check statistics modification
 						        // TODO: check notifications correctly sent
 					        } else {
-						        verify(bm, times(0)).sendProcessNotification(any(String.class), any(String.class),
-						                any(Integer.class), any(Boolean.class), any(AppreciationDetails.class));
+								TestsBungeeManager.assertNeverCalledSendPluginNotificationToAll(bm,ProcessBungeeNotification.class);
+								TestsBungeeManager.assertNeverCalledSendPluginNotificationToAll(bm,ProcessPunishBungeeNotification.class);
+								TestsBungeeManager.assertNeverCalledSendPluginNotificationToAll(bm,ProcessAbusiveBungeeNotification.class);
 					        }
 
 					        assertNotNull(calledEvent.get());
@@ -1559,16 +1538,12 @@ public class ReportTest extends TestClass {
 				        }
 
 				        if (staff != null && !bungee) {
-					        ArgumentCaptor<UUID> bungeeArchiveNotificationStaffUUID = ArgumentCaptor
-					                .forClass(UUID.class);
-					        ArgumentCaptor<Integer> bungeeArchiveNotificationReportId = ArgumentCaptor
-					                .forClass(Integer.class);
-					        verify(bm, times(1)).sendArchiveNotification(bungeeArchiveNotificationStaffUUID.capture(),
-					                bungeeArchiveNotificationReportId.capture());
-					        assertEquals(staff.getUniqueId(), bungeeArchiveNotificationStaffUUID.getValue());
-					        assertEquals(beforeReport.getId(), bungeeArchiveNotificationReportId.getValue());
+					        ArchiveBungeeNotification bungeeArchiveNotif = TestsBungeeManager
+					                .assertCalledOnceSendPluginNotificationToAll(bm, ArchiveBungeeNotification.class);
+					        assertEquals(staff.getUniqueId().toString(), bungeeArchiveNotif.staffUniqueId);
+					        assertEquals(beforeReport.getId(), bungeeArchiveNotif.reportId);
 				        } else {
-					        verify(bm, times(0)).sendArchiveNotification(any(UUID.class), any(Integer.class));
+							TestsBungeeManager.assertNeverCalledSendPluginNotificationToAll(bm, ArchiveBungeeNotification.class);
 				        }
 			        });
 		}
@@ -1685,17 +1660,12 @@ public class ReportTest extends TestClass {
 				        }
 
 				        if (staff != null && !bungee) {
-					        ArgumentCaptor<UUID> bungeeUnarchiveNotificationStaffUUID = ArgumentCaptor
-					                .forClass(UUID.class);
-					        ArgumentCaptor<Integer> bungeeUnarchiveNotificationReportId = ArgumentCaptor
-					                .forClass(Integer.class);
-					        verify(bm, times(1)).sendUnarchiveNotification(
-					                bungeeUnarchiveNotificationStaffUUID.capture(),
-					                bungeeUnarchiveNotificationReportId.capture());
-					        assertEquals(staff.getUniqueId(), bungeeUnarchiveNotificationStaffUUID.getValue());
-					        assertEquals(beforeReport.getId(), bungeeUnarchiveNotificationReportId.getValue());
+					        UnarchiveBungeeNotification unarchiveBungeeNotif = TestsBungeeManager
+					                .assertCalledOnceSendPluginNotificationToAll(bm, UnarchiveBungeeNotification.class);
+					        assertEquals(staff.getUniqueId().toString(), unarchiveBungeeNotif.staffUniqueId);
+					        assertEquals(beforeReport.getId(), unarchiveBungeeNotif.reportId);
 				        } else {
-					        verify(bm, times(0)).sendUnarchiveNotification(any(UUID.class), any(Integer.class));
+					        verify(bm, times(0)).sendPluginNotificationToAll(any(UnarchiveBungeeNotification.class));
 				        }
 			        });
 		}
@@ -1704,7 +1674,7 @@ public class ReportTest extends TestClass {
 
 	/**
 	 * Test method for
-	 * {@link fr.mrtigreroux.tigerreports.objects.reports.Report#deleteFromArchives(fr.mrtigreroux.tigerreports.objects.users.User, boolean, fr.mrtigreroux.tigerreports.data.database.Database, fr.mrtigreroux.tigerreports.tasks.TaskScheduler, fr.mrtigreroux.tigerreports.managers.ReportsManager, fr.mrtigreroux.tigerreports.managers.VaultManager, fr.mrtigreroux.tigerreports.managers.BungeeManager)}.
+	 * {@link fr.mrtigreroux.tigerreports.objects.reports.Report#deleteFromArchives(fr.mrtigreroux.tigerreports.objects.users.User, boolean, fr.mrtigreroux.tigerreports.data.database.Database, fr.mrtigreroux.tigerreports.tasks.TaskScheduler, fr.mrtigreroux.tigerreports.managers.ReportsManager, fr.mrtigreroux.tigerreports.managers.VaultManager, fr.mrtigreroux.tigerreports.bungee.BungeeManager)}.
 	 */
 	@Nested
 	class DeleteFromArchives {
@@ -1785,23 +1755,20 @@ public class ReportTest extends TestClass {
 					        }
 
 					        if (staff != null && !bungee) {
-						        ArgumentCaptor<UUID> bungeeNotificationStaffUUID = ArgumentCaptor.forClass(UUID.class);
-						        ArgumentCaptor<String> bungeeNotificationReportBasicData = ArgumentCaptor
-						                .forClass(String.class);
-						        verify(bm, times(1)).sendDeleteNotification(bungeeNotificationStaffUUID.capture(),
-						                bungeeNotificationReportBasicData.capture());
-						        assertEquals(staff.getUniqueId(), bungeeNotificationStaffUUID.getValue());
+								DeleteBungeeNotification bungeeNotif = TestsBungeeManager
+					                .assertCalledOnceSendPluginNotificationToAll(bm, DeleteBungeeNotification.class);
+						        assertEquals(staff.getUniqueId().toString(), bungeeNotif.staffUniqueId);
 						        assertEquals(beforeReport.getBasicDataAsString(),
-						                bungeeNotificationReportBasicData.getValue());
+						                bungeeNotif.reportBasicDataString);
 					        } else {
-						        verify(bm, times(0)).sendDeleteNotification(any(UUID.class), any(String.class));
+								TestsBungeeManager.assertNeverCalledSendPluginNotificationToAll(bm, DeleteBungeeNotification.class);
 					        }
 
 					        verify(rm, times(1)).reportIsDeleted(beforeReport.getId());
 				        } else {
 					        assertNotNull(dbReport);
 					        assertNull(sentStaffMessage);
-					        verify(bm, times(0)).sendDeleteNotification(any(UUID.class), any(String.class));
+							TestsBungeeManager.assertNeverCalledSendPluginNotificationToAll(bm, DeleteBungeeNotification.class);
 					        verify(rm, times(0)).reportIsDeleted(beforeReport.getId());
 				        }
 			        });
@@ -1811,7 +1778,7 @@ public class ReportTest extends TestClass {
 
 	/**
 	 * Test method for
-	 * {@link fr.mrtigreroux.tigerreports.objects.reports.Report#delete(fr.mrtigreroux.tigerreports.objects.users.User, boolean, fr.mrtigreroux.tigerreports.data.database.Database, fr.mrtigreroux.tigerreports.tasks.TaskScheduler, fr.mrtigreroux.tigerreports.managers.ReportsManager, fr.mrtigreroux.tigerreports.managers.VaultManager, fr.mrtigreroux.tigerreports.managers.BungeeManager)}.
+	 * {@link fr.mrtigreroux.tigerreports.objects.reports.Report#delete(fr.mrtigreroux.tigerreports.objects.users.User, boolean, fr.mrtigreroux.tigerreports.data.database.Database, fr.mrtigreroux.tigerreports.tasks.TaskScheduler, fr.mrtigreroux.tigerreports.managers.ReportsManager, fr.mrtigreroux.tigerreports.managers.VaultManager, fr.mrtigreroux.tigerreports.bungee.BungeeManager)}.
 	 */
 	@Nested
 	class Delete {
@@ -1870,16 +1837,13 @@ public class ReportTest extends TestClass {
 				        }
 
 				        if (staff != null && !bungee) {
-					        ArgumentCaptor<UUID> bungeeNotificationStaffUUID = ArgumentCaptor.forClass(UUID.class);
-					        ArgumentCaptor<String> bungeeNotificationReportBasicData = ArgumentCaptor
-					                .forClass(String.class);
-					        verify(bm, times(1)).sendDeleteNotification(bungeeNotificationStaffUUID.capture(),
-					                bungeeNotificationReportBasicData.capture());
-					        assertEquals(staff.getUniqueId(), bungeeNotificationStaffUUID.getValue());
-					        assertEquals(beforeReport.getBasicDataAsString(),
-					                bungeeNotificationReportBasicData.getValue());
+							DeleteBungeeNotification bungeeNotif = TestsBungeeManager
+					                .assertCalledOnceSendPluginNotificationToAll(bm, DeleteBungeeNotification.class);
+							assertEquals(staff.getUniqueId().toString(), bungeeNotif.staffUniqueId);
+							assertEquals(beforeReport.getBasicDataAsString(),
+						                bungeeNotif.reportBasicDataString);
 				        } else {
-					        verify(bm, times(0)).sendDeleteNotification(any(UUID.class), any(String.class));
+							TestsBungeeManager.assertNeverCalledSendPluginNotificationToAll(bm, DeleteBungeeNotification.class);
 				        }
 
 				        verify(rm, times(1)).reportIsDeleted(beforeReport.getId());
@@ -1957,8 +1921,6 @@ public class ReportTest extends TestClass {
 
 		ReportsManager rm = new ReportsManager();
 
-		Logger.setDefaultClassLoggerLevel(Level.DEBUG);
-		LOGGER.setLevel(Level.DEBUG);
 		assertTrue(taskScheduler.runTaskAndWait((tc) -> {
 			TestsReportUtils.createRandomReportAsynchronously(true, true, taskScheduler, db, (r) -> {
 				beforeReportAction.accept(r);
@@ -2043,12 +2005,12 @@ public class ReportTest extends TestClass {
 		reportAdvancedData.put(Report.AdvancedData.REPORTER_IP, reporterIP);
 		reportAdvancedData.put(Report.AdvancedData.REPORTER_LOCATION, reporterLocation);
 		reportAdvancedData.put(Report.AdvancedData.REPORTER_MESSAGES,
-		        Report.AdvancedData.formatMessages(Arrays.asList(reporterMessages)));
+		        Report.AdvancedData.serializeMessages(Arrays.asList(reporterMessages)));
 
 		reportAdvancedData.put(Report.AdvancedData.REPORTED_IP, reportedIP);
 		reportAdvancedData.put(Report.AdvancedData.REPORTED_LOCATION, reportedLocation);
 		reportAdvancedData.put(Report.AdvancedData.REPORTED_MESSAGES,
-		        Report.AdvancedData.formatMessages(Arrays.asList(reportedMessages)));
+		        Report.AdvancedData.serializeMessages(Arrays.asList(reportedMessages)));
 		reportAdvancedData.put(Report.AdvancedData.REPORTED_GAMEMODE, reportedGamemode);
 		reportAdvancedData.put(Report.AdvancedData.REPORTED_ON_GROUND, reportedOnGround);
 		reportAdvancedData.put(Report.AdvancedData.REPORTED_SNEAK, reportedSneaking);

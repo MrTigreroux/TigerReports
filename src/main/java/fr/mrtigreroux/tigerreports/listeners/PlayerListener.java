@@ -18,13 +18,13 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.server.ServerCommandEvent;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
+import fr.mrtigreroux.tigerreports.bungee.BungeeManager;
 import fr.mrtigreroux.tigerreports.commands.HelpCommand;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.data.database.Database;
 import fr.mrtigreroux.tigerreports.logs.Logger;
-import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.managers.ReportsManager;
 import fr.mrtigreroux.tigerreports.managers.UpdatesManager;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
@@ -80,7 +80,7 @@ public class PlayerListener implements Listener {
 		Logger.EVENTS.info(() -> "onPlayerJoin(): " + u.getName() + ", u = " + u);
 		FileConfiguration configFile = ConfigFile.CONFIG.get();
 
-		tr.runTaskDelayedly(2000L, () -> {
+		tr.runTaskDelayedly(configFile.getLong("Config.PlayerConnectionProcessingDelay", 2000L), () -> {
 			if (p.isOnline()) {
 				u.updateBasicData(db, bm, um);
 				um.processUserConnection(p); // In case that PlayerQuitEvent is fired after PlayerJoinEvent (for a reconnection it should be the opposite)

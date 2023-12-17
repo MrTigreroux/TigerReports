@@ -28,11 +28,11 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import fr.mrtigreroux.tigerreports.TestsBukkit;
+import fr.mrtigreroux.tigerreports.bungee.BungeeManager;
 import fr.mrtigreroux.tigerreports.data.Holder;
 import fr.mrtigreroux.tigerreports.data.constants.Status;
 import fr.mrtigreroux.tigerreports.data.database.Database;
 import fr.mrtigreroux.tigerreports.logs.Logger;
-import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.managers.ReportsManager;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
 import fr.mrtigreroux.tigerreports.managers.VaultManager;
@@ -46,6 +46,7 @@ import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
 import fr.mrtigreroux.tigerreports.utils.CollectionUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 import fr.mrtigreroux.tigerreports.utils.RandomUtils;
+import fr.mrtigreroux.tigerreports.utils.SerializationUtils;
 import fr.mrtigreroux.tigerreports.utils.TestsMessageUtils;
 import fr.mrtigreroux.tigerreports.utils.TestsUserUtils;
 import fr.mrtigreroux.tigerreports.utils.UserUtils;
@@ -71,7 +72,7 @@ public class TestsReport {
 	}
 
 	/**
-	 * Does not use {@link AdvancedData#formatConfigEffects(java.util.Collection)} but a constant string.
+	 * Does not use {@link AdvancedData#serializeConfigEffects(java.util.Collection)} but a constant string.
 	 * 
 	 * @param reportData
 	 * @param bm
@@ -80,11 +81,11 @@ public class TestsReport {
 		Random r = new Random();
 		putIfMissing(reportData, Report.AdvancedData.REPORTED_IP, TestsReport.getRandomIPAddress(r));
 		putIfMissing(reportData, Report.AdvancedData.REPORTED_LOCATION,
-		        MessageUtils.formatLocation(TestsReport.mockRandomLocation(), bm));
+		        SerializationUtils.serializeLocation(TestsReport.mockRandomLocation(), bm));
 
 		List<SavedMessage> messages = getRandomSavedMessages(r);
-		putIfMissing(reportData, Report.AdvancedData.REPORTED_MESSAGES, AdvancedData.formatMessages(messages));
-		putIfMissing(reportData, Report.AdvancedData.REPORTED_GAMEMODE, AdvancedData.formatGamemode(GameMode.SURVIVAL));
+		putIfMissing(reportData, Report.AdvancedData.REPORTED_MESSAGES, AdvancedData.serializeMessages(messages));
+		putIfMissing(reportData, Report.AdvancedData.REPORTED_GAMEMODE, AdvancedData.serializeGamemode(GameMode.SURVIVAL));
 		putIfMissing(reportData, Report.AdvancedData.REPORTED_ON_GROUND, RandomUtils.getRandomInt(r, 0, 1));
 		putIfMissing(reportData, Report.AdvancedData.REPORTED_SNEAK, RandomUtils.getRandomInt(r, 0, 1));
 		putIfMissing(reportData, Report.AdvancedData.REPORTED_SPRINT, RandomUtils.getRandomInt(r, 0, 1));

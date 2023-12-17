@@ -14,7 +14,6 @@ import fr.mrtigreroux.tigerreports.logs.Logger;
 import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
-import fr.mrtigreroux.tigerreports.utils.UserUtils;
 import net.milkbowl.vault.chat.Chat;
 
 /**
@@ -62,27 +61,6 @@ public class VaultManager {
 
 	public interface DisplayNameResultCallback {
 		void onDisplayNameReceived(String displayName);
-	}
-
-	// TODO Unused
-	public void getPlayerDisplayNameAsynchronously(OfflinePlayer p, boolean staff, TaskScheduler taskScheduler,
-	        DisplayNameResultCallback resultCallback) {
-		if (!UserUtils.useDisplayName(staff)) {
-			resultCallback.onDisplayNameReceived(p.getName());
-		}
-
-		if (!p.isOnline()) {
-			UUID uuid = p.getUniqueId();
-			String lastDisplayName = displayNames.get(uuid);
-			if (lastDisplayName != null) {
-				resultCallback.onDisplayNameReceived(lastDisplayName);
-			} else {
-				// should add String name as param and use it
-				getVaultDisplayNameAsynchronously(p, null, taskScheduler, resultCallback);
-			}
-		} else {
-			resultCallback.onDisplayNameReceived(getVaultDisplayName(p, null));
-		}
 	}
 
 	public void getVaultDisplayNameAsynchronously(OfflinePlayer p, String name, TaskScheduler taskScheduler,

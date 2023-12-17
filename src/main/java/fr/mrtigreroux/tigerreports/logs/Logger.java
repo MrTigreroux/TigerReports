@@ -181,4 +181,12 @@ public abstract class Logger {
 		return false;
 	}
 
+	public ChildLogger newChild(String childLoggerName) {
+		return new ChildLogger(this, childLoggerName);
+	}
+
+	public ChildLogger newChild(Class<?> clazz) {
+		return new ChildLogger(this, clazz.getSimpleName());
+	}
+
 }

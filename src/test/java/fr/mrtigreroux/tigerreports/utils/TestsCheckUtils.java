@@ -3,7 +3,9 @@ package fr.mrtigreroux.tigerreports.utils;
 /**
  * @author MrTigreroux
  */
-public class CheckUtils {
+public class TestsCheckUtils {
+
+	private TestsCheckUtils() {}
 
 	public static boolean longRightValue(long value, long minExpected, int excessCoef) {
 		return longBetween(value, minExpected, minExpected * excessCoef);

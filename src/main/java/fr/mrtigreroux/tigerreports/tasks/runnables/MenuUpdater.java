@@ -37,6 +37,7 @@ public class MenuUpdater implements Runnable {
 		long now = System.currentTimeMillis();
 		try {
 			if (now - lastUsersDataUpdateTime > USERS_DATA_UPDATE_INTERVAL) {
+				LOGGER.debug(() -> "update users manager");
 				um.updateData(db, taskScheduler);
 				lastUsersDataUpdateTime = now;
 			}
@@ -45,10 +46,11 @@ public class MenuUpdater implements Runnable {
 		}
 
 		try {
+			LOGGER.debug(() -> "update reports manager");
 			boolean updateWasNeeded = rm.updateData(db, taskScheduler, um);
 
 			if (!updateWasNeeded) {
-				stop(false, taskScheduler);
+				stop(taskScheduler);
 			}
 		} catch (IllegalStateException underCooldown) {
 			// Ignored
@@ -68,7 +70,7 @@ public class MenuUpdater implements Runnable {
 		}
 	}
 
-	public static void stop(boolean reset, TaskScheduler taskScheduler) {
+	public static void stop(TaskScheduler taskScheduler) {
 		if (taskId != -1) {
 			LOGGER.info(() -> "-------------- MenuUpdater stop ---------------");
 			taskScheduler.cancelTask(taskId);

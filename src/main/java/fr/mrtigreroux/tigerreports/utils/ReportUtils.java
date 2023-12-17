@@ -14,6 +14,7 @@ import org.bukkit.entity.Player;
 
 import com.google.common.primitives.Ints;
 
+import fr.mrtigreroux.tigerreports.bungee.BungeeManager;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
@@ -22,7 +23,6 @@ import fr.mrtigreroux.tigerreports.data.constants.Status;
 import fr.mrtigreroux.tigerreports.data.database.Database;
 import fr.mrtigreroux.tigerreports.events.NewReportEvent;
 import fr.mrtigreroux.tigerreports.logs.Logger;
-import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.managers.ReportsManager;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
 import fr.mrtigreroux.tigerreports.managers.VaultManager;
@@ -145,16 +145,16 @@ public class ReportUtils {
 			Player reporter = u.getPlayer();
 			if (reporter != null) {
 				reportData.put(Report.AdvancedData.REPORTER_LOCATION,
-				        MessageUtils.formatLocation(reporter.getLocation(), bm));
+				        SerializationUtils.serializeLocation(reporter.getLocation(), bm));
 			}
 			reportData.put(Report.AdvancedData.REPORTER_MESSAGES,
-			        Report.AdvancedData.formatMessages(u.getLastMessages()));
+			        Report.AdvancedData.serializeMessages(u.getLastMessages()));
 
 			boolean missingData = !ReportUtils.collectAndFillReportedData(ru, bm, reportData);
 			if (missingData) {
 				LOGGER.debug(() -> "createReportAsynchronously(): missingData = " + missingData);
 				reportData.put(Report.AdvancedData.REPORTED_MESSAGES,
-				        Report.AdvancedData.formatMessages(ru.getLastMessages()));
+				        Report.AdvancedData.serializeMessages(ru.getLastMessages()));
 			}
 
 			StringBuilder queryColumnsName = new StringBuilder();
@@ -208,9 +208,9 @@ public class ReportUtils {
 		}
 		try {
 			data.put(AdvancedData.REPORTED_IP, ru.getIPAddress());
-			data.put(AdvancedData.REPORTED_LOCATION, MessageUtils.formatLocation(rp.getLocation(), bm));
-			data.put(AdvancedData.REPORTED_MESSAGES, AdvancedData.formatMessages(ru.getLastMessages()));
-			data.put(AdvancedData.REPORTED_GAMEMODE, AdvancedData.formatGamemode(rp.getGameMode()));
+			data.put(AdvancedData.REPORTED_LOCATION, SerializationUtils.serializeLocation(rp.getLocation(), bm));
+			data.put(AdvancedData.REPORTED_MESSAGES, AdvancedData.serializeMessages(ru.getLastMessages()));
+			data.put(AdvancedData.REPORTED_GAMEMODE, AdvancedData.serializeGamemode(rp.getGameMode()));
 			data.put(AdvancedData.REPORTED_ON_GROUND,
 			        !rp.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().equals(Material.AIR) ? 1 : 0);
 			data.put(AdvancedData.REPORTED_SNEAK, rp.isSneaking() ? 1 : 0);
@@ -218,7 +218,7 @@ public class ReportUtils {
 			data.put(AdvancedData.REPORTED_HEALTH,
 			        (int) Math.round(rp.getHealth()) + "/" + (int) Math.round(rp.getMaxHealth()));
 			data.put(AdvancedData.REPORTED_FOOD, rp.getFoodLevel());
-			data.put(AdvancedData.REPORTED_EFFECTS, AdvancedData.formatConfigEffects(rp.getActivePotionEffects()));
+			data.put(AdvancedData.REPORTED_EFFECTS, AdvancedData.serializeConfigEffects(rp.getActivePotionEffects()));
 			return true;
 		} catch (Exception ex) {
 			return false;

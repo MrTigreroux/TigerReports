@@ -17,6 +17,8 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
+import fr.mrtigreroux.tigerreports.bungee.BungeeManager;
+import fr.mrtigreroux.tigerreports.bungee.notifications.UsersDataChangedBungeeNotification;
 import fr.mrtigreroux.tigerreports.data.database.Database;
 import fr.mrtigreroux.tigerreports.data.database.QueryResult;
 import fr.mrtigreroux.tigerreports.logs.Logger;
@@ -577,7 +579,7 @@ public class UsersManager {
 			db.updateAsynchronously(query.toString(), queryParams);
 
 			queryParams.remove(0);
-			bm.sendUsersDataChangedNotification((String[]) queryParams.toArray());
+			bm.sendPluginNotificationToAll(new UsersDataChangedBungeeNotification(bm.getNetworkCurrentTime(), (String[]) queryParams.toArray()));
 		}
 	}
 

@@ -3,6 +3,8 @@ package fr.mrtigreroux.tigerreports.managers;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -11,6 +13,7 @@ import org.mockito.stubbing.Answer;
 
 import fr.mrtigreroux.tigerreports.data.Holder;
 import fr.mrtigreroux.tigerreports.data.database.Database;
+import fr.mrtigreroux.tigerreports.logs.Logger;
 import fr.mrtigreroux.tigerreports.objects.reports.Report;
 import fr.mrtigreroux.tigerreports.objects.reports.ReportsPage;
 import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
@@ -20,6 +23,9 @@ import fr.mrtigreroux.tigerreports.tasks.runnables.MenuUpdater;
  * @author MrTigreroux
  */
 public class TestsReportsManager {
+
+	private static final Logger LOGGER = Logger.fromClass(TestsReportsManager.class);
+	public static final Map<ReportsManager, Integer> waitingUpdateDataEndTaskIdByReportsManager = new HashMap<>();
 
 	public static void setupReportsManagerForAddListenerWithoutUpdateDataAndMenuUpdater(ReportsManager rm,
 	        MockedStatic<MenuUpdater> menuUpdaterStaticMock, Holder<Integer> menuUpdaterStartIfNeededCalledTimes) {
@@ -101,6 +107,27 @@ public class TestsReportsManager {
 			listening = state;
 		}
 
+	}
+
+	public static void whenReportsManagerIsNotUpdatingData(ReportsManager rm, TaskScheduler ts, long checkInterval, Runnable run) {
+		if (!rm.isPendingDataUpdate()) {
+			LOGGER.debug(() -> "whenReportsManagerIsNotUpdatingData(): rm is not pending data update, no periodic check needed");
+			run.run();
+			return;
+		}
+		LOGGER.debug(() -> "whenReportsManagerIsNotUpdatingData(): rm is pending data update, will periodically check it...");
+		waitingUpdateDataEndTaskIdByReportsManager.put(rm, ts.runTaskRepeatedly(checkInterval, checkInterval, () -> {
+			if (!rm.isPendingDataUpdate()) {
+				LOGGER.debug(() -> "whenReportsManagerIsNotUpdatingData(): rm is no longer pending data update");
+				Integer curTaskId = waitingUpdateDataEndTaskIdByReportsManager.get(rm);
+				if (curTaskId != null) {
+					ts.cancelTask(curTaskId);
+				}
+				run.run();
+			} else {
+				LOGGER.debug(() -> "whenReportsManagerIsNotUpdatingData(): rm is still pending data update...");
+			}
+		}));
 	}
 
 }

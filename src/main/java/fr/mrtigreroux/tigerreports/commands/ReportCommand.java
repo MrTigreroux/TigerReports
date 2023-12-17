@@ -11,13 +11,15 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
 
+import fr.mrtigreroux.tigerreports.bungee.BungeeManager;
+import fr.mrtigreroux.tigerreports.bungee.notifications.NewReportBungeeNotification;
+import fr.mrtigreroux.tigerreports.bungee.notifications.UsersDataChangedBungeeNotification;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.data.constants.Statistic;
 import fr.mrtigreroux.tigerreports.data.database.Database;
 import fr.mrtigreroux.tigerreports.logs.Logger;
-import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.managers.ReportsManager;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
 import fr.mrtigreroux.tigerreports.managers.VaultManager;
@@ -242,14 +244,14 @@ public class ReportCommand implements TabExecutor {
 		u.sendMessage(Message.REPORT_SENT.get()
 		        .replace("_Player_", r.getPlayerName(Report.ParticipantType.REPORTED, false, true, vm, bm))
 		        .replace("_Reason_", reason));
-		bm.sendPluginNotificationToAll(false, server, BungeeManager.NotificationType.NEW_REPORT,
-		        Boolean.toString(missingData), r.getBasicDataAsString());
+		bm.sendPluginNotificationToAll(new NewReportBungeeNotification(bm.getNetworkCurrentTime(), server, missingData,
+		        r.getBasicDataAsString()));
 
 		u.startCooldown(ReportUtils.getCooldown(), db, null);
 		ru.startImmunity(false, db, null, um);
 		u.changeStatistic(Statistic.REPORTS, 1, db, null);
 		ru.changeStatistic(Statistic.REPORTED_TIMES, 1, db, null);
-		bm.sendUsersDataChangedNotification(u.getUniqueId().toString(), ru.getUniqueId().toString());
+		bm.sendPluginNotificationToAll(new UsersDataChangedBungeeNotification(bm.getNetworkCurrentTime(), u.getUniqueId().toString(), ru.getUniqueId().toString()));
 
 		String reportIdStr = Integer.toString(r.getId());
 		for (String command : configFile.getStringList("Config.AutoCommands")) {

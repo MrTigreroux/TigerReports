@@ -19,11 +19,12 @@ import fr.mrtigreroux.tigerreports.utils.CollectionUtils;
  */
 public class ReportsPage implements Report.ReportListener {
 
-	private static final Logger LOGGER = Logger.fromClass(ReportsPage.class);
+	private static final Logger CLASS_LOGGER = Logger.fromClass(ReportsPage.class);
 
 	public static final int PAGE_MAX_REPORTS_AMOUNT = 27;
 
 	public final ReportsPageCharacteristics characteristics;
+	private final Logger instanceLogger;
 	private final ReportsManager rm;
 	private final Database db;
 	private final TaskScheduler taskScheduler;
@@ -35,6 +36,7 @@ public class ReportsPage implements Report.ReportListener {
 	public ReportsPage(ReportsPageCharacteristics characteristics, ReportsManager rm, Database db,
 	        TaskScheduler taskScheduler, UsersManager um) {
 		this.characteristics = Objects.requireNonNull(characteristics);
+		instanceLogger = CLASS_LOGGER.newChild(characteristics.toString());
 		this.rm = rm;
 		this.db = db;
 		this.taskScheduler = taskScheduler;
@@ -47,14 +49,13 @@ public class ReportsPage implements Report.ReportListener {
 
 	public boolean addListener(ReportsPageListener listener, Database db, TaskScheduler taskScheduler,
 	        ReportsManager rm, UsersManager um) {
-		LOGGER.info(() -> characteristics + ": addListener(" + listener + ")");
+		instanceLogger.info(() -> "addListener(" + listener + ")");
 
 		boolean wasEmpty = listeners.isEmpty();
 		boolean success = listeners.add(listener);
 
 		if (wasEmpty) { // Data is potentially expired or has never been collected
-			LOGGER.info(() -> characteristics + ": addListener(" + listener
-			        + "): updateDataWhenPossible() and start MenuUpdater");
+			instanceLogger.info(() -> "addListener(" + listener + "): updateDataWhenPossible() and start MenuUpdater");
 			rm.updateDataWhenPossible(db, taskScheduler, um);
 			MenuUpdater.startIfNeeded(rm, db, taskScheduler, um);
 		}
@@ -62,7 +63,7 @@ public class ReportsPage implements Report.ReportListener {
 	}
 
 	public boolean removeListener(ReportsPageListener listener, ReportsManager rm) {
-		LOGGER.info(() -> characteristics + ": removeListener(" + listener + ")");
+		instanceLogger.info(() -> "removeListener(" + listener + ")");
 		boolean success = listeners.remove(listener);
 //		if (listeners.isEmpty()) {
 //			destroy(rm);
@@ -78,8 +79,7 @@ public class ReportsPage implements Report.ReportListener {
 		Integer previousReportId = index < reportsId.size() ? reportsId.get(index) : null;
 		if (previousReportId == null || reportId != previousReportId) {
 			if (previousReportId != null) {
-				LOGGER.info(() -> characteristics + ": updateReportAtIndex(): remove report listener of "
-				        + previousReportId);
+				instanceLogger.info(() -> "updateReportAtIndex(): remove report listener of " + previousReportId);
 				rm.removeReportListener(previousReportId, this);
 			}
 
@@ -107,7 +107,7 @@ public class ReportsPage implements Report.ReportListener {
 	}
 
 	public void removeOldReports(int maxReportIndex, ReportsManager rm) {
-		LOGGER.info(() -> characteristics + ": removeOldReports(" + maxReportIndex + ")");
+		instanceLogger.info(() -> "removeOldReports(" + maxReportIndex + ")");
 		if (!reportsId.isEmpty()) {
 			int oldLastIndex = reportsId.size() - 1;
 
@@ -126,8 +126,7 @@ public class ReportsPage implements Report.ReportListener {
 		Integer previousReportId = reportsId.get(index);
 		reportsId.remove(index);
 		if (rm != null && previousReportId != null && !reportsId.contains(previousReportId)) { // previousReportId can still be in reportsId at other index
-			LOGGER.info(
-			        () -> characteristics + ": removeReportAtIndex(): remove report listener of " + previousReportId);
+			instanceLogger.info(() -> "removeReportAtIndex(): remove report listener of " + previousReportId);
 			rm.removeReportListener(previousReportId, this);
 		}
 		changed = true;
@@ -171,14 +170,14 @@ public class ReportsPage implements Report.ReportListener {
 
 	private void processReportChange(Report r) {
 		if (rm.isPendingDataUpdate()) { // group all changes to avoid several page change notifications
-			LOGGER.debug(() -> characteristics + ": processReportChange(): changed set to true");
+			instanceLogger.debug(() -> "processReportChange(): changed set to true");
 			changed = true;
 		} else {
 			if (couldContainReport(r)) { // report is still in the page
-				LOGGER.debug(() -> characteristics + ": processReportChange(): broadcastPageChanged()");
+				instanceLogger.debug(() -> "processReportChange(): broadcastPageChanged()");
 				broadcastPageChanged();
 			} else { // need to collect the eventually new report coming from the old next page
-				LOGGER.debug(() -> characteristics + ": processReportChange(): rm.updateDataWhenPossible()");
+				instanceLogger.debug(() -> "processReportChange(): rm.updateDataWhenPossible()");
 				rm.updateDataWhenPossible(db, taskScheduler, um);
 			}
 		}
@@ -196,10 +195,10 @@ public class ReportsPage implements Report.ReportListener {
 		if (changed) {
 			changed = false;
 
-			LOGGER.info(() -> characteristics + ": broadcastIfPageChanged(): page changed, broadcast");
+			instanceLogger.info(() -> "broadcastIfPageChanged(): page changed, broadcast");
 			broadcastPageChanged();
 		} else {
-			LOGGER.info(() -> characteristics + ": broadcastIfPageChanged(): page has not changed");
+			instanceLogger.info(() -> "broadcastIfPageChanged(): page has not changed");
 		}
 	}
 
@@ -238,7 +237,7 @@ public class ReportsPage implements Report.ReportListener {
 	}
 
 	public void destroy(ReportsManager rm) {
-		LOGGER.info(() -> characteristics + ": destroy()");
+		instanceLogger.info(() -> "destroy()");
 		for (Integer reportId : reportsId) {
 			if (reportId != null) {
 				rm.removeReportListener(reportId, this);

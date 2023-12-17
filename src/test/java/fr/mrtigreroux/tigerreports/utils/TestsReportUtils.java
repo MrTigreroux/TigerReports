@@ -26,9 +26,9 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import fr.mrtigreroux.tigerreports.bungee.BungeeManager;
 import fr.mrtigreroux.tigerreports.data.database.Database;
 import fr.mrtigreroux.tigerreports.logs.Logger;
-import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.managers.ReportsManager;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
 import fr.mrtigreroux.tigerreports.objects.reports.Report;
@@ -173,16 +173,16 @@ public class TestsReportUtils {
 		Map<String, Object> reportAdvancedData = new HashMap<>();
 		reportAdvancedData.put(Report.AdvancedData.REPORTER_IP, reporter.getIPAddress());
 		reportAdvancedData.put(Report.AdvancedData.REPORTER_LOCATION,
-		        reporterOnline ? MessageUtils.formatLocation(reporter.getPlayer().getLocation(), bm) : null);
+		        reporterOnline ? SerializationUtils.serializeLocation(reporter.getPlayer().getLocation(), bm) : null);
 		reportAdvancedData.put(Report.AdvancedData.REPORTER_MESSAGES,
-		        Report.AdvancedData.formatMessages(reporter.getLastMessages()));
+		        Report.AdvancedData.serializeMessages(reporter.getLastMessages()));
 
 		Map<String, Object> reportedAdvancedData = new HashMap<>();
 		reportedAdvancedData.put(Report.AdvancedData.REPORTED_IP, reported.getIPAddress());
 		reportedAdvancedData.put(Report.AdvancedData.REPORTED_LOCATION,
-		        reportedOnline ? MessageUtils.formatLocation(reported.getPlayer().getLocation(), bm) : null);
+		        reportedOnline ? SerializationUtils.serializeLocation(reported.getPlayer().getLocation(), bm) : null);
 		reportedAdvancedData.put(Report.AdvancedData.REPORTED_MESSAGES,
-		        Report.AdvancedData.formatMessages(reported.getLastMessages()));
+		        Report.AdvancedData.serializeMessages(reported.getLastMessages()));
 		if (reportedOnline) {
 			TestsReport.fillMissingWithRandomReportedAdvancedData(reportedAdvancedData, bm);
 		}

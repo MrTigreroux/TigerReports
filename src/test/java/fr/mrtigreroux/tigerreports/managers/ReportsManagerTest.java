@@ -30,11 +30,11 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import fr.mrtigreroux.tigerreports.TestClass;
+import fr.mrtigreroux.tigerreports.bungee.BungeeManager;
 import fr.mrtigreroux.tigerreports.data.Holder;
 import fr.mrtigreroux.tigerreports.data.database.Database;
 import fr.mrtigreroux.tigerreports.data.database.TestsDatabaseManager;
 import fr.mrtigreroux.tigerreports.data.database.TestsSQLite;
-import fr.mrtigreroux.tigerreports.logs.Level;
 import fr.mrtigreroux.tigerreports.managers.TestsReportsManager.FakeReportListener;
 import fr.mrtigreroux.tigerreports.managers.TestsReportsManager.FakeReportsPageListener;
 import fr.mrtigreroux.tigerreports.objects.reports.Report;
@@ -873,7 +873,6 @@ class ReportsManagerTest extends TestClass {
 
 				verify(rm, times(0)).updateDataWhenPossible(db, taskScheduler, um);
 
-				LOGGER.setLevel(Level.DEBUG);
 				for (Report r : dbReports) {
 					LOGGER.debug(() -> "check deep equals report before id = " + r.getId());
 					AssertionUtils.assertDeepEquals(r, rm.getCachedReportById(r.getId()), "advancedData"); // updateData doesn't collect advancedData
@@ -1707,6 +1706,9 @@ class ReportsManagerTest extends TestClass {
 		}
 
 		void testSwitchBetween2Pages(int reportsAmount) {
+			// NB: MenuUpdater is never executed (started and stopped but no execution) because of the default interval of 10 seconds.
+			// NB: Sometimes (depending on how busy the executing computer is) some tasks can remain being executed after the test is considered as finished (tc.setDone()).
+			// If it's too difficult to find/fix what task is still being executed, the remaining tasks could be interrupted manually before tc.setDone() with for example the cleanMainTaskSchedulerAfterUse method to avoid the fail in TestClass.afterTest.
 			TestsTaskScheduler taskScheduler = TestsTaskScheduler.getCleanMainTaskScheduler();
 			Database db = TestsDatabaseManager.getCleanMainDatabase(taskScheduler);
 
@@ -1722,8 +1724,6 @@ class ReportsManagerTest extends TestClass {
 			        new ReportsPageCharacteristics(ReportsCharacteristics.CURRENT_REPORTS, 1));
 			TestsReportsPage testsReportsPage2 = new TestsReportsPage(
 			        new ReportsPageCharacteristics(ReportsCharacteristics.CURRENT_REPORTS, 2));
-
-			LOGGER.setLevel(Level.DEBUG);
 
 			assertTrue(taskScheduler.runTaskAndWait((tc) -> {
 				TestsReportUtils.createRandomReportsAsynchronously(reportsAmount, taskScheduler, db,
@@ -1774,7 +1774,11 @@ class ReportsManagerTest extends TestClass {
 								                                        .addListenerAndCheckPageAfterChangeNotif(
 								                                                testsReportsPageListener, rm, db,
 								                                                taskScheduler, um, () -> {
-									                                                tc.setDone();
+																					LOGGER.debug(() -> "testSwitchBetween2Pages(): 5");
+																					MenuUpdater.stop(taskScheduler);
+																					TestsReportsManager.whenReportsManagerIsNotUpdatingData(rm, taskScheduler, 1000L, () -> {
+																						tc.setDone();
+																					});
 								                                                });
 							                                });
 						                        });
@@ -1800,8 +1804,6 @@ class ReportsManagerTest extends TestClass {
 			        new ReportsPageCharacteristics(ReportsCharacteristics.CURRENT_REPORTS, 1));
 			TestsReportsPage testsReportsPage2 = new TestsReportsPage(
 			        new ReportsPageCharacteristics(ReportsCharacteristics.CURRENT_REPORTS, 2));
-
-			LOGGER.setLevel(Level.DEBUG);
 
 			assertTrue(taskScheduler.runTaskAndWait((tc) -> {
 				TestsReportUtils.createRandomReportsAsynchronously(reportsAmount, taskScheduler, db,
@@ -1851,8 +1853,12 @@ class ReportsManagerTest extends TestClass {
 									                                        .addListenerAndCheckPageAfterChangeNotif(
 									                                                testsReportsPageListener, rm, db,
 									                                                taskScheduler, um, () -> {
-										                                                tc.setDone();
-									                                                });
+										                                                MenuUpdater.stop(taskScheduler);
+																						TestsReportsManager.whenReportsManagerIsNotUpdatingData(rm, taskScheduler, 1000L, () -> {
+																							tc.setDone();
+																						});
+									                                        		}
+																			);
 								                                });
 							                        });
 						                });
@@ -1897,8 +1903,6 @@ class ReportsManagerTest extends TestClass {
 			        new ReportsPageCharacteristics(ReportsCharacteristics.CURRENT_REPORTS, 1));
 			TestsReportsPage testsReportsPage2 = new TestsReportsPage(
 			        new ReportsPageCharacteristics(ReportsCharacteristics.CURRENT_REPORTS, 2));
-
-			LOGGER.setLevel(Level.DEBUG);
 
 			assertTrue(taskScheduler.runTaskAndWait((tc) -> {
 				TestsReportUtils.createRandomReportsAsynchronously(reportsAmount, taskScheduler, db,
@@ -1952,7 +1956,10 @@ class ReportsManagerTest extends TestClass {
 									                                        .addListenerAndCheckPageAfterChangeNotif(
 									                                                testsReportsPageListener, rm, db,
 									                                                taskScheduler, um, () -> {
-										                                                tc.setDone();
+										                                                MenuUpdater.stop(taskScheduler);
+																						TestsReportsManager.whenReportsManagerIsNotUpdatingData(rm, taskScheduler, 1000L, () -> {
+																							tc.setDone();
+																						});
 									                                                });
 								                                });
 							                        });

@@ -16,6 +16,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.collect.Sets;
+import com.google.common.collect.Sets.SetView;
+
 import fr.mrtigreroux.tigerreports.logs.Logger;
 import fr.mrtigreroux.tigerreports.objects.DeeplyCloneable;
 
@@ -91,7 +94,7 @@ public class AssertionUtils {
 					continue;
 				}
 
-				LOGGER.debug(() -> "assertDeepNotSameFieldsReferences(): field " + field.getName() + ", type: "
+				LOGGER.debug(() -> "assertNotNullAndNotSameFieldsInstance(): field " + field.getName() + ", type: "
 				        + field.getType());
 				if (isPrimitive(field.getType())) {
 					continue;
@@ -105,7 +108,7 @@ public class AssertionUtils {
 				        + " is null for expected, all fields should not be null to be able to check the instance but also check that their value is correctly copied");
 
 				if (ignored.contains(field.getName())) {
-					LOGGER.debug(() -> "assertDeepNotSameFieldsReferences(): ignore: " + field.getName());
+					LOGGER.debug(() -> "assertNotNullAndNotSameFieldsInstance(): ignore: " + field.getName());
 					continue;
 				}
 				Object actualObj = field.get(actual);
@@ -161,6 +164,18 @@ public class AssertionUtils {
 			}
 		}
 		assertEquals(expectedList, actualList);
+	}
+
+	public static <T> void assertSetEquals(Set<T> expected, Set<T> actual, String context) {
+		if (expected != null) {
+			String contextPrefix = context != null ? context + ": " : "";
+			SetView<T> missing = Sets.difference(expected, actual);
+			SetView<T> unexpected = Sets.difference(actual, expected);
+			assertTrue(missing.isEmpty() && unexpected.isEmpty(), () -> contextPrefix + "Missing items: " + CollectionUtils.toString(missing) + "\nUnexpected items: " + CollectionUtils.toString(unexpected));
+			assertEquals(expected.size(), actual.size(), () -> contextPrefix + "Expected: "
+			        + CollectionUtils.toString(expected) + ", \nActual: " + CollectionUtils.toString(actual));
+		}
+		assertEquals(expected, actual);
 	}
 
 	public static <T> void assertDeepEquals(T expected, T actual, String... fieldNamesToIgnore) {

@@ -19,6 +19,7 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import fr.mrtigreroux.tigerreports.bungee.BungeeManager;
 import fr.mrtigreroux.tigerreports.commands.ReportCommand;
 import fr.mrtigreroux.tigerreports.commands.ReportsCommand;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
@@ -30,7 +31,6 @@ import fr.mrtigreroux.tigerreports.data.database.SQLite;
 import fr.mrtigreroux.tigerreports.listeners.InventoryListener;
 import fr.mrtigreroux.tigerreports.listeners.PlayerListener;
 import fr.mrtigreroux.tigerreports.logs.Logger;
-import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.managers.ReportsManager;
 import fr.mrtigreroux.tigerreports.managers.UpdatesManager;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
@@ -83,6 +83,7 @@ public class TigerReports extends JavaPlugin implements TaskScheduler {
 	}
 
 	public void load() {
+		Logger.MAIN.info(() -> "load()");
 		for (ConfigFile configFiles : ConfigFile.values()) {
 			configFiles.load(this);
 		}
@@ -121,6 +122,7 @@ public class TigerReports extends JavaPlugin implements TaskScheduler {
 					User u = usersManager.getOnlineUser(p);
 					if (u != null) {
 						u.updateBasicData(db, bungeeManager, usersManager);
+						bungeeManager.processPlayerConnection(p);
 					} else {
 						LogUtils.logUnexpectedOfflineUser(Logger.MAIN, "load()", p);
 					}
@@ -280,7 +282,8 @@ public class TigerReports extends JavaPlugin implements TaskScheduler {
 	}
 
 	public void unload() {
-		MenuUpdater.stop(true, this);
+		Logger.MAIN.info(() -> "unload()");
+		MenuUpdater.stop(this);
 		ReportsNotifier.stop(this);
 
 		setCommandExecutor("report", null);

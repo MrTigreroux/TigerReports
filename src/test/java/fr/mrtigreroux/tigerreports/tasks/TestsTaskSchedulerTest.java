@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import fr.mrtigreroux.tigerreports.TestClass;
-import fr.mrtigreroux.tigerreports.utils.CheckUtils;
+import fr.mrtigreroux.tigerreports.utils.TestsCheckUtils;
 
 /**
  * @author MrTigreroux
@@ -91,7 +91,7 @@ class TestsTaskSchedulerTest extends TestClass {
 		long delay = 250;
 		taskScheduler.runTaskDelayedly(delay, SUCCESS_TASK);
 		checkSuccess();
-		assertTrue(CheckUtils.longRightValue(System.currentTimeMillis() - start, delay, 5));
+		assertTrue(TestsCheckUtils.longRightValue(System.currentTimeMillis() - start, delay, 5));
 	}
 
 	/**
@@ -103,7 +103,7 @@ class TestsTaskSchedulerTest extends TestClass {
 		long delay = 250;
 		taskScheduler.runTaskDelayedlyAsynchronously(delay, SUCCESS_TASK);
 		checkSuccess();
-		assertTrue(CheckUtils.longRightValue(System.currentTimeMillis() - start, delay, 5));
+		assertTrue(TestsCheckUtils.longRightValue(System.currentTimeMillis() - start, delay, 5));
 	}
 
 	/**
@@ -126,7 +126,7 @@ class TestsTaskSchedulerTest extends TestClass {
 		taskScheduler.runTaskRepeatedly(delay, period, () -> {
 			synchronized (results) {
 				int resultIndex = curResultIndex.getAndIncrement();
-				results[resultIndex] = CheckUtils.longRightValue(System.currentTimeMillis() - start,
+				results[resultIndex] = TestsCheckUtils.longRightValue(System.currentTimeMillis() - start,
 				        delay + period * resultIndex, 5);
 				if (resultIndex == repetitions - 1) {
 					synchronized (SUCCESS_LOCK) {
@@ -163,7 +163,7 @@ class TestsTaskSchedulerTest extends TestClass {
 
 		checkSuccess();
 
-		assertTrue(CheckUtils.longRightValue(System.currentTimeMillis() - start, delay2, 5));
+		assertTrue(TestsCheckUtils.longRightValue(System.currentTimeMillis() - start, delay2, 5));
 		assertEquals(repetitions, curResultIndex.get());
 	}
 
@@ -419,7 +419,7 @@ class TestsTaskSchedulerTest extends TestClass {
 			Thread.sleep((long) (delay * 0.25)); // time to start the task but not enough to execute it
 			assertTrue(taskStarted.get());
 
-			assertFalse(taskScheduler.waitForTerminationOrStop((long) (delay * 0.5)));
+			assertFalse(taskScheduler.waitForTerminationOrStop((long) (delay * 0.05)));
 			assertFalse(taskExecuted.get());
 			assertTrue(taskInterrupted.get());
 
@@ -443,7 +443,7 @@ class TestsTaskSchedulerTest extends TestClass {
 			AtomicBoolean taskStarted = new AtomicBoolean(false);
 			AtomicBoolean taskExecuted = new AtomicBoolean(false);
 			AtomicBoolean taskInterrupted = new AtomicBoolean(false);
-			long delay = 100L;
+			long delay = 1000L;
 			taskScheduler.runTask(() -> {
 				taskStarted.set(true);
 				try {
@@ -456,7 +456,7 @@ class TestsTaskSchedulerTest extends TestClass {
 			Thread.sleep((long) (delay * 0.25)); // time to start the task but not enough to execute it
 			assertTrue(taskStarted.get());
 
-			assertFalse(taskScheduler.waitForTerminationOrStop((long) (delay * 0.5)));
+			assertFalse(taskScheduler.waitForTerminationOrStop((long) (delay * 0.05)));
 			assertFalse(taskExecuted.get());
 			assertTrue(taskInterrupted.get());
 
@@ -506,7 +506,7 @@ class TestsTaskSchedulerTest extends TestClass {
 			assertTrue(taskStarted.get());
 			assertTrue(task2Started.get());
 
-			assertFalse(taskScheduler.waitForTerminationOrStop((long) (delay * 0.5)));
+			assertFalse(taskScheduler.waitForTerminationOrStop((long) (delay * 0.1)));
 			assertFalse(taskExecuted.get());
 			assertTrue(taskInterrupted.get());
 			assertFalse(task2Executed.get());
@@ -563,7 +563,7 @@ class TestsTaskSchedulerTest extends TestClass {
 			taskScheduler.runTaskDelayedly(delay2, SUCCESS_TASK);
 		});
 		checkSuccess();
-		assertTrue(CheckUtils.longRightValue(System.currentTimeMillis() - start, delay + delay2, 5));
+		assertTrue(TestsCheckUtils.longRightValue(System.currentTimeMillis() - start, delay + delay2, 5));
 	}
 
 	@Nested

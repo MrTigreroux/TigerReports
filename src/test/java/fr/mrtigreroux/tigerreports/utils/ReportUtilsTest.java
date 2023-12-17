@@ -24,13 +24,13 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import fr.mrtigreroux.tigerreports.TestClass;
+import fr.mrtigreroux.tigerreports.bungee.BungeeManager;
 import fr.mrtigreroux.tigerreports.data.Holder;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Appreciation;
 import fr.mrtigreroux.tigerreports.data.constants.Status;
 import fr.mrtigreroux.tigerreports.data.database.Database;
 import fr.mrtigreroux.tigerreports.data.database.TestsDatabaseManager;
-import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.managers.ReportsManager;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
 import fr.mrtigreroux.tigerreports.objects.reports.Report;
@@ -169,16 +169,16 @@ class ReportUtilsTest extends TestClass {
 			Map<String, Object> reportAdvancedData = new HashMap<>();
 			reportAdvancedData.put(Report.AdvancedData.REPORTER_IP, reporter.getIPAddress());
 			reportAdvancedData.put(Report.AdvancedData.REPORTER_LOCATION,
-			        reporterOnline ? MessageUtils.formatLocation(reporter.getPlayer().getLocation(), bm) : null);
+			        reporterOnline ? SerializationUtils.serializeLocation(reporter.getPlayer().getLocation(), bm) : null);
 			reportAdvancedData.put(Report.AdvancedData.REPORTER_MESSAGES,
-			        Report.AdvancedData.formatMessages(reporter.getLastMessages()));
+			        Report.AdvancedData.serializeMessages(reporter.getLastMessages()));
 
 			Map<String, Object> reportedAdvancedData = new HashMap<>();
 			reportedAdvancedData.put(Report.AdvancedData.REPORTED_IP, reported.getIPAddress());
 			reportedAdvancedData.put(Report.AdvancedData.REPORTED_LOCATION,
-			        reportedOnline ? MessageUtils.formatLocation(reported.getPlayer().getLocation(), bm) : null);
+			        reportedOnline ? SerializationUtils.serializeLocation(reported.getPlayer().getLocation(), bm) : null);
 			reportedAdvancedData.put(Report.AdvancedData.REPORTED_MESSAGES,
-			        Report.AdvancedData.formatMessages(reported.getLastMessages()));
+			        Report.AdvancedData.serializeMessages(reported.getLastMessages()));
 			if (reportedOnline) {
 				TestsReport.fillMissingWithRandomReportedAdvancedData(reportedAdvancedData, bm);
 			}
@@ -350,7 +350,7 @@ class ReportUtilsTest extends TestClass {
 
 	/**
 	 * Test methods for
-	 * {@link fr.mrtigreroux.tigerreports.utils.ReportUtils#createReportAsynchronously(fr.mrtigreroux.tigerreports.objects.users.User, fr.mrtigreroux.tigerreports.objects.users.User, java.lang.String, java.lang.String, boolean, fr.mrtigreroux.tigerreports.tasks.TaskScheduler, fr.mrtigreroux.tigerreports.data.database.Database, fr.mrtigreroux.tigerreports.managers.BungeeManager, fr.mrtigreroux.tigerreports.managers.UsersManager, fr.mrtigreroux.tigerreports.tasks.ResultCallback)}.
+	 * {@link fr.mrtigreroux.tigerreports.utils.ReportUtils#createReportAsynchronously(fr.mrtigreroux.tigerreports.objects.users.User, fr.mrtigreroux.tigerreports.objects.users.User, java.lang.String, java.lang.String, boolean, fr.mrtigreroux.tigerreports.tasks.TaskScheduler, fr.mrtigreroux.tigerreports.data.database.Database, fr.mrtigreroux.tigerreports.bungee.BungeeManager, fr.mrtigreroux.tigerreports.managers.UsersManager, fr.mrtigreroux.tigerreports.tasks.ResultCallback)}.
 	 */
 	@Nested
 	class CreateReportAsynchronously {
@@ -420,16 +420,16 @@ class ReportUtilsTest extends TestClass {
 			Map<String, Object> reportAdvancedData = new HashMap<>();
 			reportAdvancedData.put(Report.AdvancedData.REPORTER_IP, reporter.getIPAddress());
 			reportAdvancedData.put(Report.AdvancedData.REPORTER_LOCATION,
-			        reporterOnline ? MessageUtils.formatLocation(reporter.getPlayer().getLocation(), bm) : null);
+			        reporterOnline ? SerializationUtils.serializeLocation(reporter.getPlayer().getLocation(), bm) : null);
 			reportAdvancedData.put(Report.AdvancedData.REPORTER_MESSAGES,
-			        Report.AdvancedData.formatMessages(reporter.getLastMessages()));
+			        Report.AdvancedData.serializeMessages(reporter.getLastMessages()));
 
 			Map<String, Object> reportedAdvancedData = new HashMap<>();
 			reportedAdvancedData.put(Report.AdvancedData.REPORTED_IP, reported.getIPAddress());
 			reportedAdvancedData.put(Report.AdvancedData.REPORTED_LOCATION,
-			        reportedOnline ? MessageUtils.formatLocation(reported.getPlayer().getLocation(), bm) : null);
+			        reportedOnline ? SerializationUtils.serializeLocation(reported.getPlayer().getLocation(), bm) : null);
 			reportedAdvancedData.put(Report.AdvancedData.REPORTED_MESSAGES,
-			        Report.AdvancedData.formatMessages(reported.getLastMessages()));
+			        Report.AdvancedData.serializeMessages(reported.getLastMessages()));
 			if (reportedOnline) {
 				TestsReport.fillMissingWithRandomReportedAdvancedData(reportedAdvancedData, bm);
 			}

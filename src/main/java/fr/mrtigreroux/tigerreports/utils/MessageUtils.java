@@ -9,7 +9,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -20,7 +19,6 @@ import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.Permission;
 import fr.mrtigreroux.tigerreports.logs.Logger;
-import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
 import fr.mrtigreroux.tigerreports.objects.users.User;
 import net.md_5.bungee.api.ChatColor;
@@ -97,7 +95,7 @@ public class MessageUtils {
 		String temp = Normalizer.normalize(message, Normalizer.Form.NFD);
 
 		message = CONSOLE_PATTERN.matcher(temp).replaceAll("");
-		Bukkit.getConsoleSender().sendMessage(message.replace("»", ">"));
+		Bukkit.getConsoleSender().sendMessage(message.replace("ï¿½", ">"));
 	}
 
 	public static ChatColor getLastColor(String text, String lastWord) {
@@ -198,29 +196,6 @@ public class MessageUtils {
 			advancedText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command));
 		}
 		return new TextComponent(advancedText);
-	}
-
-	public static String getServer(String configLoc) {
-		return configLoc != null ? configLoc.split("/")[0] : null;
-	}
-
-	public static String formatLocation(Location loc, BungeeManager bm) {
-		StringBuilder configLoc = new StringBuilder(bm.getServerName()).append("/").append(loc.getWorld().getName());
-		for (Object coords : new Object[] { loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch() }) {
-			String coord = String.valueOf(coords);
-			int end = (end = coord.indexOf('.') + 3) < coord.length() ? end : coord.length();
-			configLoc.append("/").append(coord.substring(0, end));
-		}
-		return configLoc.toString();
-	}
-
-	public static Location unformatLocation(String configLoc) {
-		if (configLoc == null) {
-			return null;
-		}
-		String[] coords = configLoc.split("/");
-		return new Location(Bukkit.getWorld(coords[1]), Double.parseDouble(coords[2]), Double.parseDouble(coords[3]),
-		        Double.parseDouble(coords[4]), Float.parseFloat(coords[5]), Float.parseFloat(coords[6]));
 	}
 
 	public static String getServerName(String server) {

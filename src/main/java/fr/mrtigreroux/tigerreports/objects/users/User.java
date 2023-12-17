@@ -21,6 +21,13 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import fr.mrtigreroux.tigerreports.TigerReports;
+import fr.mrtigreroux.tigerreports.bungee.BungeeManager;
+import fr.mrtigreroux.tigerreports.bungee.notifications.CommentBungeeNotification;
+import fr.mrtigreroux.tigerreports.bungee.notifications.CooldownBungeeNotification;
+import fr.mrtigreroux.tigerreports.bungee.notifications.ImmunityBungeeNotification;
+import fr.mrtigreroux.tigerreports.bungee.notifications.PunishBungeeNotification;
+import fr.mrtigreroux.tigerreports.bungee.notifications.StatisticBungeeNotification;
+import fr.mrtigreroux.tigerreports.bungee.notifications.StopCooldownBungeeNotification;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
@@ -31,7 +38,6 @@ import fr.mrtigreroux.tigerreports.data.constants.Status;
 import fr.mrtigreroux.tigerreports.data.database.Database;
 import fr.mrtigreroux.tigerreports.data.database.QueryResult;
 import fr.mrtigreroux.tigerreports.logs.Logger;
-import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.managers.ReportsManager;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
 import fr.mrtigreroux.tigerreports.managers.VaultManager;
@@ -58,6 +64,7 @@ import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.DatetimeUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 import fr.mrtigreroux.tigerreports.utils.ReportUtils;
+import fr.mrtigreroux.tigerreports.utils.SerializationUtils;
 import fr.mrtigreroux.tigerreports.utils.UserUtils;
 import net.md_5.bungee.api.chat.TextComponent;
 
@@ -279,12 +286,15 @@ public class User {
 			return;
 		}
 
-		sendMessage(MessageUtils.getAdvancedMessage(
-		        Message.REPORT_NOTIFICATION.get()
-		                .replace("_Player_", UserUtils.getStaffDisplayName(r.getProcessorStaff(), vm))
-		                .replace("_Appreciation_", r.getAppreciation().getDisplayName())
-		                .replace("_Time_", DatetimeUtils.getTimeAgo(r.getDate())),
-		        "_Report_", r.getName(), r.getText(vm, bm), null));
+		String notifMsg = Message.REPORT_NOTIFICATION.get()
+				.replace("_Player_", UserUtils.getStaffDisplayName(r.getProcessorStaff(), vm))
+				.replace("_Appreciation_", r.getAppreciation().getDisplayName())
+				.replace("_Time_", DatetimeUtils.getTimeAgo(r.getDate()));
+		if (ConfigUtils.playersNotificationsHoverableReport()) {
+			sendMessage(MessageUtils.getAdvancedMessage(notifMsg, "_Report_", r.getName(), r.getText(vm, bm), null));
+		} else {
+			sendMessage(notifMsg.replace("_Report_", r.getName()));
+		}
 	}
 
 	public void setImmunity(String immunity, boolean bungee, Database db, BungeeManager bm, UsersManager um) {
@@ -292,7 +302,7 @@ public class User {
 
 		if (!bungee) {
 			if (bm != null) {
-				bm.sendPlayerNewImmunityNotification(this.immunity, uuid);
+				bm.sendPluginNotificationToAll(new ImmunityBungeeNotification(bm.getNetworkCurrentTime(), uuid, this.immunity));
 			}
 			db.updateAsynchronously("UPDATE tigerreports_users SET immunity = ? WHERE uuid = ?",
 			        Arrays.asList(this.immunity, uuid.toString()));
@@ -368,7 +378,7 @@ public class User {
 
 		if (!bungee) {
 			if (bm != null) {
-				bm.sendPlayerNewCooldownNotification(cooldown, uuid);
+				bm.sendPluginNotificationToAll(new CooldownBungeeNotification(bm.getNetworkCurrentTime(), uuid, cooldown));
 			}
 			db.updateAsynchronously("UPDATE tigerreports_users SET cooldown = ? WHERE uuid = ?",
 			        Arrays.asList(cooldown, uuid.toString()));
@@ -395,7 +405,7 @@ public class User {
 		if (!bungee) {
 			startCooldown(seconds, db, bm);
 			if (staff != null) {
-				bm.sendPlayerPunishNotification(staff.getUniqueId(), uuid, seconds);
+				bm.sendPluginNotificationToAll(new PunishBungeeNotification(bm.getNetworkCurrentTime(), staff.getUniqueId(), uuid, seconds));
 			}
 		}
 		if (staff != null) {
@@ -441,7 +451,7 @@ public class User {
 			sendMessage(Message.COOLDOWN_STOPPED.get());
 
 			if (!bungee) {
-				bm.sendPlayerStopCooldownNotification(staff.getUniqueId(), uuid);
+				bm.sendPluginNotificationToAll(new StopCooldownBungeeNotification(bm.getNetworkCurrentTime(), staff.getUniqueId(), uuid));
 			}
 		}
 	}
@@ -460,7 +470,7 @@ public class User {
 
 		if (!bungee) {
 			if (bm != null) {
-				bm.sendChangeStatisticNotification(relativeValue, statisticName, uuid);
+				bm.sendPluginNotificationToAll(new StatisticBungeeNotification(bm.getNetworkCurrentTime(), uuid, statisticName, relativeValue));
 			}
 			db.updateAsynchronously("UPDATE tigerreports_users SET `" + statisticName + "` = `" + statisticName
 			        + "` + ? WHERE uuid = ?", Arrays.asList(relativeValue, uuid.toString()));
@@ -943,24 +953,26 @@ public class User {
 		});
 	}
 
-	public void toggleCommentSentState(Comment c, Database db, TaskScheduler taskScheduler, VaultManager vm,
-	        BungeeManager bm) {
+	public void toggleCommentSentState(Comment c, Database db, TaskScheduler taskScheduler, VaultManager vm, BungeeManager bm) {
 		Report r = c.getReport();
 		int reportId = r.getId();
 		int commentId = c.getId();
 		boolean isPrivate = c.getStatus(true).equals("Private");
 		if (isPrivate && isOnline()) {
 			sendCommentNotification(r, c, true, db, vm, bm);
-		} else if (isPrivate && isOnlineInNetwork(bm)) {
-			bm.sendReportCommentNotification(reportId, commentId, getName());
 		} else {
-			ReportsManager rm = TigerReports.getInstance().getReportsManager();
-			if (isPrivate) {
-				c.setStatus("Sent", db, rm);
-				setCommentNotification(reportId, commentId, true, db, taskScheduler);
+			String bungeeServerName = bm.getPlayerServerName(getName());
+			if (isPrivate && bungeeServerName != null) {
+				bm.sendPluginNotificationToServer(bungeeServerName, new CommentBungeeNotification(bm.getNetworkCurrentTime(), reportId, commentId, getUniqueId()));
 			} else {
-				c.setStatus("Private", db, rm);
-				setCommentNotification(reportId, commentId, false, db, taskScheduler);
+				ReportsManager rm = TigerReports.getInstance().getReportsManager();
+				if (isPrivate) {
+					c.setStatus("Sent", db, rm);
+					setCommentNotification(reportId, commentId, true, db, taskScheduler);
+				} else {
+					c.setStatus("Private", db, rm);
+					setCommentNotification(reportId, commentId, false, db, taskScheduler);
+				}
 			}
 		}
 	}
@@ -1142,12 +1154,12 @@ public class User {
 			locType = "CURRENT";
 		} else {
 			configLoc = r.getOldLocation(targetType);
-			loc = MessageUtils.unformatLocation(configLoc);
+			loc = SerializationUtils.unserializeLocation(configLoc);
 			if (loc == null) {
 				MessageUtils.sendErrorMessage(p, Message.LOCATION_UNKNOWN.get().replace("_Player_", target));
 				return;
 			}
-			serverName = MessageUtils.getServer(configLoc);
+			serverName = SerializationUtils.getServer(configLoc);
 			locType = "OLD";
 		}
 

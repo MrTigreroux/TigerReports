@@ -27,7 +27,7 @@ public class ConsoleLogger extends Logger {
 
 	private static final Formatter FORMATTER = new SimpleFormatter() {
 
-		private static final String FORMAT = "%1$tH:%1$tM:%1$tS.%1$tL | %2$s | %3$7.7s | %4$s %5$s %n";
+		private static final String FORMAT = "%1$tH:%1$tM:%1$tS.%1$tL | %2$s | %3$14.14s | %4$s %5$s %n";
 
 		@Override
 		public synchronized String format(LogRecord lr) {

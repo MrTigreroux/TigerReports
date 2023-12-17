@@ -1,10 +1,13 @@
 package fr.mrtigreroux.tigerreports;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.junit.jupiter.params.ParameterizedTest;
 
 import fr.mrtigreroux.tigerreports.logs.Level;
 import fr.mrtigreroux.tigerreports.logs.Logger;
@@ -34,7 +37,7 @@ public abstract class TestClass {
 
 	@AfterEach
 	void afterTest(TestInfo testInfo) {
-		TestsTaskScheduler.cleanMainTaskScheduler();
+		assertTrue(TestsTaskScheduler.cleanMainTaskSchedulerAfterUse());
 		TestsReport.worlds.clear();
 		TestsReportUtils.resetIndependentReportsManager();
 		LOGGER.info(() -> "End of " + getTestName(testInfo));
@@ -42,15 +45,20 @@ public abstract class TestClass {
 
 	String getTestName(TestInfo testInfo) {
 		StringBuilder classNamePrefix = new StringBuilder();
-		Class<?> testClass = testInfo.getTestClass().orElseThrow();
+		Class<?> testClass = testInfo.getTestClass().orElseThrow(IllegalStateException::new);
 		byte i = 0;
 		while (i < MAX_PRINTED_PARENT_CLASSES && testClass != null && testClass.isMemberClass()) {
 			classNamePrefix.insert(0, testClass.getSimpleName() + ".");
 			i++;
 			testClass = testClass.getDeclaringClass();
 		}
-
-		return classNamePrefix + testInfo.getTestMethod().orElseThrow().getName() + "()";
+		String parametersInfo;
+		if (testInfo.getTestMethod().orElseThrow(IllegalStateException::new).getAnnotation(ParameterizedTest.class) != null) {
+			parametersInfo = testInfo.getDisplayName();
+		} else {
+			parametersInfo = "";
+		}
+		return classNamePrefix + testInfo.getTestMethod().orElseThrow(IllegalStateException::new).getName() + "(" + parametersInfo + ")";
 	}
 
 }

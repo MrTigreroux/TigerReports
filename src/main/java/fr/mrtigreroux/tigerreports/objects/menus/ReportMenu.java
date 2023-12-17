@@ -8,6 +8,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import fr.mrtigreroux.tigerreports.bungee.BungeeManager;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.MenuItem;
@@ -16,7 +17,6 @@ import fr.mrtigreroux.tigerreports.data.constants.Statistic;
 import fr.mrtigreroux.tigerreports.data.constants.Status;
 import fr.mrtigreroux.tigerreports.data.database.Database;
 import fr.mrtigreroux.tigerreports.logs.Logger;
-import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.managers.ReportsManager;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
 import fr.mrtigreroux.tigerreports.managers.VaultManager;
@@ -29,6 +29,7 @@ import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.DatetimeUtils;
 import fr.mrtigreroux.tigerreports.utils.MessageUtils;
 import fr.mrtigreroux.tigerreports.utils.ReportUtils;
+import fr.mrtigreroux.tigerreports.utils.SerializationUtils;
 
 /**
  * @author MrTigreroux
@@ -123,7 +124,7 @@ public class ReportMenu extends ReportManagerMenu implements User.UserListener {
 				        "_" + statName.substring(0, 1).toUpperCase() + statName.substring(1).replace("_", "") + "_",
 				        statDisplayedValue);
 			}
-			String serverName = (serverName = MessageUtils.getServer(r.getOldLocation(type))) != null
+			String serverName = (serverName = SerializationUtils.getServer(r.getOldLocation(type))) != null
 			        ? MessageUtils.getServerName(serverName)
 			        : Message.NOT_FOUND_MALE.get();
 

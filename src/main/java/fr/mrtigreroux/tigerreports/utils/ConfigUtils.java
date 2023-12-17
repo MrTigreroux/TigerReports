@@ -9,9 +9,9 @@ import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
+import fr.mrtigreroux.tigerreports.bungee.BungeeManager;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.logs.Logger;
-import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.managers.VaultManager;
 import fr.mrtigreroux.tigerreports.objects.reports.Report;
 import fr.mrtigreroux.tigerreports.objects.users.User;
@@ -79,7 +79,11 @@ public class ConfigUtils {
 	}
 
 	public static boolean playersNotifications() {
-		return isEnabled(ConfigFile.CONFIG.get(), "Config.Notifications.Players");
+		return isEnabled(ConfigFile.CONFIG.get(), "Config.Notifications.Players.Enabled");
+	}
+
+	public static boolean playersNotificationsHoverableReport() {
+		return isEnabled(ConfigFile.CONFIG.get(), "Config.Notifications.Players.HoverableReport");
 	}
 
 	public static ZoneId getZoneId() {

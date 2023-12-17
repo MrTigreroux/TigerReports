@@ -170,13 +170,6 @@ public class CollectionUtils {
 		return sb.append("](").append(size).append(")").toString();
 	}
 
-	public static <T> Collection<T> requireNotEmpty(Collection<T> collection) throws IllegalArgumentException {
-		if (collection == null || collection.isEmpty()) {
-			throw new IllegalArgumentException("Collection is null or empty");
-		}
-		return collection;
-	}
-
 	public static class ReversedList<T> implements Iterable<T> {
 
 		private final List<T> original;

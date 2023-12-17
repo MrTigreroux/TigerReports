@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.inventory.Inventory;
 
+import fr.mrtigreroux.tigerreports.bungee.BungeeManager;
 import fr.mrtigreroux.tigerreports.data.config.Message;
 import fr.mrtigreroux.tigerreports.data.constants.MenuItem;
 import fr.mrtigreroux.tigerreports.data.constants.MenuRawItem;
@@ -399,9 +400,12 @@ public class ReportsManager {
 					broadcastChangedReportsCommentsPages();
 					LOGGER.info(() -> "updateData(): broadcastChangedReportsPages()");
 					broadcastChangedReportsPages();
-
+					
+					LOGGER.info(() -> "updateData(): freeUnlistenedReportsPagesFromCache()");
 					freeUnlistenedReportsPagesFromCache(); // remove unlistened reports pages before unlistened reports because some reports could be only listened by an unlistened page
+					LOGGER.info(() -> "updateData(): freeUnlistenedReportsFromCache()");
 					freeUnlistenedReportsFromCache();
+					LOGGER.info(() -> "updateData(): finished");
 
 					pendingDataUpdate = false;
 

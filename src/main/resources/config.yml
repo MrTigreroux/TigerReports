@@ -76,9 +76,14 @@ Config:
     Delay: 2
     # Time in seconds before sending the notification after the connection of the user / Délai en secondes avant d'envoyer la notification après la connexion de l'utilisateur
     
-    Players: true
-    # Notify players about the decisions made on their reports / Informer les joueurs des décisions prises sur leurs signalements
-    
+    Players:
+      Enabled: true
+      # Notify players about the decisions made on their reports / Informer les joueurs des décisions prises sur leurs signalements
+      
+      HoverableReport: true
+      # Display report data when hovering the '_Report_' placeholder of the 'Messages: Report-notification' message of messages.yml file / Afficher les informations du signalement lorsqu'on survole le placeholder '_Report_' du message 'Messages: Report-notification' du fichier messages.yml
+    # Notifications for reporters when their reports are processed / Notifications des joueurs signaleurs lorsque leurs signalements sont traités.
+
     Staff:
       Connection: yes
       # Display at staff connection / Afficher à la connexion d'un membre de l'équipe
@@ -115,6 +120,9 @@ Config:
   
   DisplayNameForPlayers: no
   # Use display name of Bukkit or chat of Vault plugin to display reported and reporters names / Utiliser les noms personnalisés de Bukkit ou du chat du plugin Vault pour afficher les noms des joueurs signalés et signaleurs
+
+  PlayerConnectionProcessingDelay: 2000
+  # Time in milliseconds after which a player that joined the server is processed as online. It can be reduced to improve user experience, for example to reduce the time when teleporting to a player/location on a different server (on a BungeeCord network). But a too small time can trigger issues (for example when players frequently join and leave the server, typically on a BungeeCord network) / Temps en millisecondes avant qu'un joueur qui a rejoint le serveur soit considéré comme connecté. Ce temps peut être réduit pour améliorer l'expérience utilisateur, par exemple pour réduire le temps de téléportation vers un joueur/une position sur un autre serveur (dans un réseau BungeeCord). Mais un temps trop faible peut entrainer des problèmes (par exemple lorsque des joueurs se connectent et déconnectent fréquemment, typiquement sur un réseau BungeeCord)
   
   DefaultReasons:
     Reason1:
@@ -203,7 +211,7 @@ Config:
     # Note that the _Reporter_ placeholder will be replaced by the first reporter, not all to avoid a spam of commands / A noter que le placeholder _Reporter_ sera remplacé par le premier signaleur, et non tous pour éviter d'exécuter plusieurs commandes
     
     DefaultReasons: yes
-    # Use defaults reasons as punishments / Utiliser les raisons par défaut comme des sanctions
+    # Use default reasons as punishments / Utiliser les raisons par défaut comme des sanctions
     # "PunishCommands:" property must be added below each default reason / La propriété "PunishCommands:" doit être ajoutée en-dessous de chaque raison par défaut
     
     Punishment1:

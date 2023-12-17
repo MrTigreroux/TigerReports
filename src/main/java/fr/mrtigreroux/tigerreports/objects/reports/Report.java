@@ -16,6 +16,15 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 
+import fr.mrtigreroux.tigerreports.bungee.BungeeManager;
+import fr.mrtigreroux.tigerreports.bungee.notifications.ArchiveBungeeNotification;
+import fr.mrtigreroux.tigerreports.bungee.notifications.DeleteBungeeNotification;
+import fr.mrtigreroux.tigerreports.bungee.notifications.ProcessAbusiveBungeeNotification;
+import fr.mrtigreroux.tigerreports.bungee.notifications.ProcessBungeeNotification;
+import fr.mrtigreroux.tigerreports.bungee.notifications.ProcessPunishBungeeNotification;
+import fr.mrtigreroux.tigerreports.bungee.notifications.StatusBungeeNotification;
+import fr.mrtigreroux.tigerreports.bungee.notifications.UnarchiveBungeeNotification;
+import fr.mrtigreroux.tigerreports.bungee.notifications.UsersDataChangedBungeeNotification;
 import fr.mrtigreroux.tigerreports.data.config.ConfigFile;
 import fr.mrtigreroux.tigerreports.data.config.ConfigSound;
 import fr.mrtigreroux.tigerreports.data.config.Message;
@@ -27,7 +36,6 @@ import fr.mrtigreroux.tigerreports.data.database.QueryResult;
 import fr.mrtigreroux.tigerreports.events.ProcessReportEvent;
 import fr.mrtigreroux.tigerreports.events.ReportStatusChangeEvent;
 import fr.mrtigreroux.tigerreports.logs.Logger;
-import fr.mrtigreroux.tigerreports.managers.BungeeManager;
 import fr.mrtigreroux.tigerreports.managers.ReportsManager;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
 import fr.mrtigreroux.tigerreports.managers.VaultManager;
@@ -37,6 +45,7 @@ import fr.mrtigreroux.tigerreports.objects.users.User;
 import fr.mrtigreroux.tigerreports.objects.users.User.SavedMessage;
 import fr.mrtigreroux.tigerreports.tasks.ResultCallback;
 import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
+import fr.mrtigreroux.tigerreports.utils.CheckUtils;
 import fr.mrtigreroux.tigerreports.utils.CollectionUtils;
 import fr.mrtigreroux.tigerreports.utils.ConfigUtils;
 import fr.mrtigreroux.tigerreports.utils.DatetimeUtils;
@@ -169,8 +178,7 @@ public class Report implements DeeplyCloneable<Report> {
 		this.appreciationDetails = Objects.requireNonNull(appreciationDetails);
 		this.date = date;
 		this.reported = Objects.requireNonNull(reported);
-		this.reporters = reporters;
-		CollectionUtils.requireNotEmpty(reporters);
+		this.reporters = CheckUtils.notEmpty(reporters);
 		this.reason = reason;
 		this.archived = archived;
 	}
@@ -484,7 +492,8 @@ public class Report implements DeeplyCloneable<Report> {
 
 		if (!bungee) {
 			String configStatus = getStatusDetails();
-			bm.sendNewStatusNotification(configStatus, reportId);
+			bm.sendPluginNotificationToAll(
+			        new StatusBungeeNotification(bm.getNetworkCurrentTime(), reportId, configStatus));
 			if (isUndone) { // removes any previous appreciation
 				db.updateAsynchronously(
 				        "UPDATE tigerreports_reports SET status = ?,appreciation = ? WHERE report_id = ?",
@@ -710,7 +719,7 @@ public class Report implements DeeplyCloneable<Report> {
 			        && Objects.equals(reporterMessages, other.reporterMessages);
 		}
 
-		public static String formatConfigEffects(Collection<PotionEffect> effects) {
+		public static String serializeConfigEffects(Collection<PotionEffect> effects) {
 			StringBuilder configEffects = new StringBuilder();
 			for (PotionEffect effect : effects) {
 				configEffects.append(effect.getType().getName())
@@ -724,13 +733,13 @@ public class Report implements DeeplyCloneable<Report> {
 			return length > 1 ? configEffects.deleteCharAt(length - 1).toString() : null;
 		}
 
-		public static String formatMessages(List<SavedMessage> messages) {
+		public static String serializeMessages(List<SavedMessage> messages) {
 			return messages != null && !messages.isEmpty()
 			        ? MessageUtils.joinElements(MESSAGES_SEPARATOR, messages, false)
 			        : null;
 		}
 
-		public static SavedMessage[] unformatMessages(String messages) {
+		public static SavedMessage[] unserializeMessages(String messages) {
 			if (messages == null || messages.isEmpty()) {
 				return new SavedMessage[0];
 			} else {
@@ -743,11 +752,11 @@ public class Report implements DeeplyCloneable<Report> {
 			}
 		}
 
-		public static String formatGamemode(GameMode gamemode) {
+		public static String serializeGamemode(GameMode gamemode) {
 			return gamemode.toString().toLowerCase();
 		}
 
-		public static String unformatGamemode(String gamemode) {
+		public static String unserializeGamemode(String gamemode) {
 			if (gamemode == null) {
 				return null;
 			}
@@ -786,7 +795,7 @@ public class Report implements DeeplyCloneable<Report> {
 				effects = Message.NONE_MALE.get();
 			}
 			defaultData = Message.DEFAULT_DATA.get()
-			        .replace("_Gamemode_", AdvancedData.unformatGamemode(advancedData.reportedGamemode))
+			        .replace("_Gamemode_", AdvancedData.unserializeGamemode(advancedData.reportedGamemode))
 			        .replace("_OnGround_", (advancedData.reportedOnGround ? Message.YES : Message.NO).get())
 			        .replace("_Sneak_", (advancedData.reportedSneak ? Message.YES : Message.NO).get())
 			        .replace("_Sprint_", (advancedData.reportedSprint ? Message.YES : Message.NO).get())
@@ -828,7 +837,7 @@ public class Report implements DeeplyCloneable<Report> {
 		}
 		String messages = type == ParticipantType.REPORTER ? advancedData.reporterMessages
 		        : advancedData.reportedMessages;
-		return AdvancedData.unformatMessages(messages);
+		return AdvancedData.unserializeMessages(messages);
 	}
 
 	public ItemStack getItem(String actions, VaultManager vm, BungeeManager bm) {
@@ -858,7 +867,10 @@ public class Report implements DeeplyCloneable<Report> {
 		processing(staff, AppreciationDetails.from(appreciation, null), bungee, autoArchive,
 		        (autoArchive ? Message.STAFF_PROCESS_AUTO : Message.STAFF_PROCESS).get()
 		                .replace("_Appreciation_", appreciation.getDisplayName()),
-		        BungeeManager.NotificationType.PROCESS, notifyStaff, null, db, rm, bm, vm, taskScheduler);
+		        notifyStaff, null, db, rm, bm, vm, taskScheduler);
+		if (!bungee) {
+			bm.sendPluginNotificationToAll(new ProcessBungeeNotification(bm.getNetworkCurrentTime(), reportId, staff.getUniqueId(), autoArchive, appreciation));
+		}
 	}
 
 	public void processWithPunishment(User staff, boolean bungee, boolean autoArchive, String punishment,
@@ -873,7 +885,10 @@ public class Report implements DeeplyCloneable<Report> {
 		        (autoArchive ? Message.STAFF_PROCESS_PUNISH_AUTO : Message.STAFF_PROCESS_PUNISH).get()
 		                .replace("_Punishment_", punishment)
 		                .replace("_Reported_", getPlayerName(ParticipantType.REPORTED, false, true, vm, bm)),
-		        BungeeManager.NotificationType.PROCESS_PUNISH, notifyStaff, null, db, rm, bm, vm, taskScheduler);
+		        notifyStaff, null, db, rm, bm, vm, taskScheduler);
+		if (!bungee) {
+			bm.sendPluginNotificationToAll(new ProcessPunishBungeeNotification(bm.getNetworkCurrentTime(), reportId, staff.getUniqueId(), autoArchive, punishment));
+		}
 	}
 
 	public void processAbusive(User staff, boolean bungee, boolean archive, long punishSeconds, boolean notifyStaff,
@@ -882,18 +897,18 @@ public class Report implements DeeplyCloneable<Report> {
 		String time = DatetimeUtils.convertToSentence(punishSeconds);
 		processing(staff, new AppreciationDetails(Appreciation.FALSE), bungee, archive,
 		        Message.STAFF_PROCESS_ABUSIVE.get().replace("_Time_", time),
-		        BungeeManager.NotificationType.PROCESS_ABUSIVE, notifyStaff, punishSeconds, db, rm, bm, vm,
+		        notifyStaff, punishSeconds, db, rm, bm, vm,
 		        taskScheduler);
 
 		if (!bungee) {
 			um.startCooldownForUsers(reporters, punishSeconds, db, bm);
-			if (staff != null) {
-				Player p = staff.getPlayer();
-				if (p != null) {
-					ConfigUtils.processCommands(ConfigFile.CONFIG.get(), "Config.AbusiveReport.Commands", this, p, vm,
-					        bm);
-				}
+			Player p = staff.getPlayer();
+			if (p != null) {
+				ConfigUtils.processCommands(ConfigFile.CONFIG.get(), "Config.AbusiveReport.Commands", this, p, vm,
+						bm);
 			}
+
+			bm.sendPluginNotificationToAll(new ProcessAbusiveBungeeNotification(bm.getNetworkCurrentTime(), reportId, staff.getUniqueId(), archive, punishSeconds));
 		}
 
 		String punishedMsg = Message.PUNISHED.get().replace("_Time_", time);
@@ -905,7 +920,7 @@ public class Report implements DeeplyCloneable<Report> {
 	}
 
 	private void processing(User staff, AppreciationDetails appreciationDetails, boolean bungee, boolean archive,
-	        String staffMessage, String bungeeAction, boolean notifyStaff, Long punishSeconds, Database db,
+	        String staffMessage, boolean notifyStaff, Long punishSeconds, Database db,
 	        ReportsManager rm, BungeeManager bm, VaultManager vm, TaskScheduler taskScheduler) {
 		Objects.requireNonNull(staff); // Eventually, create a special User CONSOLE in the future, but not null.
 
@@ -950,14 +965,7 @@ public class Report implements DeeplyCloneable<Report> {
 				i++;
 			}
 
-			if (BungeeManager.NotificationType.PROCESS_ABUSIVE.equals(bungeeAction)) {
-				bm.sendProcessAbusiveNotification(staff.getUniqueId().toString(), reportId, archive,
-				        appreciationDetails, punishSeconds);
-			} else {
-				bm.sendProcessNotification(staff.getUniqueId().toString(), bungeeAction, reportId, archive,
-				        appreciationDetails);
-			}
-			bm.sendUsersDataChangedNotification(uuidOfChangedStatsUsers);
+			bm.sendPluginNotificationToAll(new UsersDataChangedBungeeNotification(bm.getNetworkCurrentTime(), uuidOfChangedStatsUsers));
 		} else {
 			if (ConfigUtils.playersNotifications()) {
 				for (User reporter : reporters) {
@@ -1046,7 +1054,7 @@ public class Report implements DeeplyCloneable<Report> {
 			        "_Report_", getName(), getText(vm, bm), null), ConfigSound.STAFF.get());
 
 			if (!bungee) {
-				bm.sendDeleteNotification(staff.getUniqueId(), getBasicDataAsString());
+				bm.sendPluginNotificationToAll(new DeleteBungeeNotification(bm.getNetworkCurrentTime(), getBasicDataAsString(), staff.getUniqueId()));
 				taskScheduler.runTaskAsynchronously(new Runnable() {
 
 					@Override
@@ -1071,7 +1079,8 @@ public class Report implements DeeplyCloneable<Report> {
 			        Message.STAFF_ARCHIVE.get().replace("_Player_", staff.getDisplayName(vm, true)), "_Report_",
 			        getName(), getText(vm, bm), null), ConfigSound.STAFF.get());
 			if (!bungee) {
-				bm.sendArchiveNotification(staff.getUniqueId(), reportId);
+				bm.sendPluginNotificationToAll(
+				        new ArchiveBungeeNotification(bm.getNetworkCurrentTime(), reportId, staff.getUniqueId()));
 				db.updateAsynchronously("UPDATE tigerreports_reports SET archived = ? WHERE report_id = ?",
 				        Arrays.asList(1, reportId));
 			}
@@ -1088,7 +1097,8 @@ public class Report implements DeeplyCloneable<Report> {
 			        getName(), getText(vm, bm), null), ConfigSound.STAFF.get());
 
 			if (!bungee) {
-				bm.sendUnarchiveNotification(staff.getUniqueId(), reportId);
+				bm.sendPluginNotificationToAll(
+				        new UnarchiveBungeeNotification(bm.getNetworkCurrentTime(), reportId, staff.getUniqueId()));
 				db.updateAsynchronously("UPDATE tigerreports_reports SET archived = ? WHERE report_id = ?",
 				        Arrays.asList(0, reportId));
 			}
@@ -1136,7 +1146,7 @@ public class Report implements DeeplyCloneable<Report> {
 	}
 
 	private boolean updateAppreciationDetails(AppreciationDetails newAppreciationDetails) {
-		if (!Objects.equals(appreciationDetails, Objects.requireNonNull(newAppreciationDetails))) {
+		if (!newAppreciationDetails.equals(appreciationDetails)) {
 			appreciationDetails = newAppreciationDetails;
 			return true;
 		} else {
