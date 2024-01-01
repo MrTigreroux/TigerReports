@@ -15,10 +15,10 @@ import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
 
 public class UserAgainstArchivedReportsMenu extends UserReportsPageMenu {
 
-	public UserAgainstArchivedReportsMenu(User u, int page, User tu, ReportsManager rm, Database db,
-	        TaskScheduler taskScheduler, VaultManager vm, BungeeManager bm, UsersManager um) {
-		super("Menus.User-against-archived-reports", u, page, tu,
-		        new ReportsCharacteristics(null, tu.getUniqueId(), true), rm, db, taskScheduler, vm, bm, um);
-	}
+    public UserAgainstArchivedReportsMenu(User u, int page, User tu, ReportsManager rm, Database db,
+            TaskScheduler taskScheduler, VaultManager vm, BungeeManager bm, UsersManager um) {
+        super("Menus.User-against-archived-reports", u, page, tu,
+                new ReportsCharacteristics(null, tu.getUniqueId(), true), rm, db, taskScheduler, vm, bm, um);
+    }
 
 }

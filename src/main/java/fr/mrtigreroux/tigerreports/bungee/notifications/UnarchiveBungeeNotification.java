@@ -15,34 +15,34 @@ import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
  */
 public class UnarchiveBungeeNotification extends BungeeNotification {
 
-	private static final Logger LOGGER = Logger.BUNGEE.newChild(UnarchiveBungeeNotification.class);
+    private static final Logger LOGGER = Logger.BUNGEE.newChild(UnarchiveBungeeNotification.class);
 
-	public final int reportId;
-	public final String staffUniqueId;
+    public final int reportId;
+    public final String staffUniqueId;
 
-	public UnarchiveBungeeNotification(long creationTime, int reportId, UUID staffUUID) {
-		this(creationTime, reportId, staffUUID.toString());
-	}
+    public UnarchiveBungeeNotification(long creationTime, int reportId, UUID staffUUID) {
+        this(creationTime, reportId, staffUUID.toString());
+    }
 
-	public UnarchiveBungeeNotification(long creationTime, int reportId, String staffUniqueId) {
-		super(creationTime);
-		this.reportId = reportId;
-		this.staffUniqueId = staffUniqueId;
-	}
+    public UnarchiveBungeeNotification(long creationTime, int reportId, String staffUniqueId) {
+        super(creationTime);
+        this.reportId = reportId;
+        this.staffUniqueId = staffUniqueId;
+    }
 
-	@Override
-	public boolean isEphemeral() {
-		return true;
-	}
+    @Override
+    public boolean isEphemeral() {
+        return true;
+    }
 
-	@Override
-	public void onReceive(Database db, TaskScheduler ts, UsersManager um, ReportsManager rm, VaultManager vm,
-	        BungeeManager bm) {
-		getReportAsync(reportId, db, ts, um, rm, bm, LOGGER, (r) -> {
-			getUserAsyncIfNotifiable(staffUniqueId, db, ts, um, bm, (u) -> {
-				r.unarchive(u, true, db, rm, vm, bm);
-			});
-		});
-	}
+    @Override
+    public void onReceive(Database db, TaskScheduler ts, UsersManager um, ReportsManager rm, VaultManager vm,
+            BungeeManager bm) {
+        getReportAsync(reportId, db, ts, um, rm, bm, LOGGER, (r) -> {
+            getUserAsyncIfNotifiable(staffUniqueId, db, ts, um, bm, (u) -> {
+                r.unarchive(u, true, db, rm, vm, bm);
+            });
+        });
+    }
 
 }

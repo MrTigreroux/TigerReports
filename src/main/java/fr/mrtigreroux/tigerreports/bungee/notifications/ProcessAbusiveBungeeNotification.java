@@ -16,37 +16,40 @@ import fr.mrtigreroux.tigerreports.utils.CheckUtils;
  */
 public class ProcessAbusiveBungeeNotification extends BungeeNotification {
 
-	private static final Logger LOGGER = Logger.BUNGEE.newChild(ProcessAbusiveBungeeNotification.class);
+    private static final Logger LOGGER = Logger.BUNGEE.newChild(ProcessAbusiveBungeeNotification.class);
 
-	public final int reportId;
-	public final String staffUniqueId;
-	public final boolean archive;
-	public final long punishSeconds;
+    public final int reportId;
+    public final String staffUniqueId;
+    public final boolean archive;
+    public final long punishSeconds;
 
-	public ProcessAbusiveBungeeNotification(long creationTime, int reportId, UUID staffUUID, boolean archive, long punishSeconds) {
-		this(creationTime, reportId, staffUUID.toString(), archive, punishSeconds);
-	}
+    public ProcessAbusiveBungeeNotification(long creationTime, int reportId, UUID staffUUID, boolean archive,
+            long punishSeconds) {
+        this(creationTime, reportId, staffUUID.toString(), archive, punishSeconds);
+    }
 
-	public ProcessAbusiveBungeeNotification(long creationTime, int reportId, String staffUniqueId, boolean archive, long punishSeconds) {
-		super(creationTime);
-		this.reportId = reportId;
-		this.staffUniqueId = CheckUtils.notEmpty(staffUniqueId);
-		this.archive = archive;
-		this.punishSeconds = CheckUtils.strictlyPositive(punishSeconds);
-	}
+    public ProcessAbusiveBungeeNotification(long creationTime, int reportId, String staffUniqueId, boolean archive,
+            long punishSeconds) {
+        super(creationTime);
+        this.reportId = reportId;
+        this.staffUniqueId = CheckUtils.notEmpty(staffUniqueId);
+        this.archive = archive;
+        this.punishSeconds = CheckUtils.strictlyPositive(punishSeconds);
+    }
 
-	@Override
-	public boolean isEphemeral() {
-		return false;
-	}
+    @Override
+    public boolean isEphemeral() {
+        return false;
+    }
 
-	@Override
-	public void onReceive(Database db, TaskScheduler ts, UsersManager um, ReportsManager rm, VaultManager vm, BungeeManager bm) {
-		getReportAsync(reportId, db, ts, um, rm, bm, LOGGER, (r) -> {
-			um.getUserByUniqueIdAsynchronously(staffUniqueId, db, ts, (u) -> {
-				r.processAbusive(u, true, archive, punishSeconds, isNotifiable(bm), db, rm, um, bm, vm, ts);
-			});
-		});
-	}
+    @Override
+    public void onReceive(Database db, TaskScheduler ts, UsersManager um, ReportsManager rm, VaultManager vm,
+            BungeeManager bm) {
+        getReportAsync(reportId, db, ts, um, rm, bm, LOGGER, (r) -> {
+            um.getUserByUniqueIdAsynchronously(staffUniqueId, db, ts, (u) -> {
+                r.processAbusive(u, true, archive, punishSeconds, isNotifiable(bm), db, rm, um, bm, vm, ts);
+            });
+        });
+    }
 
 }

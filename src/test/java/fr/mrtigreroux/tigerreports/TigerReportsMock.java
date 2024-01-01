@@ -28,130 +28,132 @@ import fr.mrtigreroux.tigerreports.utils.TestsFileUtils;
  */
 public class TigerReportsMock {
 
-	private static final TigerReports MAIN_MOCK;
-	public static final File TESTS_PLUGIN_DATA_FOLDER = new File("tests/plugin-data-folder");
+    private static final TigerReports MAIN_MOCK;
+    public static final File TESTS_PLUGIN_DATA_FOLDER = new File("tests/plugin-data-folder");
 
-	static {
-		System.out.println("TigerReportsMock - static block init");
-		Thread.currentThread().setName("tests");
+    static {
+        System.out.println("TigerReportsMock - static block init");
+        Thread.currentThread().setName("tests");
 
-		clearFolder(TESTS_PLUGIN_DATA_FOLDER);
-		TESTS_PLUGIN_DATA_FOLDER.mkdir();
-		assertTrue(TESTS_PLUGIN_DATA_FOLDER.exists());
+        clearFolder(TESTS_PLUGIN_DATA_FOLDER);
+        TESTS_PLUGIN_DATA_FOLDER.mkdir();
+        assertTrue(TESTS_PLUGIN_DATA_FOLDER.exists());
 
-		// try {
-		// 	Files.copy(TestsFileUtils.getProjectFile(Paths.get("src", "test", "resources", "config.yml")), TESTS_PLUGIN_DATA_FOLDER.toPath().resolve("config.yml").toFile());
-		// } catch (IOException e) {
-		// 	e.printStackTrace();
-		// }
+        // try {
+        // 	Files.copy(TestsFileUtils.getProjectFile(Paths.get("src", "test", "resources", "config.yml")), TESTS_PLUGIN_DATA_FOLDER.toPath().resolve("config.yml").toFile());
+        // } catch (IOException e) {
+        // 	e.printStackTrace();
+        // }
 
-		MAIN_MOCK = new TigerReportsMock().mockDataFolder(TESTS_PLUGIN_DATA_FOLDER).get();
-		try (MockedStatic<TigerReports> tr = mockStatic(TigerReports.class);
-		        MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
-			tr.when(TigerReports::getInstance).thenReturn(MAIN_MOCK);
-			bukkit.when(Bukkit::getLogger).thenReturn(null);
-			assertNotNull(Logger.MAIN); // init static Logger block
+        MAIN_MOCK = new TigerReportsMock().mockDataFolder(TESTS_PLUGIN_DATA_FOLDER).get();
+        try (MockedStatic<TigerReports> tr = mockStatic(TigerReports.class);
+                MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
+            tr.when(TigerReports::getInstance).thenReturn(MAIN_MOCK);
+            bukkit.when(Bukkit::getLogger).thenReturn(null);
+            assertNotNull(Logger.MAIN); // init static Logger block
 
-			bukkit.when(Bukkit::getVersion).thenReturn("Spigot (MC: 1.8.3)");
-			assertNotNull(MessageUtils.APPEND_TEXT_WITH_TRANSLATED_COLOR_CODES_TO_COMPONENT_BUILDER_METHOD); // init static MessageUtils block
-			MenuRawItem.init();
-		}
+            bukkit.when(Bukkit::getVersion).thenReturn("Spigot (MC: 1.8.3)");
+            assertNotNull(MessageUtils.APPEND_TEXT_WITH_TRANSLATED_COLOR_CODES_TO_COMPONENT_BUILDER_METHOD); // init static MessageUtils block
+            MenuRawItem.init();
+        }
 
-		Logger.CONFIG.setLevel(Level.INFO);
-		Logger.BUNGEE.setLevel(Level.INFO);
-		Logger.EVENTS.setLevel(Level.INFO);
-		Logger.MAIN.setLevel(Level.INFO);
-		Logger.SQL.setLevel(Level.INFO);
-		Logger.setDefaultClassLoggerLevel(Level.INFO);
+        Logger.CONFIG.setLevel(Level.INFO);
+        Logger.BUNGEE.setLevel(Level.INFO);
+        Logger.EVENTS.setLevel(Level.INFO);
+        Logger.MAIN.setLevel(Level.INFO);
+        Logger.SQL.setLevel(Level.INFO);
+        Logger.setDefaultClassLoggerLevel(Level.INFO);
 
-		loadConfigFiles(MAIN_MOCK);
-	}
+        loadConfigFiles(MAIN_MOCK);
+    }
 
-	@Deprecated
-	public static <T> Class<T> forceInit(Class<T> clazz) {
-		try {
-			Class.forName(clazz.getName(), true, clazz.getClassLoader());
-		} catch (ClassNotFoundException e) {
-			throw new AssertionError(e); // Can't happen
-		}
-		return clazz;
-	}
+    @Deprecated
+    public static <T> Class<T> forceInit(Class<T> clazz) {
+        try {
+            Class.forName(clazz.getName(), true, clazz.getClassLoader());
+        } catch (ClassNotFoundException e) {
+            throw new AssertionError(e); // Can't happen
+        }
+        return clazz;
+    }
 
-	public static void clearFolder(File folder) {
-		File[] files = folder.listFiles();
-		if (files != null) {
-			for (File f : files) {
-				if (f.isDirectory()) {
-					clearFolder(f);
-				} else {
-					f.delete();
-				}
-			}
-		}
-	}
+    public static void clearFolder(File folder) {
+        File[] files = folder.listFiles();
+        if (files != null) {
+            for (File f : files) {
+                if (f.isDirectory()) {
+                    clearFolder(f);
+                } else {
+                    f.delete();
+                }
+            }
+        }
+    }
 
-	private TigerReports mock;
+    private TigerReports mock;
 
-	public TigerReportsMock() {
-		mock = mock(TigerReports.class);
-	}
+    public TigerReportsMock() {
+        mock = mock(TigerReports.class);
+    }
 
-	public TigerReportsMock mockDataFolder(File folder) {
-		when(mock.getDataFolder()).thenReturn(folder);
-		return this;
-	}
+    public TigerReportsMock mockDataFolder(File folder) {
+        when(mock.getDataFolder()).thenReturn(folder);
+        return this;
+    }
 
-	public TigerReports get() {
-		when(mock.getName()).thenReturn("TigerReports");
-		when(mock.getResource(Mockito.anyString())).then((invocation) -> {
-			String filename = invocation.getArgument(0);
-			if (filename == null) {
-				throw new IllegalArgumentException("Filename cannot be null");
-			}
+    public TigerReports get() {
+        when(mock.getName()).thenReturn("TigerReports");
+        when(mock.getResource(Mockito.anyString())).then((invocation) -> {
+            String filename = invocation.getArgument(0);
+            if (filename == null) {
+                throw new IllegalArgumentException("Filename cannot be null");
+            }
 
-			try {
-				URL url = TestsFileUtils.getProjectFile(Paths.get("src", "main", "resources", filename)).toURI().toURL();
+            try {
+                URL url = TestsFileUtils.getProjectFile(Paths.get("src", "main", "resources", filename))
+                        .toURI()
+                        .toURL();
 
-				if (url == null) {
-					return null;
-				}
+                if (url == null) {
+                    return null;
+                }
 
-				URLConnection connection = url.openConnection();
-				connection.setUseCaches(false);
-				return connection.getInputStream();
-			} catch (IOException ex) {
-				return null;
-			}
-		});
+                URLConnection connection = url.openConnection();
+                connection.setUseCaches(false);
+                return connection.getInputStream();
+            } catch (IOException ex) {
+                return null;
+            }
+        });
 
-		// mock.saveResource doesn't do anything because config files are already known and accessible
+        // mock.saveResource doesn't do anything because config files are already known and accessible
 
-		return mock;
-	}
+        return mock;
+    }
 
-	/**
-	 * NB: This method exists to load the current class static block before creating any logger for tests.
-	 * @param clazz
-	 * @return
-	 */
-	public static Logger getLoggerFromClass(Class<?> clazz) {
-		return getLoggerFromClass(clazz, Level.INFO);
-	}
+    /**
+     * NB: This method exists to load the current class static block before creating any logger for tests.
+     * @param clazz
+     * @return
+     */
+    public static Logger getLoggerFromClass(Class<?> clazz) {
+        return getLoggerFromClass(clazz, Level.INFO);
+    }
 
-	public static Logger getLoggerFromClass(Class<?> clazz, Level level) {
-		Logger logger = Logger.fromClass(clazz);
-		logger.setLevel(level);
-		return logger;
-	}
+    public static Logger getLoggerFromClass(Class<?> clazz, Level level) {
+        Logger logger = Logger.fromClass(clazz);
+        logger.setLevel(level);
+        return logger;
+    }
 
-	public static void loadConfigFiles(TigerReports tr) {
-		for (ConfigFile configFiles : ConfigFile.values()) {
-			configFiles.load(tr);
-		}
-	}
+    public static void loadConfigFiles(TigerReports tr) {
+        for (ConfigFile configFiles : ConfigFile.values()) {
+            configFiles.load(tr);
+        }
+    }
 
-	public static TigerReports getMainMock() {
-		return MAIN_MOCK;
-	}
+    public static TigerReports getMainMock() {
+        return MAIN_MOCK;
+    }
 
 }

@@ -25,69 +25,69 @@ import fr.mrtigreroux.tigerreports.utils.ReportUtils;
 
 public class ProcessMenu extends ReportManagerMenu {
 
-	private static final int[] GUI_POSITIONS = new int[] { 1, 2, 3, 4, 5, 6, 7, 10, 16, 19, 20, 21, 22, 23, 24, 25 };
-	private final VaultManager vm;
-	private final BungeeManager bm;
+    private static final int[] GUI_POSITIONS = new int[] { 1, 2, 3, 4, 5, 6, 7, 10, 16, 19, 20, 21, 22, 23, 24, 25 };
+    private final VaultManager vm;
+    private final BungeeManager bm;
 
-	public ProcessMenu(User u, int reportId, ReportsManager rm, Database db, TaskScheduler taskScheduler,
-	        VaultManager vm, BungeeManager bm, UsersManager um) {
-		super(u, 27, 0, Permission.STAFF, reportId, rm, db, taskScheduler, um);
-		this.vm = vm;
-		this.bm = bm;
-	}
+    public ProcessMenu(User u, int reportId, ReportsManager rm, Database db, TaskScheduler taskScheduler,
+            VaultManager vm, BungeeManager bm, UsersManager um) {
+        super(u, 27, 0, Permission.STAFF, reportId, rm, db, taskScheduler, um);
+        this.vm = vm;
+        this.bm = bm;
+    }
 
-	@Override
-	public Inventory onOpen() {
-		Inventory inv = getInventory(Message.PROCESS_TITLE.get().replace("_Report_", r.getName()), false);
+    @Override
+    public Inventory onOpen() {
+        Inventory inv = getInventory(Message.PROCESS_TITLE.get().replace("_Report_", r.getName()), false);
 
-		ItemStack gui = MenuRawItem.GUI.create();
-		for (int position : GUI_POSITIONS) {
-			inv.setItem(position, gui);
-		}
+        ItemStack gui = MenuRawItem.GUI.create();
+        for (int position : GUI_POSITIONS) {
+            inv.setItem(position, gui);
+        }
 
-		inv.setItem(0, r.getItem(null, vm, bm));
+        inv.setItem(0, r.getItem(null, vm, bm));
 
-		for (Appreciation appreciation : Appreciation.getValues()) {
-			String displayName = appreciation.getDisplayName();
-			inv.setItem(appreciation.getPosition(),
-			        appreciation.getIcon()
-			                .name(Message.PROCESS.get().replace("_Appreciation_", displayName))
-			                .lore(Message.PROCESS_DETAILS.get()
-			                        .replace("_Appreciation_", displayName)
-			                        .split(ConfigUtils.getLineBreakSymbol()))
-			                .create());
+        for (Appreciation appreciation : Appreciation.getValues()) {
+            String displayName = appreciation.getDisplayName();
+            inv.setItem(appreciation.getPosition(),
+                    appreciation.getIcon()
+                            .name(Message.PROCESS.get().replace("_Appreciation_", displayName))
+                            .lore(Message.PROCESS_DETAILS.get()
+                                    .replace("_Appreciation_", displayName)
+                                    .split(ConfigUtils.getLineBreakSymbol()))
+                            .create());
 
-		}
+        }
 
-		inv.setItem(18, MenuItem.CANCEL_PROCESS.get());
+        inv.setItem(18, MenuItem.CANCEL_PROCESS.get());
 
-		return inv;
-	}
+        return inv;
+    }
 
-	@Override
-	public void onClick(ItemStack item, int slot, ClickType click) {
-		if (slot == 18) {
-			u.openReportMenu(r.getId(), rm, db, taskScheduler, vm, bm, um);
-		} else {
-			Appreciation appreciation = Appreciation.getAppreciationAtPosition(slot);
-			if (appreciation != null) {
-				if (appreciation == Appreciation.TRUE) {
-					if (ReportUtils.punishmentsEnabled()) {
-						u.openPunishmentMenu(1, r, rm, db, taskScheduler, vm, bm, um);
-					} else {
-						process(Appreciation.TRUE);
-					}
-				} else {
-					process(appreciation);
-				}
-			}
-		}
-	}
+    @Override
+    public void onClick(ItemStack item, int slot, ClickType click) {
+        if (slot == 18) {
+            u.openReportMenu(r.getId(), rm, db, taskScheduler, vm, bm, um);
+        } else {
+            Appreciation appreciation = Appreciation.getAppreciationAtPosition(slot);
+            if (appreciation != null) {
+                if (appreciation == Appreciation.TRUE) {
+                    if (ReportUtils.punishmentsEnabled()) {
+                        u.openPunishmentMenu(1, r, rm, db, taskScheduler, vm, bm, um);
+                    } else {
+                        process(Appreciation.TRUE);
+                    }
+                } else {
+                    process(appreciation);
+                }
+            }
+        }
+    }
 
-	private void process(Appreciation appreciation) {
-		u.afterProcessingAReport(true, rm, db, taskScheduler, vm, bm, um);
-		r.process(u, appreciation, false, u.hasPermission(Permission.STAFF_ARCHIVE_AUTO), true, db, rm, vm, bm,
-		        taskScheduler);
-	}
+    private void process(Appreciation appreciation) {
+        u.afterProcessingAReport(true, rm, db, taskScheduler, vm, bm, um);
+        r.process(u, appreciation, false, u.hasPermission(Permission.STAFF_ARCHIVE_AUTO), true, db, rm, vm, bm,
+                taskScheduler);
+    }
 
 }

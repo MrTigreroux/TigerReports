@@ -12,19 +12,19 @@ import java.util.Objects;
 public class TestsFileUtils {
 
     public static File getProjectFile(Path pathInProject) {
-    	Path osPath = getProjectElementOSPath(pathInProject);
-    	if (!Files.isRegularFile(osPath)) {
-    		throw new IllegalArgumentException("The file " + pathInProject + " was not found.");
-    	}
-    	return Objects.requireNonNull(osPath.toFile());
+        Path osPath = getProjectElementOSPath(pathInProject);
+        if (!Files.isRegularFile(osPath)) {
+            throw new IllegalArgumentException("The file " + pathInProject + " was not found.");
+        }
+        return Objects.requireNonNull(osPath.toFile());
     }
 
     public static Path getProjectDirectoryPath(Path pathInProject) {
-    	Path osPath = getProjectElementOSPath(pathInProject);
-    	if (!Files.isDirectory(osPath)) {
-			throw new IllegalArgumentException("The directory " + pathInProject + " was not found.");
-		}
-    	return osPath;
+        Path osPath = getProjectElementOSPath(pathInProject);
+        if (!Files.isDirectory(osPath)) {
+            throw new IllegalArgumentException("The directory " + pathInProject + " was not found.");
+        }
+        return osPath;
     }
 
     public static Path getProjectElementOSPath(Path pathInProject) {

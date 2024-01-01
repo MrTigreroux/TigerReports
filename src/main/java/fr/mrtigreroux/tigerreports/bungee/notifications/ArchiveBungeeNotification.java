@@ -15,33 +15,34 @@ import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
  */
 public class ArchiveBungeeNotification extends BungeeNotification {
 
-	private static final Logger LOGGER = Logger.BUNGEE.newChild(ArchiveBungeeNotification.class);
+    private static final Logger LOGGER = Logger.BUNGEE.newChild(ArchiveBungeeNotification.class);
 
-	public final int reportId;
-	public final String staffUniqueId;
+    public final int reportId;
+    public final String staffUniqueId;
 
-	public ArchiveBungeeNotification(long creationTime, int reportId, UUID staffUUID) {
-		this(creationTime, reportId, staffUUID.toString());
-	}
+    public ArchiveBungeeNotification(long creationTime, int reportId, UUID staffUUID) {
+        this(creationTime, reportId, staffUUID.toString());
+    }
 
-	public ArchiveBungeeNotification(long creationTime, int reportId, String staffUniqueId) {
-		super(creationTime);
-		this.reportId = reportId;
-		this.staffUniqueId = staffUniqueId;
-	}
+    public ArchiveBungeeNotification(long creationTime, int reportId, String staffUniqueId) {
+        super(creationTime);
+        this.reportId = reportId;
+        this.staffUniqueId = staffUniqueId;
+    }
 
-	@Override
-	public boolean isEphemeral() {
-		return true;
-	}
+    @Override
+    public boolean isEphemeral() {
+        return true;
+    }
 
-	@Override
-	public void onReceive(Database db, TaskScheduler ts, UsersManager um, ReportsManager rm, VaultManager vm, BungeeManager bm) {
-		getReportAsync(reportId, db, ts, um, rm, bm, LOGGER, (r) -> {
-			getUserAsyncIfNotifiable(staffUniqueId, db, ts, um, bm, (u) -> {
-				r.archive(u, true, db, rm, vm, bm);
-			});
-		});
-	}
+    @Override
+    public void onReceive(Database db, TaskScheduler ts, UsersManager um, ReportsManager rm, VaultManager vm,
+            BungeeManager bm) {
+        getReportAsync(reportId, db, ts, um, rm, bm, LOGGER, (r) -> {
+            getUserAsyncIfNotifiable(staffUniqueId, db, ts, um, bm, (u) -> {
+                r.archive(u, true, db, rm, vm, bm);
+            });
+        });
+    }
 
 }

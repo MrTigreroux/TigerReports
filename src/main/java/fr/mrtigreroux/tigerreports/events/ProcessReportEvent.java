@@ -13,36 +13,36 @@ import fr.mrtigreroux.tigerreports.objects.reports.Report;
 
 public class ProcessReportEvent extends Event {
 
-	private static final HandlerList handlers = new HandlerList();
-	private final Report r;
-	private final String staff;
-	private final boolean bungee;
+    private static final HandlerList handlers = new HandlerList();
+    private final Report r;
+    private final String staff;
+    private final boolean bungee;
 
-	public ProcessReportEvent(Report r, String staff, boolean bungee) {
-		this.r = Objects.requireNonNull(r);
-		this.staff = staff;
-		this.bungee = bungee;
-	}
+    public ProcessReportEvent(Report r, String staff, boolean bungee) {
+        this.r = Objects.requireNonNull(r);
+        this.staff = staff;
+        this.bungee = bungee;
+    }
 
-	public Report getReport() {
-		return r;
-	}
+    public Report getReport() {
+        return r;
+    }
 
-	public String getStaff() {
-		return staff;
-	}
+    public String getStaff() {
+        return staff;
+    }
 
-	public boolean isFromBungeeCord() {
-		return bungee;
-	}
+    public boolean isFromBungeeCord() {
+        return bungee;
+    }
 
-	@Override
-	public HandlerList getHandlers() {
-		return handlers;
-	}
+    @Override
+    public HandlerList getHandlers() {
+        return handlers;
+    }
 
-	public static HandlerList getHandlerList() {
-		return handlers;
-	}
+    public static HandlerList getHandlerList() {
+        return handlers;
+    }
 
 }

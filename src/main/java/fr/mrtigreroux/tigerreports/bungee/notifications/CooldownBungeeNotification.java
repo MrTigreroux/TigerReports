@@ -15,36 +15,36 @@ import fr.mrtigreroux.tigerreports.utils.CheckUtils;
  */
 public class CooldownBungeeNotification extends BungeeNotification {
 
-	public final String userUniqueId;
-	public final String cooldown;
+    public final String userUniqueId;
+    public final String cooldown;
 
-	public CooldownBungeeNotification(long creationTime, UUID userUUID, String cooldown) {
-		this(creationTime, userUUID.toString(), cooldown);
-	}
+    public CooldownBungeeNotification(long creationTime, UUID userUUID, String cooldown) {
+        this(creationTime, userUUID.toString(), cooldown);
+    }
 
-	public CooldownBungeeNotification(long creationTime, String userUniqueId, String cooldown) {
-		super(creationTime);
-		this.userUniqueId = CheckUtils.notEmpty(userUniqueId);
-		this.cooldown = cooldown;
-	}
+    public CooldownBungeeNotification(long creationTime, String userUniqueId, String cooldown) {
+        super(creationTime);
+        this.userUniqueId = CheckUtils.notEmpty(userUniqueId);
+        this.cooldown = cooldown;
+    }
 
-	@Override
-	public boolean isEphemeral() {
-		return true;
-	}
+    @Override
+    public boolean isEphemeral() {
+        return true;
+    }
 
-	@Override
-	public void onReceive(Database db, TaskScheduler ts, UsersManager um, ReportsManager rm, VaultManager vm,
-	        BungeeManager bm) {
-		um.getUserByUniqueIdAsynchronously(userUniqueId, db, ts, (u) -> {
-			if (u != null) {
-				if (isRecent(bm)) {
-					u.setCooldown(cooldown, true, db, bm);
-				} else {
-					um.updateDataOfUserWhenPossible(u.getUniqueId(), db, ts);
-				}
-			}
-		});
-	}
+    @Override
+    public void onReceive(Database db, TaskScheduler ts, UsersManager um, ReportsManager rm, VaultManager vm,
+            BungeeManager bm) {
+        um.getUserByUniqueIdAsynchronously(userUniqueId, db, ts, (u) -> {
+            if (u != null) {
+                if (isRecent(bm)) {
+                    u.setCooldown(cooldown, true, db, bm);
+                } else {
+                    um.updateDataOfUserWhenPossible(u.getUniqueId(), db, ts);
+                }
+            }
+        });
+    }
 
 }

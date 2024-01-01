@@ -13,30 +13,30 @@ import fr.mrtigreroux.tigerreports.objects.reports.Report;
 
 public class NewReportEvent extends Event {
 
-	private static final HandlerList handlers = new HandlerList();
-	private final String server;
-	private final Report r;
+    private static final HandlerList handlers = new HandlerList();
+    private final String server;
+    private final Report r;
 
-	public NewReportEvent(String server, Report r) {
-		this.server = server;
-		this.r = Objects.requireNonNull(r);
-	}
+    public NewReportEvent(String server, Report r) {
+        this.server = server;
+        this.r = Objects.requireNonNull(r);
+    }
 
-	public String getServer() {
-		return server;
-	}
+    public String getServer() {
+        return server;
+    }
 
-	public Report getReport() {
-		return r;
-	}
+    public Report getReport() {
+        return r;
+    }
 
-	@Override
-	public HandlerList getHandlers() {
-		return handlers;
-	}
+    @Override
+    public HandlerList getHandlers() {
+        return handlers;
+    }
 
-	public static HandlerList getHandlerList() {
-		return handlers;
-	}
+    public static HandlerList getHandlerList() {
+        return handlers;
+    }
 
 }

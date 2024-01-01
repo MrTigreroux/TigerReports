@@ -9,10 +9,10 @@ import org.mockito.MockedStatic;
  */
 public class TestsUserUtils {
 
-	public static void mockUseDisplayName(MockedStatic<UserUtils> userUtilsMock, boolean value) {
-		userUtilsMock.when(() -> UserUtils.useDisplayName(anyBoolean())).then((invocation) -> {
-			return value;
-		});
-	}
+    public static void mockUseDisplayName(MockedStatic<UserUtils> userUtilsMock, boolean value) {
+        userUtilsMock.when(() -> UserUtils.useDisplayName(anyBoolean())).then((invocation) -> {
+            return value;
+        });
+    }
 
 }

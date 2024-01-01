@@ -5,6 +5,6 @@ package fr.mrtigreroux.tigerreports.objects;
  */
 public interface DeeplyCloneable<T extends DeeplyCloneable<T>> {
 
-	T deepClone();
+    T deepClone();
 
 }
