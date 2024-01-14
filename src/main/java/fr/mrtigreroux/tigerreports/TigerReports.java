@@ -69,8 +69,6 @@ public class TigerReports extends JavaPlugin implements TaskScheduler {
     @Override
     public void onEnable() {
         instance = this;
-        MenuRawItem.init();
-        load();
         
         PluginDescriptionFile desc = getDescription();
         if (
@@ -78,15 +76,13 @@ public class TigerReports extends JavaPlugin implements TaskScheduler {
                     || desc.getAuthors().size() != 1
                     || !desc.getAuthors().contains("MrTigreroux")
         ) {
-            Logger.CONFIG.error(
-                    ConfigUtils.getInfoMessage(
-                            "The file plugin.yml has been edited without authorization.",
-                            "Le fichier plugin.yml a ete modifie sans autorisation."
-                    )
-            );
-            Bukkit.shutdown();
+            Logger.CONFIG.error("The file plugin.yml has been edited without authorization.");
+            Bukkit.getPluginManager().disablePlugin(this);
             return;
         }
+        
+        MenuRawItem.init();
+        load();
     }
     
     public void load() {
