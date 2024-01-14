@@ -12,11 +12,11 @@ import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
  * @author MrTigreroux
  */
 public class TestsSQLite extends SQLite {
-
+    
     private static final Logger LOGGER = Logger.fromClass(TestsSQLite.class);
     private final AtomicInteger pendingAsyncUpdatesAmount = new AtomicInteger(0);
     private final List<Runnable> noAsyncUpdateCallbacks = new ArrayList<>();
-
+    
     /**
      * @param taskScheduler
      * @param databaseFolder
@@ -25,30 +25,35 @@ public class TestsSQLite extends SQLite {
     public TestsSQLite(TaskScheduler taskScheduler, File databaseFolder, String databaseFileName) {
         super(taskScheduler, databaseFolder, databaseFileName);
     }
-
+    
     @Override
     public void updateAsynchronously(String query, List<Object> parameters) {
         int pendUpdates = pendingAsyncUpdatesAmount.incrementAndGet();
-        LOGGER.debug(() -> "updateAsynchronously(): pendingAsyncUpdatesAmount incremented, new value = " + pendUpdates);
+        LOGGER.debug(
+                () -> "updateAsynchronously(): pendingAsyncUpdatesAmount incremented, new value = "
+                        + pendUpdates
+        );
         super.updateAsynchronously(query, parameters, () -> {
             int pendUpdates2 = pendingAsyncUpdatesAmount.decrementAndGet();
             LOGGER.debug(
-                    () -> "updateAsynchronously(): pendingAsyncUpdatesAmount decremented, new value = " + pendUpdates2);
+                    () -> "updateAsynchronously(): pendingAsyncUpdatesAmount decremented, new value = "
+                            + pendUpdates2
+            );
             checkAndBroadcastNoAsyncUpdate();
         });
     }
-
+    
     public void resetPendingAsyncUpdatesAmount() {
         LOGGER.debug(() -> "resetPendingAsyncUpdatesAmount()");
         pendingAsyncUpdatesAmount.set(0);
     }
-
+    
     public void resetNoAsyncUpdateCallbacks() {
         synchronized (noAsyncUpdateCallbacks) {
             noAsyncUpdateCallbacks.clear();
         }
     }
-
+    
     /**
      * Should be executed synchronously.
      */
@@ -64,7 +69,7 @@ public class TestsSQLite extends SQLite {
             }
         }
     }
-
+    
     /**
      * Should be executed synchronously.
      */
@@ -79,19 +84,19 @@ public class TestsSQLite extends SQLite {
             callbacksToExecute.forEach(c -> c.run());
         }
     }
-
+    
     public boolean noPendingAsyncUpdateAndNoCallback() {
         return pendingAsyncUpdatesAmount.get() == 0 && noAsyncUpdateCallbacks.isEmpty();
     }
-
+    
     public boolean noAsyncUpdateCallback() {
         return noAsyncUpdateCallbacks.isEmpty();
     }
-
+    
     public boolean noPendingAsyncUpdate() {
         int value = pendingAsyncUpdatesAmount.get();
         LOGGER.debug(() -> "noPendingAsyncUpdate(): pendingAsyncUpdatesAmount = " + value);
         return value == 0;
     }
-
+    
 }

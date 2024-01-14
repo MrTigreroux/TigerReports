@@ -7,7 +7,7 @@ import fr.mrtigreroux.tigerreports.utils.MessageUtils;
  */
 
 public enum Message {
-
+    
     RELOAD("Messages.Reload"),
     REPORT_SENT("Messages.Report-sent"),
     ALERT("Messages.Alert"),
@@ -41,8 +41,10 @@ public enum Message {
     EDIT_COMMENT("Messages.Edit-comment"),
     CANCEL_COMMENT("Messages.Cancel-comment"),
     PROCESS_REPORT_PUNISHING_WITH_STAFF_REASON("Messages.Process-report-punishing-with-staff-reason"),
-    CANCEL_PROCESS_REPORT_PUNISHING_WITH_STAFF_REASON("Messages.Cancel-process-report-punishing-with-staff-reason"),
-
+    CANCEL_PROCESS_REPORT_PUNISHING_WITH_STAFF_REASON(
+            "Messages.Cancel-process-report-punishing-with-staff-reason"
+    ),
+    
     INVALID_SYNTAX_REPORT("ErrorMessages.Invalid-syntax-report"),
     INVALID_SYNTAX_REPORTS("ErrorMessages.Invalid-syntax-reports"),
     PERMISSION_COMMAND("ErrorMessages.Permission-command"),
@@ -60,7 +62,7 @@ public enum Message {
     INVALID_PLAYER("ErrorMessages.Invalid-player"),
     PLAYER_OFFLINE("ErrorMessages.Player-offline"),
     INVALID_TIME("ErrorMessages.Invalid-time"),
-
+    
     REASON_TITLE("Menus.Reason-title"),
     REASONS("Menus.Reasons"),
     REASON("Menus.Reason"),
@@ -145,7 +147,7 @@ public enum Message {
     PAGE_SWITCH_PREVIOUS("Menus.Switch-to-previous-page"),
     PAGE_SWITCH_NEXT("Menus.Switch-to-next-page"),
     CLOSE("Menus.Close"),
-
+    
     REPORT_NAME("Words.Report-name"),
     REPORTED_NAME("Words.Reported-name"),
     REPORTER_NAME("Words.Reporter-name"),
@@ -195,23 +197,23 @@ public enum Message {
     REPORT_TYPE("Words.Report-type"),
     REPORTS_TYPE("Words.Reports-type"),
     STAFF_REASON("Words.Staff-reason");
-
+    
     private final String path;
-
+    
     Message(String path) {
         this.path = path;
     }
-
+    
     public String get() {
         return MessageUtils.translateColorCodes(ConfigFile.MESSAGES.get().getString(path));
     }
-
+    
     public String getPath() {
         return path;
     }
-
+    
     public static String get(String path) {
         return MessageUtils.translateColorCodes(ConfigFile.MESSAGES.get().getString(path));
     }
-
+    
 }

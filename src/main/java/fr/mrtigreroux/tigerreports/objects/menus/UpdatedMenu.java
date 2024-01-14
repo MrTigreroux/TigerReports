@@ -7,7 +7,7 @@ import org.bukkit.inventory.Inventory;
  */
 
 public interface UpdatedMenu {
-
+    
     void onUpdate(Inventory inv);
-
+    
 }

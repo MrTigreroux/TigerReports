@@ -13,7 +13,7 @@ import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
  * @author MrTigreroux
  */
 public class TestsBungeeNotification extends BungeeNotification {
-
+    
     public final boolean bool;
     public final byte b;
     public final short s;
@@ -23,9 +23,9 @@ public class TestsBungeeNotification extends BungeeNotification {
     public final long l;
     public final String str;
     public final String[] strArray;
-
-    public TestsBungeeNotification(long creationTime, boolean bool, byte b, short s, int i, float f, double d, long l,
-            String str, String[] strArray) {
+    
+    public TestsBungeeNotification(long creationTime, boolean bool, byte b, short s, int i, float f,
+            double d, long l, String str, String[] strArray) {
         super(creationTime);
         this.bool = bool;
         this.b = b;
@@ -37,20 +37,21 @@ public class TestsBungeeNotification extends BungeeNotification {
         this.str = str;
         this.strArray = strArray;
     }
-
+    
     @Override
     public boolean isEphemeral() {
         return true;
     }
-
+    
     @Override
-    public void onReceive(Database db, TaskScheduler ts, UsersManager um, ReportsManager rm, VaultManager vm,
-            BungeeManager bm) {}
-
+    public void onReceive(Database db, TaskScheduler ts, UsersManager um, ReportsManager rm,
+            VaultManager vm, BungeeManager bm) {}
+    
     @Override
     public String toString() {
-        return "TestsBungeeNotification [bool=" + bool + ", b=" + b + ", s=" + s + ", i=" + i + ", f=" + f + ", d=" + d
-                + ", l=" + l + ", str=" + str + ", strArray=" + Arrays.toString(strArray) + "]";
+        return "TestsBungeeNotification [bool=" + bool + ", b=" + b + ", s=" + s + ", i=" + i
+                + ", f=" + f + ", d=" + d + ", l=" + l + ", str=" + str + ", strArray="
+                + Arrays.toString(strArray) + "]";
     }
-
+    
 }

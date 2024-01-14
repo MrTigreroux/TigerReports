@@ -17,9 +17,9 @@ import fr.mrtigreroux.tigerreports.utils.MessageUtils;
  */
 
 public abstract class ReportManagerMenu extends Menu implements Report.ReportListener {
-
+    
     private static final Logger LOGGER = Logger.fromClass(ReportManagerMenu.class);
-
+    
     final int reportId;
     final boolean withAdvancedData;
     final boolean allowAccessIfArchived;
@@ -29,21 +29,33 @@ public abstract class ReportManagerMenu extends Menu implements Report.ReportLis
     protected final Database db;
     protected final TaskScheduler taskScheduler;
     protected final UsersManager um;
-
-    public ReportManagerMenu(User u, int size, int page, Permission permission, int reportId, ReportsManager rm,
-            Database db, TaskScheduler taskScheduler, UsersManager um) {
+    
+    public ReportManagerMenu(User u, int size, int page, Permission permission, int reportId,
+            ReportsManager rm, Database db, TaskScheduler taskScheduler, UsersManager um) {
         this(u, size, page, permission, reportId, false, rm, db, taskScheduler, um);
     }
-
+    
     public ReportManagerMenu(User u, int size, int page, Permission permission, int reportId,
-            boolean allowAccessIfArchived, ReportsManager rm, Database db, TaskScheduler taskScheduler,
-            UsersManager um) {
-        this(u, size, page, permission, reportId, false, allowAccessIfArchived, rm, db, taskScheduler, um);
+            boolean allowAccessIfArchived, ReportsManager rm, Database db,
+            TaskScheduler taskScheduler, UsersManager um) {
+        this(
+                u,
+                size,
+                page,
+                permission,
+                reportId,
+                false,
+                allowAccessIfArchived,
+                rm,
+                db,
+                taskScheduler,
+                um
+        );
     }
-
-    public ReportManagerMenu(User u, int size, int page, Permission permission, int reportId, boolean withAdvancedData,
-            boolean allowAccessIfArchived, ReportsManager rm, Database db, TaskScheduler taskScheduler,
-            UsersManager um) {
+    
+    public ReportManagerMenu(User u, int size, int page, Permission permission, int reportId,
+            boolean withAdvancedData, boolean allowAccessIfArchived, ReportsManager rm, Database db,
+            TaskScheduler taskScheduler, UsersManager um) {
         super(u, size, page, permission);
         this.reportId = reportId;
         this.withAdvancedData = withAdvancedData;
@@ -53,7 +65,7 @@ public abstract class ReportManagerMenu extends Menu implements Report.ReportLis
         this.taskScheduler = taskScheduler;
         this.um = um;
     }
-
+    
     @Override
     public void open(boolean sound) {
         LOGGER.info(() -> this + ": open(): add listener for report " + reportId);
@@ -64,50 +76,64 @@ public abstract class ReportManagerMenu extends Menu implements Report.ReportLis
         } else if (!reportCollectionRequested) {
             reportCollectionRequested = true;
             LOGGER.info(() -> this + ": open(): start collection of report " + reportId);
-            rm.getReportByIdAsynchronously(reportId, withAdvancedData, true, db, taskScheduler, um,
+            rm.getReportByIdAsynchronously(
+                    reportId,
+                    withAdvancedData,
+                    true,
+                    db,
+                    taskScheduler,
+                    um,
                     new ResultCallback<Report>() {
-
+                        
                         @Override
                         public void onResultReceived(Report r) {
                             ReportManagerMenu.this.r = r;
-                            LOGGER.info(() -> this + ": open(): report " + reportId + " collected, opening...");
+                            LOGGER.info(
+                                    () -> this + ": open(): report " + reportId
+                                            + " collected, opening..."
+                            );
                             ReportManagerMenu.super.open(sound);
                             reportCollectionRequested = false;
                         }
-
-                    });
+                        
+                    }
+            );
         }
     }
-
+    
     private boolean isValidReport(Report r) {
         return r != null && (!withAdvancedData || r.hasAdvancedData());
     }
-
+    
     @Override
     public void onReportDataChange(Report r) {
         if (reportId == r.getId()) {
             if (!isValidReport(this.r)) { // Menu has not yet been opened, this.r is probably not yet valid and update() would therefore trigger an error.
-                LOGGER.info(() -> this + ": onReportDataChanged(" + r.getId() + "): user = " + u.getName()
-                        + ", menu report is not (yet) valid, no update");
+                LOGGER.info(
+                        () -> this + ": onReportDataChanged(" + r.getId() + "): user = "
+                                + u.getName() + ", menu report is not (yet) valid, no update"
+                );
                 return;
             }
-
-            LOGGER.info(() -> this + ": onReportDataChanged(" + r.getId() + "): user = " + u.getName()
-                    + ", calls update()");
+            
+            LOGGER.info(
+                    () -> this + ": onReportDataChanged(" + r.getId() + "): user = " + u.getName()
+                            + ", calls update()"
+            );
             update(false);
         }
     }
-
+    
     @Override
     public void onReportDelete(int reportId) {
         if (this.reportId == reportId) {
             LOGGER.info(() -> this + ": onReportDeleted(" + reportId + "): user = " + u.getName());
-
+            
             MessageUtils.sendErrorMessage(p, Message.INVALID_REPORT.get());
             p.closeInventory();
         }
     }
-
+    
     String checkReport() {
         if (!isValidReport(r)) {
             return Message.INVALID_REPORT.get();
@@ -117,19 +143,19 @@ public abstract class ReportManagerMenu extends Menu implements Report.ReportLis
             return null;
         }
     }
-
+    
     public ReportManagerMenu setReport(Report r) {
         if (isValidReport(r)) {
             this.r = r;
         }
         return this;
     }
-
+    
     @Override
     public void onClose() {
         LOGGER.info(() -> this + ": onClose(): remove listener for report " + reportId);
         rm.removeReportListener(reportId, this);
         super.onClose();
     }
-
+    
 }

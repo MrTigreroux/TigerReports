@@ -4,18 +4,20 @@ package fr.mrtigreroux.tigerreports.tasks;
  * @author MrTigreroux
  */
 public class TaskCompletion {
-
+    
     private boolean done = false;
-
+    
     public synchronized void setDone() {
         done = true;
         this.notifyAll();
     }
-
+    
     /**
-     * Make the current thread wait for task completion for maximum timeout ms if it is not interrupted.
+     * Make the current thread wait for task completion for maximum timeout ms if it is not
+     * interrupted.
      * 
      * @param timeout in ms
+     * 
      * @return if task done
      */
     public synchronized boolean waitForCompletion(long timeout) {
@@ -30,5 +32,5 @@ public class TaskCompletion {
         }
         return done;
     }
-
+    
 }

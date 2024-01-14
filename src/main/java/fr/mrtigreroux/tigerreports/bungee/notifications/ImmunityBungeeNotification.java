@@ -14,28 +14,28 @@ import fr.mrtigreroux.tigerreports.utils.CheckUtils;
  * @author MrTigreroux
  */
 public class ImmunityBungeeNotification extends BungeeNotification {
-
+    
     public final String userUniqueId;
     public final String immunity;
-
+    
     public ImmunityBungeeNotification(long creationTime, UUID userUUID, String immunity) {
         this(creationTime, userUUID.toString(), immunity);
     }
-
+    
     public ImmunityBungeeNotification(long creationTime, String userUniqueId, String immunity) {
         super(creationTime);
         this.userUniqueId = CheckUtils.notEmpty(userUniqueId);
         this.immunity = immunity;
     }
-
+    
     @Override
     public boolean isEphemeral() {
         return true;
     }
-
+    
     @Override
-    public void onReceive(Database db, TaskScheduler ts, UsersManager um, ReportsManager rm, VaultManager vm,
-            BungeeManager bm) {
+    public void onReceive(Database db, TaskScheduler ts, UsersManager um, ReportsManager rm,
+            VaultManager vm, BungeeManager bm) {
         um.getUserByUniqueIdAsynchronously(userUniqueId, db, ts, (u) -> {
             if (u != null) {
                 if (isRecent(bm)) {
@@ -46,5 +46,5 @@ public class ImmunityBungeeNotification extends BungeeNotification {
             }
         });
     }
-
+    
 }

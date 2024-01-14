@@ -10,7 +10,7 @@ import fr.mrtigreroux.tigerreports.utils.MessageUtils;
  */
 
 public enum Permission {
-
+    
     REPORT,
     REPORT_EXEMPT,
     STAFF,
@@ -20,11 +20,11 @@ public enum Permission {
     STAFF_DELETE,
     STAFF_ADVANCED,
     MANAGE;
-
+    
     public String get() {
         return "tigerreports." + name().toLowerCase().replace("_", ".");
     }
-
+    
     public boolean check(CommandSender s) {
         if (!s.hasPermission(get())) {
             MessageUtils.sendErrorMessage(s, Message.PERMISSION_COMMAND.get());
@@ -32,5 +32,5 @@ public enum Permission {
         }
         return true;
     }
-
+    
 }

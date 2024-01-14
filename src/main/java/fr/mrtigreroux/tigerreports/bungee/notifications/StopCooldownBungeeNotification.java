@@ -14,28 +14,29 @@ import fr.mrtigreroux.tigerreports.utils.CheckUtils;
  * @author MrTigreroux
  */
 public class StopCooldownBungeeNotification extends BungeeNotification {
-
+    
     public final String staffUniqueId;
     public final String targetUniqueId;
-
+    
     public StopCooldownBungeeNotification(long creationTime, UUID staffUUID, UUID targetUUID) {
         this(creationTime, staffUUID.toString(), targetUUID.toString());
     }
-
-    public StopCooldownBungeeNotification(long creationTime, String staffUniqueId, String targetUniqueId) {
+    
+    public StopCooldownBungeeNotification(long creationTime, String staffUniqueId,
+            String targetUniqueId) {
         super(creationTime);
         this.staffUniqueId = CheckUtils.notEmpty(staffUniqueId);
         this.targetUniqueId = CheckUtils.notEmpty(targetUniqueId);
     }
-
+    
     @Override
     public boolean isEphemeral() {
         return true;
     }
-
+    
     @Override
-    public void onReceive(Database db, TaskScheduler ts, UsersManager um, ReportsManager rm, VaultManager vm,
-            BungeeManager bm) {
+    public void onReceive(Database db, TaskScheduler ts, UsersManager um, ReportsManager rm,
+            VaultManager vm, BungeeManager bm) {
         um.getUserByUniqueIdAsynchronously(targetUniqueId, db, ts, (u) -> {
             if (u != null) {
                 if (isNotifiable(bm)) {
@@ -48,5 +49,5 @@ public class StopCooldownBungeeNotification extends BungeeNotification {
             }
         });
     }
-
+    
 }

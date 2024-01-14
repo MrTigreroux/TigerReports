@@ -17,31 +17,35 @@ import fr.mrtigreroux.tigerreports.utils.CheckUtils;
  * @author MrTigreroux
  */
 public class TeleportToPlayerBungeeNotification extends BungeeNotification {
-
-    private static final Logger LOGGER = Logger.BUNGEE.newChild(TeleportToPlayerBungeeNotification.class);
-
+    
+    private static final Logger LOGGER =
+            Logger.BUNGEE.newChild(TeleportToPlayerBungeeNotification.class);
+    
     public final String playerName;
     public final String targetName;
-
-    public TeleportToPlayerBungeeNotification(long creationTime, String playerName, String targetName) {
+    
+    public TeleportToPlayerBungeeNotification(long creationTime, String playerName,
+            String targetName) {
         super(creationTime);
         this.playerName = CheckUtils.notEmpty(playerName);
         this.targetName = CheckUtils.notEmpty(targetName);
     }
-
+    
     @Override
     public boolean isEphemeral() {
         return true;
     }
-
+    
     @Override
-    public void onReceive(Database db, TaskScheduler ts, UsersManager um, ReportsManager rm, VaultManager vm,
-            BungeeManager bm) {
+    public void onReceive(Database db, TaskScheduler ts, UsersManager um, ReportsManager rm,
+            VaultManager vm, BungeeManager bm) {
         if (!isNotifiable(bm)) {
-            LOGGER.info(() -> "onReceive(): " + playerName + " player, too old notification, ignored");
+            LOGGER.info(
+                    () -> "onReceive(): " + playerName + " player, too old notification, ignored"
+            );
             return;
         }
-
+        
         String localServerName = bm.getServerName();
         if (BungeeManager.DEFAULT_SERVER_NAME.equals(localServerName)) {
             LOGGER.info(() -> "onReceive(): localServerName = unknown (localhost), ignored");
@@ -51,24 +55,30 @@ public class TeleportToPlayerBungeeNotification extends BungeeNotification {
             LOGGER.info(() -> "onReceive(): target player is not online, ignored");
             return;
         }
-
+        
         bm.whenPlayerIsOnline(playerName, (p) -> {
             if (!isNotifiable(bm)) {
-                LOGGER.info(() -> "onReceive(): " + playerName + " online player, too old notification, ignored");
+                LOGGER.info(
+                        () -> "onReceive(): " + playerName
+                                + " online player, too old notification, ignored"
+                );
                 return;
             }
-
+            
             Player t = Bukkit.getPlayer(targetName);
             if (t == null) {
-                LOGGER.info(() -> "onReceive(): " + targetName + " target player is no longer online, ignored");
+                LOGGER.info(
+                        () -> "onReceive(): " + targetName
+                                + " target player is no longer online, ignored"
+                );
                 return;
             }
-
+            
             p.teleport(t.getLocation());
             ConfigSound.TELEPORT.play(p);
         });
-
+        
         bm.sendBungeeMessage("ConnectOther", playerName, localServerName);
     }
-
+    
 }

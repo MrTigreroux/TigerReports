@@ -26,15 +26,15 @@ import fr.mrtigreroux.tigerreports.objects.DeeplyCloneable;
  * @author MrTigreroux
  */
 public class AssertionUtils {
-
+    
     private static final Logger LOGGER = Logger.fromClass(AssertionUtils.class);
-
+    
     private static final Set<Class<?>> PRIMITIVES_CLASS = getPrimitivesClass();
-
+    
     public static boolean isPrimitive(Class<?> clazz) {
         return PRIMITIVES_CLASS.contains(clazz);
     }
-
+    
     private static Set<Class<?>> getPrimitivesClass() {
         Set<Class<?>> wrappers = new HashSet<Class<?>>();
         wrappers.add(Boolean.class);
@@ -56,23 +56,24 @@ public class AssertionUtils {
         wrappers.add(String.class);
         return wrappers;
     }
-
+    
     /**
      * 
      * @param <T>
      * @param object               must have all its non static fields not null.
-     * @param uniqueInstanceFields name of fields which should have the same instance for clones that the one used in {@code object}
+     * @param uniqueInstanceFields name of fields which should have the same instance for clones
+     *                             that the one used in {@code object}
      */
-    public static <T extends DeeplyCloneable<T>> void assertDeeplyCloneable(DeeplyCloneable<T> object,
-            String... uniqueInstanceFields) {
+    public static <T extends DeeplyCloneable<T>> void assertDeeplyCloneable(
+            DeeplyCloneable<T> object, String... uniqueInstanceFields) {
         assertNotNull(object);
-
+        
         T deepClone = object.deepClone();
         assertDeepEquals(object, deepClone);
-
+        
         // Check that non primitive fields are different instances
         assertNotNullAndNotSameFieldsInstance(object, deepClone, uniqueInstanceFields);
-
+        
         //		assertThat(deepClone).usingRecursiveComparison().withEqualsForFields((a, b) -> {
         //			System.out.println("a = " + a + ", b = " + b + ", a!=b = " + (a != b) + ", a class = " + a.getClass()
         //			        + " a isPrimitive = " + (a != null && isPrimitiveWrapper(a.getClass())));
@@ -80,12 +81,13 @@ public class AssertionUtils {
         //			        && a.getClass().equals(b.getClass()));
         //		}).isEqualTo(object);
     }
-
-    public static <T> void assertNotNullAndNotSameFieldsInstance(T expected, T actual, String... ignoredFields) {
+    
+    public static <T> void assertNotNullAndNotSameFieldsInstance(T expected, T actual,
+            String... ignoredFields) {
         if (expected == null || actual == null) {
             fail("expected and actual must not be null");
         }
-
+        
         List<Field> allFields = getAllFields(actual.getClass());
         List<String> ignored = Arrays.asList(ignoredFields);
         try {
@@ -93,29 +95,40 @@ public class AssertionUtils {
                 if (Modifier.isStatic(field.getModifiers())) {
                     continue;
                 }
-
-                LOGGER.debug(() -> "assertNotNullAndNotSameFieldsInstance(): field " + field.getName() + ", type: "
-                        + field.getType());
+                
+                LOGGER.debug(
+                        () -> "assertNotNullAndNotSameFieldsInstance(): field " + field.getName()
+                                + ", type: " + field.getType()
+                );
                 if (isPrimitive(field.getType())) {
                     continue;
                 }
-
+                
                 field.setAccessible(true);
-
+                
                 Object expectedObj = field.get(expected);
-
-                assertNotNull(expectedObj, () -> "field " + field.getName()
-                        + " is null for expected, all fields should not be null to be able to check the instance but also check that their value is correctly copied");
-
+                
+                assertNotNull(
+                        expectedObj,
+                        () -> "field " + field.getName()
+                                + " is null for expected, all fields should not be null to be able to check the instance but also check that their value is correctly copied"
+                );
+                
                 if (ignored.contains(field.getName())) {
-                    LOGGER.debug(() -> "assertNotNullAndNotSameFieldsInstance(): ignore: " + field.getName());
+                    LOGGER.debug(
+                            () -> "assertNotNullAndNotSameFieldsInstance(): ignore: "
+                                    + field.getName()
+                    );
                     continue;
                 }
                 Object actualObj = field.get(actual);
-
-                assertTrue(expectedObj != actualObj,
-                        () -> "same field " + field.getName() + " instance for expected and actual: " + actualObj);
-
+                
+                assertTrue(
+                        expectedObj != actualObj,
+                        () -> "same field " + field.getName()
+                                + " instance for expected and actual: " + actualObj
+                );
+                
                 field.setAccessible(false);
             }
             return;
@@ -126,7 +139,7 @@ public class AssertionUtils {
         }
         fail("error occurred while accessing fields");
     }
-
+    
     public static List<Field> getAllFields(Class<?> type) {
         List<Field> fields = new ArrayList<Field>();
         for (Class<?> c = type; c != null; c = c.getSuperclass()) {
@@ -134,7 +147,7 @@ public class AssertionUtils {
         }
         return fields;
     }
-
+    
     public static <T> void assertDeepListEquals(List<T> expectedList, List<T> actualList,
             String... fieldNamesToIgnore) {
         assertListEquals(expectedList, actualList, null);
@@ -148,55 +161,69 @@ public class AssertionUtils {
             }
         }
     }
-
-    public static <T> void assertListEquals(List<T> expectedList, List<T> actualList, String context) {
+    
+    public static <T> void assertListEquals(List<T> expectedList, List<T> actualList,
+            String context) {
         if (expectedList != null) {
             String contextPrefix = context != null ? context + ": " : "";
-            assertEquals(expectedList.size(), actualList.size(), () -> contextPrefix + "Expected: "
-                    + CollectionUtils.toString(expectedList) + ", \nActual: " + CollectionUtils.toString(actualList));
+            assertEquals(
+                    expectedList.size(),
+                    actualList.size(),
+                    () -> contextPrefix + "Expected: " + CollectionUtils.toString(expectedList) + ", \nActual: " + CollectionUtils.toString(actualList)
+            );
             int i = 0;
             Iterator<T> expectedListIt = expectedList.iterator();
             Iterator<T> actualListIt = actualList.iterator();
             while (expectedListIt.hasNext()) {
-                assertEquals(expectedListIt.next(), actualListIt.next(),
-                        contextPrefix + "Index " + i + " is different");
+                assertEquals(
+                        expectedListIt.next(),
+                        actualListIt.next(),
+                        contextPrefix + "Index " + i + " is different"
+                );
                 i++;
             }
         }
         assertEquals(expectedList, actualList);
     }
-
+    
     public static <T> void assertSetEquals(Set<T> expected, Set<T> actual, String context) {
         if (expected != null) {
             String contextPrefix = context != null ? context + ": " : "";
             SetView<T> missing = Sets.difference(expected, actual);
             SetView<T> unexpected = Sets.difference(actual, expected);
-            assertTrue(missing.isEmpty() && unexpected.isEmpty(),
-                    () -> contextPrefix + "Missing items: " + CollectionUtils.toString(missing) + "\nUnexpected items: "
-                            + CollectionUtils.toString(unexpected));
-            assertEquals(expected.size(), actual.size(), () -> contextPrefix + "Expected: "
-                    + CollectionUtils.toString(expected) + ", \nActual: " + CollectionUtils.toString(actual));
+            assertTrue(
+                    missing.isEmpty() && unexpected.isEmpty(),
+                    () -> contextPrefix + "Missing items: " + CollectionUtils.toString(missing) + "\nUnexpected items: " + CollectionUtils.toString(unexpected)
+            );
+            assertEquals(
+                    expected.size(),
+                    actual.size(),
+                    () -> contextPrefix + "Expected: " + CollectionUtils.toString(expected) + ", \nActual: " + CollectionUtils.toString(actual)
+            );
         }
         assertEquals(expected, actual);
     }
-
+    
     public static <T> void assertDeepEquals(T expected, T actual, String... fieldNamesToIgnore) {
-        assertThat(actual).usingRecursiveComparison().ignoringFields(fieldNamesToIgnore).isEqualTo(expected);
+        assertThat(actual).usingRecursiveComparison()
+                .ignoringFields(fieldNamesToIgnore)
+                .isEqualTo(expected);
     }
-
+    
     public static <T> void assertFieldEquals(T expected, T actual, String fieldNameToCheck) {
         assertFieldCompare(expected, actual, true, fieldNameToCheck);
     }
-
+    
     public static <T> void assertFieldNotEquals(T expected, T actual, String fieldNameToCheck) {
         assertFieldCompare(expected, actual, false, fieldNameToCheck);
     }
-
-    private static <T> void assertFieldCompare(T expected, T actual, boolean equals, String fieldNameToCheck) {
+    
+    private static <T> void assertFieldCompare(T expected, T actual, boolean equals,
+            String fieldNameToCheck) {
         if (expected == null || actual == null) {
             fail("expected and actual must not be null");
         }
-
+        
         try {
             Field field = expected.getClass().getDeclaredField(fieldNameToCheck);
             field.setAccessible(true);
@@ -216,5 +243,5 @@ public class AssertionUtils {
             e.printStackTrace();
         }
     }
-
+    
 }

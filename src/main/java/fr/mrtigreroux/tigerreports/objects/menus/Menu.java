@@ -24,9 +24,9 @@ import fr.mrtigreroux.tigerreports.utils.VersionUtils;
  */
 
 public abstract class Menu {
-
+    
     private static final Logger LOGGER = Logger.fromClass(Menu.class);
-
+    
     final User u;
     final Player p;
     final int size;
@@ -34,7 +34,7 @@ public abstract class Menu {
     private final Permission permission;
     private boolean isInvCurrentlyModified = false;
     private boolean updateRequested = false;
-
+    
     public Menu(User u, int size, int page, Permission permission) {
         this.u = u;
         this.p = u.getPlayer();
@@ -42,15 +42,18 @@ public abstract class Menu {
         this.page = page;
         this.permission = permission;
     }
-
+    
     boolean check() {
         if (!u.isOnline()) {
             LOGGER.info(() -> this + ": check(): " + u.getName() + " is not online, return false");
             return false;
         }
-
-        String error = permission != null && !u.hasPermission(permission) ? Message.PERMISSION_COMMAND.get()
-                : this instanceof ReportManagerMenu ? ((ReportManagerMenu) this).checkReport() : null;
+        
+        String error = permission != null && !u.hasPermission(permission)
+                ? Message.PERMISSION_COMMAND.get()
+                : this instanceof ReportManagerMenu
+                        ? ((ReportManagerMenu) this).checkReport()
+                        : null;
         if (error != null) {
             MessageUtils.sendErrorMessage(p, error);
             p.closeInventory();
@@ -59,7 +62,7 @@ public abstract class Menu {
             return true;
         }
     }
-
+    
     Inventory getInventory(String title, boolean borders) {
         if (title.length() > 32 && VersionUtils.isVersionLower1_9())
             title = title.substring(0, 29) + "..";
@@ -75,13 +78,13 @@ public abstract class Menu {
         }
         return inv;
     }
-
+    
     public void open(boolean sound) {
         if (!check())
             return;
-
+        
         u.setOpenedMenu(null); // Close previous menu if any
-
+        
         LOGGER.info(() -> this + ": open()");
         isInvCurrentlyModified = true;
         Inventory inv = onOpen();
@@ -90,45 +93,48 @@ public abstract class Menu {
             isInvCurrentlyModified = false;
             return;
         }
-
+        
         if (this instanceof UpdatedMenu) {
             ((UpdatedMenu) this).onUpdate(inv);
         }
-
+        
         p.openInventory(inv);
         u.setOpenedMenu(this);
         isInvCurrentlyModified = false;
-
+        
         if (sound) {
             ConfigSound.MENU.play(p);
         }
-
+        
         if (updateRequested) {
             LOGGER.info(() -> this + ": open(): update requested, calls update()");
             updateRequested = false;
             update(false);
         }
     }
-
+    
     abstract Inventory onOpen();
-
+    
     public void update(boolean sound) {
         if (!check())
             return;
-
+        
         if (this != u.getOpenedMenu()) {
-            LOGGER.info(() -> this + ": update(): " + u.getName() + "'s opened menu is not this menu, cancel update");
+            LOGGER.info(
+                    () -> this + ": update(): " + u.getName()
+                            + "'s opened menu is not this menu, cancel update"
+            );
             return;
         }
-
+        
         LOGGER.info(() -> this + ": update(): isInvCurrentlyModified = " + isInvCurrentlyModified);
         if (isInvCurrentlyModified) {
             updateRequested = true;
             return;
         }
-
+        
         Inventory inv = getOpenInventory();
-
+        
         if (inv != null) {
             isInvCurrentlyModified = true;
             if (this instanceof UpdatedMenu) {
@@ -137,7 +143,7 @@ public abstract class Menu {
                 inv.setContents(this.onOpen().getContents());
             }
             isInvCurrentlyModified = false;
-
+            
             if (sound) {
                 ConfigSound.MENU.play(p);
             }
@@ -150,7 +156,7 @@ public abstract class Menu {
             open(sound);
         }
     }
-
+    
     protected Inventory getOpenInventory() {
         InventoryView invView = p.getOpenInventory();
         if (invView != null) {
@@ -161,27 +167,30 @@ public abstract class Menu {
         }
         return null;
     }
-
+    
     public void click(ItemStack item, int slot, ClickType click) {
-        if (slot == -1 || item == null || item.getType() == null || item.getType() == Material.AIR
-                || (item.getType().toString().toUpperCase().contains("STAINED_GLASS_PANE")
-                        && ((slot >= size - 9 && slot < size) || (slot >= 9 && slot <= 17)))
-                || !check())
+        if (
+            slot == -1
+                    || item == null
+                    || item.getType() == null
+                    || item.getType() == Material.AIR
+                    || (item.getType().toString().toUpperCase().contains("STAINED_GLASS_PANE") && ((slot >= size - 9 && slot < size) || (slot >= 9 && slot <= 17))) || !check()
+        )
             return;
-
+        
         if (slot == size - 5) {
             TigerReports.getInstance().runTaskDelayedly(10, new Runnable() {
-
+                
                 @Override
                 public void run() {
                     p.closeInventory();
                     ConfigSound.MENU.play(p);
                 }
-
+                
             });
             return;
         }
-
+        
         if (page != 0) {
             int newPage = page - (slot == size - 7 ? 1 : slot == size - 3 ? -1 : page);
             if (newPage != 0) {
@@ -191,22 +200,22 @@ public abstract class Menu {
                 return;
             }
         }
-
+        
         onClick(item, slot, click);
     }
-
+    
     abstract void onClick(ItemStack item, int slot, ClickType click);
-
+    
     int getItemGlobalIndex(int slot) {
         return slot - 17 + ((page - 1) * 27);
     }
-
+    
     public int getPage() {
         return page;
     }
-
+    
     public void onPageChange(int oldPage, int newPage) {}
-
+    
     public void onClose() {}
-
+    
 }

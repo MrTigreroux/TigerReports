@@ -13,38 +13,38 @@ import fr.mrtigreroux.tigerreports.objects.reports.Report;
  * @author MrTigreroux
  */
 public class OnlineUserData implements UserData {
-
+    
     public final Player p;
     Menu openedMenu = null;
     Comment editingComment = null;
     PendingProcessPunishingData pendingProcessPunishingData = null;
     boolean notifications = true;
-
+    
     public OnlineUserData(Player p) {
         this.p = Objects.requireNonNull(p);
     }
-
+    
     @Override
     public String getName() {
         return p.getName();
     }
-
+    
     @Override
     public String getDisplayName(VaultManager vm) {
         return vm.getOnlinePlayerDisplayName(p);
     }
-
+    
     static class PendingProcessPunishingData {
-
+        
         final Report r;
         final String punishmentConfigPath;
-
+        
         public PendingProcessPunishingData(Report r, String punishmentConfigPath) {
             super();
             this.r = Objects.requireNonNull(r);
             this.punishmentConfigPath = Objects.requireNonNull(punishmentConfigPath);
         }
-
+        
     }
-
+    
 }

@@ -16,22 +16,22 @@ import fr.mrtigreroux.tigerreports.utils.CheckUtils;
  * @author MrTigreroux
  */
 public class UsersDataChangedBungeeNotification extends BungeeNotification {
-
+    
     public final String[] usersUniqueId;
-
+    
     public UsersDataChangedBungeeNotification(long creationTime, String... usersUniqueId) {
         super(creationTime);
         this.usersUniqueId = CheckUtils.notEmpty(usersUniqueId);
     }
-
+    
     @Override
     public boolean isEphemeral() {
         return true;
     }
-
+    
     @Override
-    public void onReceive(Database db, TaskScheduler ts, UsersManager um, ReportsManager rm, VaultManager vm,
-            BungeeManager bm) {
+    public void onReceive(Database db, TaskScheduler ts, UsersManager um, ReportsManager rm,
+            VaultManager vm, BungeeManager bm) {
         long remainingDelay = RECENT_MAX_DELAY - getElapsedTime(bm);
         if (remainingDelay > 0L) {
             // Wait for the database to be updated
@@ -42,7 +42,7 @@ public class UsersDataChangedBungeeNotification extends BungeeNotification {
             updateUsersData(db, ts, um);
         }
     }
-
+    
     private void updateUsersData(Database db, TaskScheduler ts, UsersManager um) {
         List<UUID> usersUUID = new ArrayList<>();
         for (int i = 0; i < usersUniqueId.length; i++) {
@@ -52,5 +52,5 @@ public class UsersDataChangedBungeeNotification extends BungeeNotification {
         }
         um.updateDataOfUsersWhenPossible(usersUUID, db, ts);
     }
-
+    
 }

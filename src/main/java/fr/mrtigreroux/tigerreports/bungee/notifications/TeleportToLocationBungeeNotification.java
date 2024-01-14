@@ -17,38 +17,45 @@ import fr.mrtigreroux.tigerreports.utils.SerializationUtils;
  * @author MrTigreroux
  */
 public class TeleportToLocationBungeeNotification extends BungeeNotification {
-
-    private static final Logger LOGGER = Logger.BUNGEE.newChild(TeleportToLocationBungeeNotification.class);
-
+    
+    private static final Logger LOGGER =
+            Logger.BUNGEE.newChild(TeleportToLocationBungeeNotification.class);
+    
     public final String playerName;
     public final String serializedLocation;
-
-    public TeleportToLocationBungeeNotification(long creationTime, String playerName, String serializedLocation) {
+    
+    public TeleportToLocationBungeeNotification(long creationTime, String playerName,
+            String serializedLocation) {
         super(creationTime);
         this.playerName = CheckUtils.notEmpty(playerName);
         this.serializedLocation = CheckUtils.notEmpty(serializedLocation);
     }
-
+    
     @Override
     public boolean isEphemeral() {
         return true;
     }
-
+    
     public Location getLocation() {
         return SerializationUtils.unserializeLocation(serializedLocation);
     }
-
+    
     @Override
-    public void onReceive(Database db, TaskScheduler ts, UsersManager um, ReportsManager rm, VaultManager vm,
-            BungeeManager bm) {
+    public void onReceive(Database db, TaskScheduler ts, UsersManager um, ReportsManager rm,
+            VaultManager vm, BungeeManager bm) {
         if (!isNotifiable(bm)) {
-            LOGGER.info(() -> "onReceive(): " + playerName + " player, too old notification, ignored");
+            LOGGER.info(
+                    () -> "onReceive(): " + playerName + " player, too old notification, ignored"
+            );
             return;
         }
-
+        
         bm.whenPlayerIsOnline(playerName, (p) -> {
             if (!isNotifiable(bm)) {
-                LOGGER.info(() -> "onReceive(): " + playerName + " online player, too old notification, ignored");
+                LOGGER.info(
+                        () -> "onReceive(): " + playerName
+                                + " online player, too old notification, ignored"
+                );
                 return;
             }
             try {
@@ -59,5 +66,5 @@ public class TeleportToLocationBungeeNotification extends BungeeNotification {
             }
         });
     }
-
+    
 }
