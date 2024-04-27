@@ -33,6 +33,13 @@ public class VersionUtils {
                         ),
                         e
                 );
+
+                Logger.CONFIG.warn(() -> ConfigUtils.getInfoMessage(
+                        "Attempting to fetch version using method 2 (NMS package identifier)...",
+                        "Essai de récupération de la version en utilisant la méthode 2 (identifiant de package NMS)..."
+                ));
+
+                fetchVersionViaNMS();
             }
             Logger.MAIN.info(
                     () -> "MC version: " + minecraftVersion + ", checks: old: " + isOldVersion()
@@ -41,6 +48,32 @@ public class VersionUtils {
             );
         }
         return minecraftVersion;
+    }
+
+    public static void fetchVersionViaNMS() {
+        String nmsPrefix = "org.bukkit.craftbukkit.v1_8_R3.CraftServer"
+                .replace("org.bukkit.craftbukkit", "net.minecraft.server");
+        String version;
+
+        try {
+            version = nmsPrefix.split("\\.")[3]; // "vX_X_RX"
+        } catch (IndexOutOfBoundsException e) {
+            Logger.CONFIG.error(ConfigUtils.getInfoMessage(
+                    "Failed to extract the Minecraft version from NMS package (package string = "
+                            + nmsPrefix + "):",
+                    "La version Minecraft n'a pas pu etre extraite (package string = "
+                            + nmsPrefix + "):"
+            ), e);
+            return;
+        }
+
+        System.out.println(version);
+
+        int subVersionIndex = version.indexOf("_R");
+        int mainVersionIndex = version.indexOf("v") + 1;
+
+        String versionString = version.substring(mainVersionIndex, subVersionIndex).replace("_", ".");
+        minecraftVersion = toInt(versionString);
     }
     
     public static boolean isOldVersion() {

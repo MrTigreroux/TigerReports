@@ -80,16 +80,20 @@ public class TigerReports extends JavaPlugin implements TaskScheduler {
             Bukkit.getPluginManager().disablePlugin(this);
             return;
         }
-        
+
+        loadConfigurations();
         MenuRawItem.init();
         load();
+    }
+
+    public void loadConfigurations() {
+        for (ConfigFile configFiles : ConfigFile.values()) {
+            configFiles.load(this);
+        }
     }
     
     public void load() {
         Logger.MAIN.info(() -> "load()");
-        for (ConfigFile configFiles : ConfigFile.values()) {
-            configFiles.load(this);
-        }
         
         MenuItem.init();
         
