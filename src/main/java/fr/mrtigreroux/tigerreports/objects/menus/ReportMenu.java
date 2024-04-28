@@ -69,7 +69,15 @@ public class ReportMenu extends ReportManagerMenu implements User.UserListener {
                                 Message.PUNISH_ABUSE_DETAILS.get()
                                         .replace(
                                                 "_Players_",
-                                                stackedReport ? r.getReportersNames(0, false, vm, bm) : r.getPlayerName(Report.ParticipantType.REPORTER, false, true, vm, bm)
+                                                stackedReport
+                                                        ? r.getReportersNames(0, false, vm, bm)
+                                                        : r.getPlayerName(
+                                                                Report.ParticipantType.REPORTER,
+                                                                false,
+                                                                true,
+                                                                vm,
+                                                                bm
+                                                        )
                                         )
                                         .replace(
                                                 "_Time_",
@@ -100,7 +108,28 @@ public class ReportMenu extends ReportManagerMenu implements User.UserListener {
         for (Status status : Status.values()) {
             inv.setItem(
                     statusPosition,
-                    status.getButtonItem().glow(status.equals(r.getStatus())).name(status == Status.DONE ? Message.PROCESS_STATUS.get() : Message.CHANGE_STATUS.get().replace("_Status_", status.getDisplayName(null))).lore((status == Status.DONE ? Message.PROCESS_STATUS_DETAILS.get() : Message.CHANGE_STATUS_DETAILS.get()).replace("_Status_", status.getDisplayName(null)).split(ConfigUtils.getLineBreakSymbol())).create()
+                    status.getButtonItem()
+                            .glow(status.equals(r.getStatus()))
+                            .name(
+                                    status == Status.DONE
+                                            ? Message.PROCESS_STATUS.get()
+                                            : Message.CHANGE_STATUS.get()
+                                                    .replace(
+                                                            "_Status_",
+                                                            status.getDisplayName(null)
+                                                    )
+                            )
+                            .lore(
+                                    (status == Status.DONE
+                                            ? Message.PROCESS_STATUS_DETAILS.get()
+                                            : Message.CHANGE_STATUS_DETAILS.get())
+                                                    .replace(
+                                                            "_Status_",
+                                                            status.getDisplayName(null)
+                                                    )
+                                                    .split(ConfigUtils.getLineBreakSymbol())
+                            )
+                            .create()
             );
             statusPosition += status == Status.IN_PROGRESS && !archive ? 2 : 1;
         }
@@ -125,8 +154,11 @@ public class ReportMenu extends ReportManagerMenu implements User.UserListener {
             User participant = reporter ? r.getReporter() : r.getReported();
             String name = participant.getName();
             
-            String details =
-                    reporter && stackedReport ? Message.get("Menus.Stacked-report-reporters-details").replace("_First_", r.getPlayerName(type, true, true, vm, bm)).replace("_Others_", r.getReportersNames(1, true, vm, bm)) : Message.PLAYER_DETAILS.get();
+            String details = reporter && stackedReport
+                    ? Message.get("Menus.Stacked-report-reporters-details")
+                            .replace("_First_", r.getPlayerName(type, true, true, vm, bm))
+                            .replace("_Others_", r.getReportersNames(1, true, vm, bm))
+                    : Message.PLAYER_DETAILS.get();
             Map<String, Integer> statistics = participant.getStatistics();
             
             for (Statistic stat : Statistic.values()) {
@@ -136,11 +168,14 @@ public class ReportMenu extends ReportManagerMenu implements User.UserListener {
                         ? Integer.toString(statValue)
                         : Message.NOT_FOUND_MALE.get();
                 
-                details = details
-                        .replace("_" + statName.substring(0, 1).toUpperCase() + statName.substring(1).replace("_", "") + "_", statDisplayedValue);
+                details = details.replace(
+                        "_" + statName.substring(0, 1).toUpperCase()
+                                + statName.substring(1).replace("_", "") + "_",
+                        statDisplayedValue
+                );
             }
             String serverName = (serverName =
-                    SerializationUtils.getServer(r.getOldLocation(type))) != null
+                    SerializationUtils.deserializeServer(r.getOldLocation(type))) != null
                             ? MessageUtils.getServerName(serverName)
                             : Message.NOT_FOUND_MALE.get();
             
@@ -149,11 +184,31 @@ public class ReportMenu extends ReportManagerMenu implements User.UserListener {
                 tp = (participant.isOnlineInNetwork(bm)
                         ? Message.TELEPORT_TO_CURRENT_POSITION
                         : Message.CAN_NOT_TELEPORT_TO_CURRENT_POSITION).get()
-                        + (r.getOldLocation(type) != null ? Message.TELEPORT_TO_OLD_POSITION : Message.CAN_NOT_TELEPORT_TO_OLD_POSITION).get();
+                        + (r.getOldLocation(type) != null
+                                ? Message.TELEPORT_TO_OLD_POSITION
+                                : Message.CAN_NOT_TELEPORT_TO_OLD_POSITION).get();
             }
             inv.setItem(
                     reporter ? 21 : 23,
-                    new CustomItem().skullOwner(name).name((reporter && stackedReport ? Message.get("Menus.Stacked-report-reporters") : type.getName()).replace("_Player_", r.getPlayerName(type, true, true, vm, bm))).lore(details.replace("_Server_", serverName).replace("_Teleportation_", tp.replace("_Player_", name)).split(ConfigUtils.getLineBreakSymbol())).amount(reporter && stackedReport ? r.getReportersAmount() : 1).create()
+                    new CustomItem().skullOwner(name)
+                            .name(
+                                    (reporter && stackedReport
+                                            ? Message.get("Menus.Stacked-report-reporters")
+                                            : type.getName()).replace(
+                                                    "_Player_",
+                                                    r.getPlayerName(type, true, true, vm, bm)
+                                            )
+                            )
+                            .lore(
+                                    details.replace("_Server_", serverName)
+                                            .replace(
+                                                    "_Teleportation_",
+                                                    tp.replace("_Player_", name)
+                                            )
+                                            .split(ConfigUtils.getLineBreakSymbol())
+                            )
+                            .amount(reporter && stackedReport ? r.getReportersAmount() : 1)
+                            .create()
             );
         }
     }
@@ -166,7 +221,10 @@ public class ReportMenu extends ReportManagerMenu implements User.UserListener {
                 break;
             case 18:
                 u.sendLinesWithReportButton(
-                        r.implementDetails(Message.REPORT_CHAT_DETAILS.get(), false, vm, bm).replace("_Report_", r.getName()).split(ConfigUtils.getLineBreakSymbol()), r
+                        r.implementDetails(Message.REPORT_CHAT_DETAILS.get(), false, vm, bm)
+                                .replace("_Report_", r.getName())
+                                .split(ConfigUtils.getLineBreakSymbol()),
+                        r
                 );
                 break;
             case 21:
@@ -241,7 +299,16 @@ public class ReportMenu extends ReportManagerMenu implements User.UserListener {
                         messages.append(message);
                     }
                     u.sendLinesWithReportButton(
-                            Message.REPORT_MESSAGES_HISTORY.get().replace("_Report_", r.getName()).replace("_Messages_", !messages.toString().isEmpty() ? messages.toString() : Message.NONE_MALE.get()).split(ConfigUtils.getLineBreakSymbol()), r
+                            Message.REPORT_MESSAGES_HISTORY.get()
+                                    .replace("_Report_", r.getName())
+                                    .replace(
+                                            "_Messages_",
+                                            !messages.toString().isEmpty()
+                                                    ? messages.toString()
+                                                    : Message.NONE_MALE.get()
+                                    )
+                                    .split(ConfigUtils.getLineBreakSymbol()),
+                            r
                     );
                 }
                 break;
@@ -263,7 +330,9 @@ public class ReportMenu extends ReportManagerMenu implements User.UserListener {
             default:
                 if (
                     (slot == 32 || slot == 33)
-                            && !(u.hasPermission(Permission.STAFF_ARCHIVE) && (r.getStatus() == Status.DONE || !ReportUtils.onlyDoneArchives()))
+                            && !(u.hasPermission(
+                                    Permission.STAFF_ARCHIVE
+                            ) && (r.getStatus() == Status.DONE || !ReportUtils.onlyDoneArchives()))
                 ) {
                     slot--;
                 }

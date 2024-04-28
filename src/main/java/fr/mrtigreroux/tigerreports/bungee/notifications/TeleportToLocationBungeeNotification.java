@@ -37,7 +37,7 @@ public class TeleportToLocationBungeeNotification extends BungeeNotification {
     }
     
     public Location getLocation() {
-        return SerializationUtils.unserializeLocation(serializedLocation);
+        return SerializationUtils.deserializeLocation(serializedLocation);
     }
     
     @Override

@@ -21,18 +21,27 @@ public class VersionUtils {
             Logger.MAIN.info(() -> "bukkit version: " + fver);
             try {
                 minecraftVersion = toInt(
-                        bukkitVersion.substring(bukkitVersion.indexOf('(') + 5, bukkitVersion.length() - 1)
+                        bukkitVersion.substring(
+                                bukkitVersion.indexOf('(') + 5,
+                                bukkitVersion.length() - 1
+                        )
                 );
-            } catch (NumberFormatException e) {
-                Logger.CONFIG.error(
-                        ConfigUtils.getInfoMessage(
-                                "Failed to extract the Minecraft version (bukkit version = "
-                                        + bukkitVersion + "):",
-                                "La version Minecraft n'a pas pu etre extraite (bukkit version = "
-                                        + bukkitVersion + "):"
-                        ),
-                        e
-                );
+            } catch (NumberFormatException | IndexOutOfBoundsException ex1) {
+                String pkgName = "unknown";
+                try {
+                    pkgName = Bukkit.getServer().getClass().getPackage().getName();
+                    String pkgBukkitVer = pkgName.substring(pkgName.lastIndexOf('.') + 2);
+                    String[] verTokens = pkgBukkitVer.split("_");
+                    minecraftVersion = toInt(verTokens[0] + "." + verTokens[1]);
+                } catch (
+                        NumberFormatException | IndexOutOfBoundsException | NullPointerException ex2
+                ) {
+                    Logger.MAIN.error(
+                            "Failed to extract the Minecraft version (bukkit version = "
+                                    + bukkitVersion + ", package = " + pkgName + "):",
+                            ex2
+                    );
+                }
             }
             Logger.MAIN.info(
                     () -> "MC version: " + minecraftVersion + ", checks: old: " + isOldVersion()

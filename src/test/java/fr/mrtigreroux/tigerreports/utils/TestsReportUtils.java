@@ -99,7 +99,11 @@ public class TestsReportUtils {
     public static void setupMockOfCollectAndFillReportedData(MockedStatic<ReportUtils> mock,
             User reported, Map<String, Object> reportedAdvancedData) {
         mock.when(
-                () -> ReportUtils.collectAndFillReportedData(any(User.class), any(BungeeManager.class), ArgumentMatchers.<Map<String, Object>>any())
+                () -> ReportUtils.collectAndFillReportedData(
+                        any(User.class),
+                        any(BungeeManager.class),
+                        ArgumentMatchers.<Map<String, Object>>any()
+                )
         ).then((invocation) -> {
             User ru = invocation.getArgument(0);
             Player rp = ru.getPlayer();
@@ -219,7 +223,7 @@ public class TestsReportUtils {
                 Report.AdvancedData.REPORTER_LOCATION,
                 reporterOnline
                         ? SerializationUtils
-                                .serializeLocation(reporter.getPlayer().getLocation(), bm)
+                                .serializeBungeeLocation(reporter.getPlayer().getLocation(), bm)
                         : null
         );
         reportAdvancedData.put(
@@ -233,7 +237,7 @@ public class TestsReportUtils {
                 Report.AdvancedData.REPORTED_LOCATION,
                 reportedOnline
                         ? SerializationUtils
-                                .serializeLocation(reported.getPlayer().getLocation(), bm)
+                                .serializeBungeeLocation(reported.getPlayer().getLocation(), bm)
                         : null
         );
         reportedAdvancedData.put(
@@ -335,7 +339,12 @@ public class TestsReportUtils {
             }
             return null;
         }).when(um)
-                .getUserByUniqueIdAsynchronously(anyString(), any(Database.class), any(TaskScheduler.class), ArgumentMatchers.<ResultCallback<User>>any());
+                .getUserByUniqueIdAsynchronously(
+                        anyString(),
+                        any(Database.class),
+                        any(TaskScheduler.class),
+                        ArgumentMatchers.<ResultCallback<User>>any()
+                );
         
         doAnswer((invocation) -> {
             Object uuid = invocation.getArgument(0);
@@ -352,7 +361,12 @@ public class TestsReportUtils {
             }
             return null;
         }).when(um)
-                .getUserByUniqueIdAsynchronously(any(UUID.class), any(Database.class), any(TaskScheduler.class), ArgumentMatchers.<ResultCallback<User>>any());
+                .getUserByUniqueIdAsynchronously(
+                        any(UUID.class),
+                        any(Database.class),
+                        any(TaskScheduler.class),
+                        ArgumentMatchers.<ResultCallback<User>>any()
+                );
         
         doAnswer((invocation) -> {
             String[] uuids = invocation.getArgument(0);
@@ -370,7 +384,12 @@ public class TestsReportUtils {
             }
             return null;
         }).when(um)
-                .getUsersByUniqueIdAsynchronously(any(String[].class), any(Database.class), any(TaskScheduler.class), ArgumentMatchers.<ResultCallback<List<User>>>any());
+                .getUsersByUniqueIdAsynchronously(
+                        any(String[].class),
+                        any(Database.class),
+                        any(TaskScheduler.class),
+                        ArgumentMatchers.<ResultCallback<List<User>>>any()
+                );
     }
     
     public static void getReportByIdAsynchronously(Report r, TaskScheduler taskScheduler,

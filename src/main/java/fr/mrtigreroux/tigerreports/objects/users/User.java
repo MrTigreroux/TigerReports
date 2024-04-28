@@ -469,14 +469,13 @@ public class User {
             }
         }
         if (staff != null) {
-            MessageUtils
-                    .sendStaffMessage(
-                            Message.STAFF_PUNISH.get()
-                                    .replace("_Player_", staff.getDisplayName(vm, true))
-                                    .replace("_Target_", getDisplayName(vm, false))
-                                    .replace("_Time_", time),
-                            ConfigSound.STAFF.get()
-                    );
+            MessageUtils.sendStaffMessage(
+                    Message.STAFF_PUNISH.get()
+                            .replace("_Player_", staff.getDisplayName(vm, true))
+                            .replace("_Target_", getDisplayName(vm, false))
+                            .replace("_Time_", time),
+                    ConfigSound.STAFF.get()
+            );
             sendMessage(Message.PUNISHED.get().replace("_Time_", time));
         }
     }
@@ -744,7 +743,11 @@ public class User {
             return lastMessages;
         } else {
             return lastMessages.stream()
-                    .filter((msg) -> DatetimeUtils.getZonedDateTime(msg.getDatetime()).isAfter(startDatetime)).collect(Collectors.toList());
+                    .filter(
+                            (msg) -> DatetimeUtils.getZonedDateTime(msg.getDatetime())
+                                    .isAfter(startDatetime)
+                    )
+                    .collect(Collectors.toList());
         }
     }
     
@@ -1006,7 +1009,14 @@ public class User {
             return;
         }
         sendMessage(
-                MessageUtils.getAdvancedMessage(Message.get(msgPath + ".Text").replace("_Report_", reportName), "_CancelButton_", Message.get(msgPath + ".Cancel-button.Text"), Message.get(msgPath + ".Cancel-button.Hover").replace("_Report_", reportName), "/tigerreports:reports canceledit")
+                MessageUtils.getAdvancedMessage(
+                        Message.get(msgPath + ".Text").replace("_Report_", reportName),
+                        "_CancelButton_",
+                        Message.get(msgPath + ".Cancel-button.Text"),
+                        Message.get(msgPath + ".Cancel-button.Hover")
+                                .replace("_Report_", reportName),
+                        "/tigerreports:reports canceledit"
+                )
         );
     }
     
@@ -1061,7 +1071,10 @@ public class User {
         db.updateAsynchronously(
                 "UPDATE tigerreports_users SET notifications = ? WHERE uuid = ?",
                 Arrays.asList(
-                        notifications != null ? String.join(NOTIFICATIONS_SEPARATOR, notifications) : null, uuid.toString()
+                        notifications != null
+                                ? String.join(NOTIFICATIONS_SEPARATOR, notifications)
+                                : null,
+                        uuid.toString()
                 )
         );
     }
@@ -1235,7 +1248,20 @@ public class User {
             return;
         }
         p.sendMessage(
-                Message.COMMENT_NOTIFICATION.get().replace("_Player_", c.getAuthorDisplayName(vm)).replace("_Reported_", r.getPlayerName(Report.ParticipantType.REPORTED, false, true, vm, bm)).replace("_Time_", DatetimeUtils.getTimeAgo(r.getDate())).replace("_Message_", c.getMessage())
+                Message.COMMENT_NOTIFICATION.get()
+                        .replace("_Player_", c.getAuthorDisplayName(vm))
+                        .replace(
+                                "_Reported_",
+                                r.getPlayerName(
+                                        Report.ParticipantType.REPORTED,
+                                        false,
+                                        true,
+                                        vm,
+                                        bm
+                                )
+                        )
+                        .replace("_Time_", DatetimeUtils.getTimeAgo(r.getDate()))
+                        .replace("_Message_", c.getMessage())
         );
         c.setStatus(
                 "Read " + DatetimeUtils.getNowDatetime(),
@@ -1354,7 +1380,7 @@ public class User {
             locType = "CURRENT";
         } else {
             configLoc = r.getOldLocation(targetType);
-            loc = SerializationUtils.unserializeLocation(configLoc);
+            loc = SerializationUtils.deserializeLocation(configLoc);
             if (loc == null) {
                 MessageUtils.sendErrorMessage(
                         p,
@@ -1362,7 +1388,7 @@ public class User {
                 );
                 return;
             }
-            serverName = SerializationUtils.getServer(configLoc);
+            serverName = SerializationUtils.deserializeServer(configLoc);
             locType = "OLD";
         }
         
@@ -1376,7 +1402,11 @@ public class User {
         );
         
         sendMessageWithReportButton(
-                Message.valueOf("TELEPORT_" + locType + "_LOCATION").get().replace("_Player_", targetType.getName().replace("_Player_", target)).replace("_Report_", r.getName()), r
+                Message.valueOf("TELEPORT_" + locType + "_LOCATION")
+                        .get()
+                        .replace("_Player_", targetType.getName().replace("_Player_", target))
+                        .replace("_Report_", r.getName()),
+                r
         );
         
         if (tpToOnlineTargetInDifferentServer) {

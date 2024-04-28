@@ -44,7 +44,7 @@ public class CheckUtils {
     }
     
     public static long strictlyPositive(long l) {
-        if (l < 0) {
+        if (l <= 0L) {
             throw new IllegalArgumentException("Long is not strictly positive");
         }
         return l;

@@ -48,7 +48,7 @@ public class PlayerLastMessagesBungeeNotification extends BungeeNotification {
         User onlineUser = um.getOnlineUser(playerUniqueId);
         if (onlineUser != null) {
             onlineUser.updateLastMessages(
-                    Report.AdvancedData.unserializeMessages(serializedLastMessages)
+                    Report.AdvancedData.deserializeMessages(serializedLastMessages)
             );
         }
     }

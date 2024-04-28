@@ -167,7 +167,7 @@ public class ReportUtils {
             if (reporter != null) {
                 reportData.put(
                         Report.AdvancedData.REPORTER_LOCATION,
-                        SerializationUtils.serializeLocation(reporter.getLocation(), bm)
+                        SerializationUtils.serializeBungeeLocation(reporter.getLocation(), bm)
                 );
             }
             reportData.put(
@@ -256,7 +256,7 @@ public class ReportUtils {
             data.put(AdvancedData.REPORTED_IP, ru.getIPAddress());
             data.put(
                     AdvancedData.REPORTED_LOCATION,
-                    SerializationUtils.serializeLocation(rp.getLocation(), bm)
+                    SerializationUtils.serializeBungeeLocation(rp.getLocation(), bm)
             );
             data.put(
                     AdvancedData.REPORTED_MESSAGES,
@@ -268,7 +268,11 @@ public class ReportUtils {
             );
             data.put(
                     AdvancedData.REPORTED_ON_GROUND,
-                    !rp.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().equals(Material.AIR) ? 1 : 0
+                    !rp.getLocation()
+                            .getBlock()
+                            .getRelative(BlockFace.DOWN)
+                            .getType()
+                            .equals(Material.AIR) ? 1 : 0
             );
             data.put(AdvancedData.REPORTED_SNEAK, rp.isSneaking() ? 1 : 0);
             data.put(AdvancedData.REPORTED_SPRINT, rp.isSprinting() ? 1 : 0);
@@ -321,7 +325,9 @@ public class ReportUtils {
             BaseComponent hoverTC = new TextComponent("");
             MessageUtils.APPEND_TEXT_WITH_TRANSLATED_COLOR_CODES_TO_COMPONENT_BUILDER_METHOD.accept(
                     hoverTC,
-                    Message.ALERT_DETAILS.get().replace("_Report_", r.getName()).replace(ConfigUtils.getLineBreakSymbol(), "\n")
+                    Message.ALERT_DETAILS.get()
+                            .replace("_Report_", r.getName())
+                            .replace(ConfigUtils.getLineBreakSymbol(), "\n")
             );
             alert.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[] {
                     hoverTC
@@ -399,7 +405,17 @@ public class ReportUtils {
     }
     
     public static long getAbusiveReportCooldown() {
-        return ConfigFile.CONFIG.get().getLong("Config.AbusiveReport.Cooldown", 3600);
+        long res = ConfigFile.CONFIG.get().getLong("Config.AbusiveReport.Cooldown", 3600L);
+        if (res <= 0L) {
+            res = 3600L;
+            Logger.CONFIG.warn(
+                    () -> ConfigUtils.getInfoMessage(
+                            "Config.AbusiveReport.Cooldown setting must be strictly positive.",
+                            "Le param\u00e8tre Config.AbusiveReport.Cooldown doit \u00eatre strictement positif."
+                    )
+            );
+        }
+        return res;
     }
     
     public static boolean onlyDoneArchives() {

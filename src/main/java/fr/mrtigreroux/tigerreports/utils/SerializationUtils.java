@@ -12,7 +12,7 @@ public class SerializationUtils {
     
     private SerializationUtils() {}
     
-    public static String serializeLocation(Location loc, BungeeManager bm) {
+    public static String serializeBungeeLocation(Location loc, BungeeManager bm) {
         StringBuilder serializedLocation =
                 new StringBuilder(bm.getServerName()).append("/").append(loc.getWorld().getName());
         for (Object coords : new Object[] {
@@ -25,11 +25,11 @@ public class SerializationUtils {
         return serializedLocation.toString();
     }
     
-    public static Location unserializeLocation(String serializedLocation) {
-        if (serializedLocation == null) {
+    public static Location deserializeLocation(String serializedBungeeLocation) {
+        if (serializedBungeeLocation == null) {
             return null;
         }
-        String[] coords = serializedLocation.split("/");
+        String[] coords = serializedBungeeLocation.split("/");
         return new Location(
                 Bukkit.getWorld(coords[1]),
                 Double.parseDouble(coords[2]),
@@ -40,8 +40,8 @@ public class SerializationUtils {
         );
     }
     
-    public static String getServer(String serializedLocation) {
-        return serializedLocation != null ? serializedLocation.split("/")[0] : null;
+    public static String deserializeServer(String serializedBungeeLocation) {
+        return serializedBungeeLocation != null ? serializedBungeeLocation.split("/")[0] : null;
     }
     
 }

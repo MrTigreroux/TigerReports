@@ -191,7 +191,7 @@ class ReportUtilsTest extends TestClass {
                     Report.AdvancedData.REPORTER_LOCATION,
                     reporterOnline
                             ? SerializationUtils
-                                    .serializeLocation(reporter.getPlayer().getLocation(), bm)
+                                    .serializeBungeeLocation(reporter.getPlayer().getLocation(), bm)
                             : null
             );
             reportAdvancedData.put(
@@ -205,7 +205,7 @@ class ReportUtilsTest extends TestClass {
                     Report.AdvancedData.REPORTED_LOCATION,
                     reportedOnline
                             ? SerializationUtils
-                                    .serializeLocation(reported.getPlayer().getLocation(), bm)
+                                    .serializeBungeeLocation(reported.getPlayer().getLocation(), bm)
                             : null
             );
             reportedAdvancedData.put(
@@ -566,7 +566,7 @@ class ReportUtilsTest extends TestClass {
                     Report.AdvancedData.REPORTER_LOCATION,
                     reporterOnline
                             ? SerializationUtils
-                                    .serializeLocation(reporter.getPlayer().getLocation(), bm)
+                                    .serializeBungeeLocation(reporter.getPlayer().getLocation(), bm)
                             : null
             );
             reportAdvancedData.put(
@@ -580,7 +580,7 @@ class ReportUtilsTest extends TestClass {
                     Report.AdvancedData.REPORTED_LOCATION,
                     reportedOnline
                             ? SerializationUtils
-                                    .serializeLocation(reported.getPlayer().getLocation(), bm)
+                                    .serializeBungeeLocation(reported.getPlayer().getLocation(), bm)
                             : null
             );
             reportedAdvancedData.put(

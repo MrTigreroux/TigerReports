@@ -89,7 +89,7 @@ public class TestsReport {
         putIfMissing(
                 reportData,
                 Report.AdvancedData.REPORTED_LOCATION,
-                SerializationUtils.serializeLocation(TestsReport.mockRandomLocation(), bm)
+                SerializationUtils.serializeBungeeLocation(TestsReport.mockRandomLocation(), bm)
         );
         
         List<SavedMessage> messages = getRandomSavedMessages(r);
@@ -151,8 +151,8 @@ public class TestsReport {
     }
     
     public static String getRandomIPAddress(Random r) {
-        return "/" + RandomUtils.getRandomInt(r, 0, 255) + "." + RandomUtils
-                .getRandomInt(r, 0, 255) + "." + RandomUtils.getRandomInt(r, 0, 255) + "."
+        return "/" + RandomUtils.getRandomInt(r, 0, 255) + "." + RandomUtils.getRandomInt(r, 0, 255)
+                + "." + RandomUtils.getRandomInt(r, 0, 255) + "."
                 + RandomUtils.getRandomInt(r, 0, 255);
     }
     
@@ -192,8 +192,9 @@ public class TestsReport {
         
         UUID staffUUID = staff != null ? staff.getUniqueId() : null;
         LOGGER.debug(
-                () -> "setupUMForAsynchronouslyFrom(): reportedUUID = "
-                        + reportedUUID + "\n reportersUUID = " + CollectionUtils.toString(reporters) + "\n staffUUID = " + staffUUID
+                () -> "setupUMForAsynchronouslyFrom(): reportedUUID = " + reportedUUID
+                        + "\n reportersUUID = " + CollectionUtils.toString(reporters)
+                        + "\n staffUUID = " + staffUUID
         );
         
         doAnswer((invocation) -> {
@@ -210,7 +211,12 @@ public class TestsReport {
             }
             return null;
         }).when(um)
-                .getUserByUniqueIdAsynchronously(anyString(), any(Database.class), any(TaskScheduler.class), ArgumentMatchers.<ResultCallback<User>>any());
+                .getUserByUniqueIdAsynchronously(
+                        anyString(),
+                        any(Database.class),
+                        any(TaskScheduler.class),
+                        ArgumentMatchers.<ResultCallback<User>>any()
+                );
         
         doAnswer((invocation) -> {
             Object uuid = invocation.getArgument(0);
@@ -229,7 +235,12 @@ public class TestsReport {
             }
             return null;
         }).when(um)
-                .getUserByUniqueIdAsynchronously(any(UUID.class), any(Database.class), any(TaskScheduler.class), ArgumentMatchers.<ResultCallback<User>>any());
+                .getUserByUniqueIdAsynchronously(
+                        any(UUID.class),
+                        any(Database.class),
+                        any(TaskScheduler.class),
+                        ArgumentMatchers.<ResultCallback<User>>any()
+                );
         
         doAnswer((invocation) -> {
             String[] uuids = invocation.getArgument(0);
@@ -247,7 +258,12 @@ public class TestsReport {
             }
             return null;
         }).when(um)
-                .getUsersByUniqueIdAsynchronously(any(String[].class), any(Database.class), any(TaskScheduler.class), ArgumentMatchers.<ResultCallback<List<User>>>any());
+                .getUsersByUniqueIdAsynchronously(
+                        any(String[].class),
+                        any(Database.class),
+                        any(TaskScheduler.class),
+                        ArgumentMatchers.<ResultCallback<List<User>>>any()
+                );
     }
     
     public static void mockSendStaffMessageAndRunReportAction(Report r, VaultManager vm,
@@ -321,8 +337,17 @@ public class TestsReport {
         } else {
             newSD = StatusDetails.from(Status.IMPORTANT, null);
         }
-        TestsReport
-                .mockPluginManagerCallEventAndRunReportAction(report, new Holder<>(), (r) -> r.setStatus(newSD, false, db, mock(ReportsManager.class), mock(BungeeManager.class)));
+        TestsReport.mockPluginManagerCallEventAndRunReportAction(
+                report,
+                new Holder<>(),
+                (r) -> r.setStatus(
+                        newSD,
+                        false,
+                        db,
+                        mock(ReportsManager.class),
+                        mock(BungeeManager.class)
+                )
+        );
     }
     
     public static void deleteReport(Report report, TaskScheduler taskScheduler, Database db,

@@ -634,9 +634,11 @@ public class Report implements DeeplyCloneable<Report> {
         Status status = getStatus();
         if (status == Status.DONE) {
             Appreciation appreciation = appreciationDetails.appreciation;
-            String suffix =
-                    appreciation == Appreciation.TRUE
-                            ? Message.get("Words.Done-suffix.True-appreciation").replace("_Punishment_", getPunishment()) : Message.get("Words.Done-suffix.Other-appreciation").replace("_Appreciation_", appreciation.getDisplayName());
+            String suffix = appreciation == Appreciation.TRUE
+                    ? Message.get("Words.Done-suffix.True-appreciation")
+                            .replace("_Punishment_", getPunishment())
+                    : Message.get("Words.Done-suffix.Other-appreciation")
+                            .replace("_Appreciation_", appreciation.getDisplayName());
             String processorName = UserUtils.getStaffDisplayName(getProcessorStaff(), vm);
             return status.getDisplayName(processorName) + suffix;
         } else if (status == Status.IN_PROGRESS) {
@@ -879,7 +881,7 @@ public class Report implements DeeplyCloneable<Report> {
                     : null;
         }
         
-        public static SavedMessage[] unserializeMessages(String messages) {
+        public static SavedMessage[] deserializeMessages(String messages) {
             if (messages == null || messages.isEmpty()) {
                 return new SavedMessage[0];
             } else {
@@ -896,7 +898,7 @@ public class Report implements DeeplyCloneable<Report> {
             return gamemode.toString().toLowerCase();
         }
         
-        public static String unserializeGamemode(String gamemode) {
+        public static String deserializeGamemode(String gamemode) {
             if (gamemode == null) {
                 return null;
             }
@@ -927,7 +929,19 @@ public class Report implements DeeplyCloneable<Report> {
                     String type = effect.split(":")[0].replace("_", " ");
                     String duration = effect.split("/")[1];
                     effectsLines.append(
-                            Message.EFFECT.get().replace("_Type_", type.charAt(0) + type.substring(1).toLowerCase()).replace("_Amplifier_", effect.split(":")[1].replace("/" + duration, "")).replace("_Duration_", Long.toString(Long.parseLong(duration) / 20))
+                            Message.EFFECT.get()
+                                    .replace(
+                                            "_Type_",
+                                            type.charAt(0) + type.substring(1).toLowerCase()
+                                    )
+                                    .replace(
+                                            "_Amplifier_",
+                                            effect.split(":")[1].replace("/" + duration, "")
+                                    )
+                                    .replace(
+                                            "_Duration_",
+                                            Long.toString(Long.parseLong(duration) / 20)
+                                    )
                     );
                 }
                 effects = effectsLines.toString();
@@ -937,7 +951,7 @@ public class Report implements DeeplyCloneable<Report> {
             defaultData = Message.DEFAULT_DATA.get()
                     .replace(
                             "_Gamemode_",
-                            AdvancedData.unserializeGamemode(advancedData.reportedGamemode)
+                            AdvancedData.deserializeGamemode(advancedData.reportedGamemode)
                     )
                     .replace(
                             "_OnGround_",
@@ -1024,7 +1038,7 @@ public class Report implements DeeplyCloneable<Report> {
         String messages = type == ParticipantType.REPORTER
                 ? advancedData.reporterMessages
                 : advancedData.reportedMessages;
-        return AdvancedData.unserializeMessages(messages);
+        return AdvancedData.deserializeMessages(messages);
     }
     
     public ItemStack getItem(String actions, VaultManager vm, BungeeManager bm) {
@@ -1034,12 +1048,21 @@ public class Report implements DeeplyCloneable<Report> {
                 .hideFlags(true)
                 .glow(status == Status.WAITING)
                 .name(Message.REPORT.get().replace("_Report_", getName()))
-                .lore(implementDetails(Message.REPORT_DETAILS.get(), true, vm, bm).replace("_Actions_", actions != null ? actions : "").split(ConfigUtils.getLineBreakSymbol())).create();
+                .lore(
+                        implementDetails(Message.REPORT_DETAILS.get(), true, vm, bm)
+                                .replace("_Actions_", actions != null ? actions : "")
+                                .split(ConfigUtils.getLineBreakSymbol())
+                )
+                .create();
     }
     
     public String getText(VaultManager vm, BungeeManager bm) {
         return implementDetails(
-                Message.get("Messages.Report-details").replace("_Report_", Message.REPORT.get().replace("_Report_", getName())), false, vm, bm
+                Message.get("Messages.Report-details")
+                        .replace("_Report_", Message.REPORT.get().replace("_Report_", getName())),
+                false,
+                vm,
+                bm
         );
     }
     
@@ -1058,7 +1081,6 @@ public class Report implements DeeplyCloneable<Report> {
                 (autoArchive ? Message.STAFF_PROCESS_AUTO : Message.STAFF_PROCESS).get()
                         .replace("_Appreciation_", appreciation.getDisplayName()),
                 notifyStaff,
-                null,
                 db,
                 rm,
                 bm,
@@ -1110,7 +1132,6 @@ public class Report implements DeeplyCloneable<Report> {
                                 getPlayerName(ParticipantType.REPORTED, false, true, vm, bm)
                         ),
                 notifyStaff,
-                null,
                 db,
                 rm,
                 bm,
@@ -1141,7 +1162,6 @@ public class Report implements DeeplyCloneable<Report> {
                 archive,
                 Message.STAFF_PROCESS_ABUSIVE.get().replace("_Time_", time),
                 notifyStaff,
-                punishSeconds,
                 db,
                 rm,
                 bm,
@@ -1183,9 +1203,8 @@ public class Report implements DeeplyCloneable<Report> {
     }
     
     private void processing(User staff, AppreciationDetails appreciationDetails, boolean bungee,
-            boolean archive, String staffMessage, boolean notifyStaff, Long punishSeconds,
-            Database db, ReportsManager rm, BungeeManager bm, VaultManager vm,
-            TaskScheduler taskScheduler) {
+            boolean archive, String staffMessage, boolean notifyStaff, Database db,
+            ReportsManager rm, BungeeManager bm, VaultManager vm, TaskScheduler taskScheduler) {
         Objects.requireNonNull(staff); // Eventually, create a special User CONSOLE in the future, but not null.
         
         boolean changed = false;
@@ -1198,16 +1217,18 @@ public class Report implements DeeplyCloneable<Report> {
         }
         
         if (notifyStaff) {
-            MessageUtils.sendStaffMessage(
-                    MessageUtils.getAdvancedMessage(
-                            staffMessage.replace("_Player_", staff.getDisplayName(vm, true)),
-                            "_Report_",
-                            getName(),
-                            getText(vm, bm),
-                            null
-                    ),
-                    ConfigSound.STAFF.get()
-            );
+            MessageUtils
+                    .sendStaffMessage(
+                            MessageUtils.getAdvancedMessage(
+                                    staffMessage
+                                            .replace("_Player_", staff.getDisplayName(vm, true)),
+                                    "_Report_",
+                                    getName(),
+                                    getText(vm, bm),
+                                    null
+                            ),
+                            ConfigSound.STAFF.get()
+                    );
         }
         
         if (!bungee) {
@@ -1345,7 +1366,14 @@ public class Report implements DeeplyCloneable<Report> {
                         @Override
                         public void onResultReceived(User author) {
                             resultCallback.onResultReceived(
-                                    new Comment(Report.this, (int) result.get("comment_id"), (String) result.get("status"), (String) result.get("date"), author, (String) result.get("message"))
+                                    new Comment(
+                                            Report.this,
+                                            (int) result.get("comment_id"),
+                                            (String) result.get("status"),
+                                            (String) result.get("date"),
+                                            author,
+                                            (String) result.get("message")
+                                    )
                             );
                         }
                         
