@@ -32,19 +32,20 @@ import net.md_5.bungee.api.chat.TextComponent;
  */
 
 public class MessageUtils {
-    
+
     private static final Logger LOGGER = Logger.fromClass(MessageUtils.class);
     private static final Pattern COLOR_CODES_PATTERN = Pattern.compile("^[0-9a-f]$");
+    private static final Pattern HEX_CODES_PATTERN = Pattern.compile("§x(§[a-fA-F0-9]){6}");
     private static final Function<String, String> TRANSLATE_COLOR_CODES_METHOD;
     public static final BiConsumer<BaseComponent, String> APPEND_TEXT_WITH_TRANSLATED_COLOR_CODES_TO_COMPONENT_BUILDER_METHOD;
-    
+
     private static final Pattern CONSOLE_PATTERN =
             Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
-    
+
     public static final String LINE = "------------------------------------------------------";
-    
-    private static final Pattern HEX_PATTERN = Pattern.compile("&#[a-fA-F0-9]{6}");
-    
+
+    private static final Pattern HEX_PATTERN = Pattern.compile("#[a-fA-F0-9]{6}");
+
     static {
         if (VersionUtils.isVersionAtLeast1_16()) {
             TRANSLATE_COLOR_CODES_METHOD = string -> net.md_5.bungee.api.ChatColor
@@ -58,16 +59,17 @@ public class MessageUtils {
                     (bc, text) -> bc.addExtra(text);
         }
     }
-    
-    private MessageUtils() {}
-    
+
+    private MessageUtils() {
+    }
+
     public static void sendErrorMessage(CommandSender s, String message) {
         s.sendMessage(message);
         if (s instanceof Player) {
             ConfigSound.ERROR.play((Player) s);
         }
     }
-    
+
     public static void sendStaffMessage(Object message, Sound sound) {
         boolean isTextComponent = message instanceof TextComponent;
         UsersManager um = TigerReports.getInstance().getUsersManager();
@@ -83,9 +85,9 @@ public class MessageUtils {
             if (!u.acceptsNotifications()) {
                 continue;
             }
-            
+
             u.sendMessage(message);
-            
+
             if (sound != null) {
                 p.playSound(p.getLocation(), sound, 1, 1);
             }
@@ -94,42 +96,53 @@ public class MessageUtils {
                 isTextComponent ? ((TextComponent) message).toLegacyText() : (String) message
         );
     }
-    
+
     public static void sendConsoleMessage(String message) {
         String temp = Normalizer.normalize(message, Normalizer.Form.NFD);
-        
+
         message = CONSOLE_PATTERN.matcher(temp).replaceAll("");
         Bukkit.getConsoleSender().sendMessage(message.replace("�", ">"));
     }
-    
+
     public static ChatColor getLastColor(String text, String lastWord) {
-        String color = null;
+        ChatColor color = ChatColor.WHITE;
         int index = lastWord != null ? text.indexOf(lastWord) : text.length();
         if (index == -1) {
             return ChatColor.WHITE;
         }
-        
-        for (
-            String code : org.bukkit.ChatColor.getLastColors(text.substring(0, index))
-                    .split("\u00A7")
-        ) {
-            if (COLOR_CODES_PATTERN.matcher(code).matches()) {
-                color = code;
+
+        String codes = deserializeHex(org.bukkit.ChatColor.getLastColors(text.substring(0, index)));
+
+        for (String code : codes.replace("#", "§").split("§")) {
+            if (code.length() == 6) {
+                color = ChatColor.of("#" + code);
+            } else if (COLOR_CODES_PATTERN.matcher(code).matches()) {
+                color = ChatColor.getByChar(code.charAt(0));
             }
         }
-        
-        if (color == null) {
-            color = "f";
-        }
-        return ChatColor.getByChar(color.charAt(0));
+
+        return color;
     }
-    
+
+    private static String deserializeHex(String message) {
+        Matcher matcher = HEX_CODES_PATTERN.matcher(message);
+
+        while (matcher.find()) {
+            String serializedHex = message.substring(matcher.start(), matcher.end());
+            String deserializedHex = "#" + serializedHex.substring(2, 14).replace("§", "");
+            message = message.replace(serializedHex, deserializedHex);
+            matcher = HEX_CODES_PATTERN.matcher(message);
+        }
+
+        return message;
+    }
+
     public static String getMenuSentence(String text, Message message, String lastWord,
-            boolean wordSeparation) {
+                                         boolean wordSeparation) {
         if (text == null || text.isEmpty()) {
             return Message.NOT_FOUND_MALE.get();
         }
-        
+
         StringBuilder sentence = new StringBuilder();
         int maxLength = 22;
         String lineBreak = ConfigUtils.getLineBreakSymbol();
@@ -144,10 +157,10 @@ public class MessageUtils {
                             .append(" ");
                     maxLength += 35;
                 } else if (
-                    sentence.toString()
-                            .replace(lineBreak, "")
-                            .replace(lastColor.toString(), "")
-                            .length() >= maxLength
+                        sentence.toString()
+                                .replace(lineBreak, "")
+                                .replace(lastColor.toString(), "")
+                                .length() >= maxLength
                 ) {
                     sentence.append(lineBreak).append(lastColor).append(word).append(" ");
                     maxLength += 35;
@@ -168,23 +181,23 @@ public class MessageUtils {
             return sentence.toString();
         }
     }
-    
+
     public static Object getAdvancedMessage(String line, String placeHolder, String replacement,
-            String hover, String command) {
+                                            String hover, String command) {
         if (!line.contains(placeHolder)) {
             return line;
         }
-        
+
         String[] parts = line.split(placeHolder);
         BaseComponent advancedText = getAdvancedText(replacement, hover, command);
         if (parts.length == 0) {
             return advancedText;
         } else if (parts.length == 1) {
-            parts = new String[] {
+            parts = new String[]{
                     parts[0], ""
             };
         }
-        
+
         BaseComponent advancedLine = new TextComponent("");
         APPEND_TEXT_WITH_TRANSLATED_COLOR_CODES_TO_COMPONENT_BUILDER_METHOD
                 .accept(advancedLine, parts[0]);
@@ -195,18 +208,18 @@ public class MessageUtils {
         }
         return new TextComponent(advancedLine);
     }
-    
+
     @SuppressWarnings("deprecation")
     public static BaseComponent getAdvancedText(String text, String hover, String command) {
         BaseComponent advancedText = new TextComponent("");
         advancedText.setColor(ChatColor.valueOf(MessageUtils.getLastColor(text, null).name()));
         APPEND_TEXT_WITH_TRANSLATED_COLOR_CODES_TO_COMPONENT_BUILDER_METHOD
                 .accept(advancedText, text);
-        
+
         BaseComponent hoverTC = new TextComponent("");
         APPEND_TEXT_WITH_TRANSLATED_COLOR_CODES_TO_COMPONENT_BUILDER_METHOD
                 .accept(hoverTC, hover.replace(ConfigUtils.getLineBreakSymbol(), "\n"));
-        advancedText.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[] {
+        advancedText.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{
                 hoverTC
         }));
         if (command != null) {
@@ -214,48 +227,48 @@ public class MessageUtils {
         }
         return new TextComponent(advancedText);
     }
-    
+
     public static String getServerName(String server) {
         String name = ConfigFile.CONFIG.get().getString("BungeeCord.Servers." + server);
         return name != null ? name : server;
     }
-    
+
     public static String translateColorCodes(String message) {
         if (VersionUtils.isVersionAtLeast1_16()) {
             Matcher matcher = HEX_PATTERN.matcher(message);
-            
+
             while (matcher.find()) {
-                String color = message.substring(matcher.start() + 1, matcher.end());
-                message = message.replace("&" + color, ChatColor.of(color) + "");
+                String color = message.substring(matcher.start(), matcher.end());
+                message = message.replace(color, ChatColor.of(color) + "");
                 matcher = HEX_PATTERN.matcher(message);
             }
         }
-        
+
         return TRANSLATE_COLOR_CODES_METHOD.apply(message);
     }
-    
+
     public static <T> String joinElements(String separator, T[] elements,
-            boolean keepNullElements) {
+                                          boolean keepNullElements) {
         return joinElements(
                 separator,
                 elements != null ? Arrays.asList(elements) : null,
                 keepNullElements
         );
     }
-    
+
     public static <T> String joinElements(String separator, Collection<T> elements,
-            boolean keepNullElements) {
+                                          boolean keepNullElements) {
         if (elements == null || elements.size() == 0) {
             return "";
         }
-        
+
         StringBuilder sb = new StringBuilder();
         boolean firstElementAdded = false;
         for (T ele : elements) {
             if (!keepNullElements && ele == null) {
                 continue;
             }
-            
+
             if (firstElementAdded) {
                 sb.append(separator);
             } else {
@@ -265,5 +278,5 @@ public class MessageUtils {
         }
         return sb.toString();
     }
-    
+
 }

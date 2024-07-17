@@ -317,20 +317,6 @@ public class PlayerListener implements Listener {
     }
     
     private boolean checkHelpCommand(String command, CommandSender s) {
-        if (command.equalsIgnoreCase("report help")) {
-            HelpCommand.onCommand(s);
-            return true;
-        }
-        
-        command = command.toLowerCase().replace(" ", "");
-        if (!command.startsWith("tigerreports:report")) {
-            for (String helpCommand : HELP_COMMANDS) {
-                if (command.startsWith(helpCommand)) {
-                    HelpCommand.onCommand(s);
-                    return true;
-                }
-            }
-        }
         return false;
     }
     
