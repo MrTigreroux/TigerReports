@@ -212,7 +212,7 @@ public class MessageUtils {
     @SuppressWarnings("deprecation")
     public static BaseComponent getAdvancedText(String text, String hover, String command) {
         BaseComponent advancedText = new TextComponent("");
-        advancedText.setColor(ChatColor.valueOf(MessageUtils.getLastColor(text, null).name()));
+        advancedText.setColor(ChatColor.of(MessageUtils.getLastColor(text, null).name()));
         APPEND_TEXT_WITH_TRANSLATED_COLOR_CODES_TO_COMPONENT_BUILDER_METHOD
                 .accept(advancedText, text);
 
