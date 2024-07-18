@@ -22,7 +22,7 @@ import fr.mrtigreroux.tigerreports.utils.VersionUtils;
 public class CustomItem {
     
     private Material material = null;
-    private Integer amount = 1;
+    private int amount = 1;
     private Short damage = (short) 0;
     private String displayName = null;
     private List<String> lore = null;
@@ -31,7 +31,7 @@ public class CustomItem {
     private boolean hideFlags = false;
     private boolean glow = false;
     
-    public CustomItem(Material material, Integer amount, Short damage, String displayName,
+    private CustomItem(Material material, int amount, Short damage, String displayName,
             List<String> lore, Map<Enchantment, Integer> enchantments, String skullOwner,
             boolean hideFlags, boolean glow) {
         this.material = material;
@@ -73,11 +73,13 @@ public class CustomItem {
     public Material getMaterial() {
         return skullOwner == null
                 ? material
-                : (VersionUtils.isVersionLower1_13() ? Material.matchMaterial("SKULL_ITEM") : Material.PLAYER_HEAD);
+                : (VersionUtils.isVersionLower1_13()
+                        ? Material.matchMaterial("SKULL_ITEM")
+                        : Material.PLAYER_HEAD);
     }
     
-    public Integer getAmount() {
-        return amount > 64 ? 64 : amount < 0 ? 0 : amount;
+    public int getAmount() {
+        return amount;
     }
     
     public Short getDamage() {
@@ -101,7 +103,13 @@ public class CustomItem {
         return this;
     }
     
-    public CustomItem amount(Integer amount) {
+    public CustomItem amount(int amount) {
+        if (amount > 64) {
+            amount = 64;
+        } else if (amount < 0) {
+            amount = 0;
+        }
+        
         if (amount == 0 && !VersionUtils.isVersionLower1_13()) {
             amount = 1; // 0 quantity not displayed in new versions.
         }

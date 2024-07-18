@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
@@ -26,6 +27,9 @@ public class Comment {
     private final Report r;
     private final Integer commentId;
     private final String date;
+    /**
+     * null = Console
+     */
     private final User author;
     private String status, message;
     
@@ -75,7 +79,9 @@ public class Comment {
     }
     
     public String getAuthorDisplayName(VaultManager vm) {
-        return author != null ? author.getDisplayName(vm, true) : null;
+        return author != null
+                ? author.getDisplayName(vm, true)
+                : Bukkit.getConsoleSender().getName();
     }
     
     public String getMessage() {
@@ -95,7 +101,33 @@ public class Comment {
     public ItemStack getItem(boolean deletePermission, VaultManager vm) {
         return new CustomItem().type(Material.PAPER)
                 .name(Message.COMMENT.get().replace("_Id_", Integer.toString(commentId)))
-                .lore(Message.COMMENT_DETAILS.get().replace("_Status_", getStatus(false)).replace("_Author_", getAuthorDisplayName(vm)).replace("_Date_", date).replace("_Message_", MessageUtils.getMenuSentence(message, Message.COMMENT_DETAILS, "_Message_", true)).replace("_Actions_", Message.COMMENT_ADD_MESSAGE_ACTION.get() + (status.equals("Private") ? Message.COMMENT_SEND_ACTION.get() : Message.COMMENT_CANCEL_SEND_ACTION.get()) + (deletePermission ? Message.COMMENT_DELETE_ACTION.get() : "")).split(ConfigUtils.getLineBreakSymbol())).create();
+                .lore(
+                        Message.COMMENT_DETAILS.get()
+                                .replace("_Status_", getStatus(false))
+                                .replace("_Author_", getAuthorDisplayName(vm))
+                                .replace("_Date_", date)
+                                .replace(
+                                        "_Message_",
+                                        MessageUtils.getMenuSentence(
+                                                message,
+                                                Message.COMMENT_DETAILS,
+                                                "_Message_",
+                                                true
+                                        )
+                                )
+                                .replace(
+                                        "_Actions_",
+                                        Message.COMMENT_ADD_MESSAGE_ACTION.get()
+                                                + (status.equals("Private")
+                                                        ? Message.COMMENT_SEND_ACTION.get()
+                                                        : Message.COMMENT_CANCEL_SEND_ACTION.get())
+                                                + (deletePermission
+                                                        ? Message.COMMENT_DELETE_ACTION.get()
+                                                        : "")
+                                )
+                                .split(ConfigUtils.getLineBreakSymbol())
+                )
+                .create();
     }
     
     public void delete(Database db, ReportsManager rm) {

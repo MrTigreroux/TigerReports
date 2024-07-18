@@ -252,6 +252,9 @@ Config:
       Reason: "Message inappropri\xe9" # "Inappropriate message"
       # Report reason when using the report button / Raison du signalement envoyé lorsque le bouton de signalement est utilisé
 
+  CheckNewVersion: yes
+  # Check (every time the plugin is loaded) if a new version of the plugin is available / Vérifier (à chaque fois que le plugin est chargé) si une nouvelle version du plugin est disponible
+
 BungeeCord:
   Enabled: yes
   # Interact with the BungeeCord network / Intéragir avec le réseau BungeeCord

@@ -36,7 +36,6 @@ import fr.mrtigreroux.tigerreports.managers.UpdatesManager;
 import fr.mrtigreroux.tigerreports.managers.UsersManager;
 import fr.mrtigreroux.tigerreports.managers.VaultManager;
 import fr.mrtigreroux.tigerreports.objects.users.User;
-import fr.mrtigreroux.tigerreports.tasks.ResultCallback;
 import fr.mrtigreroux.tigerreports.tasks.TaskScheduler;
 import fr.mrtigreroux.tigerreports.tasks.runnables.MenuUpdater;
 import fr.mrtigreroux.tigerreports.tasks.runnables.ReportsNotifier;
@@ -165,20 +164,17 @@ public class TigerReports extends JavaPlugin implements TaskScheduler {
                 
                 setLoaded(true);
                 
-                WebUtils.checkNewVersion(
-                        instance,
-                        instance,
-                        SPIGOTMC_RESOURCE_ID,
-                        new ResultCallback<String>() {
-                            
-                            @Override
-                            public void onResultReceived(String newVersion) {
+                if (ConfigUtils.isEnabled("Config.CheckNewVersion")) {
+                    WebUtils.checkNewVersion(
+                            instance,
+                            instance,
+                            SPIGOTMC_RESOURCE_ID,
+                            (newVersion) -> {
                                 instance.newVersion = newVersion;
                             }
-                            
-                        }
-                );
-                        
+                    );
+                }
+                
                 updateNeedUpdatesInstructions(true);
             }
             
@@ -384,6 +380,7 @@ public class TigerReports extends JavaPlugin implements TaskScheduler {
             db.closeConnection();
         }
         
+        newVersion = null;
         setLoaded(false);
     }
     

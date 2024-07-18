@@ -1281,7 +1281,7 @@ public class User {
         }
         Player p = onData.p;
         
-        if (c.getAuthorUniqueId() != null && !c.getAuthorUniqueId().equals(uuid)) {
+        if (!uuid.equals(c.getAuthorUniqueId())) {
             ConfigSound.ERROR.play(p);
             return;
         }

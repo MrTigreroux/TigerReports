@@ -1356,29 +1356,31 @@ public class Report implements DeeplyCloneable<Report> {
         if (result == null) {
             resultCallback.onResultReceived(null);
         } else {
-            String authorUUID = (String) result.get("author");
-            um.getUserByUniqueIdAsynchronously(
-                    authorUUID,
-                    db,
-                    taskScheduler,
-                    new ResultCallback<User>() {
-                        
-                        @Override
-                        public void onResultReceived(User author) {
-                            resultCallback.onResultReceived(
-                                    new Comment(
-                                            Report.this,
-                                            (int) result.get("comment_id"),
-                                            (String) result.get("status"),
-                                            (String) result.get("date"),
-                                            author,
-                                            (String) result.get("message")
-                                    )
-                            );
-                        }
-                        
-                    }
-            );
+            String authorStr = (String) result.get("author");
+            ResultCallback<User> authorProcessor = (author) -> {
+                resultCallback.onResultReceived(
+                        new Comment(
+                                Report.this,
+                                (int) result.get("comment_id"),
+                                (String) result.get("status"),
+                                (String) result.get("date"),
+                                author,
+                                (String) result.get("message")
+                        )
+                );
+            };
+            UUID authorUUID = null;
+            if (!authorStr.isEmpty()) {
+                try {
+                    authorUUID = UUID.fromString(authorStr);
+                } catch (IllegalArgumentException console) {}
+            }
+            
+            if (authorUUID != null) {
+                um.getUserByUniqueIdAsynchronously(authorUUID, db, taskScheduler, authorProcessor);
+            } else {
+                authorProcessor.onResultReceived(null);
+            }
         }
     }
     
