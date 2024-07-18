@@ -21,7 +21,7 @@ public class DatetimeUtils {
     public static final int[] SECONDS_IN_UNIT = new int[] {
             365 * 24 * 60 * 60, 30 * 24 * 60 * 60, 7 * 24 * 60 * 60, 24 * 60 * 60, 60 * 60, 60
     };
-    public static final String DATETIME_FORMAT = "dd/MM/yyyy HH:mm:ss";
+    public static final String DATETIME_FORMAT = "dd.MM.yyyy HH:mm:ss";
     public static final DateTimeFormatter DATETIME_FORMATTER =
             DateTimeFormatter.ofPattern(DATETIME_FORMAT).withZone(ConfigUtils.getZoneId());
     

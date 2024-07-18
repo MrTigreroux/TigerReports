@@ -28,7 +28,7 @@ public class CustomItem {
     private List<String> lore = null;
     private Map<Enchantment, Integer> enchantments = null;
     private String skullOwner = null;
-    private boolean hideFlags = false;
+    private boolean hideFlags = true;
     private boolean glow = false;
     
     public CustomItem(Material material, Integer amount, Short damage, String displayName,
