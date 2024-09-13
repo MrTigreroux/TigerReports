@@ -5,7 +5,7 @@
   Alert-details: "&6左击 &7显示举报 &c_Report_ 的细节&7."
   Teleport-to-current-location: "&7[&6举报&7] &e你 &e已经 &e被 &e传送 &e到 &6_Player_&e. _ReportButton_"
   Teleport-to-old-location: "&7[&6举报&7] &e你 &e已经 &e被 &e传送 &e到 &e玩家 &6_Player_ &e在 &e举报 _Report_ 期间 &e的位置 &e. _ReportButton_"
-  Staff-punish: "&7[&6Reports&7] &a_Player_ &cblocked reports &eof &6_Reporter_ &efor &6_Time_&e."
+  Staff-punish: "&7[&6Reports&7] &a_Player_ &cblocked reports &eof &6_Target_ &efor &6_Time_&e."
   Punished: "&7[&6举报&7] &e你已经被 &c惩罚 &e由于你诬陷别人的报告. 你不能举报玩家 直到 &6_Time_&e 以后."
   Staff-stop-cooldown: "&7[&6举报&7] &a_Player_ &c取消了 &6_Target_&e的冷却."
   Cooldown-stopped: "&7[&6举报&7] &e你的举报冷却已被取消, 你现在可以再次使用 &b/report &e了."

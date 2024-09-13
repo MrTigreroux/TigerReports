@@ -5,7 +5,7 @@
   Alert-details: "&6Linksklick &7um weiteres zu sehen &c_Report_&7."
   Teleport-to-current-location: "&7[&6Report&7] &eDu wurdest zu &6_Player_ &eteleportiert."
   Teleport-to-old-location: "&7[&6Report&7] &eDu wurdest zu &6_Player_ &eteleportiert."
-  Staff-punish: "&7[&6Reports&7] &a_Player_ &cblocked reports &eof &6_Reporter_ &efor &6_Time_&e."
+  Staff-punish: "&7[&6Reports&7] &a_Player_ &cblocked reports &eof &6_Target_ &efor &6_Time_&e."
   Punished: "&7[&6Melden&7] &eDu wurdest wegen einer Falschaussage bestraft und kannst jetzt für &6_Time_&e niemanden mehr melden."
   Staff-stop-cooldown: "&7[&6Reports&7] &a_Player_ &ejust &ccancelled &ecooldown of &6_Target_&e."
   Cooldown-stopped: "&7[&6Reports&7] &eCooldown before next report has been cancelled, you can now use &b/report&e."

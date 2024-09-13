@@ -5,7 +5,7 @@
   Alert-details: "&6Нажмите ЛКМ, &7чтобы открыть детали &c_Report_&7."
   Teleport-to-current-location: "&7[&6Report&7] &e&eВы были телепортированы к &6_Player_&e. _ReportButton_"
   Teleport-to-old-location: "&7[&6Report&7] &eВы были телепортированы на местоположение &6_Player_ &eво время отправления &eжалобы _Report_&e. _ReportButton_"
-  Staff-punish: "&7[&6Reports&7] &a_Player_ &cblocked reports &eof &6_Reporter_ &efor &6_Time_&e."
+  Staff-punish: "&7[&6Reports&7] &a_Player_ &cblocked reports &eof &6_Target_ &efor &6_Time_&e."
   Punished: "&7[&6Reports&7] &eВам запретили отправлять жалобы. Вы сможете отправлять жалобы на игрока через: &6_Time_&e."
   Staff-stop-cooldown: "&7[&6Reports&7] &a_Player_ &cотменил &eзадержку на отправление жалоб для &6_Target_&e."
   Cooldown-stopped: "&7[&6Reports&7] &eЗадержка до слудующей жалобы была отменена. Теперь вы можете использовать &b/report&e."

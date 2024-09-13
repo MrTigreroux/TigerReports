@@ -5,7 +5,7 @@
   Alert-details: "&6Linkermuisknop &7om de details van &c_Report_&7 weer te geven."
   Teleport-to-current-location: "&7[&6Report&7] &eJij &ebent geteleporteerd &eteleported &enaar &6_Player_&e. _ReportButton_"
   Teleport-to-old-location: "&7[&6Report&7] &eJij &ebent &egeteleporteerd &enaar &ede &elocatie &evan &6_Player_ &etijdens &ede &ereport _Report_&e. _ReportButton_"
-  Staff-punish: "&7[&6Reports&7] &a_Player_ &cblocked reports &eof &6_Reporter_ &efor &6_Time_&e."
+  Staff-punish: "&7[&6Reports&7] &a_Player_ &cblocked reports &eof &6_Target_ &efor &6_Time_&e."
   Punished: "&7[&6Reports&7] &eJe bent &cgestraft &evoor voor jouw misbruik van de rapporteerfunctie. Je kan de speler niet voor &6_Time_&e rapporteren."
   Staff-stop-cooldown: "&7[&6Reports&7] &a_Player_ &cannuleerde &ede &ecooldown van &6_Target_&e."
   Cooldown-stopped: "&7[&6Reports&7] &eCooldown voor je volgende report is voorbij, je kan nu &b/report&e gebruiken."

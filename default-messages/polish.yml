@@ -5,7 +5,7 @@
   Alert-details: "&6LPM&7, żeby zobaczyć szczegóły zgłoszenia &c_Report_&7."
   Teleport-to-current-location: "&7[&6Zgłoszenia&7] &eZostałeś przeteleportowany do gracza &6_Player_&e. _ReportButton_"
   Teleport-to-old-location: "&7[&6Zgłoszenia&7] &eZostałeś przeteleportowany do lokalizacji gracza &6_Player_ &epodczas zgłoszenia _Report_&e. _ReportButton_"
-  Staff-punish: "&7[&6Reports&7] &a_Player_ &cblocked reports &eof &6_Reporter_ &efor &6_Time_&e."
+  Staff-punish: "&7[&6Reports&7] &a_Player_ &cblocked reports &eof &6_Target_ &efor &6_Time_&e."
   Punished: "&7[&6Zgłoszenia&7] &eZostałeś &cukarany &eza obraźliwe zgłoszenie. Nie możesz zgłaszać graczy przez &6_Time_&e."
   Staff-stop-cooldown: "&7[&6Zgłoszenia&7] &a_Player_ &eanulował czas oczekiwania gracza &6_Target_&e."
   Cooldown-stopped: "&7[&6Zgłoszenia&7] &eTwój czas oczekiwania przed kolejnym zgloszeniem został anulowany, możesz użyć komendy &b/report &eponownie."

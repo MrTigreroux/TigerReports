@@ -5,7 +5,7 @@
   Alert-details: "&6Left click &7to show the details of &c_Report_&7."
   Teleport-to-current-location: "&7[&6Report&7] &eYou &ehave &ebeen &eteleported &eto &6_Player_&e. _ReportButton_"
   Teleport-to-old-location: "&7[&6Report&7] &eYou &ehave &ebeen &eteleported &eto &ethe &elocation &eof &6_Player_ &eduring &ethe &ereport _Report_&e. _ReportButton_"
-  Staff-punish: "&7[&6Reports&7] &a_Player_ &cblocked reports &eof &6_Reporter_ &efor &6_Time_&e."
+  Staff-punish: "&7[&6Reports&7] &a_Player_ &cblocked reports &eof &6_Target_ &efor &6_Time_&e."
   Punished: "&7[&6Reports&7] &eYou have been &cpunished&e. You can't report players for &6_Time_&e."
   Staff-stop-cooldown: "&7[&6Reports&7] &a_Player_ &ehas &ccancelled &6_Target_&e's cooldown."
   Cooldown-stopped: "&7[&6Reports&7] &eYour cooldown before next report has been cancelled, you can now use &b/report &eagain."
