@@ -1271,7 +1271,7 @@ public class User {
     }
     
     public void startCreatingComment(Report r) {
-        startEditingComment(new Comment(r, null, null, null, null, null));
+        startEditingComment(new Comment(r, null, null, null, this, null));
     }
     
     public void startEditingComment(Comment c) {
